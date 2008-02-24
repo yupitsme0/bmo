@@ -253,6 +253,20 @@ sub Send {
         $diffpart->{'text'} = $difftext;
         push(@diffparts, $diffpart);
         push(@changedfields, $what);
+
+        # If the security bit is being set or unset, CC the appropriate
+        # security list. This is to make sure security bugs don't get lost.
+        if ($fieldname eq "bug_group") {
+            if ($old =~ /webtools-security/ || $new =~ /webtools-security/) {
+                push(@ccs, login_to_id('security@bugzilla.org'));
+            }
+            if ($old =~ /update-security/ || $new =~ /update-security/) {
+                push(@ccs, login_to_id('amo-admins@mozilla.org'));
+            }
+            if ($old =~ /(?<!-)security/ || $new =~ /(?<!-)security/) {
+                push(@ccs, login_to_id('security@mozilla.org'));
+            }
+        }
     }
     $values{'changed_fields'} = join(' ', @changedfields);
 
@@ -486,6 +500,8 @@ sub Send {
             # Make sure the user isn't in the nomail list, and the insider and 
             # dep checks passed.
             if ($user->email_enabled &&
+                ($user->login !~ /bugs$/) &&
+                ($user->login !~ /\.tld$/) &&
                 $insider_ok &&
                 $dep_ok)
             {

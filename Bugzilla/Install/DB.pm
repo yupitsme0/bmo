@@ -420,11 +420,7 @@ sub update_table_definitions {
     _fix_attachments_submitter_id_idx();
     _copy_attachments_thedata_to_attach_data();
     _fix_broken_all_closed_series();
-
-    # 2005-08-14 bugreport@peshkin.net -- Bug 304583
-    # Get rid of leftover DERIVED group permissions
-    use constant GRANT_DERIVED => 1;
-    $dbh->do("DELETE FROM user_group_map WHERE grant_type = " . GRANT_DERIVED);
+    _end_of_derived_groups_in_db();
 
     # PUBLIC is a reserved word in Oracle.
     $dbh->bz_rename_column('series', 'public', 'is_public');
@@ -2550,6 +2546,49 @@ EOT
         } # foreach (@$broken_nonopen_series)
         print " done.\n";
     } # if (@$broken_nonopen_series)
+}
+
+sub _end_of_derived_groups_in_db {
+    my $dbh = Bugzilla->dbh;
+    # 2005-08-14 bugreport@peshkin.net -- Bug 304583
+    # Get rid of leftover DERIVED group permissions
+    # Note: We used to have "use constant GRANT_DERIVED => 1;"
+    my $any_derived = $dbh->selectrow_array(
+        'SELECT 1 FROM user_group_map WHERE grant_type = 1');
+    if ($any_derived) {
+        $dbh->do("DELETE FROM user_group_map WHERE grant_type = 1");
+
+        # Re-evaluate all regexps, to keep them up-to-date.
+        my $sth = $dbh->prepare(
+            "SELECT profiles.userid, profiles.login_name, groups.id, 
+                    groups.userregexp, user_group_map.group_id
+               FROM (profiles CROSS JOIN groups)
+                    LEFT JOIN user_group_map
+                           ON user_group_map.user_id = profiles.userid
+                              AND user_group_map.group_id = groups.id
+                              AND user_group_map.grant_type = ?
+              WHERE userregexp != '' OR user_group_map.group_id IS NOT NULL");
+
+        my $sth_add = $dbh->prepare(
+            "INSERT INTO user_group_map (user_id, group_id, isbless, grant_type)
+                  VALUES (?, ?, 0, " . GRANT_REGEXP . ")");
+
+        my $sth_del = $dbh->prepare(
+            "DELETE FROM user_group_map
+              WHERE user_id  = ? AND group_id = ? AND isbless = 0 
+                    AND grant_type = " . GRANT_REGEXP);
+
+        $sth->execute(GRANT_REGEXP);
+        while (my ($uid, $login, $gid, $rexp, $present) = 
+                   $sth->fetchrow_array()) 
+        {
+            if ($login =~ m/$rexp/i) {
+                $sth_add->execute($uid, $gid) unless $present;
+            } else {
+                $sth_del->execute($uid, $gid) if $present;
+            }
+        }
+    }
 }
 
 sub _clean_control_characters_from_short_desc {

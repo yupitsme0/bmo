@@ -45,7 +45,7 @@
 [%- IF Bugzilla.cgi.param("data") %] enctype="multipart/form-data"[% END %]>
   <table>
     <tr>
-      <th align="right"><label for="Bugzilla_login">Login:</label></th>
+      <th align="right"><label for="Bugzilla_login">E-mail address:</label></th>
       <td>
         <input size="35" id="Bugzilla_login" name="Bugzilla_login">
         [% Param('emailsuffix') FILTER html %]
@@ -114,7 +114,7 @@
     <form method="get" action="token.cgi">
       <input type="hidden" name="a" value="reqpw">
       If you have an account, but have forgotten your password,
-      enter your login name below and submit a request
+      enter your e-mail address below and submit a request
       to change your password.<br>
       <input size="35" name="loginname">
       <input type="submit" id="request" value="Submit Request">

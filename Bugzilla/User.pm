@@ -205,6 +205,7 @@ sub set_login {
     my ($self, $login) = @_;
     $self->set('login_name', $login);
     delete $self->{identity};
+    delete $self->{display_name};
     delete $self->{nick};
 }
 
@@ -212,6 +213,7 @@ sub set_name {
     my ($self, $name) = @_;
     $self->set('realname', $name);
     delete $self->{identity};
+    delete $self->{display_name};
 }
 
 sub set_password { $_[0]->set('cryptpassword', $_[1]); }
@@ -257,6 +259,24 @@ sub identity {
     }
 
     return $self->{identity};
+}
+
+# Generate a string to identify the user by name if the user
+# has a name or by login only if she doesn't.
+sub display_name {
+    my $self = shift;
+
+    return "" unless $self->id;
+
+    if (!defined $self->{display_name}) {
+        if ($self->name && length($self->name) > 40) {
+            $self->{display_name} = substr($self->name, 0, 37) . "...";
+        } else {
+            $self->{display_name} = $self->name ? $self->name : $self->login;
+        }
+    }
+
+    return $self->{display_name};
 }
 
 sub nick {
@@ -441,8 +461,8 @@ sub bless_groups {
     my $connector;
     my @bindValues;
 
-    if ($self->in_group('editusers')) {
-        # Users having editusers permissions may bless all groups.
+    if ($self->in_group('admin')) {
+        # Users having admin permissions may bless all groups.
         $query = 'SELECT DISTINCT id, name, description FROM groups';
         $connector = 'WHERE';
     }
@@ -1804,6 +1824,12 @@ the page footer, and C<0> otherwise.
 Returns a string for the identity of the user. This will be of the form
 C<name E<lt>emailE<gt>> if the user has specified a name, and C<email>
 otherwise.
+
+=item C<display_name>
+
+Returns a string for the display name of the user. This will be of the
+form C<name> if the user has specified a name, and C<email> otherwise.
+Note that this value is truncated.
 
 =item C<nick>
 

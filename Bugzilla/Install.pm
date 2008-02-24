@@ -59,7 +59,15 @@ sub SETTINGS {
     skin               => { subclass => 'Skin', default => 'standard' },
     # 2006-12-10 LpSolit@gmail.com -- Bug 297186
     lang               => { options => [split(/[\s,]+/, Bugzilla->params->{'languages'})],
-                            default => Bugzilla->params->{'defaultlanguage'} }
+                            default => Bugzilla->params->{'defaultlanguage'} },
+    # 2006-12-14 justdave@mozilla.com -- Bug 322327
+    # BMO LOCAL HACK
+    product_chooser    => { options => ['pretty_product_chooser', 'full_product_chooser'],
+                            default => 'pretty_product_chooser' },
+    # 2007-01-13 reed@reedloden.com -- Bug 367003
+    # BMO LOCAL HACK
+    comment_box_position => { options => ['before_comments', 'after_comments'],
+                              default => 'after_comments' }
     }
 };
 
@@ -176,36 +184,6 @@ sub update_system_groups {
         $dbh->do('INSERT INTO group_group_map (grantor_id, member_id) 
                        VALUES (?,?)', undef, $sudo_protect->id, $sudo->id);
     }
-
-    # Re-evaluate all regexps, to keep them up-to-date.
-    my $sth = $dbh->prepare(
-        "SELECT profiles.userid, profiles.login_name, groups.id, 
-                groups.userregexp, user_group_map.group_id
-           FROM (profiles CROSS JOIN groups)
-                LEFT JOIN user_group_map
-                ON user_group_map.user_id = profiles.userid
-                   AND user_group_map.group_id = groups.id
-                   AND user_group_map.grant_type = ?
-          WHERE userregexp != '' OR user_group_map.group_id IS NOT NULL");
-
-    my $sth_add = $dbh->prepare(
-        "INSERT INTO user_group_map (user_id, group_id, isbless, grant_type)
-              VALUES (?, ?, 0, " . GRANT_REGEXP . ")");
-
-    my $sth_del = $dbh->prepare(
-        "DELETE FROM user_group_map
-          WHERE user_id  = ? AND group_id = ? AND isbless = 0 
-                AND grant_type = " . GRANT_REGEXP);
-
-    $sth->execute(GRANT_REGEXP);
-    while (my ($uid, $login, $gid, $rexp, $present) = $sth->fetchrow_array()) {
-        if ($login =~ m/$rexp/i) {
-            $sth_add->execute($uid, $gid) unless $present;
-        } else {
-            $sth_del->execute($uid, $gid) if $present;
-        }
-    }
-
 }
 
 # This function should be called only after creating the admin user.

@@ -103,9 +103,6 @@
     <tr>
       <th>[% field_descs.product FILTER html %]:</th>
       <td>
-        [% IF Param("useclassification") && bug.classification_id != 1 %]
-          [[% bug.classification FILTER html %]]&nbsp;
-        [% END %]
         [% bug.product FILTER html %]
       </td>
 

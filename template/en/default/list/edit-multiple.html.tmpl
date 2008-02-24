@@ -307,6 +307,7 @@
   <select name="resolution" onchange="document.forms.changeform.knob[[% knum %]].checked=true">
     [% FOREACH resolution = resolutions %]
       [% NEXT IF !resolution %]
+      [% NEXT IF resolution == "EXPIRED" AND user.login != "gerv@mozilla.org" %]
       <option value="[% resolution FILTER html %]">
         [% get_resolution(resolution) FILTER html %]
       </option>
@@ -328,12 +329,6 @@
     <input id="knob-verify" type="radio" name="knob" value="verify">
     <label for="knob-verify">Mark [% terms.bugs %] as <b>[% status_descs.VERIFIED FILTER html %]</b></label><br>
   [% END %]
-[% END %]
-
-[% IF !bugstatuses.containsany(openstates) AND !bugstatuses.contains('CLOSED') %]
-  [% knum = knum + 1 %]
-  <input id="knob-close" type="radio" name="knob" value="close">
-  <label for="knob-close">Mark [% terms.bugs %] as <b>[% status_descs.CLOSED FILTER html %]</b></label><br>
 [% END %]
 
 [% knum = knum + 1 %]

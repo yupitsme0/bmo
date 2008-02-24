@@ -66,7 +66,11 @@
         <br>
         [% knum = knum + 1 %]
       [% END %]
-
+    [% END %]
+  [% END %]
+  
+  [% IF bug.user.canedit || bug.user.canconfirm || bug.user.isreporter %]
+    [% IF bug.isopened %]
       [% PROCESS initial_action %]
       <input type="radio" id="knob-resolve" name="knob" value="resolve">
       <label for="knob-resolve">
@@ -92,6 +96,9 @@
              onchange => "if ((this.value != '$safe_assigned_to') && (this.value != '')) {
                                document.changeform.knob[$knum].checked=true;
                           }"
+             oninput => "if ((this.value != '$safe_assigned_to') && (this.value != '')) {
+                              document.changeform.knob[$knum].checked=true;
+                         }"
         %]
         <br>
         [% IF bug.isunconfirmed && bug.user.canconfirm %]
@@ -119,7 +126,7 @@
         [% END %]
         [% knum = knum + 1 %]
       [% END %]
-    [% ELSE %]
+    [% ELSIF bug.user.canedit || bug.user.isreporter %]
       [% IF bug.resolution != "MOVED" ||
            (bug.resolution == "MOVED" && bug.user.canmove) %]
         [% PROCESS initial_action %]
@@ -143,15 +150,6 @@
         <input type="radio" id="knob-verify" name="knob" value="verify">
         <label for="knob-verify">
           Mark [% terms.bug %] as <b>[% status_descs.VERIFIED FILTER html %]</b>
-        </label>
-        <br>
-        [% knum = knum + 1 %]
-      [% END %]
-      [% IF bug.bug_status != "CLOSED" %]
-        [% PROCESS initial_action %]
-        <input type="radio" id="knob-close" name="knob" value="close">
-        <label for="knob-close">
-          Mark [% terms.bug %] as <b>[% status_descs.CLOSED FILTER html %]</b>
         </label>
         <br>
         [% knum = knum + 1 %]
@@ -189,6 +187,15 @@
   <select name="resolution"
           onchange="document.changeform.knob[[% knum %]].checked=true">
     [% FOREACH r = bug.choices.resolution %]
+      [% IF bug.user.canconfirm &&
+            !(bug.user.canedit || bug.user.isreporter) %]
+        [% NEXT IF r != "WORKSFORME" && r != "INCOMPLETE" %]
+      [% END %]
+      [% IF bug.user.isreporter &&
+            !(bug.user.canconfirm || bug.user.canedit) %]
+        [% NEXT IF r == "INCOMPLETE" %]
+      [% END %]
+      [% NEXT IF r == "EXPIRED" %]
       <option value="[% r FILTER html %]">[% get_resolution(r) FILTER html %]</option>
     [% END %]
   </select>
@@ -202,7 +209,8 @@
     Mark the [% terms.bug %] as duplicate of [% terms.bug %] #
   </label>
   <input name="dup_id" size="6"
-         onchange="if (this.value != '') {document.changeform.knob[[% knum %]].checked=true}">
+         onchange="if (this.value != '') {document.changeform.knob[[% knum %]].checked=true}"
+         oninput="if (this.value != '') {document.changeform.knob[[% knum %]].checked=true}">
   <br>
   [% knum = knum + 1 %]
 [% END %]

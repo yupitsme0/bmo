@@ -60,6 +60,10 @@ my $dbh = Bugzilla->dbh;
 my $template = Bugzilla->template;
 my $vars = {};
 
+$cgi->param(-name=>'format',-value=>'guided') if !$cgi->param('format') && !$user->in_group('canconfirm');
+
+$cgi->delete('format') if ($cgi->param('format') && ($cgi->param('format') eq "__default__"));
+
 my $product_name = trim($cgi->param('product') || '');
 # Will contain the product object the bug is created in.
 my $product;
@@ -70,7 +74,7 @@ if ($product_name eq '') {
     ThrowUserError('no_products') unless scalar(@enterable_products);
 
     my $classification = Bugzilla->params->{'useclassification'} ?
-        scalar($cgi->param('classification')) : '__all';
+        (scalar($cgi->param('classification')) || '__all') : '__all';
 
     # Unless a real classification name is given, we sort products
     # by classification.
@@ -293,9 +297,9 @@ sub pickos {
             /\(.*Mac OS 8\.0.*\)/ && do {push @os, "Mac System 8.0";};
             /\(.*Mac OS 8[^.].*\)/ && do {push @os, "Mac System 8.0";};
             /\(.*Mac OS 8.*\)/ && do {push @os, "Mac System 8.6";};
-            /\(.*Intel.*Mac OS X.*\)/ && do {push @os, "Mac OS X 10.4";};
-            /\(.*Mac OS X.*\)/ && do {push @os, ("Mac OS X 10.3", "Mac OS X 10.0");};
-            /\(.*Darwin.*\)/ && do {push @os, "Mac OS X 10.0";};
+            /\(.*Intel.*Mac OS X.*\)/ && do {push @os, ("Mac OS X 10.4", "Mac OS X");};
+            /\(.*Mac OS X.*\)/ && do {push @os, ("Mac OS X 10.3", "Mac OS X 10.0", "Mac OS X");};
+            /\(.*Darwin.*\)/ && do {push @os, ("Mac OS X 10.0", "Mac OS X");};
         # Silly
             /\(.*Mac.*PowerPC.*\)/ && do {push @os, "Mac System 9.x";};
             /\(.*Mac.*PPC.*\)/ && do {push @os, "Mac System 9.x";};
@@ -571,6 +575,8 @@ $vars->{'group'} = \@groups;
 Bugzilla::Hook::process("enter_bug-entrydefaultvars", { vars => $vars });
 
 $vars->{'default'} = \%default;
+
+$vars->{'format'} = $cgi->param('format');
 
 my $format = $template->get_format("bug/create/create",
                                    scalar $cgi->param('format'), 

@@ -69,6 +69,7 @@ sub _throw_error {
         $mesg .= Bugzilla->user->login;
         $mesg .= (' actually ' . Bugzilla->sudoer->login) if Bugzilla->sudoer;
         $mesg .= "\n";
+        $mesg .= "Apache Process age: " . (time - $Bugzilla::ModPerl::ResponseHandler::startuptime) . " seconds.\n";
         my %params = Bugzilla->cgi->Vars;
         $Data::Dumper::Useqq = 1;
         for my $param (sort keys %params) {

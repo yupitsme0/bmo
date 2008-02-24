@@ -228,7 +228,7 @@ sub assertCanCreate {
 
     # Check permission for frequency
     my $min_freq = 7;
-    if ($cgi->param('frequency') < $min_freq && !Bugzilla->user->in_group("admin")) {
+    if ($cgi->param('frequency') < $min_freq && !Bugzilla->user->in_group("bz_canusewhines")) {
         ThrowUserError("illegal_frequency", { 'minimum' => $min_freq });
     }    
 }

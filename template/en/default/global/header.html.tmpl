@@ -182,6 +182,7 @@
       <style type="text/css">
         [% style %]
       </style>
+      [% style = "" %]
     [% END %]
 
     [%# CSS cascade, part 5: Custom Bugzilla stylesheet set (persistent).
@@ -212,7 +213,10 @@
 
     [%# Required for the 'Autodiscovery' feature in Firefox 2 and IE 7. %]
     <link rel="search" type="application/opensearchdescription+xml"
-                       title="[% terms.Bugzilla %]" href="./search_plugin.cgi">
+                       title="[% terms.Bugzilla %]@Mozilla" href="./search_plugin.cgi">
+
+    [%# Shortcut/Favorite icon %]
+    <link rel="icon" href="mozilla-16.png" type="image/png">
   </head>
 
 [%# Migration note: contents of the old Param 'bodyhtml' go in the body tag,
@@ -224,6 +228,8 @@
                [% FOREACH class = bodyclasses %]
                  [% ' ' %][% class FILTER css_class_quote %]
                [% END %]">
+
+  <div id="mozilla-org"><a href="http://www.mozilla.org/" title="Visit mozilla.org">Visit mozilla.org</a></div>
 
 [%# Migration note: the following file corresponds to the old Param
   # 'bannerhtml'
@@ -237,7 +243,7 @@
 <table border="0" cellspacing="0" cellpadding="0" id="titles">
 <tr>
     <td id="title">
-      <p>[% terms.Bugzilla %]
+      <p>[% terms.Bugzilla %]@Mozilla
       [% " &ndash; $header" IF header %]</p>
     </td>
 

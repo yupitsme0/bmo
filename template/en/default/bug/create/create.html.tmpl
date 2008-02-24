@@ -122,9 +122,9 @@ function set_assign_to() {
             if (inputElement.name.search(/^flag_type-(\d+)$/) != -1) {
                 var id = inputElement.name.replace(/^flag_type-(\d+)$/, "$1");
                 inputElement.disabled = true;
-                // Also disable the requestee field, if it exists.
+                // Also hide the requestee field, if it exists.
                 inputElement = document.getElementById("requestee_type-" + id);
-                if (inputElement) inputElement.disabled = true;
+                if (inputElement) inputElement.parentNode.style.display = "none";
             }
         }
         // Now enable flags available for the selected component.
@@ -400,7 +400,7 @@ function handleWantsAttachment(wants_attachment) {
     <td align="right"><strong>Summary:</strong></td>
     <td colspan="2">
       <input name="short_desc" size="60" value="[% short_desc FILTER html %]"
-             maxlength="255">
+             maxlength="255" spellcheck="true">
     </td>
   </tr>
 
@@ -427,20 +427,6 @@ function handleWantsAttachment(wants_attachment) {
       <br>
     </td>
   </tr>
-
-  [% IF Param("insidergroup") && user.in_group(Param("insidergroup")) %]
-    <tr>
-      <td></td>
-      <td colspan="3">
-        &nbsp;&nbsp;
-        <input type="checkbox" id="commentprivacy" name="commentprivacy"
-          [% " checked=\"checked\"" IF commentprivacy %]>
-        <label for="commentprivacy">
-          Initial Description is Private
-        </label>
-      </td>
-    </tr>
-  [% END %]
 
   <tr>
     <th align="right" valign="top">Attachment:</th>
@@ -511,6 +497,23 @@ function handleWantsAttachment(wants_attachment) {
   <tr>
     <td></td>
     <td colspan="3">
+      [% IF product.name == "Bugzilla" OR product.name == "Testopia" OR product.name == "Webtools" %]
+        [% sec_bit = 12 %] [%# Webtools security group %]
+      [% ELSIF product.name == "addons.mozilla.org" %]
+        [% sec_bit = 23 %] [%# Update security group %]
+      [% ELSE %]
+        [% sec_bit = 2 %]   [%# Standard security group %]
+      [% END %] 
+      <input type="checkbox" name="bit-[% sec_bit %]" value="1">
+      This is a security problem that should be kept confidential until addressed
+      (<a href="http://www.mozilla.org/projects/security/security-bugs-policy.html">security policy</a>).
+      <br><br>
+    </td>
+  </tr>
+
+  <tr>
+    <td></td>
+    <td colspan="3">
     [% IF group.size %]
       <br>
         <strong>
@@ -552,7 +555,7 @@ function handleWantsAttachment(wants_attachment) {
     </td>
   </tr>
 
-[% UNLESS (Param('defaultplatform') && Param('defaultopsys')) %]
+[% IF 0 %][%# UNLESS (Param('defaultplatform') && Param('defaultopsys')) %]
   <tr>
     <td></td>
     <td colspan="3">

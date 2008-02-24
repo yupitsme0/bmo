@@ -388,6 +388,7 @@
   'g.bit',
   'sel.name',
   'sel.description',
+  'sec_bit',
   'cloned_bug_id',
 ],
 
@@ -396,6 +397,7 @@
   'tablecolour',
   'sel',
   'productstring', 
+  'sec_bit',
 ],
 
 'bug/activity/show.html.tmpl' => [

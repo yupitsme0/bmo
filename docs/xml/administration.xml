@@ -570,10 +570,9 @@
             <emphasis>editusers</emphasis>: 
             This flag allows a user to do what you're doing right now: edit
             other users. This will allow those with the right to do so to
-            remove administrator privileges from other users or grant them to
+            create new accounts, disable accounts, and change passwords
             themselves. Enable with care.</para>
           </listitem>
-
 
           <listitem>
             <para>

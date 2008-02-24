@@ -53,6 +53,9 @@ my $vars = {};
 # Main Script
 ######################################################################
 
+# redirect to enter_bug if no field is passed.
+print $cgi->redirect(correct_urlbase() . 'enter_bug.cgi') unless $cgi->param();
+
 # Detect if the user already used the same form to submit a bug
 my $token = trim($cgi->param('token'));
 if ($token) {
@@ -184,7 +187,7 @@ if (defined $cgi->param('version')) {
 if (defined($cgi->upload('data')) || $cgi->param('attachurl')) {
     $cgi->param('isprivate', $cgi->param('commentprivacy'));
     my $attach_id = Bugzilla::Attachment->insert_attachment_for_bug(!THROW_ERROR,
-                                                  $bug, $user, $timestamp, \$vars);
+                                                  $bug, $user, $timestamp, $vars);
 
     if ($attach_id) {
         # Update the comment to include the new attachment ID.
@@ -220,7 +223,7 @@ my $error_mode_cache = Bugzilla->error_mode;
 Bugzilla->error_mode(ERROR_MODE_DIE);
 eval {
     Bugzilla::Flag::validate($cgi, $id, undef, SKIP_REQUESTEE_ON_ERROR);
-    Bugzilla::Flag::process($bug, undef, $timestamp, $cgi);
+    Bugzilla::Flag::process($bug, undef, $timestamp, $cgi, $vars);
 };
 Bugzilla->error_mode($error_mode_cache);
 if ($@) {
@@ -229,7 +232,11 @@ if ($@) {
 }
 
 # Email everyone the details of the new bug 
-$vars->{'mailrecipients'} = {'changer' => $user->login};
+my @cc = ();
+push (@cc, 'security@mozilla.org') if (grep {$_ == 2} @selected_groups); # security
+push (@cc, 'security@bugzilla.org') if (grep {$_ == 12} @selected_groups); # webtools-security
+push (@cc, 'amo-admins@mozilla.org') if (grep {$_ == 23} @selected_groups); # update-security
+$vars->{'mailrecipients'} = {'changer' => $user->login, 'cc' => \@cc};
 
 $vars->{'id'} = $id;
 $vars->{'bug'} = $bug;

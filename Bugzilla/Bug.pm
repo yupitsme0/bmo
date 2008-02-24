@@ -662,8 +662,12 @@ sub _check_groups {
         my $othercontrol  = $controls->{$id} 
                             && $controls->{$id}->{othercontrol};
         
+        # b.m.o.-specific hack - allow anyone to file bugs in the standard
+        # security group (2), the Webtools security group (12), the
+        # Update security group (23), mozorg-confidential (6), or infra (35)
         my $permit = ($membercontrol && $user->in_group($group->name))
-                     || $othercontrol;
+                     || $othercontrol
+                     || $id == 2 || $id == 12 || $id == 23 || $id == 6 || $id == 35;
 
         $add_groups{$id} = 1 if $permit;
     }
@@ -959,6 +963,27 @@ sub assigned_to {
     $self->{'assigned_to_id'} = 0 if $self->{'error'};
     $self->{'assigned_to'} = new Bugzilla::User($self->{'assigned_to_id'});
     return $self->{'assigned_to'};
+}
+
+sub bug_file_loc_changer {
+    my ($self) = @_;
+    return $self->{'bug_file_loc_changer'} if exists $self->{'bug_file_loc_changer'};
+    return new Bugzilla::User(0) if $self->{'error'};
+    my $dbh = Bugzilla->dbh;
+    my $sth = $dbh->prepare(
+             "SELECT who" .
+             " FROM bugs_activity" .
+             " INNER JOIN fielddefs" .
+             " ON bugs_activity.fieldid = fielddefs.id" .
+             " WHERE fielddefs.name = 'bug_file_loc'" .
+             " AND bugs_activity.bug_id = ?" .
+             " ORDER BY bug_when DESC");
+    $sth->execute($self->{'bug_id'});
+    my ($who) = $sth->fetchrow_array;
+    if (!$who) { $who = $self->{'reporter_id'}; }
+    if (!$who) { $who = 0 };
+    $self->{'bug_file_loc_changer'} = new Bugzilla::User($who);
+    return $self->{'bug_file_loc_changer'};
 }
 
 sub blocked {
@@ -1938,6 +1963,24 @@ sub check_can_change_field {
     {
         $$PrivilegesRequired = 3;
         return $user->in_group('canconfirm', $self->{'product_id'});
+    }
+    
+    # On b.m.o., canconfirm is really "cantriage"; users with canconfirm
+    # can also mark bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
+    if ($user->in_group('canconfirm', $self->{'product_id'})) {
+        if ($field eq 'bug_status'
+            && is_open_state($oldvalue)
+            && !is_open_state($newvalue))
+        {
+            return 1;
+        }
+        elsif ($field eq "resolution" && 
+               ($newvalue eq 'DUPLICATE' ||
+                $newvalue eq 'WORKSFORME' ||
+                $newvalue eq 'INCOMPLETE'))
+        {
+            return 1;
+        }
     }
 
     # Make sure that a valid bug ID has been given.

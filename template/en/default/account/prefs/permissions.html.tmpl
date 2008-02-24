@@ -66,9 +66,9 @@
         There are no permission [% terms.bits %] set on your account.
       [% END %]
 
-      [% IF user.groups.editusers %]
+      [% IF user.groups.admin %]
         <br>
-        You have editusers privileges.  You can turn on and off
+        You have admin privileges.  You can turn on and off
         all permissions for all users.
       [% ELSIF set_bits.size %]
         <br>

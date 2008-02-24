@@ -91,40 +91,19 @@
   [% IF NOT comment.isprivate || isinsider %]
     <div class="bz_comment[% " bz_private" IF comment.isprivate %]
                 [% " bz_comment_hilite" IF marks.$count %]">
-      [% IF count == description %]
-        <table>
-          <tr>
-            <th align="left">
-              <b><a name="c0" href="show_bug.cgi?id=[% bug.bug_id %]#c0">
-                Description</a>:</b>&nbsp;&nbsp;
-                [% IF mode == "edit" %]
-                  [%%]<script type="text/javascript"><!-- 
-                    addReplyLink(0);
-                  //--></script>
-                [% END %]
-            </th>
-            <td align="left" width="30%">
-              <b>Opened:</b> [% bug.creation_ts FILTER time %]
-            </td>
-          </tr>
-        </table>
-      [% ELSE %]
-        <span class="bz_comment_head">
-          <span class="comment_rule">-------</span> <i>Comment
+      <div class="bz_comment_head">
+        <span class="bz_comment_number">[% "Comment" IF count != description %]
           <a name="c[% count %]" href="show_bug.cgi?id=[% bug.bug_id %]#c[% count %]">
-            #[% count %]</a> From 
-          <a href="mailto:[% comment.email FILTER html %]">
-            [% comment.name FILTER html %]</a>
-          [%+ comment.time FILTER time %] 
-          </i>
+            [% (count == description) ? "Description" : "#$count" %]</a>
           [% IF mode == "edit" %]
-          <script type="text/javascript"><!-- 
-            addReplyLink([% count %]); //--></script>
+            [<a href="#add_comment" onclick="replyToComment([% count %]);">reply</a>]
           [% END %]
-          <span class="comment_rule">-------</span>
         </span>
-      [% END %]
-        
+        <a href="mailto:[% comment.email FILTER html %]">
+          [% comment.name FILTER html %]</a>
+        &nbsp;[%+ comment.time FILTER time %]
+      </div>
+
       [% IF mode == "edit" && isinsider %]
         <i>
           <input type="hidden" name="oisprivate-[% count %]" 
