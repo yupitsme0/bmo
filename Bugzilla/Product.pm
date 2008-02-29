@@ -19,6 +19,7 @@ use strict;
 package Bugzilla::Product;
 
 use Bugzilla::Version;
+use Bugzilla::FixedIn;
 use Bugzilla::Milestone;
 
 use Bugzilla::Util;
@@ -113,6 +114,20 @@ sub versions {
         $self->{versions} = Bugzilla::Version->new_from_list($ids);
     }
     return $self->{versions};
+}
+
+sub cf_fixed_in {
+    my $self = shift;
+    my $dbh = Bugzilla->dbh;
+
+    if (!defined $self->{cf_fixed_in}) {
+        my $ids = $dbh->selectcol_arrayref(q{
+            SELECT id FROM cf_fixed_in
+            WHERE product_id = ?}, undef, $self->id);
+
+        $self->{cf_fixed_in} = Bugzilla::FixedIn->new_from_list($ids);
+    }
+    return $self->{cf_fixed_in};
 }
 
 sub milestones {

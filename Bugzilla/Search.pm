@@ -220,7 +220,7 @@ sub init {
         }
     }
     
-    my @legal_fields = ("product", "version", "rep_platform", "op_sys",
+    my @legal_fields = ("product", "version", "rep_platform", "op_sys", 'cf_fixed_in',
                         "bug_status", "resolution", "priority", "bug_severity",
                         "assigned_to", "reporter", "component", "classification",
                         "target_milestone", "bug_group");
@@ -1075,6 +1075,52 @@ sub init {
                 }
                 $term = "0=0";
          },
+
+         "^(cf_fixed_in),(?:notequals|notregexp|notsubstring|nowords|nowordssubstr)" => sub {
+            my %map = (
+                notequals => 'equals',
+                notregexp => 'regexp',
+                notsubstring => 'substring',
+                nowords => 'anywords',
+                nowordssubstr => 'anywordssubstr',
+            );
+
+            my $table = "bug_$f";
+            $ff = "$table.value";
+
+            $funcsbykey{",".$map{$t}}->();
+            $term = "bugs.bug_id NOT IN (SELECT bug_id FROM $table WHERE $term)";
+         },
+
+         "^(cf_fixed_in),(?:allwords|allwordssubstr|anyexact)" => sub {
+            my @terms;
+            my $table = "bug_$f";
+            $ff = "$table.value";
+
+            foreach my $word (split(/[,]+/, $v)) {
+                $v = $word;
+                $funcsbykey{",".$t}->();
+                push(@terms, "bugs.bug_id IN
+                              (SELECT bug_id FROM $table WHERE $term)");
+            }
+
+            if ($t eq 'anyexact') {
+                $term = join(" OR ", @terms);
+            }
+            else {
+                $term = join(" AND ", @terms);
+            }
+         },
+
+         "^(cf_fixed_in),(?!changed)" => sub {
+            my $table = $f."_".$chartid;
+            $ff = "$table.value";
+
+            $funcsbykey{",$t"}->();
+            push(@supptables, "LEFT JOIN bug_$f AS $table " .
+                              "ON $table.bug_id = bugs.bug_id ");
+         },
+
 
          ",equals" => sub {
              $term = "$ff = $q";

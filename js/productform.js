@@ -32,7 +32,7 @@
  *     - last_sel: saves our last selection list so we know what has
  *       changed, and optimize for additions.
  */
-function selectClassification(classfield, product, component, version, milestone) {
+function selectClassification(classfield, product, component, version, milestone, cf_fixed_in) {
     /* this is to avoid handling events that occur before the form
      * itself is ready, which could happen in buggy browsers.
      */
@@ -83,7 +83,7 @@ function selectClassification(classfield, product, component, version, milestone
     /* do the actual fill/update, reselect originally selected options */
     updateSelect(prods, sel, product, merging);
     restoreSelection(product, saved_prods);
-    selectProduct(product, component, version, milestone);
+    selectProduct(product, component, version, milestone, cf_fixed_in);
 }
 
 
@@ -102,7 +102,7 @@ function selectClassification(classfield, product, component, version, milestone
  *     - last_sel: saves our last selection list so we know what has
  *       changed, and optimize for additions. 
  */
-function selectProduct(product, component, version, milestone) {
+function selectProduct(product, component, version, milestone, cf_fixed_in) {
 
     if (!product) {
         /* this is to avoid handling events that occur before the form
@@ -175,6 +175,12 @@ function selectProduct(product, component, version, milestone) {
         var saved_tms = get_selection(milestone, false, true);
         updateSelect(tms, sel, milestone, merging);
         restoreSelection(milestone, saved_tms);
+    }
+
+    if (cf_fixed_in) {
+        var saved_cf_fixed_in = get_selection(cf_fixed_in, false, true);
+        updateSelect(cf_fixed_ins, sel, cf_fixed_in, merging);
+        restoreSelection(cf_fixed_in, saved_cf_fixed_in);
     }
 }
 

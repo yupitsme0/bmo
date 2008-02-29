@@ -16,44 +16,38 @@
   # Copyright (C) 1998 Netscape Communications Corporation. All
   # Rights Reserved.
   #
-  # Contributor(s): Terry Weissman <terry@mozilla.org>
-  #                 Vlad Dascalu <jocuri@softhome.net>
+  # Contributor(s): Gavin Shelley <bugzilla@chimpychompy.org>
   #%]
 
 [%# INTERFACE:
-  # none
+  # product: object; Bugzilla::Product object representing the product to
+  #               which the fixed in version is being created for
   #%]
   
+[% title = BLOCK %]Add Fixed In Version to Product '[% product.name FILTER html %]'[% END %]
+[% subheader = BLOCK %]This page allows you to add a new fixed in version to product
+                '[% product.name FILTER html %]'.[% END %]
 [% PROCESS global/header.html.tmpl
-  title = "Add keyword"
-  subheader = "This page allows you to add a new keyword."
+  title = title
+  subheader = subheader
 %]
 
-<form method="post" action="editkeywords.cgi">
+<form method="post" action="editcf_fixed_in.cgi">
   <table border="0" cellpadding="4" cellspacing="0">
     <tr>
-      <th align="right">Name:</th>
-      <td><input size="64" maxlength="64" name="name" value=""></td>
-    </tr>
-    <tr>
-      <th align="right">Description:</th>
-      <td>
-        [% INCLUDE global/textarea.html.tmpl
-          name    = 'description'
-          minrows = 4
-          cols    = 64
-          wrap    = 'virtual'
-        %]
-      </td>
+      <th align="right"><label for="version">Fixed in Version:</label></th>
+      <td><input id="version" size="64" maxlength="64" name="version"
+                 value=""></td>
     </tr>
   </table>
-  <hr>
-  <input type="hidden" name="id" value="-1">
   <input type="submit" id="create" value="Add">
   <input type="hidden" name="action" value="new">
+  <input type="hidden" name='product' value="[% product.name FILTER html %]">
   <input type="hidden" name="token" value="[% token FILTER html %]">
 </form>
 
-<p><a href="editkeywords.cgi">Edit other keywords</a>.</p>
+[% PROCESS admin/cf_fixed_in/footer.html.tmpl
+    no_add_version_link = 1
+ %]
 
 [% PROCESS global/footer.html.tmpl %]

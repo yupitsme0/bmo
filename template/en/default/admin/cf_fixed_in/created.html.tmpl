@@ -16,21 +16,28 @@
   # Copyright (C) 1998 Netscape Communications Corporation. All
   # Rights Reserved.
   #
-  # Contributor(s): Terry Weissman <terry@mozilla.org>
-  #                 Vlad Dascalu <jocuri@softhome.net>
+  # Contributor(s): Gavin Shelley <bugzilla@chimpychompy.org>
   #%]
 
 [%# INTERFACE:
-  # name: string; the name of the current keyword.
+  # product: object; Bugzilla::Product object representing the product to
+  #                  which the version belongs.
+  # version: object; Bugzilla::FixedIn object representing the
+  #                  newly created fixed in version
   #%]
   
+[% title = BLOCK %]Adding new Fixed In Version of Product
+                   '[% product.name FILTER html %]'[% END %]
 [% PROCESS global/header.html.tmpl
-  title = "Adding new keyword"
+  title = title
 %]
 
-<p>The keyword [% name FILTER html %] has been added.</p>
+<p>The fixed in version '<a title="Edit version '[% version.name FILTER html %]' of product '
+   [%- product.name FILTER html %]'"
+   href="editcf_fixed_in.cgi?action=edit&amp;product=
+   [%- product.name FILTER url_quote %]&amp;version=[% version.name FILTER url_quote %]">
+   [%- version.name FILTER html %]</a>' has been created.</p>
 
-<p><a href="editkeywords.cgi">Edit existing keywords</a> or
-<a href="editkeywords.cgi?action=add">add another keyword</a>.</p>
+[% PROCESS admin/cf_fixed_in/footer.html.tmpl %]
 
 [% PROCESS global/footer.html.tmpl %]

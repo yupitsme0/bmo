@@ -516,6 +516,26 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
+    cf_fixed_in => {
+        FIELDS => [
+            id         => {TYPE => 'MEDIUMSERIAL', NOTNULL => 1, 
+                           PRIMARYKEY => 1},
+            product_id => {TYPE => 'INT2', NOTNULL => 1},
+            value      => {TYPE => 'varchar(64)', NOTNULL => 1},
+        ],
+        INDEXES => [
+            cf_fixed_in_product_id_idx => {FIELDS => [qw(product_id value)],
+                                          TYPE => 'UNIQUE'},
+        ],
+    },
+
+    bug_cf_fixed_in => {
+        FIELDS => [
+            bug_id         => {TYPE => 'INT3', NOTNULL => 1},
+            value          => {TYPE => 'varchar(64)', NOTNULL => 1},
+        ],
+    },
+
     # Global Field Values
     # -------------------
 

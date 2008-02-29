@@ -48,7 +48,7 @@
 <form action="process_bug.cgi" method="post">
 
 [% PROCESS "global/hidden-fields.html.tmpl"
-     exclude=(verify_fields ? "^version|component|target_milestone$" : "") %]
+     exclude=(verify_fields ? "^version|component|target_milestone|cf_fixed_in$" : "") %]
 
 <input type="hidden" name="confirm_product_change" value="1">
 [%# Verify the version, component, and target milestone fields. %]
@@ -97,6 +97,15 @@
                    size=10 %]
         </td>
       [% END %]
+      <td>
+        <b>Fixed In:</b><br>
+        [% PROCESS "global/select-menu.html.tmpl"
+                   name="cf_fixed_in"
+                   options=cf_fixed_in
+                   default=defaults.cf_fixed_in
+                   size=10
+                   multiple=1 %]
+      </td>
     </tr>
   </table>
 

@@ -527,6 +527,12 @@
       [% PROCESS select selname = "target_milestone" %]
     </tr>
   [% END %]
+   <tr>
+     <td valign="top">
+       <label for="cf_fixed_in"><b>Fixed In</b></label>:
+     </td>
+     [% PROCESS select selname = "cf_fixed_in" multi=5 %]
+   </tr>
 [% END %]
 
 [%############################################################################%]
@@ -807,10 +813,19 @@
 [% BLOCK select %]
   <td colspan="2">
     [% IF bug.check_can_change_field(selname, 0, 1) AND bug.choices.${selname}.size > 1 %]
-      <select id="[% selname %]" name="[% selname %]"[% " onChange=\"$onChange\"" IF onChange && bug.isopened %]>
+       <select id="[% selname %]" name="[% selname %]"
+           [% IF multi %]
+             size="[% multi %]" multiple="multiple"
+           [% END %]
+         >
         [% FOREACH x = bug.choices.${selname} %]
           <option value="[% x FILTER html %]"
-            [% " selected" IF x == bug.${selname} %]>[% x FILTER html %]
+             [% IF multi %]
+               [% " selected" IF bug.${selname}.contains(x) %]
+             [% ELSE %]
+               [% " selected" IF x == bug.${selname} %]
+             [% END %]
+           >[% x FILTER html %]
           </option>
         [% END %]
       </select>

@@ -16,56 +16,56 @@
   # Copyright (C) 1998 Netscape Communications Corporation. All
   # Rights Reserved.
   #
-  # Contributor(s): Terry Weissman <terry@mozilla.org>
-  #                 Vlad Dascalu <jocuri@softhome.net>
-  #                 Jouni Heikniemi <jouni@heikniemi.net>
+  # Contributor(s): Gavin Shelley <bugzilla@chimpychompy.org>
+  #                 Frédéric Buclin <LpSolit@gmail.com>
+  #
   #%]
 
 [%# INTERFACE:
-  # keywords: array keyword objects having the properties:
-  #   - id: number. The ID of the keyword.
-  #   - name: string. The name of the keyword.
-  #   - description: string. The description of the keyword.
-  #   - bug_count: number. The number of bugs with the keyword.
+  # products: array of product objects
+  # showbugcounts: if defined, then bug counts should be included in the table
   #%]
 
 [% PROCESS global/variables.none.tmpl %]
 
 [% PROCESS global/header.html.tmpl
-  title = "Select keyword"
+  title = "Edit fixed in versions for which product?"
 %]
 
 [% columns = [
      { 
        name => "name"
-       heading => "Edit keyword..."
-       contentlink => "editkeywords.cgi?action=edit&amp;id=%%id%%" 
+       heading => "Edit fixed in versions of..."
+       contentlink => "editcf_fixed_in.cgi?product=%%name%%" 
      },
      { 
        name => "description"
-       heading => "Description"
+       heading => "Description" 
        allow_html_content => 1
-     },
-     { 
-       name => "bug_count"
-       heading => "$terms.Bugs"
-       align => "right"
-       contentlink => "buglist.cgi?keywords=%%name%%"
-     },
-     { 
-       heading => "Action" 
-       content => "Delete"
-       contentlink => "editkeywords.cgi?action=delete&amp;id=%%id%%"
      }
    ]
 %]
 
+[% IF showbugcounts %]
+
+  [% columns.push({
+      name => 'bug_count'
+      heading => "$terms.Bugs"
+      align => "right"
+      contentlink => "buglist.cgi?product=%%name%%"
+    })
+  %]
+
+[% END %]
+
 [% PROCESS admin/table.html.tmpl
      columns = columns
-     data = keywords
-     footer = footer_row
+     data = products
 %]
 
-<p><a href="editkeywords.cgi?action=add">Add a new keyword</a></p>
+[% IF !showbugcounts %]
+  <p><a href="editcf_fixed_in.cgi?showbugcounts=1">
+      Redisplay table with [% terms.bug %] counts (slower)</a></p>
+[% END %]
 
 [% PROCESS global/footer.html.tmpl %]

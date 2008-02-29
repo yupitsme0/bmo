@@ -369,6 +369,7 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
     #
     my @version_names = map($_->name, @{$prod_obj->versions});
     my @component_names = map($_->name, @{$prod_obj->components});
+    my @cf_fixed_in_names = map($_->name, @{$prod_obj->cf_fixed_in});
     my $vok = 0;
     if (defined $cgi->param('version')) {
         $vok = lsearch(\@version_names, $cgi->param('version')) >= 0;
@@ -376,6 +377,10 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
     my $cok = 0;
     if (defined $cgi->param('component')) {
         $cok = lsearch(\@component_names, $cgi->param('component')) >= 0;
+    }
+    my $cf_fixed_in_ok = 0;
+    if (defined $cgi->param('cf_fixed_in')) {
+        $cf_fixed_in_ok = lsearch(\@cf_fixed_in_names, $cgi->param('cf_fixed_in')) >= 0;
     }
 
     my $mok = 1;   # so it won't affect the 'if' statement if milestones aren't used
@@ -396,7 +401,8 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
     # to add the bugs to their new product's group.
     my $has_default_groups = AnyDefaultGroups($prod_obj->id);
 
-    if (!$vok || !$cok || !$mok || !defined $cgi->param('confirm_product_change')
+    if (!$vok || !$cok || !$mok || !$cf_fixed_in_ok
+        || !defined $cgi->param('confirm_product_change')
         || ($has_default_groups && !defined $cgi->param('addtonewgroup'))) {
 
         if (Bugzilla->usage_mode == USAGE_MODE_EMAIL) {
@@ -415,9 +421,14 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
                     product   => $cgi->param('product'),
                     milestone => $cgi->param('target_milestone')});
             }
+            if (!$cf_fixed_in_ok) {
+                ThrowUserError('cf_fixed_in_not_valid', {
+                    cf_fixed_in   => $cgi->param('cf_fixed_in'),
+                    product => $cgi->param('product')});
+            }
         }
         
-        if (!$vok || !$cok || !$mok
+        if (!$vok || !$cok || !$mok || !$cf_fixed_in_ok
             || !defined $cgi->param('confirm_product_change'))
         {
             $vars->{'verify_fields'} = 1;
@@ -439,6 +450,11 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
             }
             elsif (scalar(@component_names) == 1) {
                 $defaults{'component'} = $component_names[0];
+            }
+
+            $vars->{'cf_fixed_in'} = \@cf_fixed_in_names;
+            if ($cf_fixed_in_ok) {
+                $defaults{'cf_fixed_in'} = $cgi->param('cf_fixed_in');
             }
 
             if (Bugzilla->params->{"usetargetmilestone"}) {
@@ -1287,6 +1303,27 @@ if (defined $cgi->param('keywords')) {
     }
 }
 
+my @cf_fixed_in_list;
+my %cf_fixed_in_seen;
+if (defined $cgi->param('cf_fixed_in')) {
+    foreach my $fixed_in ($cgi->param('cf_fixed_in')) {
+        next if $fixed_in eq '';
+
+        my $prod_obj = Bugzilla::Product::check_product($cgi->param('product'));
+        my $fixed_in_obj = new Bugzilla::FixedIn({name => $fixed_in,
+                                                  product => $prod_obj});
+        if (!$fixed_in_obj) {
+            ThrowUserError('cf_fixed_in_not_valid', {
+                cf_fixed_in   => $cgi->param('cf_fixed_in'),
+                product => $cgi->param('product')});
+        }
+        if (!$cf_fixed_in_seen{$fixed_in_obj->id}) {
+            push(@cf_fixed_in_list, $fixed_in_obj->name);
+            $cf_fixed_in_seen{$fixed_in_obj->id} = 1;
+        }
+    }
+}
+
 my $keywordaction = $cgi->param('keywordaction') || "makeexact";
 if (!grep($keywordaction eq $_, qw(add delete makeexact))) {
     $keywordaction = "makeexact";
@@ -1502,6 +1539,7 @@ foreach my $id (@idlist) {
             "products READ", "components READ", "milestones READ",
             "keywords $write", "longdescs $write", "fielddefs READ",
             "bug_group_map $write", "flags $write", "duplicates $write",
+            "bug_cf_fixed_in $write",
             "user_group_map READ", "group_group_map READ", "flagtypes READ",
             "flaginclusions AS i READ", "flagexclusions AS e READ",
             "keyworddefs READ", "groups READ", "attachments READ",
@@ -1721,6 +1759,30 @@ foreach my $id (@idlist) {
                      undef, join(', ', @$list), $id);
         }
     }
+
+    my @old_cf_fixed_in =  @{$dbh->selectcol_arrayref(
+                q{SELECT value  FROM bug_cf_fixed_in
+                   WHERE bug_cf_fixed_in.bug_id = ?},
+                undef, $id)};
+
+    my ($removed_fixed_in, $added_fixed_in) = diff_arrays(\@old_cf_fixed_in,
+                                                          \@cf_fixed_in_list);
+
+    $removed_fixed_in = join(', ', @$removed_fixed_in);
+    $added_fixed_in = join(', ', @$added_fixed_in);
+
+    $dbh->do(q{DELETE FROM bug_cf_fixed_in WHERE bug_id = ?}, undef, $id);
+
+    my $sth_insert = $dbh->prepare(q{INSERT INTO bug_cf_fixed_in (bug_id, value)
+                                     VALUES (?, ?)});
+    foreach my $fixed_name (@cf_fixed_in_list) {
+        $sth_insert->execute($id, $fixed_name);
+    }
+
+    LogActivityEntry($id, 'cf_fixed_in', $removed_fixed_in, $added_fixed_in,
+                     $whoid, $timestamp);
+
+
     $query .= " WHERE bug_id = ?";
     push(@bug_values, $id);
     

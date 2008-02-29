@@ -187,6 +187,7 @@ use constant DEFAULT_FIELDS => (
     {name => 'attach_data.thedata',   desc => 'Attachment data'},
     {name => 'attachments.isurl',     desc => 'Attachment is a URL'},
     {name => "owner_idle_time",       desc => "Time Since Assignee Touched"},
+    {name => "cf_fixed_in",           desc => "Fixed In"},
 );
 
 ##############

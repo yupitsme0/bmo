@@ -123,7 +123,7 @@ sub PrefillForm {
                       "chfieldto", "chfieldvalue", "target_milestone",
                       "email", "emailtype", "emailreporter",
                       "emailassigned_to", "emailcc", "emailqa_contact",
-                      "emaillongdesc", "content",
+                      "emaillongdesc", "content", "cf_fixed_in",
                       "changedin", "votes", "short_desc", "short_desc_type",
                       "long_desc", "long_desc_type", "bug_file_loc",
                       "bug_file_loc_type", "status_whiteboard",
@@ -192,16 +192,19 @@ my @selectable_products = sort {lc($a->name) cmp lc($b->name)}
 # Create the component, version and milestone lists.
 my %components;
 my %versions;
+my %cf_fixed_in;
 my %milestones;
 
 foreach my $product (@selectable_products) {
     $components{$_->name} = 1 foreach (@{$product->components});
     $versions{$_->name}   = 1 foreach (@{$product->versions});
+    $cf_fixed_in{$_->name} = 1 foreach (@{$product->cf_fixed_in});
     $milestones{$_->name} = 1 foreach (@{$product->milestones});
 }
 
 my @components = sort(keys %components);
 my @versions = sort { vers_cmp (lc($a), lc($b)) } keys %versions;
+my @cf_fixed_in = sort { vers_cmp (lc($a), lc($b)) } keys %cf_fixed_in;
 my @milestones = sort(keys %milestones);
 
 $vars->{'product'} = \@selectable_products;
@@ -215,6 +218,7 @@ if (Bugzilla->params->{'useclassification'}) {
 $vars->{'component_'} = \@components;
 
 $vars->{'version'} = \@versions;
+$vars->{'cf_fixed_in'} = \@cf_fixed_in;
 
 if (Bugzilla->params->{'usetargetmilestone'}) {
     $vars->{'target_milestone'} = \@milestones;

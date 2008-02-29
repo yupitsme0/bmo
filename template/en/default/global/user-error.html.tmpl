@@ -233,6 +233,11 @@
     You do not seem to have made any changes in the selected [% terms.bugs %],
     so there is nothing to Commit.
 
+  [% ELSIF error == "cf_fixed_in_not_valid" %]
+    [% title = "Specified Fixed In Version Does Not Exist" %]
+    The fixed in version '[% cf_fixed_in FILTER html %]' for product
+    '[% product FILTER html %]' does not exist.
+
   [% ELSIF error == "chart_too_large" %]
     [% title = "Chart Too Large" %]
     Sorry, but 2000 x 2000 is the maximum size for a chart.

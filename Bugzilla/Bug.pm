@@ -275,7 +275,7 @@ sub create {
     my $timestamp = $params->{creation_ts}; 
     delete $params->{creation_ts};
 
-    $dbh->bz_lock_tables('bugs WRITE', 'bug_group_map WRITE', 
+    $dbh->bz_lock_tables('bugs WRITE', 'bug_group_map WRITE',
         'longdescs WRITE', 'cc WRITE', 'keywords WRITE', 'dependencies WRITE',
         'bugs_activity WRITE', 'fielddefs READ');
 
@@ -866,7 +866,7 @@ sub fields {
         # Keep this ordering in sync with bugzilla.dtd.
         qw(bug_id alias creation_ts short_desc delta_ts
            reporter_accessible cclist_accessible
-           classification_id classification
+           classification_id classification cf_fixed_in
            product component version rep_platform op_sys
            bug_status resolution dup_id
            bug_file_loc status_whiteboard keywords
@@ -1308,6 +1308,7 @@ sub choices {
        'component'    => [map($_->name, @{$self->{prod_obj}->components})],
        'version'      => [map($_->name, @{$self->{prod_obj}->versions})],
        'target_milestone' => [map($_->name, @{$self->{prod_obj}->milestones})],
+       'cf_fixed_in' => [map($_->name, @{$self->{prod_obj}->cf_fixed_in})],
       };
 
     return $self->{'choices'};
@@ -1341,6 +1342,23 @@ sub votes {
         undef, $self->bug_id);
     $self->{votes} ||= 0;
     return $self->{votes};
+}
+
+sub cf_fixed_in {
+    my $self = shift;
+    return [] if $self->{error};
+    my $dbh = Bugzilla->dbh;
+
+    if (!defined $self->{cf_fixed_in}) {
+        my $ids = $dbh->selectcol_arrayref(q{
+            SELECT id FROM cf_fixed_in, bug_cf_fixed_in
+            WHERE cf_fixed_in.value = bug_cf_fixed_in.value
+              AND cf_fixed_in.product_id = ?
+              AND bug_cf_fixed_in.bug_id = ?}, undef, ($self->{product_id}, $self->bug_id));
+
+        $self->{cf_fixed_in} = [map($_->name, @{Bugzilla::FixedIn->new_from_list($ids)})];
+    }
+    return $self->{cf_fixed_in};
 }
 
 # Convenience Function. If you need speed, use this. If you need

@@ -246,13 +246,12 @@ function handleWantsAttachment(wants_attachment) {
     [% INCLUDE select %]
   </tr>
 
+  <tr>
   [% IF Param('usetargetmilestone') && Param('letsubmitterchoosemilestone') %]
-    <tr>
       [% sel = { description => 'Target Milestone', name => 'target_milestone' } %]
       [% INCLUDE select %]
-      <td colspan="2">&nbsp;</td>
-    </tr>
   [% END %]
+  </tr>
 
   <tr>
     <td>&nbsp;</td>
