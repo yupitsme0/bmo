@@ -1,0 +1,12 @@
+.htaccess
+./graphs
+./data
+./localconfig
+./index.html
+./old-params.txt
+./extensions
+./docs/pdf
+./docs/txt
+./docs/xml/bugzilla.ent
+./skins/contrib
+./skins/custom
