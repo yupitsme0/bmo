@@ -1160,7 +1160,9 @@ if ($dotweak) {
             {name => $vars->{'bugproducts'}->[0]});
         $vars->{'versions'} = [map($_->name ,@{$product->versions})];
         $vars->{'components'} = [map($_->name, @{$product->components})];
-        $vars->{'targetmilestones'} = [map($_->name, @{$product->milestones})]
+
+        my @milestones = grep($_->is_active, @{$product->milestones});
+        $vars->{'targetmilestones'} = [map($_->name, @milestones)]
             if Bugzilla->params->{'usetargetmilestone'};
     }
 }

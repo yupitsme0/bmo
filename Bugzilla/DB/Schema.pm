@@ -509,6 +509,10 @@ use constant ABSTRACT_SCHEMA => {
             value      => {TYPE => 'varchar(20)', NOTNULL => 1},
             sortkey    => {TYPE => 'INT2', NOTNULL => 1,
                            DEFAULT => 0},
+            is_active   => {TYPE => 'BOOLEAN', NOTNULL => 1,
+                           DEFAULT => 'TRUE'},
+            is_searchable => {TYPE => 'BOOLEAN', NOTNULL => 1,
+                           DEFAULT => 'TRUE'},
         ],
         INDEXES => [
             milestones_product_id_idx => {FIELDS => [qw(product_id value)],

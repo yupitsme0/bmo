@@ -386,7 +386,9 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
     my $mok = 1;   # so it won't affect the 'if' statement if milestones aren't used
     my @milestone_names = ();
     if ( Bugzilla->params->{"usetargetmilestone"} ) {
-       @milestone_names = map($_->name, @{$prod_obj->milestones});
+       my @milestones = grep($_->is_active, @{$prod_obj->milestones});
+       @milestone_names = map($_->name, @milestones);
+
        $mok = 0;
        if (defined $cgi->param('target_milestone')) {
            $mok = lsearch(\@milestone_names, $cgi->param('target_milestone')) >= 0;

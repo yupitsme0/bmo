@@ -41,7 +41,15 @@
   <p>Updated Milestone sortkey to: '[% milestone.sortkey FILTER html %]'.</p>
 [% END %]
 
-[% UNLESS updated_sortkey || updated_name %]
+[% IF updated_is_active %]
+  <p>Milestone is [% "not" UNLESS milestone.is_active %] active.</p>
+[% END %]
+
+[% IF updated_is_searchable %]
+  <p>Milestone is [% "not" UNLESS milestone.is_searchable %] searchable.</p>
+[% END %]
+
+[% UNLESS updated_sortkey || updated_name || updated_is_active || updated_is_searchable %]
   <p>Nothing changed for milestone '[% milestone.name FILTER html %]'.</p>
 
 [% END %]

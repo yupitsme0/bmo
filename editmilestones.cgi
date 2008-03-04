@@ -272,6 +272,7 @@ if ($action eq 'update') {
     my $milestone_old =
         Bugzilla::Milestone::check_milestone($product,
                                              $milestone_old_name);
+    $vars->{'product'} = $product;
 
     if (length($milestone_name) > 20) {
         ThrowUserError('milestone_name_too_long',
@@ -295,6 +296,43 @@ if ($action eq 'update') {
                  $milestone_old->name);
 
         $vars->{'updated_sortkey'} = 1;
+    }
+
+    my $is_active = trim($cgi->param('is_active') || 0);
+    if ($is_active ne $milestone_old->is_active) {
+        if ($product->default_milestone eq $milestone_old->name) {
+            $vars->{'milestone'} = $milestone_old;
+            ThrowUserError("milestone_is_default", $vars);
+        }
+
+        $is_active = Bugzilla::Milestone::check_is_active($is_active);
+
+        $dbh->do('UPDATE milestones SET is_active = ?
+                  WHERE product_id = ? AND value = ?',
+                 undef,
+                 $is_active,
+                 $product->id,
+                 $milestone_old->name);
+
+        $vars->{'updated_is_active'} = 1;
+    }
+
+    my $is_searchable = trim($cgi->param('is_searchable') || 0);
+    if ($is_searchable ne $milestone_old->is_searchable) {
+        if ($product->default_milestone eq $milestone_old->name) {
+            $vars->{'milestone'} = $milestone_old;
+            ThrowUserError("milestone_is_default", $vars);
+        }
+
+        $is_searchable = Bugzilla::Milestone::check_is_searchable($is_searchable);
+        $dbh->do('UPDATE milestones SET is_searchable = ?
+                  WHERE product_id = ? AND value = ?',
+                 undef,
+                 $is_searchable,
+                 $product->id,
+                 $milestone_old->name);
+
+        $vars->{'updated_is_searchable'} = 1;
     }
 
     if ($milestone_name ne $milestone_old->name) {
@@ -349,7 +387,6 @@ if ($action eq 'update') {
     delete_token($token);
 
     $vars->{'milestone'} = $milestone;
-    $vars->{'product'} = $product;
     $template->process("admin/milestones/updated.html.tmpl",
                        $vars)
       || ThrowTemplateError($template->error());

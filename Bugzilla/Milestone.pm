@@ -37,6 +37,8 @@ use constant DB_COLUMNS => qw(
     value
     product_id
     sortkey
+    is_active
+    is_searchable
 );
 
 use constant NAME_FIELD => 'value';
@@ -91,6 +93,8 @@ sub bug_count {
 sub name       { return $_[0]->{'value'};      }
 sub product_id { return $_[0]->{'product_id'}; }
 sub sortkey    { return $_[0]->{'sortkey'};    }
+sub is_active  { return $_[0]->{'is_active'};  }
+sub is_searchable { return $_[0]->{'is_searchable'};}
 
 ################################
 #####     Subroutines      #####
@@ -126,6 +130,9 @@ sub check_sort_key {
     }
     return $sortkey;
 }
+
+sub check_is_active { return $_[0] ? 1 : 0 }
+sub check_is_searchable { return $_[0] ? 1 : 0 }
 
 1;
 

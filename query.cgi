@@ -198,8 +198,9 @@ my %milestones;
 foreach my $product (@selectable_products) {
     $components{$_->name} = 1 foreach (@{$product->components});
     $versions{$_->name}   = 1 foreach (@{$product->versions});
+    my @searchable_milestones = grep {$_->is_searchable} @{$product->milestones};
+    $milestones{$_->name} = 1 foreach @searchable_milestones;
     $cf_fixed_in{$_->name} = 1 foreach (@{$product->cf_fixed_in});
-    $milestones{$_->name} = 1 foreach (@{$product->milestones});
 }
 
 my @components = sort(keys %components);
