@@ -527,12 +527,14 @@
       [% PROCESS select selname = "target_milestone" %]
     </tr>
   [% END %]
+  [% IF bug.choices.cf_fixed_in.size %]
    <tr>
      <td valign="top">
        <label for="cf_fixed_in"><b>Fixed In</b></label>:
      </td>
      [% PROCESS select selname = "cf_fixed_in" multi=5 %]
    </tr>
+  [% END %]
 [% END %]
 
 [%############################################################################%]
@@ -812,7 +814,8 @@
 
 [% BLOCK select %]
   <td colspan="2">
-    [% IF bug.check_can_change_field(selname, 0, 1) AND bug.choices.${selname}.size > 1 %]
+    [% IF bug.check_can_change_field(selname, 0, 1)
+          AND (bug.choices.${selname}.size > 1 OR multi) %]
        <select id="[% selname %]" name="[% selname %]"
            [% IF multi %]
              size="[% multi %]" multiple="multiple"
@@ -830,8 +833,16 @@
         [% END %]
       </select>
     [% ELSE %]
-      <input type="hidden" id="[% selname %]" name="[% selname %]" value="[% bug.${selname} FILTER html %]">
-      [% bug.${selname} FILTER html %]
+      [% options_type = BLOCK %][% bug.${selname} %][% END %]
+      [% IF options_type.search("ARRAY") %]
+        [% FOREACH value = bug.${selname} %]
+            <input type="hidden" name="[% selname %]" value="[% value FILTER html %]">
+        [% END %]
+        [% bug.${selname}.join(', ') FILTER html %]
+      [% ELSE %]
+        <input type="hidden" id="[% selname %]" name="[% selname %]" value="[% bug.${selname} FILTER html %]">
+        [% bug.${selname} FILTER html %]
+      [% END %]
     [% END %]
   </td>
   [% onChange = undef %]

@@ -378,10 +378,6 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
     if (defined $cgi->param('component')) {
         $cok = lsearch(\@component_names, $cgi->param('component')) >= 0;
     }
-    my $cf_fixed_in_ok = 0;
-    if (defined $cgi->param('cf_fixed_in')) {
-        $cf_fixed_in_ok = lsearch(\@cf_fixed_in_names, $cgi->param('cf_fixed_in')) >= 0;
-    }
 
     my $mok = 1;   # so it won't affect the 'if' statement if milestones aren't used
     my @milestone_names = ();
@@ -403,8 +399,7 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
     # to add the bugs to their new product's group.
     my $has_default_groups = AnyDefaultGroups($prod_obj->id);
 
-    if (!$vok || !$cok || !$mok || !$cf_fixed_in_ok
-        || !defined $cgi->param('confirm_product_change')
+    if (!$vok || !$cok || !$mok || !defined $cgi->param('confirm_product_change')
         || ($has_default_groups && !defined $cgi->param('addtonewgroup'))) {
 
         if (Bugzilla->usage_mode == USAGE_MODE_EMAIL) {
@@ -423,15 +418,9 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
                     product   => $cgi->param('product'),
                     milestone => $cgi->param('target_milestone')});
             }
-            if (!$cf_fixed_in_ok) {
-                ThrowUserError('cf_fixed_in_not_valid', {
-                    cf_fixed_in   => $cgi->param('cf_fixed_in'),
-                    product => $cgi->param('product')});
-            }
         }
-        
-        if (!$vok || !$cok || !$mok || !$cf_fixed_in_ok
-            || !defined $cgi->param('confirm_product_change'))
+
+        if (!$vok || !$cok || !$mok || !defined $cgi->param('confirm_product_change'))
         {
             $vars->{'verify_fields'} = 1;
             my %defaults;
@@ -455,9 +444,6 @@ if (((defined $cgi->param('id') && $cgi->param('product') ne $oldproduct)
             }
 
             $vars->{'cf_fixed_in'} = \@cf_fixed_in_names;
-            if ($cf_fixed_in_ok) {
-                $defaults{'cf_fixed_in'} = $cgi->param('cf_fixed_in');
-            }
 
             if (Bugzilla->params->{"usetargetmilestone"}) {
                 $vars->{'use_target_milestone'} = 1;

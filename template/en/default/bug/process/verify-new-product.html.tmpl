@@ -97,6 +97,8 @@
                    size=10 %]
         </td>
       [% END %]
+
+      [% IF cf_fixed_in.size %]
       <td>
         <b>Fixed In:</b><br>
         [% PROCESS "global/select-menu.html.tmpl"
@@ -105,6 +107,7 @@
                    default=defaults.cf_fixed_in
                    size=10
                    multiple=1 %]
+      [% END %]
       </td>
     </tr>
   </table>

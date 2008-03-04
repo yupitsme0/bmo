@@ -214,7 +214,7 @@ if ($action eq 'update') {
     my $version =
         Bugzilla::FixedIn::check_version($product, $version_old_name);
 
-    $dbh->bz_lock_tables('bugs WRITE', 'cf_fixed_in WRITE');
+    $dbh->bz_lock_tables('bugs WRITE', 'cf_fixed_in WRITE', 'bug_cf_fixed_in WRITE');
 
     $vars->{'updated'} = $version->update($version_name, $product);
 

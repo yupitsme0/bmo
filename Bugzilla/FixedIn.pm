@@ -85,8 +85,10 @@ sub bug_count {
 
     if (!defined $self->{'bug_count'}) {
         $self->{'bug_count'} = $dbh->selectrow_array(qq{
-            SELECT COUNT(*) FROM bugs
-            WHERE product_id = ? AND cf_fixed_in = ?}, undef,
+            SELECT COUNT(*) FROM bug_cf_fixed_in, bugs
+            WHERE bugs.bug_id = bug_cf_fixed_in.bug_id
+              AND bugs.product_id = ?
+              AND value = ?}, undef,
             ($self->product_id, $self->name)) || 0;
     }
     return $self->{'bug_count'};
@@ -126,8 +128,9 @@ sub update {
     }
 
     trick_taint($name);
-    $dbh->do("UPDATE bugs SET cf_fixed_in = ?
-              WHERE cf_fixed_in = ? AND product_id = ?", undef,
+    $dbh->do("UPDATE bug_cf_fixed_in SET value = ?
+              WHERE value = ?
+              AND bug_id IN (SELECT bug_id from bugs where product_id = ?)", undef,
               ($name, $self->name, $self->product_id));
 
     $dbh->do("UPDATE cf_fixed_in SET value = ?
