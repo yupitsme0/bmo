@@ -69,27 +69,26 @@
 [%# Table Header                                                             #%]
 [%############################################################################%]
 
+[% first_header = 1 %]
+
 [% tableheader = BLOCK %]
-  <table class="bz_buglist" cellspacing="0" cellpadding="4" width="100%">
-    <colgroup>
-      [% IF dotweak %]
-        <col class="bz_checkbox_column">
-      [% END %]
-      <col class="bz_id_column">
-      [% FOREACH id = displaycolumns %]
-      <col class="bz_[% id FILTER css_class_quote %]_column">
-      [% END %]
-    </colgroup>
+  [% IF first_header %]
+    <thead>
+  [% ELSE %]
+    <tbody>
+  [% END %]
 
     <tr align="left">
       [% IF dotweak %]
       <th>&nbsp;</th>
       [% END %]
-      <th colspan="[% splitheader ? 2 : 1 %]" class="first-child">
+      <th colspan="[% splitheader ? 2 : 1 %]"
+          class="first-child0 [% "sortable_column_0" IF first_header %] sorted_[%
+          lsearch(order_columns, 'bug_id') %]" >
         [% IF sorted_by_relevance %]
           ID
         [% ELSE %]
-          <a href="buglist.cgi?
+            <a href="buglist.cgi?
                     [% urlquerypart FILTER html %]&amp;order=bugs.bug_id
                     [%-#%]&amp;query_based_on=
                     [% defaultsavename OR searchname FILTER url_quote %]">ID</a>
@@ -101,7 +100,7 @@
         [% FOREACH id = displaycolumns %]
           [% NEXT UNLESS loop.count() % 2 == 0 %]
           [% column = columns.$id %]
-          [% PROCESS columnheader %]
+          [% PROCESS columnheader key=loop.count() %]
         [% END %]
 
         </tr><tr align="left">
@@ -113,23 +112,33 @@
         [% FOREACH id = displaycolumns %]
           [% NEXT IF loop.count() % 2 == 0 %]
           [% column = columns.$id %]
-          [% PROCESS columnheader %]
+          [% PROCESS columnheader key=loop.count()-1 %]
         [% END %]
 
       [% ELSE %]
 
         [% FOREACH id = displaycolumns %]
           [% column = columns.$id %]
-          [% PROCESS columnheader %]
+          [% PROCESS columnheader key=loop.count()-1 %]
         [% END %]
 
       [% END %]
 
     </tr>
+
+  [% IF first_header %]
+    </thead>
+  [% ELSE %]
+    </tbody>
+  [% END %]
+
+    [% first_header = 0 %]
 [% END %]
 
 [% BLOCK columnheader %]
-  <th colspan="[% splitheader ? 2 : 1 %]">
+  <th colspan="[% splitheader ? 2 : 1 %]"
+  class="[% "sortable_column_$key" IF first_header %]
+         sorted_[% lsearch(order_columns, id) %]" >
     [% IF sorted_by_relevance %]
       [%- abbrev.$id.title || field_descs.$id || column.title -%]
     [% ELSE %]
@@ -140,28 +149,40 @@
         [%# Other columns may sort on their name directly. %]
         [% column.sortalias = column.name %]
       [% END %]
-      <a href="buglist.cgi?[% urlquerypart FILTER html %]&amp;order=
-        [% column.sortalias FILTER url_quote %]
-        [% ",$order" FILTER url_quote IF order %]
-        [%-#%]&amp;query_based_on=
-        [% defaultsavename OR searchname FILTER url_quote %]">
+        <a href="buglist.cgi?[% urlquerypart FILTER html %]&amp;order=
+          [% column.sortalias FILTER url_quote %]
+          [% ",$order" FILTER url_quote IF order %]
+          [%-#%]&amp;query_based_on=
+          [% defaultsavename OR searchname FILTER url_quote %]">
           [%- abbrev.$id.title || field_descs.$id || column.title -%]</a>
     [% END %]
   </th>
 [% END %]
 
-
 [%############################################################################%]
 [%# Bug Table                                                                #%]
 [%############################################################################%]
+
+<table class="bz_buglist sortable" cellspacing="0" cellpadding="4" width="100%">
+    <colgroup>
+      [% IF dotweak %]
+        <col class="bz_checkbox_column">
+      [% END %]
+      <col class="bz_id_column">
+      [% FOREACH id = displaycolumns %]
+      <col class="bz_[% id FILTER css_class_quote %]_column">
+      [% END %]
+    </colgroup>
+
 
 [% FOREACH bug = bugs %]
   [% count = loop.count() %]
   [% FLUSH IF count % 10 == 1 %]
 
   [%# At the beginning of every hundred bugs in the list, start a new table. %]
-  [% IF count % 100 == 1 %]
+  [% IF count % 10 == 1 %]
     [% tableheader %]
+    <tbody class="sorttable_body">
   [% END %]
 
   <tr class="bz_bugitem
@@ -206,10 +227,11 @@
   </tr>
 
   [%# At the end of every hundred bugs in the list, or at the end of the list,
-    # end the current table. 
+    # end the current table.
     #%]
-  [% IF loop.last() || loop.count() % 100 == 0 %]
-    </table>
+  [% IF loop.last() || loop.count() % 10 == 0 %]
+    </tbody>
   [% END %]
 
 [% END %]
+</table>

@@ -938,6 +938,28 @@ my @orderstrings = split(/,\s*/, $db_order);
 my $search = new Bugzilla::Search('fields' => \@selectnames, 
                                   'params' => $params,
                                   'order' => \@orderstrings);
+
+my %db_order_column_name_map = (
+    'map_components.name' => 'component',
+    'map_products.name' => 'product',
+    'map_reporter.login_name' => 'reporter',
+    'map_assigned_to.login_name' => 'assigned_to',
+    'delta_ts' => 'opendate',
+    'creation_ts' => 'changeddate',
+);
+
+
+# contains field names of the columns being used to sort the table.
+my @order_columns;
+foreach my $o (@orderstrings) {
+    $o =~ s/bugs.//;
+    $o = $db_order_column_name_map{$o} if grep($_ eq $o, keys(%db_order_column_name_map));
+    next if (grep($_ eq $o, @order_columns));
+    push(@order_columns, $o);
+
+}
+
+
 my $query = $search->getSQL();
 
 if (defined $cgi->param('limit')) {
@@ -1114,6 +1136,7 @@ $vars->{'urlquerypart'} = $params->canonicalise_query('order',
                                                       'cmdtype',
                                                       'query_based_on');
 $vars->{'order'} = $order;
+$vars->{'order_columns'} = \@order_columns;
 $vars->{'caneditbugs'} = Bugzilla->user->in_group('editbugs');
 
 my @bugowners = keys %$bugowners;
