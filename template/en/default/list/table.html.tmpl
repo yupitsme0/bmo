@@ -69,9 +69,7 @@
 [%# Table Header                                                             #%]
 [%############################################################################%]
 
-[% first_header = 1 %]
-
-[% tableheader = BLOCK %]
+[% BLOCK tableheader %]
   [% IF first_header %]
     <thead>
   [% ELSE %]
@@ -83,9 +81,10 @@
       <th>&nbsp;</th>
       [% END %]
       <th colspan="[% splitheader ? 2 : 1 %]"
-          class="first-child0 [% "sortable_column_0" IF first_header %] sorted_[%
-          lsearch(order_columns, 'bug_id') %]" >
-        [% IF sorted_by_relevance %]
+          class="first-child0 [% "sortable_column_0" IF first_header %]
+                [% IF first_header %] sorted_[% lsearch(order_columns, 'bug_id') %] [% END %]
+              " >
+        [% IF sorted_by_relevance || !first_header %]
           ID
         [% ELSE %]
             <a href="buglist.cgi?
@@ -132,14 +131,13 @@
     </tbody>
   [% END %]
 
-    [% first_header = 0 %]
 [% END %]
 
 [% BLOCK columnheader %]
   <th colspan="[% splitheader ? 2 : 1 %]"
   class="[% "sortable_column_$key" IF first_header %]
-         sorted_[% lsearch(order_columns, id) %]" >
-    [% IF sorted_by_relevance %]
+         [% IF first_header %] sorted_[% lsearch(order_columns, id) %] [% END %] " >
+    [% IF sorted_by_relevance || !first_header %]
       [%- abbrev.$id.title || field_descs.$id || column.title -%]
     [% ELSE %]
       [% IF column.name.match('\s+AS\s+') %]
@@ -174,14 +172,15 @@
       [% END %]
     </colgroup>
 
-
+[% first_header = 1 %]
 [% FOREACH bug = bugs %]
   [% count = loop.count() %]
   [% FLUSH IF count % 10 == 1 %]
 
   [%# At the beginning of every hundred bugs in the list, start a new table. %]
-  [% IF count % 10 == 1 %]
-    [% tableheader %]
+  [% IF count % 100 == 1 %]
+    [% PROCESS tableheader %]
+    [% first_header = 0 %]
     <tbody class="sorttable_body">
   [% END %]
 
