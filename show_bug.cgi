@@ -102,13 +102,37 @@ $vars->{'use_keywords'} = 1 if Bugzilla::Keyword::keyword_count();
 my @bugids = map {$_->bug_id} @bugs;
 $vars->{'bugids'} = join(", ", @bugids);
 
-# Next bug in list (if there is one)
+###########################
+# Bug List For Navigation #
+###########################
+
 my @bug_list;
-if ($cgi->cookie("BUGLIST")) {
+# Logged-in users get this info out of the database.
+if ($user->id) {
+    my $list_data;
+    if ($cgi->param('last_list')) {
+        $list_data = $user->recent_searches->{$cgi->param('last_list')};
+    }
+    elsif (scalar(@bugs) == 1) {
+        $list_data = $user->recent_search_containing($bugids[0]);
+    }
+
+    if ($list_data) {
+        @bug_list = split(',', $list_data->{bug_ids});
+        $vars->{'last_list_id'} = $list_data->{id};
+    }
+}
+
+# Logged-out users use the BUGLIST cookie. Logged-in users also use it
+# sometimes when they don't have a recent search, such as when they
+# just logged in for the first time.
+if (!@bug_list && $cgi->cookie("BUGLIST")) {
     @bug_list = split(/:/, $cgi->cookie("BUGLIST"));
+    $vars->{'last_list_id'} = 'cookie';
 }
 
 $vars->{'bug_list'} = \@bug_list;
+
 
 # Work out which fields we are displaying (currently XML only.)
 # If no explicit list is defined, we show all fields. We then exclude any

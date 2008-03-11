@@ -390,6 +390,7 @@ sub switch_to_shadow_db {
     # we have to return $class->dbh instead of {dbh} as
     # {dbh_shadow} may be undefined if no shadow DB is used
     # and no connection to the main DB has been established yet.
+    $class->request_cache->{using_shadow_db} = 1;
     return $class->dbh;
 }
 
@@ -400,7 +401,13 @@ sub switch_to_main_db {
     # We have to return $class->dbh instead of {dbh} as
     # {dbh_main} may be undefined if no connection to the main DB
     # has been established yet.
+    $class->request_cache->{using_shadow_db} = 0;
     return $class->dbh;
+}
+
+sub using_shadow_db {
+    my $class = shift;
+    return $class->request_cache->{using_shadow_db};
 }
 
 sub get_fields {

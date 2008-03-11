@@ -163,17 +163,27 @@ my $params;
 
 # If the user is retrieving the last bug list they looked at, hack the buffer
 # storing the query string so that it looks like a query retrieving those bugs.
-if (defined $cgi->param('regetlastlist')) {
-    $cgi->cookie('BUGLIST') || ThrowUserError("missing_cookie");
+if (my $last_list = $cgi->param('regetlastlist')) {
+    my ($bug_ids, $order);
 
-    $order = "reuse last sort" unless $order;
-    my $bug_id = $cgi->cookie('BUGLIST');
-    $bug_id =~ s/:/,/g;
+    # Logged-out users use the old cookie method for storing the last search.
+    if (!Bugzilla->user->id || $last_list eq 'cookie') {
+        $cgi->cookie('BUGLIST') || ThrowUserError("missing_cookie");
+        $order = "reuse last sort" unless $order;
+        $bug_ids = $cgi->cookie('BUGLIST');
+        $bug_ids =~ s/:/,/g;
+    }
+    # But logged in users store the last X searches in the DB so they can
+    # have multiple bug lists available.
+    else {
+        my $bug_data = Bugzilla->user->recent_searches->{$last_list}
+            || ThrowUserError('no_such_list', { id => $last_list });
+        $bug_ids = $bug_data->{bug_ids};
+        $order   = $bug_data->{order} if !$order;
+        $vars->{'last_list_id'} = $last_list;
+    }
     # set up the params for this new query
-    $params = new Bugzilla::CGI({
-                                 bug_id => $bug_id,
-                                 order => $order,
-                                });
+    $params = new Bugzilla::CGI({ bug_id => $bug_ids, order => $order });
 }
 
 if ($buffer =~ /&cmd-/) {
@@ -1205,26 +1215,11 @@ my $contenttype;
 my $disp = "inline";
 
 if ($format->{'extension'} eq "html" && !$agent) {
-    if ($order) {
-        $cgi->send_cookie(-name => 'LASTORDER',
-                          -value => $order,
-                          -expires => 'Fri, 01-Jan-2038 00:00:00 GMT');
+    if (!$cgi->param('regetlastlist')) {
+        my $saved_id = Bugzilla->user->save_last_search(
+            { bugs => \@bugidlist, order => $order, vars => $vars });
+        $vars->{'last_list_id'} = $saved_id;
     }
-    my $bugids = join(":", @bugidlist);
-    # See also Bug 111999
-    if (length($bugids) == 0) {
-        $cgi->remove_cookie('BUGLIST');
-    }
-    elsif (length($bugids) < 4000) {
-        $cgi->send_cookie(-name => 'BUGLIST',
-                          -value => $bugids,
-                          -expires => 'Fri, 01-Jan-2038 00:00:00 GMT');
-    }
-    else {
-        $cgi->remove_cookie('BUGLIST');
-        $vars->{'toolong'} = 1;
-    }
-
     $contenttype = "text/html";
 }
 else {

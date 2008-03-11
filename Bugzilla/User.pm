@@ -49,6 +49,8 @@ use Bugzilla::Product;
 use Bugzilla::Classification;
 use Bugzilla::Field;
 
+use List::Util qw(max);
+
 use base qw(Bugzilla::Object Exporter);
 @Bugzilla::User::EXPORT = qw(is_available_username
     login_to_id user_id_to_login validate_password
@@ -348,6 +350,99 @@ sub queries_available {
     $self->{queries_available} =
         Bugzilla::Search::Saved->new_from_list($avail_query_ids);
     return $self->{queries_available};
+}
+
+sub recent_searches {
+    my $self = shift;
+    return $self->{recent_searches} if $self->{recent_searches};
+
+    # Replication lag can be really bad and affect this pretty seriously,
+    # so we want to be absolutely certain we're using the main DB.
+    my $in_shadow = Bugzilla->using_shadow_db;
+    Bugzilla->switch_to_main_db if $in_shadow;
+    my $search_data = Bugzilla->dbh->selectall_arrayref(
+        'SELECT id, bug_list, list_order FROM profile_search 
+          WHERE user_id = ?', undef, $self->id);
+    Bugzilla->switch_to_shadow_db if $in_shadow;
+
+    my %searches;
+    foreach my $row (@$search_data) {
+        my ($id, $bug_list, $order) = @$row;
+        $searches{$id} = { bug_ids => $bug_list, order => $order,
+                           id => $id };
+    }
+
+    $self->{recent_searches} = \%searches;
+    return $self->{recent_searches};
+}
+
+sub recent_search_containing {
+    my ($self, $bug_id) = @_;
+    my $searches = $self->recent_searches;
+    foreach my $id ( reverse(sort { $a <=> $b } (keys %$searches)) ) {
+        my $search_data = $searches->{$id};
+        my @bug_ids = split(',', $search_data->{bug_ids});
+        return $search_data if grep($_ == $bug_id, @bug_ids);
+    }
+
+    # We return the most recent search, if none match. This probably isn't
+    # a good decision API-wise, but it's convenient for us at the moment.
+    my $highest_id = max(keys %$searches);
+    return $searches->{$highest_id};
+}
+
+sub save_last_search {
+    my ($self, $params) = @_;
+    my ($bug_ids, $order, $vars) = @$params{qw(bugs order vars)};
+
+    my $cgi = Bugzilla->cgi;
+    if ($order) {
+        $cgi->send_cookie(-name => 'LASTORDER',
+                          -value => $order,
+                          -expires => 'Fri, 01-Jan-2038 00:00:00 GMT');
+    }
+
+    return if !@$bug_ids;
+
+    my $created_id;
+    if ($self->id) {
+        my $in_shadow = Bugzilla->using_shadow_db;
+        Bugzilla->switch_to_main_db if $in_shadow;
+        my $dbh = Bugzilla->dbh;
+
+        my $bug_list = join(',', @$bug_ids);
+        $dbh->do('INSERT INTO profile_search (user_id, bug_list, list_order)
+                       VALUES (?,?,?)', undef, $self->id, $bug_list, $order);
+        $created_id = $dbh->bz_last_key('profile_search', 'id');
+        my ($num_searches, $min_id) = $dbh->selectrow_array(
+            'SELECT COUNT(*), MIN(id) FROM profile_search WHERE user_id = ?',
+            undef, $self->id);
+        if ($num_searches > SAVE_NUM_SEARCHES) {
+            $dbh->do('DELETE FROM profile_search WHERE id = ?',
+                     undef, $min_id);
+        }
+        delete $self->{recent_searches};
+        Bugzilla->switch_to_shadow_db if $in_shadow;
+    }
+    # Logged-out users use a cookie to store a single last search. We don't
+    # override that cookie with the logged-in user's latest search, because
+    # if they did one search while logged out and another while logged in,
+    # they may still want to navigate through the search they made while
+    # logged out.
+    else {
+        my $bug_list = join(":", @$bug_ids);
+        if (length($bug_list) < 4000) {
+            $cgi->send_cookie(-name => 'BUGLIST',
+                              -value => $bug_list,
+                              -expires => 'Fri, 01-Jan-2038 00:00:00 GMT');
+        }
+        else {
+            $cgi->remove_cookie('BUGLIST');
+            $vars->{'toolong'} = 1;
+        }
+    }
+
+    return $created_id;
 }
 
 sub settings {
