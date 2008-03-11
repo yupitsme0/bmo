@@ -38,6 +38,7 @@ use Bugzilla::User;
 use Bugzilla::Error;
 use Bugzilla::Util;
 use Bugzilla::Field;
+use Bugzilla::JobQueue;
 
 use File::Basename;
 use Safe;
@@ -305,6 +306,18 @@ sub logout_request {
     delete request_cache()->{sudoer};
     # We can't delete from $cgi->cookie, so logincookie data will remain
     # there. Don't rely on it: use Bugzilla->user->login instead!
+}
+
+# return a Bugzilla::JobQueue object
+sub job_queue {
+    my $class = shift;
+
+    request_cache()->{job_queue} ||= Bugzilla::JobQueue->new();
+
+    ThrowCodeError('jobqueue_not_configured')
+        unless request_cache()->{job_queue};
+
+    return request_cache()->{job_queue};
 }
 
 sub dbh {
