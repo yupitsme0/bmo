@@ -67,8 +67,9 @@
       [% IF attachment.isobsolete %]
         [% obsolete_attachments = obsolete_attachments + 1 %]
       [% END %]
-      <tr class="[% "bz_private" IF attachment.isprivate %][%-%]
-                 [%+ "bz_tr_obsolete" IF attachment.isobsolete %]">
+      <tr class="[% "bz_private" IF attachment.isprivate %]
+                 [% " bz_tr_obsolete" IF attachment.isobsolete %]
+                 [% " bz_patch" IF attachment.ispatch %]">
         <td valign="top">
           [% IF attachment.datasize %]
             <a name="a[% count %]" href="attachment.cgi?id=[% attachment.id %]"

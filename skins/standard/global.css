@@ -225,6 +225,9 @@ div#docslinks {
 .bz_obsolete {
     text-decoration: line-through;
 }
+.bz_patch {
+    border: 2px solid black;
+}
 .bz_inactive {
     text-decoration: line-through;
 }
