@@ -45,10 +45,16 @@
 [%# Page Header                                                              #%]
 [%############################################################################%]
 
+[% microsummary = "buglist.cgi?$urlquerypart&title=$title&ctype=microsummary" %]
+[% IF searchname %]
+  [% microsummary = "?cmdtype=runnamed&namedcmd=$searchname&ctype=microsummary" %]
+[% END %]
+
 [% PROCESS global/header.html.tmpl
   title = title
   style = style
   atomlink = "buglist.cgi?$urlquerypart&title=$title&ctype=atom" 
+  microsummary = microsummary
   javascript_urls = ["js/sorttable.js"]
 %]
 

@@ -211,6 +211,11 @@
              href="[% atomlink FILTER html %]">
     [% END %]
 
+    [% IF microsummary %]
+       <link rel="microsummary"
+             href="[% microsummary FILTER html %]">
+    [% END %]
+
     [%# Required for the 'Autodiscovery' feature in Firefox 2 and IE 7. %]
     <link rel="search" type="application/opensearchdescription+xml"
                        title="[% terms.Bugzilla %]@Mozilla" href="./search_plugin.cgi">
