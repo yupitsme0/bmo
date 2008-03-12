@@ -36,7 +36,7 @@ use base qw(Exporter);
                              html_quote url_quote value_quote xml_quote
                              css_class_quote html_light_quote url_decode
                              i_am_cgi get_netaddr correct_urlbase
-                             lsearch
+                             lsearch create_activity_hash SqlifyDate
                              diff_arrays diff_strings
                              trim wrap_comment find_wrap_point
                              perform_substs
@@ -522,6 +522,132 @@ sub get_netaddr {
 
     $addr <<= (32-$maskbits);
     return join(".", unpack("CCCC", pack("N", $addr)));
+}
+
+# create_activity_hash takes a list of (field, fieldname, attachid, when, removed, added, who,
+# bug_id) and creates two hashes, for use with show_activity.cgi. Check show_activity.cgi for
+# reference
+
+sub create_activity_hash {
+    my ($list) = @_;
+    my @operations;
+    my $operation = {};
+    my $changes = [];
+    my $incomplete_data = 0;
+
+    foreach my $entry (@$list) {
+        my ($field, $fieldname, $attachid, $when, $removed, $added, $who, $bug_id) = @$entry;
+        my %change;
+        my $activity_visible = 1;
+
+        # check if the user should see this field's activity
+        if ($fieldname eq 'remaining_time'
+            || $fieldname eq 'estimated_time'
+            || $fieldname eq 'work_time'
+            || $fieldname eq 'deadline')
+        {
+            $activity_visible = 
+                Bugzilla->user->in_group(Bugzilla->params->{'timetrackinggroup'}) ? 1 : 0;
+        } else {
+            $activity_visible = 1;
+        }
+
+        if ($activity_visible) {
+            # This gets replaced with a hyperlink in the template.
+            $field =~ s/^Attachment// if $attachid;
+
+            # Check for the results of an old Bugzilla data corruption bug
+            $incomplete_data = 1 if ($added =~ /^\?/ || $removed =~ /^\?/);
+
+            # An operation, done by 'who' at time 'when', has a number of
+            # 'changes' associated with it.
+            # If this is the start of a new operation, store the data from the
+            # previous one, and set up the new one.
+            if ($operation->{'who'}
+                && ($who ne $operation->{'who'}
+                    || $when ne $operation->{'when'}))
+            {
+                $operation->{'changes'} = $changes;
+                push (@operations, $operation);
+
+                # Create new empty anonymous data structures.
+                $operation = {};
+                $changes = [];
+            }
+
+            $operation->{'bug_id'} = $bug_id;
+            $operation->{'who'} = $who;
+            $operation->{'when'} = $when;
+
+            $change{'field'} = $field;
+            $change{'fieldname'} = $fieldname;
+            $change{'attachid'} = $attachid;
+            $change{'removed'} = $removed;
+            $change{'added'} = $added;
+            push (@$changes, \%change);
+        }
+    }
+
+    if ($operation->{'who'}) {
+        $operation->{'changes'} = $changes;
+        push (@operations, $operation);
+    }
+
+    return(\@operations, $incomplete_data);
+}
+
+sub SqlifyDate {
+    my ($str, $precision) = @_;
+    $str = "" if !defined $str;
+    if ($str eq "" || lc($str) eq "now") {
+        my ($sec, $min, $hour, $mday, $month, $year, $wday) = localtime(time());
+        if ($precision) {
+            return sprintf("%4d-%02d-%02d %02d:%02d:%02d", $year+1900, $month+1, $mday,
+                                                           $hour, $min, $sec);
+        }
+        else {
+            return sprintf("%4d-%02d-%02d 00:00:00", $year+1900, $month+1, $mday);
+        }
+    }
+
+
+    if ($str =~ /^(-|\+)?(\d+)([hHdDwWmMyY])$/) {   # relative date
+        my ($sign, $amount, $unit, $date) = ($1, $2, lc $3, time);
+        my ($sec, $min, $hour, $mday, $month, $year, $wday)  = localtime($date);
+        if ($sign && $sign eq '+') { $amount = -$amount; }
+        if ($unit eq 'w') {                  # convert weeks to days
+            $amount = 7*$amount + $wday;
+            $unit = 'd';
+        }
+        if ($unit eq 'd') {
+            $date -= $sec + 60*$min + 3600*$hour + 24*3600*$amount;
+            return time2str("%Y-%m-%d %H:%M:%S", $date);
+        }
+        elsif ($unit eq 'y') {
+            return sprintf("%4d-01-01 00:00:00", $year+1900-$amount);
+        }
+        elsif ($unit eq 'm') {
+            $month -= $amount;
+            while ($month<0) { $year--; $month += 12; }
+            return sprintf("%4d-%02d-01 00:00:00", $year+1900, $month+1);
+        }
+        elsif ($unit eq 'h') {
+            # Special case 0h for 'beginning of this hour'
+            if ($amount == 0) {
+                $date -= $sec + 60*$min;
+            } else {
+                $date -= 3600*$amount;
+            }
+            return time2str("%Y-%m-%d %H:%M:%S", $date);
+        }
+        return undef;                      # should not happen due to regexp at top
+    }
+    my $date = str2time($str);
+    if (!defined($date)) {
+        use Bugzilla::Error;
+        Bugzilla::Error::ThrowUserError("illegal_date", { date => $str });
+    }
+    return time2str("%Y-%m-%d %H:%M:%S", $date);
 }
 
 1;

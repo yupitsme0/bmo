@@ -1788,6 +1788,73 @@ sub validate_password {
     return 1;
 }
 
+sub get_user_activity {
+    my ($self, $from, $to) = @_;
+    my $dbh = Bugzilla->dbh;
+
+    # Arguments passed to the SQL query.
+    my @args = ($self->id);
+
+    my $datepart = "";
+    $from = $from ? $dbh->quote(SqlifyDate($from, 1)) : '';
+    $to = $dbh->quote(SqlifyDate($to, 1));
+
+    if ($from) {
+        $datepart = "AND bugs_activity.bug_when >= $from";
+    }
+
+    if ($to) {
+        $datepart .= " AND bugs_activity.bug_when <= $to";
+    }
+
+    # Only includes attachments the user is allowed to see.
+    my $suppjoins = "";
+    my $suppwhere = "";
+    if (Bugzilla->params->{"insidergroup"}
+        && !Bugzilla->user->in_group(Bugzilla->params->{'insidergroup'}))
+    {
+        $suppjoins = "LEFT JOIN attachments
+                   ON attachments.attach_id = bugs_activity.attach_id";
+        $suppwhere = "AND COALESCE(attachments.isprivate, 0) = 0";
+    }
+
+    my $query = "
+    SELECT COALESCE(fielddefs.description, "
+               # This is a hack - PostgreSQL requires both COALESCE
+               # arguments to be of the same type, and this is the only
+               # way supported by both MySQL 3 and PostgreSQL to convert
+               # an integer to a string. MySQL 4 supports CAST.
+               . $dbh->sql_string_concat('bugs_activity.fieldid', q{''}) .
+               "), fielddefs.name, bugs_activity.attach_id, " .
+        $dbh->sql_date_format('bugs_activity.bug_when', '%Y.%m.%d %H:%i:%s') .
+            ", bugs_activity.removed, bugs_activity.added, profiles.login_name, bug_id
+          FROM bugs_activity
+               $suppjoins
+     LEFT JOIN fielddefs
+            ON bugs_activity.fieldid = fielddefs.id
+    INNER JOIN profiles
+            ON profiles.userid = bugs_activity.who
+         WHERE bugs_activity.who = ?
+               $datepart
+               $suppwhere
+      ORDER BY bugs_activity.bug_when";
+
+    my $list = $dbh->selectall_arrayref($query, undef, @args);
+    my @new_list;
+    my $current_user = Bugzilla->user;
+    my $hidden_changes = 0;
+
+    foreach my $item (@$list) {
+        if (! $current_user->can_see_bug(@$item[7])) {
+            $hidden_changes += 1;
+            next;
+        }
+            
+        push(@new_list, $item);
+    }
+
+    return (create_activity_hash(\@new_list), $hidden_changes);
+}
 
 1;
 

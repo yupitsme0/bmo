@@ -1098,6 +1098,10 @@
     else's list).
     You will have to <a href="query.cgi">perform your search again</a>.
 
+  [% ELSIF error == "no_user_match" %]
+    [% title = "No User Match" %]
+    No user matched your user list.
+
   [% ELSIF error == "no_valid_action" %]
     [% title = "No valid action specified" %]
     Cannot edit [% field_descs.$field FILTER html %]: no valid action was specified.

@@ -28,6 +28,8 @@
 
 [% PROCESS global/header.html.tmpl
   title = "Reporting and Charting Kitchen"
+  onload = "doOnSelectProduct();"
+  javascript_urls = [ "js/productform.js" ]
 %]
 
 <p>
@@ -71,5 +73,7 @@
     </li>
   [% END %]
 </ul>
+
+[% PROCESS 'reports/canned-reports.html.tmpl' %]
 
 [% PROCESS global/footer.html.tmpl %]

@@ -1617,7 +1617,7 @@ sub GetBugActivity {
                . $dbh->sql_string_concat('bugs_activity.fieldid', q{''}) .
                "), fielddefs.name, bugs_activity.attach_id, " .
         $dbh->sql_date_format('bugs_activity.bug_when', '%Y.%m.%d %H:%i:%s') .
-            ", bugs_activity.removed, bugs_activity.added, profiles.login_name
+            ", bugs_activity.removed, bugs_activity.added, profiles.login_name, bug_id
           FROM bugs_activity
                $suppjoins
      LEFT JOIN fielddefs
@@ -1631,69 +1631,7 @@ sub GetBugActivity {
 
     my $list = $dbh->selectall_arrayref($query, undef, @args);
 
-    my @operations;
-    my $operation = {};
-    my $changes = [];
-    my $incomplete_data = 0;
-
-    foreach my $entry (@$list) {
-        my ($field, $fieldname, $attachid, $when, $removed, $added, $who) = @$entry;
-        my %change;
-        my $activity_visible = 1;
-
-        # check if the user should see this field's activity
-        if ($fieldname eq 'remaining_time'
-            || $fieldname eq 'estimated_time'
-            || $fieldname eq 'work_time'
-            || $fieldname eq 'deadline')
-        {
-            $activity_visible = 
-                Bugzilla->user->in_group(Bugzilla->params->{'timetrackinggroup'}) ? 1 : 0;
-        } else {
-            $activity_visible = 1;
-        }
-
-        if ($activity_visible) {
-            # This gets replaced with a hyperlink in the template.
-            $field =~ s/^Attachment// if $attachid;
-
-            # Check for the results of an old Bugzilla data corruption bug
-            $incomplete_data = 1 if ($added =~ /^\?/ || $removed =~ /^\?/);
-
-            # An operation, done by 'who' at time 'when', has a number of
-            # 'changes' associated with it.
-            # If this is the start of a new operation, store the data from the
-            # previous one, and set up the new one.
-            if ($operation->{'who'}
-                && ($who ne $operation->{'who'}
-                    || $when ne $operation->{'when'}))
-            {
-                $operation->{'changes'} = $changes;
-                push (@operations, $operation);
-
-                # Create new empty anonymous data structures.
-                $operation = {};
-                $changes = [];
-            }
-
-            $operation->{'who'} = $who;
-            $operation->{'when'} = $when;
-
-            $change{'field'} = $field;
-            $change{'fieldname'} = $fieldname;
-            $change{'attachid'} = $attachid;
-            $change{'removed'} = $removed;
-            $change{'added'} = $added;
-            push (@$changes, \%change);
-        }
-    }
-
-    if ($operation->{'who'}) {
-        $operation->{'changes'} = $changes;
-        push (@operations, $operation);
-    }
-
-    return(\@operations, $incomplete_data);
+    return create_activity_hash($list);
 }
 
 # Update the bugs_activity table to reflect changes made in bugs.

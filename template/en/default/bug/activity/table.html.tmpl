@@ -32,6 +32,8 @@
   #     attach_id: integer. If the change was adding an attachment, its id.
   # incomplete_data: boolean. True if some of the data is incomplete (because
   #                  it was affected by an old Bugzilla bug.)
+  # hidden_changes: Number of changes made to bugs that are not visible to the
+  #                 current user.
   #%]
 
 [% PROCESS global/variables.none.tmpl %]
@@ -51,8 +53,19 @@
 
 [% IF operations.size > 0 %]
   <table border cellpadding="4">
+    [% UNLESS bug_id %]
+      <tr>
+        <th colspan="5">
+          [% title FILTER html %]
+        </th>
+      </tr>
+    [% END  %]
     <tr>
-      <th>Who</th>
+      [% IF bug_id %]
+        <th>Who</th>
+      [% ELSE %]
+        <th>Bug Id</th>
+      [% END %]
       <th>When</th>
       <th>What</th>
       <th>Removed</th>
@@ -61,9 +74,17 @@
 
     [% FOREACH operation = operations %]
       <tr>
-        <td rowspan="[% operation.changes.size %]" valign="top">
-          [% operation.who FILTER html %]
-        </td>
+        [% IF bug_id %]
+          <td rowspan="[% operation.changes.size %]" valign="top">
+            [% operation.who FILTER html %]
+          </td>
+        [% ELSE %]
+          <td rowspan="[% operation.changes.size %]" valign="top">
+            <a href="show_bug.cgi?id=[% operation.bug_id FILTER html %]">
+              [% operation.bug_id FILTER html%]</a>
+          </td>
+        [% END %]
+
         <td rowspan="[% operation.changes.size %]" valign="top">
           [% operation.when FILTER time %]
         </td>
@@ -118,6 +139,20 @@
             </td>
         [% END %]
       </tr>
+    [% END %]
+
+    [% UNLESS bug_id %]
+      <tr>
+        <td colspan="5" align="right">
+          <b>Total changes: [% operations.size + hidden_changes %]</b>
+        [% IF hidden_changes == 1%]
+          <br>
+          <i>([% hidden_changes FILTER html %] change is not visible due to access restriction)</i>
+        [% ELSIF hidden_changes > 1 %]
+          <br>
+          <i>([% hidden_changes FILTER html %] changes are not visible due to access restriction)</i>
+        [% END %]
+        </td>
     [% END %]
   </table>
 [% END %]
