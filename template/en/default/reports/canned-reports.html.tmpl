@@ -69,9 +69,7 @@ function doOnSelectProduct() {
     <form method="get" action="buglist.cgi" name="blockingform">
       <strong>Open Blockers</strong><br>
       <input type="hidden" name="query_format" value="advanced">
-      <input type="hidden" name="bug_status" value="REOPENED">
-      <input type="hidden" name="bug_status" value="NEW">
-      <input type="hidden" name="bug_status" value="ASSIGNED">
+      <input type="hidden" name="resolution" value="---">
       <input type="hidden" name="field0-0-0" value="flagtypes.name">
       <input type="hidden" name="type0-0-0"  value="regexp">
       <input type="hidden" name="value0-0-0" value="^blocking.*\+$">
