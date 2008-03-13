@@ -233,7 +233,7 @@
   [%# At the end of every hundred bugs in the list, or at the end of the list,
     # end the current table.
     #%]
-  [% IF loop.last() || loop.count() % 10 == 0 %]
+  [% IF loop.last() || loop.count() % 100 == 0 %]
     </tbody>
   [% END %]
 

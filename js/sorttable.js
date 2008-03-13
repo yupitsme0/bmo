@@ -96,9 +96,9 @@ sorttable = {
         if (!table.tBodies[i].className.match(/\bsorttable_body\b/))
             continue;
 
-        bodies.push(table.tBodies[i]);
+        bodies[bodies.length] = table.tBodies[i];
         for (j=0; j<table.tBodies[i].rows.length; j++) {
-          table_rows.push(table.tBodies[i].rows[j]);
+          table_rows[table_rows.length] = table.tBodies[i].rows[j];
         }
       }
 
