@@ -1624,7 +1624,7 @@ sub GetBugActivity {
                . $dbh->sql_string_concat('bugs_activity.fieldid', q{''}) .
                "), fielddefs.name, bugs_activity.attach_id, " .
         $dbh->sql_date_format('bugs_activity.bug_when', '%Y.%m.%d %H:%i:%s') .
-            ", bugs_activity.removed, bugs_activity.added, profiles.login_name, bug_id
+            ", bugs_activity.removed, bugs_activity.added, profiles.login_name, bugs_activity.bug_id
           FROM bugs_activity
                $suppjoins
      LEFT JOIN fielddefs
