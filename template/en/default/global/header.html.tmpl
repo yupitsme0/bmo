@@ -222,6 +222,8 @@
 
     [%# Shortcut/Favorite icon %]
     <link rel="icon" href="mozilla-16.png" type="image/png">
+                       
+    [% Hook.process("additional_header") %]                   
   </head>
 
 [%# Migration note: contents of the old Param 'bodyhtml' go in the body tag,

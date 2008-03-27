@@ -255,6 +255,11 @@
     [% title = "Classification Not Enabled" %]
     Sorry, classification is not enabled.
 
+  [% ELSIF error == "bug_status_not_allowed" %]
+    [% title = "$terms.Bug Status Not Allowed" %]
+    You cannot mark open [% terms.bugs %] as [% status_descs.$status FILTER html %].
+    You have to mark them as [% status_descs.RESOLVED FILTER html %] first.
+
   [% ELSIF error == "classification_not_specified" %]
     [% title = "You Must Supply A Classification Name" %]
     You must enter a classification name.
@@ -1320,6 +1325,10 @@
   [% ELSIF error == "require_summary" %]
     [% title = "Summary Needed" %]
     You must enter a summary for this [% terms.bug %].
+
+  [% ELSIF error == "resolution_deletion_not_allowed" %]
+    [% title = "Resolution Change Not Allowed" %]
+    You cannot clear the resolution of non-open [% terms.bugs %].
 
   [% ELSIF error == "resolution_not_allowed" %]
     [% title = "Resolution Not Allowed" %]
