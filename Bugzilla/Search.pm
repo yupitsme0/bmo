@@ -570,17 +570,14 @@ sub init {
              my $id = login_to_id($v, THROW_ERROR);
              $term = "$table.who = $id";
          },
-         "^long_?desc,changedbefore" => sub {
+         "^long_?desc,changed(before|after)" => sub {
              my $table = "longdescs_$chartid";
+             my $operator = ($t =~ /before/) ? '<' : '>';
              push(@supptables, "LEFT JOIN longdescs AS $table " .
-                               "ON $table.bug_id = bugs.bug_id");
-             $term = "$table.bug_when < " . $dbh->quote(SqlifyDate($v));
-         },
-         "^long_?desc,changedafter" => sub {
-             my $table = "longdescs_$chartid";
-             push(@supptables, "LEFT JOIN longdescs AS $table " .
-                               "ON $table.bug_id = bugs.bug_id");
-             $term = "$table.bug_when > " . $dbh->quote(SqlifyDate($v));
+                               "ON $table.bug_id = bugs.bug_id " .
+                               "AND $table.bug_when $operator " .
+                               $dbh->quote(SqlifyDate($v)));
+             $term = "$table.bug_when IS NOT NULL";
          },
          "^content,matches" => sub {
              # "content" is an alias for columns containing text for which we
@@ -728,19 +725,15 @@ sub init {
              $term = "(($table.who = $id";
              $term .= ") AND ($table.work_time <> 0))";
          },
-         "^work_time,changedbefore" => sub {
+         "^work_time,changed(before|after)" => sub {
              my $table = "longdescs_$chartid";
+             my $operator = ($t =~ /before/) ? '<' : '.';
              push(@supptables, "LEFT JOIN longdescs AS $table " .
-                               "ON $table.bug_id = bugs.bug_id");
-             $term = "(($table.bug_when < " . $dbh->quote(SqlifyDate($v));
-             $term .= ") AND ($table.work_time <> 0))";
-         },
-         "^work_time,changedafter" => sub {
-             my $table = "longdescs_$chartid";
-             push(@supptables, "LEFT JOIN longdescs AS $table " .
-                               "ON $table.bug_id = bugs.bug_id");
-             $term = "(($table.bug_when > " . $dbh->quote(SqlifyDate($v));
-             $term .= ") AND ($table.work_time <> 0))";
+                               "ON $table.bug_id = bugs.bug_id " .
+                               "AND $table.work_time <> 0 " .
+                               "AND $table.bug_when $operator " .
+                               $dbh->quote(SqlifyDate($v)));
+             $term = "($table.bug_when IS NOT NULL)";
          },
          "^work_time," => sub {
              my $table = "longdescs_$chartid";
