@@ -1,0 +1,117 @@
+[%# 1.0@bugzilla.org %]
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): David Miller <justdave@bugzilla.org>
+  #%]
+
+[% INCLUDE global/header.html.tmpl title = "New Features" %]
+
+<p>The following is a list of some of the new features we picked up on bugzilla.mozilla.org
+in the upgrade on December 12, 2004.  This list has been generated from the changes listed in
+<a href="http://bonsai.mozilla.org/cvsquery.cgi?treeid=default&module=Bugzilla&branch=HEAD&branchtype=match&dir=&file=xml%24&filetype=notregexp&who=&whotype=match&sortby=Date&hours=2&date=explicit&mindate=2004-01-24+13%3A32%3A45&maxdate=&cvsroot=%2Fcvsroot">Bonsai</a>, but I've only included user-visible features which we're using on bugzilla.mozilla.org in this list.  You can click the Bonsai link if you want to see them all, but it's a LONG list. ;)
+Boldfaced items are "important".</p>
+
+<ul>
+<li>next/previous bug navigation with bug summary once again appears at the top of the bug, even after committing changes to the previous bug (previously the navigation bar didn't appear when the bug was displayed under the "changes submitted" box)</li>
+
+<li><b>query page now defaults to the "Find a specific bug" search.  A cookie is saved to remember your preference, and it always returns to the last-visited tab when you go back to the query page.</b></li>
+
+<li>There is now a link to the Bugzilla home page in the footer</li>
+
+<li><b>There is a new tab in the user preferences called "Saved Searches" which contains management facilities to manage your stored queries without having to run them.</b></li>
+
+<li>There is a new facility to generate periodic reports on a scheduled basis
+and mail them to people (If you remember the old "whine at untouched new bugs"
+mails a long time ago, it's that, but customizable per-person, and can report
+on almost anything).  It's also a resource hog, so for the moment, we'll only
+be enabling it for specific people on a case-by-case basis.  If you want access
+to it, please
+<a href="enter_bug.cgi?product=mozilla.org&amp;component=Bugzilla:+Other+b.m.o+Issues&amp;short_desc=Request+access+to+Whining+for+%3Cyour+login+name+here%3E"><!-- &amp;format=__default__"> -->file a bug</a>.
+We will probably only authorize this for people who are module owners or peers
+for the time being.  We may open it up wider later when we get a feel for how
+much it impacts performance.</li>
+
+<li><b>You can now request flags on a patch at the same time as you attach the patch.</b></li>
+
+<li>The page footer has been rearranged to make it scale better in narrow browser windows.</li>
+
+<li>Security bugs are now displayed with a padlock icon next to the bug number instead of having a gray background behind them in buglists (if you have permissions to see them at all). "[SEC]" will appear in that spot in text-based browsers.</li>
+
+<li>Saved query names are now preserved across most query-related actions (changing sort order, editing, etc) and used as the default when saving changes to a query</li>
+
+<li><b>The "default query" on the Advanced query page now searches on all open bugs and bugs that are duplicates (meaning it now includes UNCONFIRMED and DUPLICATE bugs in the results).  If you don't like this, please set up the form the way you want it and take advantage of the "Save this as my default query" link at the bottom of the query page.</b></li>
+
+<li>Bug change notification emails now include X-Bugzilla-Product and X-Bugzilla-Component headers on all bug change notifications.  In the event that a product or component change is part of the notification, these will contain the product and component that the bug is moving <b>to</b>, not the one it's moving from.</li>
+
+<li>Bug and attachment flags can now be restricted to groups of who is allowed to request them and who is allowed to grant/deny them.  We have not yet actually configured any of these privileges, but some flags will probably start picking them up over time.  The main benefit of this is we won't have new users who are unfamiliar with the bug system accidently marking approval and so forth.</li>
+
+<li>There have been a large number of CSS ids and classes added to Bugzilla's markup, so if you use
+custom stylesheets and want to spiff up your view of Bugzilla, it should be much easier to do so
+now.  You can look at the page source to see what's available.</li>
+
+<li>You can now download buglists as a ToDo list into Apple iCal, Evolution, Sunbird, and other calendar programs that support the iCalendar format.  There is a link at the bottom of the buglists.</li>
+
+<li>There is now a "contains none of the strings" operator on the query page.</li>
+
+<li>When you mid-air with someone else making a change to the same bug, your comment is now displayed on the error page to give you the opportunity to copy it to your clipboard prior to throwing away your changes so you can paste it back in.</li>
+
+<li>Attachments mentioned in comment text now display an "(edit)" link next to them so you can go directly to the edit screen from the comment instead of only viewing the attachment itself.</li>
+
+<li><b>You can now use "pronouns" to refer to the contents of other fields in the boolean charts: %reporter%, %user%, and %assignee%.  For example, you can search for "bug_status" "changed by" "%reporter%" to find bugs where the reporter changed the bug status, no matter who that is.  %user% refers to the currently-logged-in user, and is mainly useful for generating a query that multiple people can use to find bugs that refer to them.</b></li>
+
+</ul>
+
+<h3>Important Bug Fixes</h3>
+
+<ul>
+<li>"Dependency Changed" emails no longer occassionally get doubled-up on themselves.</li>
+
+<li>"Additional Review" flag changes are now properly recorded in the activity log and in
+notification emails.</li>
+
+<li>The Requests page now gives the user a polite error message which says what actually
+happened when they choose a component that doesn't exist in the product they chose instead
+of giving a scary SQL error.</li>
+
+<li>When an admin changes the number of votes to confirm in a product, the "confirmed by popular vote"
+email sent for bugs that are newly under the new limit shows the bug confirmation being done by
+the admin instead of the last user to vote on the bug.</li>
+
+<li>Clicking the "Edit this query" link at the bottom of a buglist generated from a link on a tabular
+report now lets you actually edit the query instead of putting you back on the report creation page
+with nothing filled in.</li>
+
+<li>Changing a bug which has a flag requested on it which is no longer configured as being requestable
+no longer generates a "you can't request that" error if the flag was already requested before you
+loaded the bug.</li>
+
+<li>"Steps to reproduce" section header from the guided bug entry is no longer displayed in the resulting bug if the user didn't enter anything in that box on the form.</li>
+
+<li>Querying on both [Bug creation] and anything to do with attachments at the same time no longer crashes.</li>
+
+<li>Deleting a saved search that produces no results or that produces an error is once again possible from the results page.</li>
+
+<li>UI for showing/hiding the "My Bugs" query in your footer has returned (on the Saved Searches tab in your preferences).</li>
+
+<li>Granting or denying a flag that someone else has cleared since you loaded the Edit Attachment screen no longer causes a crash.</li>
+
+</ul>
+
+<br>
+
+[% INCLUDE global/footer.html.tmpl %]

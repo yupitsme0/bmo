@@ -1,0 +1,150 @@
+[%# 1.0@bugzilla.org %]
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): David Miller <justdave@bugzilla.org>
+  #%]
+
+[% INCLUDE global/header.html.tmpl title = "Bugzilla Upgrade" %]
+[% USE date %]
+
+<p><b>Last Updated:</b> [% date.format(template.modtime, "%d-%b-%Y %H:%M %Z") %]</p>
+<p><b>Includes changes made to Bugzilla-trunk through:</b> 21-Dec-2006</p>
+
+<p>On Tuesday, December 26, 2006, at 6pm PST (2am UTC), bugzilla.mozilla.org
+was upgraded to the current prerelease of Bugzilla version 3.0 (currently 2.23.3+/2.23.4).</p>
+
+There is a discussion about <a href="http://wiki.mozilla.org/Bugzilla:Bug_Layout_Revision">the layout of the show_bug page</a> on the wiki.  Please participate in the discussion there if you care!  Changes resulting from this discussion will be picked up in a future upgrade.  We are also discussing the upgrade on irc.mozilla.org in the <a href="irc://irc.mozilla.org/bmo">#bmo</a> channel, where you can ask questions if you have any.</p>
+
+<p>The following is a list of some of the new features and bugfixes that have been
+picked up in the upgrade.
+This list has been generated from the changes listed in
+<a href="http://bonsai.mozilla.org/cvsquery.cgi?treeid=default&amp;module=all&amp;branch=HEAD&amp;branchtype=match&amp;dir=mozilla%2Fwebtools%2Fbugzilla&amp;file=&amp;filetype=match&amp;who=&amp;whotype=match&amp;sortby=Date&amp;hours=2&amp;date=explicit&amp;mindate=2005-07-07+23%3A30&amp;maxdate=&amp;cvsroot=%2Fcvsroot">Bonsai
+for the Trunk</a> between the 2.20 branch point and the present, and subtracting off changes already listed on
+<a href="http://bonsai.mozilla.org/cvsquery.cgi?mindate=2005-07-07+23:30&amp;maxdate=2005-08-08+00:00&amp;branch=BUGZILLA-2_20-BRANCH&amp;module=Bugzilla&amp;sortby=Date&amp;date=explicit">Bonsai
+for the 2.20 branch</a> from the branch point to the date we last upgraded.
+I've only
+included user-visible features which we're using on bugzilla.mozilla.org in
+this list.  You can click the Bonsai links if you want to see them all, but it's
+a LONG (4MB) list. ;) Boldfaced items are "important".</p>
+
+<h3>New Features</h3>
+
+<ul>
+
+<li><b>The attachment table in a bug will now show who uploaded the attachment</b></li>
+<li><b>Flag descriptions are now visible in a tooltip when you hover over a flag</b></li>
+<li><b>You can now create personal tags on bugs (not visible to other users), and retrieve buglists of bugs with that tag, similar to saved searches.  Because of the UI bloat, it's disabled by default.  You can turn it on in your user preferences.  (<a href="http://www.bugzilla.org/docs/tip/html/query.html#individual-buglists">docs</a>)</b></li>
+<li><b>Sort order is now preserved in saved searches.  To activate this on an existing search, you'll need to Edit Search, run the search again, and re-save it.</b></li>
+<li><b>Textareas will now zoom larger to give you more space to type when you click in them if you have javascript enabled.  This can be disabled in your preferences if you don't like it.</b></li>
+<li><b>You can now change the resolution of a bug without reopening it first.</b></li>
+<li><b>Full URLs to bugs (f.e. [% "https://bugzilla.mozilla.org/show_bug.cgi?id=74355" FILTER bug_link(74355) %]) are now recognized as bug links and thus get tooltips with information about the linked bug.</b></li>
+<li><b>Bug numbers in dependency fields in the Bug Activity/History screen now get tooltips with information about the bug.</b></li>
+<li><b>You can now "walk" a dependency tree by clicking the "tree" icon next to a bug in a dependency tree listing.</b></li>
+<li><b>If you try to submit the same bug entry form twice, the second will generate a warning that you're about to submit a duplicate before letting you submit it.</b></li>
+<li><b>Navigation links have been added to the header</b></li>
+<li><b>You can now attach a file to a new bug from the bug entry form</b></li>
+<li><b>Saved Searches can now be shared with other users (requires privileges - what level is yet to be determined)</b></li>
+<li><b>Login cookies now use a randomized token instead of sequential session IDs, greatly lessening the need to tie a cookie to an IP address to keep your login secure. (unchecking the "restrict my session to this IP address" box on the login screen will now allow you to connect from anywhere, and not just within the same /24 netblock)</b></li>
+<li><b>Bugs are no longer editable when you are not logged in.  This greatly reduces the complexity of the page for new users viewing the site, and thanks to the new session cookies that let you stay logged in when your IP changes this shouldn't be a big issue for the developers, who can just stay logged in.</b></li>
+<li><b>Dependency trees now hide resolved bugs by default (but you can still view them by clicking "Show Resolved" at the top or bottom)</b></li>
+<li><b>Bug flags can now be set or requested at bug entry time.</b></li>
+<li><b>Editing your watcher list in preferences is now done with a list box like Bug CCs instead of a text box.</b></li>
+<li><b>XMLRPC interface now available to assist with scripting and remote client support. (<a href="http://www.bugzilla.org/docs/tip/html/api/contrib/bz_webservice_demo.html">docs</a>)</b></li>
+<li><b>An automatically-installable search plugin for the search toolbar in Firefox 2 and Internet Explorer 7 is now available (In Firefox, look for the blue highlight on the seach engine dropdown)</b></li>
+<li><b>The layout of the show_bug page has been redesigned to get similar functions in logical groups, and put all of the action links together.</b></li>
+<li><b>EVERYTHING now uses UTF-8 (Unicode) charset encoding.</b></li>
+
+<li>User preference for whether to go to the next bug or back to the same bug after submitting changes to a bug</li>
+<li>Alias field now available on the enter bug form</li>
+<li>Bug creation date field added to the field list for boolean charts at the bottom of the advanced query page</li>
+<li>You can now use 'h' for specifying hours in date fields that allow relative dates (query page)</li>
+<li>Attached Windows Bitmap files (.bmp) are converted to .png before storing to save space</li>
+<li>Allow making multiple requests at once by providing a comma-separated list of addresses in the requestee field on a flag</li>
+<li>Quicksearch (the search box on the front page) now runs on the server after submitting, rather than in the client's browser, allowing it to work for users without javascript active</li>
+<li>You can now change the OS when changing several bugs at once.</li>
+<li>Bug change notification emails will now contain X-Bugzilla-Keywords, X-Bugzilla-Severity, X-Bugzilla-Watch-Reason, and X-Bugzilla-Who (who made the change) headers for additional filtering capability in mail clients.</li>
+<li>Email preference to not send mail about dependency changes</li>
+<li>Attachment upload mime type selection now defaults to "autodetect"</li>
+<li>Quoted text in bugs is now displayed in a different color.</li>
+<li>There is now a user preference to automatically add yourself to the CC list of any bug you make changes to.</li>
+<li>Bugmail will now give the real name of the person who made the change instead of only the email address</li>
+<li>Field names are now ordered alphabetically in the select boxes on the search page (advanced query section, and the "where [foo] changed" section)</li>
+<li>Users with editbugs or canconfirm privs can set a bug to ASSIGNED status when the file it.</li>
+<li>Buglists now show the full summary by default instead of a truncated one.</li>
+<li>You can now search on Attachment Creator in the advanced query section</li>
+<li>You can hide obsolete attachments when viewing the attachment list.</li>
+
+</ul>
+
+<h3>Notable Bug Fixes</h3>
+
+<ul>
+<li><b>The summary field is now capped at 256 characters.  This field's previous cap was 32 KB, which led to a bit of abuse.  Existing bugs which exceeded this limit will get a comment added to them during the upgrade with the original summary, and the summary will be truncated.</b></li>
+<li><b>New user signup now requires email verification before the account is created, instead of just to get the password to log into it.  This should reduce the proliferation of phony accounts that have never been logged into.</b></li>
+<li>Dependency Tree page now shows the summary of the root bug.</li>
+<li>Initial CC list is now included in new bug mails</li>
+<li>Reassign to default Assignee/QA now works properly in Change Several Bugs at Once with multiple products in the buglist.</li>
+<li>"'knob' was not defined" error message on bug changes after reloading a bug before submitting it is gone.  Bugzilla now deals with the situation intelligently.</li>
+<li>Several missing fields (including bug and attachment flags) were added to the XML representation of a bug.</li>
+<li>Searches for attachment creation dates no longer fail.</li>
+<li>Feeds generated by Bugzilla are now Atom instead of RSS 1.0 (because the RSS spec is ambiguous about HTML escaping, and our data tends to have a lot of it).</li>
+<li>Attachment "edit" links now read "details" because not everyone can actually edit them, and it's more intuitive to people who only want to see details and weren't intending to edit anyway.</li>
+<li>"group" "is not equal to" now works in advanced query.</li>
+<li>A value of "0" in the advanced query now survives "Edit this Search" (previously it would wind up blank when the query page reloaded).</li>
+<li>"Taking" a bug while uploading an attachment to a bug which has been marked as a duplicate no longer corrupts the duplicates table while removing the DUPLICATE status from the bug.</li>
+<li>All buttons now have id attributes to make scripting easier (f.e. Greasemonkey, Selenium, custom stylesheets, etc)</li>
+
+</ul>
+
+[% IF user.groups.editcomponents OR user.groups.mozillaorgconfidential %]
+<div style="border: 1px black dashed">
+<h3>Changes only visible to admins</h3>
+<p>(This section is only visible to those logged in with editcomponents privs or mozillaorgconfidential access, to avoid confusing the end users)</p>
+
+<ul>
+<li><b>Parameters are now multi-panel by category instead of the never-ending web page</b></li>
+<li><b>Custom fields!  Available types: text entry, selectbox. (<a href="http://www.bugzilla.org/docs/tip/html/custom-fields.html">docs</a>)  We will use these VERY sparingly.  Please discuss extensively with other admin types before creating any.</b></li>
+<li><b>Custom resolutions! Editable from the Field Values editor.</b></li>
+<li><b>It is now possible for an administrator to delete an attachment</b> (we have to do this every so often when people upload screenshots of bank account information or include passwords in testcases)</li>
+<li><b>You can now search on real name and userid in editusers.</b></li>
+<li><b>The account history of an account (who made what changes to it) is now available in editusers (this has always been recorded, but there was never a UI to view it).</b></li>
+<li><b>Flag editor now lets you filter the list of existing flags by their existing product/component restrictions</b></li>
+<li><b>Announcement blurbs can now be edited from editparams once again instead of having to edit the banner template.</b></li>
+<li><b>Users can now be prevented from receiving mail from the editusers interface (instead of having to edit the nomail file on the filesystem)</b></li>
+<li><b>requestees will now be removed from specifically requestable flags if you remove the specific requestability of the flag</b></li>
+<li><b>Bugzilla now supports multiple skins and lets the end-users pick between them, but we only have one available right now, so there's not much point in advertising it.</b></li>
+<li><b>editcomponents, canconfirm, and editbugs privileges can now be controlled per-product, via group membership.  In the group controls section of editproducts, you can assign groups to each of those functions for that product, then members of those groups will have those privileges in that product.</b></li>
+<li>It is now possible to impersonate another user.  The user will be emailed to tell them you did so. (it's intended for tech support purposes) This feature will probably be disabled on bmo.</li>
+<li>defaultpriority, defaultseverity, defaultplatform and defaultopsys in the params, and defaultmilestone in editproducts, are now dropdown menus with the available legal values instead of text entry boxes, and the values currently chosen in them are prevented from being deleted.</li>
+<li><b>URLs can now be optionally treated as attachments (and thus have flags and the works).  Do we want to turn this on on bmo? (this item moves to the new features section if so, no point in pointing it out to the users if we don't want it)</b></li>
+<li>Users with editcomponents privs, but not admin privs, will no longer be able to see or edit products they don't have access to.</li>
+<li>Searching for members of a group in editusers would also find users who could grant membership in that group, and not just those actually in it.</li>
+<li>You can now remove multiple flag inclusions/exclusions at once by command- or control-clicking additional items in the list.</li>
+<li>Properties (requestable, multiplicable, etc), request group, and grant group are now visible in the list of flag types in the flag editor.</li>
+<li>The activity log for a user will now log the user's account creation date.</li>
+<li>Parameters which select a group name now use a select box of the available groups instead of a text entry.</li>
+<li>Classifications (the section titles in the enter_bug product chooser page) now support sort keys, meaning we can eliminate our local hack to sort them the way we wanted, and we'll no longer have to edit the template every time someone adds or renames a product.</li>
+<li>Components can now have a default initial CC list.</li>
+
+</ul>
+</div>
+[% END %]
+
+<br>
+
+[% INCLUDE global/footer.html.tmpl %]

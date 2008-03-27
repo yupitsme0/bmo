@@ -1,0 +1,205 @@
+<!-- 1.0@bugzilla.org -->
+[%# -*- mode: html -*- %]
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): Terry Weissman <terry@mozilla.org>
+  #                 Jacob Steenhagen <jake@acutex.net>
+  #%]
+
+[%# INTERFACE:
+  # release: a hash containing data about new releases, if any.
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+
+[% PROCESS global/header.html.tmpl
+   title = "${terms.Bugzilla}@Mozilla"
+   header = "Main Page"
+   header_addl_info = "version $constants.BUGZILLA_VERSION"
+   style_urls = [ 'skins/standard/index.css' ]
+%]
+
+<script type="text/javascript" language="JavaScript">
+<!--
+function addSidebar() {
+  if ((typeof window.sidebar == "object") && (typeof window.sidebar.addPanel == "function"))
+  {
+    var sidebarname=window.location.host;
+    if (!/bug/i.test(sidebarname))
+      sidebarname="[% terms.Bugzilla %] "+sidebarname;
+    window.sidebar.addPanel (sidebarname, "[% Param('urlbase') %]sidebar.cgi", "");
+  }
+  else
+  {
+    var rv = window.confirm ("Your browser does not support the sidebar extension.  " + "Would you like to upgrade now?");
+    if (rv)
+      document.location.href = "http://www.mozilla.org/binaries.html";
+  }
+}
+//-->
+</script>
+
+[% IF release %]
+  <div id="new_release">
+    [% IF release.data %]
+      [% IF release.deprecated %]
+        <p>[% terms.Bugzilla %] [%+ release.deprecated FILTER html %] is no longer
+        supported. You are highly encouraged to upgrade in order to keep your
+        system secure.</p>
+      [% END %]
+
+      <p>A new [% terms.Bugzilla %] version ([% release.data.latest_ver FILTER html %])
+      is available at
+      <a href="[% release.data.url FILTER html %]">[% release.data.url FILTER html %]</a>.<br>
+      Release date: [% release.data.date FILTER html %]</p>
+
+      <p class="notice">This message is only shown to logged in users with admin privs.
+      You can configure this notification from the
+      <a href="editparams.cgi?section=core#upgrade_notification">Parameters</a> page.</p>
+    [% ELSIF release.error == "no_update" %]
+      <p>The local XML file '[% release.xml_file FILTER html %]' cannot be updated.
+      Please make sure the web server can edit this file.</p>
+    [% ELSIF release.error == "no_access" %]
+      <p>The local XML file '[% release.xml_file FILTER html %]' cannot be read.
+      Please make sure this file exists and has the correct rights set on it.</p>
+    [% ELSIF release.error == "corrupted" %]
+      <p>The local XML file '[% release.xml_file FILTER html %]' has an invalid XML format.
+      Please delete it and try accessing this page again.</p>
+    [% ELSIF release.error == "unknown_parameter" %]
+      <p>'[% Param("upgrade_notification") FILTER html %]' is not a valid notification
+      parameter. Please check this parameter in the
+      <a href="editparams.cgi?section=core#upgrade_notification">Parameters</a> page.</p>
+    [% END %]
+  </div>
+[% END %]
+
+<div id="page-index">
+<table width="100%" border="0" cellpadding="6" cellspacing="0">
+  <tr valign="top">
+    <td width="55%">
+
+<div id="steps">    
+<h2>Got a problem?</h2>
+
+<ul>
+<li><a href="http://www.mozilla.org/support/">Get help with your mozilla.org product</a></li>
+<li><a href="http://hendrix.mozilla.org/">Leave quick feedback</a></li>
+<li><a href="page.cgi?id=broken-website.html">Report a broken website</a></li>
+<li><a href="enter_bug.cgi">Report a [% terms.bug %]</a> - latest release only
+    [% IF NOT user.id %]
+      (you'll need an 
+      <a href="createaccount.cgi">account</a>)
+    [% END %]
+</li>
+</ul>    
+</div>
+     
+<div class="queryform" style="border: 1px solid rgb(204, 204, 204); padding: 5px; text-align: center;">
+<form name="queryform" method="get" action="buglist.cgi" onclick="checkForBugNumber()">
+  <input type="hidden" name="query_format" value="specific"/>
+  <input type="hidden" name="order" value="relevance desc"/>
+  <input type="hidden" name="bug_status" value="__open__"/>
+
+  <b><label for="content">Find a [% terms.bug %]:</label></b>
+  <input name="content" id="content" size="30"/>
+  <input type="submit" value="Find"/>
+  <a href="page.cgi?id=quicksearchhack.html">[Help]</a>
+  <script language="JavaScript" type="text/javascript"> <!--
+      document.forms['queryform'].content.focus(); 
+      
+      // Show a single bug if a number was entered.
+      // This will leave cruft on the URL bar, but I don't think that's
+      // a disaster.
+      function checkForBugNumber() {
+        if (document.forms['queryform'].content.value.match(/^\d+$/) &&
+            document.forms['queryform'].content.setAttribute) 
+        {
+          document.forms['queryform'].content.setAttribute("name", "id");
+          document.forms['queryform'].setAttribute("action", "show_bug.cgi");
+        }
+      }
+  // -->
+  </script>
+</form>
+</div>
+
+<br>
+
+<ul class="frontpage-links">
+  <li><a href="duplicates.cgi?sortby=delta&amp;reverse=1&amp;maxrows=100&amp;changedsince=30">Hot Bugs</a> (most commonly filed recently)
+  </li>
+  <li><a href="buglist.cgi?product=Core&amp;product=Firefox&amp;product=Mozilla+Application+Suite&amp;product=Thunderbird&amp;product=Toolkit&amp;bug_status=UNCONFIRMED,NEW,ASSIGNED,REOPENED,RESOLVED&amp;chfield=%5BBug%20creation%5D&amp;chfieldfrom=-24h">Bugs Filed Today</a></li>  
+  <li>
+   <a href="query.cgi">Search existing bug reports</a> 
+  </li>
+  <li>
+   <a href="report.cgi">Reports, Charts and Graphs</a>
+  </li>
+  <li>
+   <a href="page.cgi?id=etiquette.html">[% terms.Bugzilla %] Etiquette</a>
+  </li>
+  <li>
+   <a href="http://www.mozilla.org/privacy-policy.html">Privacy Policy</a>
+  </li>
+  <li>
+   &nbsp;
+  </li>
+  <!--<li><a href="javascript:addSidebar()">Install [% terms.Bugzilla %] Sidebar</a> (Requires Firefox, Mozilla or Netscape 6/7)</li>-->
+  <li id="quick_search_plugin">
+    <a href="javascript:window.external.AddSearchProvider('[% Param('urlbase') %]search_plugin.cgi')">Install
+    the Quick Search plugin</a><br><small>(requires Firefox 2 or Internet Explorer 7)</small>
+  </li>
+ </ul>
+ 
+    </td>
+    <td width="45%">
+
+<p>
+Welcome to 
+<a href="http://www.mozilla.org/">mozilla.org</a>'s 
+bug-tracking system, our database for recording [% terms.bugs %] in and enhancement
+requests for 
+<a href="http://www.mozilla.com/firefox/">Firefox</a>, 
+<a href="http://www.mozilla.com/thunderbird/">Thunderbird</a>,
+<a href="http://www.mozilla.org/projects/seamonkey/">SeaMonkey</a>, 
+<a href="http://www.caminobrowser.org/">Camino</a>, 
+and other mozilla.org projects.
+</p>
+
+<p> 
+This bug-tracking system runs the "[% terms.Bugzilla %]" software, which is also a mozilla.org product. If you need a bug-tracking server yourself, you can also get <a href="http://www.bugzilla.org/">more information</a> about [% terms.Bugzilla %].
+</p>
+
+<hr>
+  [% IF NOT user.id %]
+    [% PROCESS "account/auth/login-small.html.tmpl" %]
+  [% ELSE %]
+    <ul>
+    <li id="userprefs"><a href="userprefs.cgi">Change password or user preferences</a></li>
+    <li id="logout"><a href="relogin.cgi">Log out [% user.login FILTER html %]</a></li>
+    </ul>
+  [% END %]
+      <!-- <img width="329" height="220"
+       alt="" src="ant.jpg" border="2">-->
+    </td>
+  </tr>
+</table>
+   
+</div>
+[% PROCESS global/footer.html.tmpl %]
