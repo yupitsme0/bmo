@@ -667,21 +667,6 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
-    # NOTE: This is a high-insert, non-critical table that is never used
-    # in transactions. Thus, in versions of Bugzilla that support InnoDB,
-    # this table should remain a MyISAM table.
-    profile_search => {
-        FIELDS => [
-            id         => {TYPE => 'INTSERIAL', NOTNULL => 1, PRIMARYKEY => 1},
-            user_id    => {TYPE => 'INT3', NOTNULL => 1},
-            bug_list   => {TYPE => 'MEDIUMTEXT', NOTNULL => 1},
-            list_order => {TYPE => 'MEDIUMTEXT'},
-        ],
-        INDEXES => [
-            profile_search_user_id => [qw(user_id)],
-        ],
-    },
-
     profiles_activity => {
         FIELDS => [
             userid        => {TYPE => 'INT3', NOTNULL => 1},

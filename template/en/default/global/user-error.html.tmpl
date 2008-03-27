@@ -1097,12 +1097,6 @@
     Either no products have been defined to enter [% terms.bugs %] against or you have not
     been given access to any.
 
-  [% ELSIF error == "no_such_list" %]
-    [% title = "Search Expired Or Invalid" %]
-    Your [% terms.bug %] list has expired (or you tried to access somebody 
-    else's list).
-    You will have to <a href="query.cgi">perform your search again</a>.
-
   [% ELSIF error == "no_user_match" %]
     [% title = "No User Match" %]
     No user matched your user list.
