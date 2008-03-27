@@ -30,14 +30,19 @@
 [% IF !header_done %]
   [% filtered_desc = bug.short_desc FILTER html %]
   [% filtered_timestamp = bug.delta_ts FILTER time %]
-  [% PROCESS global/header.html.tmpl
-    title = "$terms.Bug $bug.bug_id &ndash; $filtered_desc"
-    header = "$terms.Bug&nbsp;$bug.bug_id"
-    bodyclasses = ['bz_bug',
+  [% bodyclasses = ['bz_bug',
                    "bz_status_$bug.bug_status",
                    "bz_component_$bug.component",
                    "bz_bug_$bug.bug_id"
-                  ]
+                   ]
+  %]
+  [% FOREACH group = bug.groups %]
+    [% bodyclasses.push("bz_group_" _ group.name) IF group.ison %]
+  [% END %]
+  [% PROCESS global/header.html.tmpl
+    title = "$terms.Bug $bug.bug_id &ndash; $filtered_desc"
+    header = "$terms.Bug&nbsp;$bug.bug_id"
+    bodyclasses = bodyclasses
   %]
 [% END %]
 

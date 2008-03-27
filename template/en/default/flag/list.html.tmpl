@@ -158,7 +158,7 @@
                   title="[% type.description FILTER html %]"
                   [% " disabled=\"disabled\"" UNLESS user.can_request_flag(type) %]
                   onchange="toggleRequesteeField(this);"
-                  class="flag_select">
+                  class="flag_select flagname_[% type.name FILTER css_class_quote %]">
             <option value="X"></option>
             [% IF type.is_requestable && user.can_request_flag(type) %]
               <option value="?">?</option>
@@ -202,7 +202,8 @@
                 title="[% type.description FILTER html %]"
                 [% " disabled=\"disabled\"" UNLESS user.can_request_flag(type) %]
                 onchange="toggleRequesteeField(this);"
-                class="flag_select">
+                class="flag_select flagname_[% type.name FILTER css_class_quote %]">
+
           <option value="X"></option>
           [% IF type.is_requestable && user.can_request_flag(type) %]
             <option value="?">?</option>
