@@ -74,7 +74,8 @@ package Bugzilla::Field;
 use strict;
 
 use base qw(Exporter Bugzilla::Object);
-@Bugzilla::Field::EXPORT = qw(check_field get_field_id get_legal_field_values);
+@Bugzilla::Field::EXPORT = qw(check_field get_field_id get_legal_field_values
+                              get_field_values_sort_key);
 
 use Bugzilla::Util;
 use Bugzilla::Constants;
@@ -586,6 +587,21 @@ sub get_legal_field_values {
            WHERE isactive = ?
         ORDER BY sortkey, value", undef, (1));
     return $result_ref;
+}
+
+sub get_field_values_sort_key {
+    my ($field) = @_;
+    my $dbh = Bugzilla->dbh;
+    my $fields = $dbh->selectall_arrayref(
+         "SELECT value, sortkey FROM $field
+        ORDER BY sortkey, value");
+
+    my %field_values;
+    foreach my $field (@$fields) {
+        my ($value, $sortkey) = @$field;
+        $field_values{$value} = $sortkey;
+    }
+    return \%field_values;
 }
 
 =over

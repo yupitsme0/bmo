@@ -211,7 +211,14 @@
     </td>
 
     [% FOREACH column = displaycolumns %]
-    <td [% 'style="white-space: nowrap"' IF NOT abbrev.$column.wrap %]>
+    [% sortkey = columns_sortkey.$column.${bug.$column} %]
+
+    <td [% 'style="white-space: nowrap"' IF NOT abbrev.$column.wrap %]
+        [% "sorttable_customkey='$bug.opentime'" IF column == 'opendate'  %]
+        [% "sorttable_customkey='$bug.changeddate'" IF column == 'changeddate'  %]
+        [% "sorttable_customkey='$sortkey'" IF columns_sortkey.$column %]
+      >
+
       [% IF abbrev.$column.format_value %] 
         [%- bug.$column FILTER format(abbrev.$column.format_value) FILTER html -%] 
       [% ELSIF column == 'actual_time' ||
