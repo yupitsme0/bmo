@@ -84,6 +84,8 @@ if ($type eq 'user') {
     $vars->{'users'} = \%allusers;
 }
 else {
+    ThrowCodeError("missing_bug_id") unless defined $bug_id;
+
     # Make sure the bug ID is a positive integer representing an existing
     # bug that the user is authorized to access.
     ValidateBugID($bug_id);

@@ -199,14 +199,9 @@
       <input type="checkbox" name="id_[% bug.bug_id %]">
     </td>
     [% END %]
-
-    [% bug_url = BLOCK -%]
-      show_bug.cgi?id=[% bug.bug_id %]
-      [% IF user.id AND last_list_id %]&amp;last_list=[% last_list_id FILTER url_quote %][% END %]
-    [% END %]
     <td class="first-child">
       <a name="b[% bug.bug_id %]"
-         href="[% bug_url FILTER none %]">[% bug.bug_id %]</a>
+         href="show_bug.cgi?id=[% bug.bug_id %]">[% bug.bug_id %]</a>
       <span style="display: none">[%+ '[SEC]' IF bug.secure_mode %]</span>
     </td>
 

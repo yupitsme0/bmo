@@ -820,6 +820,9 @@
            [% IF multi %]
              size="[% multi %]" multiple="multiple"
            [% END %]
+           [% IF onChange && bug.isopened %]
+             onChange="[% onChange %]"
+           [% END %]
          >
         [% FOREACH x = bug.choices.${selname} %]
           <option value="[% x FILTER html %]"

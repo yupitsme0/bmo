@@ -1102,6 +1102,24 @@ if (defined $cgi->param('qa_contact')
     }
 }
 
+# By default, makes sure that all bugs are in a closed state.
+# If $all_open is true, makes sure that all bugs are open.
+sub check_bugs_resolution {
+    my ($idlist, $all_open) = @_;
+    my $dbh = Bugzilla->dbh;
+
+    my $open_states = join(',', map {$dbh->quote($_)} BUG_STATE_OPEN);
+    # The list has already been validated.
+    $idlist = join(',', @$idlist);
+    my $sql_cond = $all_open ? 'NOT' : '';
+    my $has_unwanted_bugs =
+      $dbh->selectrow_array("SELECT 1 FROM bugs WHERE bug_id IN ($idlist)
+                             AND bug_status $sql_cond IN ($open_states)");
+
+    # If there are unwanted bugs, then the test fails.
+    return !$has_unwanted_bugs;
+}
+
 SWITCH: for ($cgi->param('knob')) {
     /^none$/ && do {
         last SWITCH;
@@ -1122,6 +1140,9 @@ SWITCH: for ($cgi->param('knob')) {
         last SWITCH;
     };
     /^clearresolution$/ && CheckonComment( "clearresolution" ) && do {
+        # All bugs must already be open.
+        check_bugs_resolution(\@idlist, 'all_open')
+          || ThrowUserError('resolution_deletion_not_allowed');
         ChangeResolution($bug, '');
         last SWITCH;
     };
@@ -1152,13 +1173,7 @@ SWITCH: for ($cgi->param('knob')) {
         else {
             # You cannot use change_resolution if there is at least
             # one open bug.
-            my $open_states = join(',', map {$dbh->quote($_)} BUG_STATE_OPEN);
-            my $idlist = join(',', @idlist);
-            my $is_open =
-              $dbh->selectrow_array("SELECT 1 FROM bugs WHERE bug_id IN ($idlist)
-                                     AND bug_status IN ($open_states)");
-
-            ThrowUserError('resolution_not_allowed') if $is_open;
+            check_bugs_resolution(\@idlist) || ThrowUserError('resolution_not_allowed');
         }
 
         ChangeResolution($bug, $cgi->param('resolution'));
@@ -1209,10 +1224,16 @@ SWITCH: for ($cgi->param('knob')) {
         last SWITCH;
     };
     /^verify$/ && CheckonComment( "verify" ) && do {
+        check_bugs_resolution(\@idlist)
+          || ThrowUserError('bug_status_not_allowed', {status => 'VERIFIED'});
+
         ChangeStatus('VERIFIED');
         last SWITCH;
     };
     /^close$/ && CheckonComment( "close" ) && do {
+        check_bugs_resolution(\@idlist)
+          || ThrowUserError('bug_status_not_allowed', {status => 'CLOSED'});
+
         # CLOSED bugs should have no time remaining.
         _remove_remaining_time();
 

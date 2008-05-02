@@ -1,0 +1,1 @@
+contrib/verify-user.pl

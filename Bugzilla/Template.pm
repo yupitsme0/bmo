@@ -347,7 +347,7 @@ sub quoteUrls {
                ("\0\0" . ($count-1) . "\0\0")
               ~egmxi;
 
-    $text =~ s~\bbp\-([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12})\b
+    $text =~ s~\b(?:UUID\s+|bp\-)([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12})\b
               ~($things[$count++] = "<a href=\"http://crash-stats.mozilla.com/report/index/$1\">bp-$1</a>") &&
                ("\0\0" . ($count-1) . "\0\0")
               ~egmxi;

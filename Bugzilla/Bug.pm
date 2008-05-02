@@ -99,13 +99,8 @@ sub DB_COLUMNS {
 }
 
 use constant REQUIRED_CREATE_FIELDS => qw(
-    bug_severity
-    comment
     component
-    op_sys
-    priority
     product
-    rep_platform
     short_desc
     version
 );
@@ -245,11 +240,23 @@ sub new {
 # C<deadline>       - For time-tracking. Will be ignored for the same
 #                     reasons as C<estimated_time>.
 sub create {
-    my $class  = shift;
+    my ($class, $params) = @_;
     my $dbh = Bugzilla->dbh;
 
-    $class->check_required_create_fields(@_);
-    my $params = $class->run_create_validators(@_);
+    # These fields have default values which we can use if they are undefined.
+    $params->{bug_severity} = Bugzilla->params->{defaultseverity}
+      unless defined $params->{bug_severity};
+    $params->{priority} = Bugzilla->params->{defaultpriority}
+      unless defined $params->{priority};
+    $params->{op_sys} = Bugzilla->params->{defaultopsys}
+      unless defined $params->{op_sys};
+    $params->{rep_platform} = Bugzilla->params->{defaultplatform}
+      unless defined $params->{rep_platform};
+    # Make sure a comment is always defined.
+    $params->{comment} = '' unless defined $params->{comment};
+
+    $class->check_required_create_fields($params);
+    $params = $class->run_create_validators($params);
 
     # These are not a fields in the bugs table, so we don't pass them to
     # insert_create_data.
@@ -1617,7 +1624,7 @@ sub GetBugActivity {
                . $dbh->sql_string_concat('bugs_activity.fieldid', q{''}) .
                "), fielddefs.name, bugs_activity.attach_id, " .
         $dbh->sql_date_format('bugs_activity.bug_when', '%Y.%m.%d %H:%i:%s') .
-            ", bugs_activity.removed, bugs_activity.added, profiles.login_name, bug_id
+            ", bugs_activity.removed, bugs_activity.added, profiles.login_name, bugs_activity.bug_id
           FROM bugs_activity
                $suppjoins
      LEFT JOIN fielddefs
