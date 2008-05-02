@@ -142,7 +142,7 @@ sorttable = {
             // If the header contains a link, clear the href.
             for (var k=0; k<headrow[i].childNodes.length; k++) {
                 if (headrow[i].childNodes[k].tagName == 'A') {
-                  headrow[i].childNodes[k].href = "#";
+                  headrow[i].childNodes[k].href = "javascript: return false;";
                 }
             }
 
