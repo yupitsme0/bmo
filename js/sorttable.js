@@ -295,6 +295,13 @@ sorttable = {
       body_index = 0;
 
       for (var j=0; j<rows.length; j++) {    
+          if (j % 2)
+              rows[j].className = rows[j].className.replace('bz_row_even',
+                                                            'bz_row_odd');
+          else
+              rows[j].className = rows[j].className.replace('bz_row_odd',
+                                                            'bz_row_even');
+
           tb.appendChild(rows[j]);
           var bug_id = sorttable.getInnerText(rows[j].cells[0].childNodes[1]);
           BUGLIST = BUGLIST ? BUGLIST+':'+bug_id : bug_id;
@@ -328,6 +335,13 @@ sorttable = {
 
     cell.table.sorttable_rows = [];
     for (var i = newrows.length-1; i >= 0; i--) {
+        if (i % 2)
+            newrows[i].className = newrows[i].className.replace('bz_row_even',
+                                                                'bz_row_odd');
+        else
+            newrows[i].className = newrows[i].className.replace('bz_row_odd',
+                                                                'bz_row_even');
+
         tb.appendChild(newrows[i]);
         cell.table.sorttable_rows.push(newrows[i]);
 
