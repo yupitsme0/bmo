@@ -1115,6 +1115,15 @@ if (@bugidlist) {
 # Template Variable Definition
 ################################################################################
 
+# fields that have a custom sortkey. (so they are correctly sorted when using js)
+my @sortkey_fields = qw(milestones bug_status resolution bug_severity priority rep_platform
+                        op_sys);
+
+my %columns_sortkey;
+foreach my $field (@sortkey_fields) {
+    $columns_sortkey{$field} = get_field_values_sort_key($field);
+}
+
 # Define the variables and functions that will be passed to the UI template.
 
 $vars->{'bugs'} = \@bugs;
@@ -1122,6 +1131,7 @@ $vars->{'buglist'} = \@bugidlist;
 $vars->{'buglist_joined'} = join(',', @bugidlist);
 $vars->{'columns'} = $columns;
 $vars->{'displaycolumns'} = \@displaycolumns;
+$vars->{'columns_sortkey'} = \%columns_sortkey;
 
 my @openstates = BUG_STATE_OPEN;
 $vars->{'openstates'} = \@openstates;

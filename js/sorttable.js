@@ -142,7 +142,7 @@ sorttable = {
             // If the header contains a link, clear the href.
             for (var k=0; k<headrow[i].childNodes.length; k++) {
                 if (headrow[i].childNodes[k].tagName == 'A') {
-                  headrow[i].childNodes[k].href = "#";
+                  headrow[i].childNodes[k].href = "javascript: return false;";
                 }
             }
 
@@ -278,6 +278,8 @@ sorttable = {
       col = cell.sorttable_columnindex;
       rows = cell.table.sorttable_rows;
 
+      var BUGLIST = '';
+
       for (var j = 0; j < cell.table.sorttable_rows.length; j++) {
           rows[j].sort_data = sorttable.getInnerText(rows[j].cells[col]);
       }
@@ -293,7 +295,16 @@ sorttable = {
       body_index = 0;
 
       for (var j=0; j<rows.length; j++) {    
+          if (j % 2)
+              rows[j].className = rows[j].className.replace('bz_row_even',
+                                                            'bz_row_odd');
+          else
+              rows[j].className = rows[j].className.replace('bz_row_odd',
+                                                            'bz_row_even');
+
           tb.appendChild(rows[j]);
+          var bug_id = sorttable.getInnerText(rows[j].cells[0].childNodes[1]);
+          BUGLIST = BUGLIST ? BUGLIST+':'+bug_id : bug_id;
 
           if (j % body_size == body_size-1) {
             body_index++;
@@ -302,6 +313,8 @@ sorttable = {
             }
           }
       }
+
+      document.cookie = 'BUGLIST='+BUGLIST;
 
       cell.table.sorttable_rows = rows;
   },
@@ -318,10 +331,22 @@ sorttable = {
     body_size = cell.table.sorttable_body_size;
     body_index = 0;
   
+    var BUGLIST = '';
+
     cell.table.sorttable_rows = [];
     for (var i = newrows.length-1; i >= 0; i--) {
+        if (i % 2)
+            newrows[i].className = newrows[i].className.replace('bz_row_even',
+                                                                'bz_row_odd');
+        else
+            newrows[i].className = newrows[i].className.replace('bz_row_odd',
+                                                                'bz_row_even');
+
         tb.appendChild(newrows[i]);
         cell.table.sorttable_rows.push(newrows[i]);
+
+        var bug_id = sorttable.getInnerText(newrows[i].cells[0].childNodes[1]);
+        BUGLIST = BUGLIST ? BUGLIST+':'+bug_id : bug_id;
 
         if ((newrows.length-1-i) % body_size == body_size-1) {
             body_index++;
@@ -331,6 +356,8 @@ sorttable = {
         }
 
     }
+
+    document.cookie = 'BUGLIST='+BUGLIST;
 
     delete newrows;
   },
