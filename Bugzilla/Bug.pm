@@ -1639,6 +1639,7 @@ sub GetBugActivity {
     my $list = $dbh->selectall_arrayref($query, undef, @args);
 
     return create_activity_hash($list);
+}
 
 # Update the bugs_activity table to reflect changes made in bugs.
 sub LogActivityEntry {
