@@ -554,7 +554,7 @@ sub create_activity_hash {
 
         if ($activity_visible) {
             # This gets replaced with a hyperlink in the template.
-            $field =~ s/^Attachment// if $attachid;
+            $field =~ s/^Attachment\s*// if $attachid;
 
             # Check for the results of an old Bugzilla data corruption bug
             $incomplete_data = 1 if ($added =~ /^\?/ || $removed =~ /^\?/);

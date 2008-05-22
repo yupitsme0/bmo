@@ -125,6 +125,16 @@ sub parse_mail {
             
             if ($line =~ /^@(\S+)\s*=\s*(.*)\s*/) {
                 $current_field = lc($1);
+                # It's illegal to pass the reporter field as you could
+                # override the "From:" field of the message and bypass
+                # authentication checks, such as PGP.
+                if ($current_field eq 'reporter') {
+                    # We reset the $current_field variable to something
+                    # post_bug and process_bug will ignore, in case the
+                    # attacker splits the reporter field on several lines.
+                    $current_field = 'illegal_field';
+                    next;
+                }
                 $fields{$current_field} = $2;
             }
             else {
@@ -209,9 +219,10 @@ sub process_bug {
     }
 
     # Make sure we don't get prompted if we have to change the default
-    # groups.
+    # groups and if all other fields are already correctly set.
     if ($fields{'product'}) {
         $fields{'addtonewgroup'} = 0;
+        $fields{'confirm_product_change'} = 1;
     }
 
     foreach my $field (REQUIRED_PROCESS_FIELDS) {
@@ -319,6 +330,8 @@ sub html_strip {
     $var =~ s/\&gt;/>/g;
     $var =~ s/\&quot;/\"/g;
     $var =~ s/&#64;/@/g;
+    # Also remove undesired newlines and consecutive spaces.
+    $var =~ s/[\n\s]+/ /gms;
     return $var;
 }
 
@@ -344,7 +357,7 @@ sub die_handler {
        my $reply = reply(to => $input_email, top_post => 1, body => "$msg\n");
        MessageToMTA($reply->as_string);
     }
-    print STDERR $msg;
+    print STDERR "$msg\n";
     # We exit with a successful value, because we don't want the MTA
     # to *also* send a failure notice.
     exit;
