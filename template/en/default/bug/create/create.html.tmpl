@@ -556,12 +556,22 @@ function handleWantsAttachment(wants_attachment) {
   <tr>
     <th>&nbsp;</th>
     <td colspan="3">
-      [% IF product.name == "Bugzilla" OR product.name == "Testopia" OR product.name == "Webtools" %]
-        [% sec_bit = 12 %] [%# Webtools security group %]
-      [% ELSIF product.name == "addons.mozilla.org" %]
-        [% sec_bit = 23 %] [%# Update security group %]
+      [% IF product.name == "mozilla.org" %]
+        [% sec_bit = 6 %] [%# mozilla-confidential %]
+      [% ELSIF product.name == "Webtools" %]
+        [% sec_bit = 12 %] [%# webtools-security %]
+      [% ELSIF product.name == "Marketing" %]
+        [% sec_bit = 14 %] [%# marketing-private %]
+      [% ELSIF product.name == "addons.mozilla.org" OR product.name == "AUS" %]
+        [% sec_bit = 23 %] [%# client-services-security %]
+      [% ELSIF product.name == "Mozilla Messaging" %]
+        [% sec_bit = 45 %] [%# mozilla-messaging-confidential %]
+      [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center" OR product.name == "Sumo" %]
+        [% sec_bit = 52 %] [%# websites-security %]
+      [% ELSIF product.name == "Bugzilla" OR product.name == "Testopia" %]
+        [% sec_bit = 53 %] [%# bugzilla-security %]
       [% ELSE %]
-        [% sec_bit = 2 %]   [%# Standard security group %]
+        [% sec_bit = 2 %]   [%# core-security %]
       [% END %] 
       <input type="checkbox" name="bit-[% sec_bit %]" value="1">
       This is a security problem that should be kept confidential until addressed

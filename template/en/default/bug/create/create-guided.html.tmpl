@@ -76,7 +76,7 @@ function PutDescription() {
     and other products from mozilla.org. To report [% terms.abug %] you find 
     in Netscape [% matches.0 %] with this form, you must reproduce it first in 
     a recent build of
-    <a href="http://ftp.mozilla.org/pub/mozilla.org/mozilla/nightly/latest/">Mozilla</a>,
+    <a href="http://ftp.mozilla.org/pub/mozilla.org/seamonkey/nightly/latest/">SeaMonkey</a>,
     <a href="http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/latest-trunk/">Firefox</a>,
 <a href="http://ftp.mozilla.org/pub/mozilla.org/thunderbird/nightly/latest-trunk/">Thunderbird</a> or
     <a href="http://ftp.mozilla.org/pub/mozilla.org/camino/nightly/latest/">Camino</a>
@@ -103,9 +103,9 @@ function PutDescription() {
 
 [%# Include other products if sensible %]
 [% IF product.name == "Firefox" %]
-  [% productstring = "product=Mozilla%20Application%20Suite&amp;product=Firefox" %]
+  [% productstring = "product=SeaMonkey&amp;product=Firefox" %]
 [% ELSIF product.name == "Thunderbird" %]
-  [% productstring = "product=Mozilla%20Application%20Suite&amp;product=Thunderbird" %]
+  [% productstring = "product=SeaMonkey&amp;product=Thunderbird" %]
 [% ELSE %]
   [% productstring = BLOCK %]product=[% product.name FILTER url_quote %][% END %]
 [% END %]
@@ -135,7 +135,7 @@ function PutDescription() {
     <input type="hidden" name="product" value="[% product.name FILTER html %]">
     [% IF product.name == "Firefox" OR 
           product.name == "Thunderbird" OR 
-          product.name == "Mozilla Application Suite" OR
+          product.name == "SeaMonkey" OR
           product.name == "Camino" %]
       <input type="hidden" name="product" value="Core">
       <input type="hidden" name="product" value="Toolkit">
@@ -263,7 +263,7 @@ function PutDescription() {
     </td>
   </tr>
 
-  [% IF product.name.match("Firefox|Camino|Mozilla Application Suite") %]
+  [% IF product.name.match("Firefox|Camino|SeaMonkey") %]
     [% matches = cgi.user_agent('Gecko/(\d+)') %]
     [% buildid = cgi.user_agent() IF matches %]
   [% END %]
@@ -469,13 +469,23 @@ function PutDescription() {
     </td>
     <td valign="top">
       <p>
-        [% IF product.name == "Bugzilla" OR product.name == "Testopia" OR product.name == "Webtools" %]
-          [% sec_bit = 12 %] [%# Webtools security group %]
-        [% ELSIF product.name == "addons.mozilla.org" %]
-          [% sec_bit = 23 %] [%# Update security group %]
+        [% IF product.name == "mozilla.org" %]
+          [% sec_bit = 6 %] [%# mozilla-confidential %]
+        [% ELSIF product.name == "Webtools" %]
+          [% sec_bit = 12 %] [%# webtools-security %]
+        [% ELSIF product.name == "Marketing" %]
+          [% sec_bit = 14 %] [%# marketing-private %]
+        [% ELSIF product.name == "addons.mozilla.org" OR product.name == "AUS" %]
+          [% sec_bit = 23 %] [%# client-services-security %]
+        [% ELSIF product.name == "Mozilla Messaging" %]
+          [% sec_bit = 45 %] [%# mozilla-messaging-confidential %]
+        [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center" OR product.name == "Sumo" %]
+          [% sec_bit = 52 %] [%# websites-security %]
+        [% ELSIF product.name == "Bugzilla" OR product.name == "Testopia" %]
+          [% sec_bit = 53 %] [%# bugzilla-security %]
         [% ELSE %]
-          [% sec_bit = 2 %]   [%# Standard security group %]
-        [% END %] 
+          [% sec_bit = 2 %]   [%# core-security %]
+        [% END %]
         <input type="checkbox" name="bit-[% sec_bit %]" value="1">
         This is a security problem that should be kept confidential until addressed
         (see the mozilla.org <a href="http://www.mozilla.org/projects/security/security-bugs-policy.html">security policy</a> 
