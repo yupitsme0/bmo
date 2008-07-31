@@ -257,13 +257,19 @@ sub Send {
         # If the security bit is being set or unset, CC the appropriate
         # security list. This is to make sure security bugs don't get lost.
         if ($fieldname eq "bug_group") {
-            if ($old =~ /webtools-security/ || $new =~ /webtools-security/) {
+            if ($old =~ /bugzilla-security/ || $new =~ /bugzilla-security/) {
                 push(@ccs, login_to_id('security@bugzilla.org'));
             }
-            if ($old =~ /update-security/ || $new =~ /update-security/) {
+            if ($old =~ /websites-security/ || $new =~ /websites-security/) {
+                push(@ccs, login_to_id('website-drivers@mozilla.org'));
+            }
+            if ($old =~ /webtools-security/ || $new =~ /webtools-security/) {
+                push(@ccs, login_to_id('webtools-security@mozilla.org'));
+            }
+            if ($old =~ /client-services-security/ || $new =~ /client-services-security/) {
                 push(@ccs, login_to_id('amo-admins@mozilla.org'));
             }
-            if ($old =~ /(?<!-)security/ || $new =~ /(?<!-)security/) {
+            if ($old =~ /core-security/ || $new =~ /core-security/) {
                 push(@ccs, login_to_id('security@mozilla.org'));
             }
         }
