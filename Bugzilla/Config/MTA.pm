@@ -90,7 +90,11 @@ sub get_param_list {
    default => 7,
    checker => \&check_numeric
   },
-  
+  {
+   name => 'use_mailer_queue',
+   type => 'b',
+   default => 0
+  },
   {
    name => 'globalwatchers',
    type => 't',

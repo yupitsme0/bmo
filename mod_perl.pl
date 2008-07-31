@@ -22,7 +22,7 @@ use strict;
 # If you have an Apache2::Status handler in your Apache configuration,
 # you need to load Apache2::Status *here*, so that Apache::DBI can
 # report information to Apache2::Status.
-#use Apache2::Status ();
+use Apache2::Status ();
 
 # We don't want to import anything into the global scope during
 # startup, so we always specify () after using any module in this
@@ -60,8 +60,8 @@ my $conf = <<EOT;
     PerlCleanupHandler  Bugzilla::ModPerl::CleanupHandler
     PerlCleanupHandler  Apache2::SizeLimit
     PerlOptions +ParseHeaders
-    Options +ExecCGI
-    AllowOverride Limit
+    Options +ExecCGI +Includes
+    AllowOverride Limit FileInfo
     DirectoryIndex index.cgi index.html
 </Directory>
 EOT
@@ -85,6 +85,7 @@ package Bugzilla::ModPerl::ResponseHandler;
 use strict;
 use base qw(ModPerl::Registry);
 use Bugzilla;
+$Bugzilla::ModPerl::ResponseHandler::startuptime = time();
 
 sub handler : method {
     my $class = shift;

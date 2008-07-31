@@ -29,14 +29,47 @@
 [% PROCESS global/variables.none.tmpl %]
 
 [% filtered_desc = bug.short_desc FILTER html %]
+[% IF bug_id %]
+  [% title = "Changes made to $terms.bug $bug_id" %]
+  [% subheader = "$terms.Bug <a href=\"show_bug.cgi?id=$bug_id\">$bug_id</a>" %]
+[% ELSE %]
+  [% title = "Changes made by users" %]
+  [% subheader = "Changes made by users" %]
+[% END %]
+
 [% PROCESS global/header.html.tmpl
-  title = "Changes made to $terms.bug $bug.bug_id"
   header = "Activity log for $terms.bug $bug.bug_id: $filtered_desc"
+  title = title
+  subheader = subheader
  %]
 
+[% UNLESS bug_id %]
+  Changes made by users matching <b>"[% match FILTER html %]"</b>
+  [% IF chfrom %]
+    between [% chfrom FILTER html%] and [% chto FILTER html %]
+  [% ELSE %]
+    up to [% chto FILTER html %]
+  [% END %]
+ <br>
+ <br>
+[% END %]
+
+[% FOREACH a = activities %]
+  [% NEXT UNLESS a.value.operations.size %]
+  [% PROCESS bug/activity/table.html.tmpl operations = a.value.operations
+                                          incomplete_data = a.value.incomplete_data
+                                          hidden_changes = a.value.hidden_changes
+                                          title = users.${a.key}.identity  %]
+  [% "<br><hr><br>" UNLESS loop.last %]
+[% END %]
+
+[% IF bug_id %]
 <p>
   [% "Back to $terms.bug $bug.bug_id" FILTER bug_link(bug.bug_id) FILTER none %]
 </p>
+[% ELSE %]
+  <br><br>
+[% END %]
 
 [% PROCESS bug/activity/table.html.tmpl %]
 

@@ -1,0 +1,51 @@
+/* 
+ * Custom rules for skins/standard/index.css.
+ * The rules you put here override rules in that stylesheet.
+ */
+
+li {
+  margin-bottom: 5px;
+}
+
+h2 {
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+
+ul {
+  line-height: 130%
+}
+
+#steps {
+    /* Not positive on using -moz-border-radius here, I thought in gecko 1.8 at least, border-radius works. need to check */
+    -moz-border-radius-bottomleft:5px;
+    -moz-border-radius-bottomright:5px;
+    -moz-border-radius-topleft:5px;
+    -moz-border-radius-topright:5px;
+    background-color:#FFFFEE;
+    border: 1px solid red;
+    margin: 6px 0px 15px;
+    padding-left: 5px;
+}
+
+#steps ul {
+    padding-left: 10px;
+    line-height: 130%;
+}
+
+.frontpage-links {
+    line-height: 140%;
+}
+
+.queryform {
+    border: 1px solid #CCC;
+    padding: 5px;
+    text-align: center;
+}
+
+/* account/auth/login-small.html.tmpl needs id added to line 37 for this */
+#login-small {
+    border: 1px solid #CCC;
+    margin: auto;
+    padding: 10px;
+}

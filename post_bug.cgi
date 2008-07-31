@@ -240,7 +240,11 @@ if ($@) {
 }
 
 # Email everyone the details of the new bug 
-$vars->{'mailrecipients'} = {'changer' => $user->login};
+my @cc = ();
+push (@cc, 'security@mozilla.org') if (grep {$_ == 2} @selected_groups); # security
+push (@cc, 'security@bugzilla.org') if (grep {$_ == 12} @selected_groups); # webtools-security
+push (@cc, 'amo-admins@mozilla.org') if (grep {$_ == 23} @selected_groups); # update-security
+$vars->{'mailrecipients'} = {'changer' => $user->login, 'cc' => \@cc};
 
 $vars->{'id'} = $id;
 $vars->{'bug'} = $bug;

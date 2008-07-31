@@ -60,7 +60,9 @@
   <hr>
 [% END %]
 
-[% PROCESS bug/navigate.html.tmpl %]
+<span style="float: right; font-size: 0.85em;">
+  <a href="#c[% bug.longdescs.size - 1 %]" accesskey="l"><u>L</u>ast Comment</a>
+</span>
 
 [% PROCESS bug/edit.html.tmpl %]
 

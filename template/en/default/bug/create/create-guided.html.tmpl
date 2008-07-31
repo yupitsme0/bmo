@@ -34,17 +34,7 @@
    style = "#somebugs { width: 100%; height: 500px }"
  %]
 
-<p>
-  <font color="red">
-    This is a template used on mozilla.org.  This template, and the
-    comment-guided.txt.tmpl template that formats the data submitted via 
-    the form in this template, are included as a demo of what it's
-    possible to do with custom templates in general, and custom [% terms.bug %]
-    entry templates in particular. As much of the text will not apply, 
-    you should alter it 
-    if you want to use this form on your [% terms.Bugzilla %] installation.
-  </font>
-</p>
+[% INCLUDE 'bug/create/user-message.html.tmpl' %]
 
 [% tablecolour = "#FFFFCC" %]
 
@@ -260,9 +250,9 @@ function PutDescription() {
     </td>
   </tr>
 
-  [% op_sys = [ "Windows 98", "Windows NT", "Windows 2000", "Windows XP",
-                "Mac System 9.x", "MacOS X",
-                "Linux", "All", "other" ] %]
+  [% op_sys = [ "Windows 98", "Windows NT", "Windows 2000",
+                "Windows XP", "Windows Vista", "Mac System 9.x",
+                "Mac OS X", "Linux", "All", "Other" ] %]
 
   <tr>
     <td align="right" valign="top">
@@ -474,6 +464,27 @@ function PutDescription() {
   </tr>
 
   <tr>
+    <td valign="middle" align="right">
+      <b>Security</b>
+    </td>
+    <td valign="top">
+      <p>
+        [% IF product.name == "Bugzilla" OR product.name == "Testopia" OR product.name == "Webtools" %]
+          [% sec_bit = 12 %] [%# Webtools security group %]
+        [% ELSIF product.name == "addons.mozilla.org" %]
+          [% sec_bit = 23 %] [%# Update security group %]
+        [% ELSE %]
+          [% sec_bit = 2 %]   [%# Standard security group %]
+        [% END %] 
+        <input type="checkbox" name="bit-[% sec_bit %]" value="1">
+        This is a security problem that should be kept confidential until addressed
+        (see the mozilla.org <a href="http://www.mozilla.org/projects/security/security-bugs-policy.html">security policy</a> 
+        for more details).
+      </p>
+    </td>
+  </tr>
+
+  <tr bgcolor="[% tablecolour %]">
     <td valign="top" align="right">
       <b>Severity</b>
     </td>

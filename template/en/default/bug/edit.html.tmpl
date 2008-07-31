@@ -926,6 +926,16 @@
 [% BLOCK section_customfields %]
 [%# *** Custom Fields *** %]
 
+  [% IF bug.choices.cf_fixed_in.size %]
+   <tr>
+     [% PROCESS bug/field.html.tmpl 
+         field = Bugzilla.get_fields({ name => 'cf_fixed_in' })
+         value = bug.cf_fixed_in
+         editable = bug.check_can_change_field('cf_fixed_in', 0, 1) 
+         value_span = 2 %]
+   </tr>
+  [% END %]
+
   [% USE Bugzilla %]
   [% FOREACH field = Bugzilla.active_custom_fields %]
     <tr>

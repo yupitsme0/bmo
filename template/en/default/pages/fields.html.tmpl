@@ -120,9 +120,8 @@ cycle of [% terms.abug %].
         <dd>
           A resolution has been taken, and it is awaiting verification by
           QA. From here [% terms.bugs %] are either re-opened and become 
-          <b>[% get_status("REOPENED") FILTER html %]</b>, are marked
-          <b>[% get_status("VERIFIED") FILTER html %]</b>, or are closed for
-          good and marked <b>[% get_status("CLOSED") FILTER html %]</b>.
+          <b>[% get_status("REOPENED") FILTER html %]</b>, or are marked
+          <b>[% get_status("VERIFIED") FILTER html %]</b>.
         </dd>
 
         <dt>
@@ -130,17 +129,7 @@ cycle of [% terms.abug %].
         </dt>
         <dd>
           QA has looked at the [% terms.bug %] and the resolution and 
-          agrees that the appropriate resolution has been taken. [% terms.Bugs %] remain
-          in this state until the product they were reported
-          against actually ships, at which point they become
-          <b>[% get_status("CLOSED") FILTER html %]</b>.
-        </dd>
-
-        <dt>
-          <b>[% get_status("CLOSED") FILTER html %]</b>
-        </dt>
-        <dd>
-          The [% terms.bug %] is considered dead, the resolution is correct. 
+          agrees that the appropriate resolution has been taken.
           Any zombie [% terms.bugs %] who choose to walk the earth again must 
           do so by becoming <b>[% get_status("REOPENED") FILTER html %]</b>.
         </dd>
@@ -193,13 +182,17 @@ cycle of [% terms.abug %].
         </dd>
 
         <dt>
-          <b>[% get_resolution("MOVED") FILTER html %]</b>
+          <b>[% get_resolution("INCOMPLETE") FILTER html %]</b>
         </dt>
         <dd>
-          The problem was specific to a related product 
-          whose [% terms.bugs %] are tracked in
-          another [% terms.bug %] database.
-          The [% terms.bug %] has been moved to that database.
+          The problem is vaguely described with no steps to reproduce,
+          or is a support request. The reporter should be directed to the
+          product's support page for help diagnosing the issue. If there
+          are only a few comments in the bug, it may be reopened only if
+          the original reporter provides more info, or confirms someone
+          else's steps to reproduce. If the bug is long, when enough info
+          is provided a new bug should be filed and the original bug
+          marked as a duplicate of it.
         </dd>
       </dl>
     </td>

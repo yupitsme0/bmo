@@ -205,6 +205,7 @@ sub set_login {
     my ($self, $login) = @_;
     $self->set('login_name', $login);
     delete $self->{identity};
+    delete $self->{display_name};
     delete $self->{nick};
 }
 
@@ -212,6 +213,7 @@ sub set_name {
     my ($self, $name) = @_;
     $self->set('realname', $name);
     delete $self->{identity};
+    delete $self->{display_name};
 }
 
 sub set_password { $_[0]->set('cryptpassword', $_[1]); }
@@ -257,6 +259,24 @@ sub identity {
     }
 
     return $self->{identity};
+}
+
+# Generate a string to identify the user by name if the user
+# has a name or by login only if she doesn't.
+sub display_name {
+    my $self = shift;
+
+    return "" unless $self->id;
+
+    if (!defined $self->{display_name}) {
+        if ($self->name && length($self->name) > 40) {
+            $self->{display_name} = substr($self->name, 0, 37) . "...";
+        } else {
+            $self->{display_name} = $self->name ? $self->name : $self->login;
+        }
+    }
+
+    return $self->{display_name};
 }
 
 sub nick {
@@ -441,8 +461,8 @@ sub bless_groups {
     my $connector;
     my @bindValues;
 
-    if ($self->in_group('editusers')) {
-        # Users having editusers permissions may bless all groups.
+    if ($self->in_group('admin')) {
+        # Users having admin permissions may bless all groups.
         $query = 'SELECT DISTINCT id, name, description FROM groups';
         $connector = 'WHERE';
     }
@@ -1702,6 +1722,73 @@ sub validate_password {
     return 1;
 }
 
+sub get_user_activity {
+    my ($self, $from, $to) = @_;
+    my $dbh = Bugzilla->dbh;
+
+    # Arguments passed to the SQL query.
+    my @args = ($self->id);
+
+    my $datepart = "";
+    $from = $from ? $dbh->quote(SqlifyDate($from, 1)) : '';
+    $to = $dbh->quote(SqlifyDate($to, 1));
+
+    if ($from) {
+        $datepart = "AND bugs_activity.bug_when >= $from";
+    }
+
+    if ($to) {
+        $datepart .= " AND bugs_activity.bug_when <= $to";
+    }
+
+    # Only includes attachments the user is allowed to see.
+    my $suppjoins = "";
+    my $suppwhere = "";
+    if (Bugzilla->params->{"insidergroup"}
+        && !Bugzilla->user->in_group(Bugzilla->params->{'insidergroup'}))
+    {
+        $suppjoins = "LEFT JOIN attachments
+                   ON attachments.attach_id = bugs_activity.attach_id";
+        $suppwhere = "AND COALESCE(attachments.isprivate, 0) = 0";
+    }
+
+    my $query = "
+    SELECT COALESCE(fielddefs.description, "
+               # This is a hack - PostgreSQL requires both COALESCE
+               # arguments to be of the same type, and this is the only
+               # way supported by both MySQL 3 and PostgreSQL to convert
+               # an integer to a string. MySQL 4 supports CAST.
+               . $dbh->sql_string_concat('bugs_activity.fieldid', q{''}) .
+               "), fielddefs.name, bugs_activity.attach_id, " .
+        $dbh->sql_date_format('bugs_activity.bug_when', '%Y.%m.%d %H:%i:%s') .
+            ", bugs_activity.removed, bugs_activity.added, profiles.login_name, bugs_activity.bug_id
+          FROM bugs_activity
+               $suppjoins
+     LEFT JOIN fielddefs
+            ON bugs_activity.fieldid = fielddefs.id
+    INNER JOIN profiles
+            ON profiles.userid = bugs_activity.who
+         WHERE bugs_activity.who = ?
+               $datepart
+               $suppwhere
+      ORDER BY bugs_activity.bug_when";
+
+    my $list = $dbh->selectall_arrayref($query, undef, @args);
+    my @new_list;
+    my $current_user = Bugzilla->user;
+    my $hidden_changes = 0;
+
+    foreach my $item (@$list) {
+        if (! $current_user->can_see_bug(@$item[7])) {
+            $hidden_changes += 1;
+            next;
+        }
+            
+        push(@new_list, $item);
+    }
+
+    return (create_activity_hash(\@new_list), $hidden_changes);
+}
 
 1;
 
@@ -1833,6 +1920,12 @@ the page footer, and C<0> otherwise.
 Returns a string for the identity of the user. This will be of the form
 C<name E<lt>emailE<gt>> if the user has specified a name, and C<email>
 otherwise.
+
+=item C<display_name>
+
+Returns a string for the display name of the user. This will be of the
+form C<name> if the user has specified a name, and C<email> otherwise.
+Note that this value is truncated.
 
 =item C<nick>
 

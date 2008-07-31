@@ -420,6 +420,19 @@
   [% ELSIF error == "invalid_post_bug_submit_action" %]
     Invalid setting for post_bug_submit_action
 
+  [% ELSIF error == "theschwartz_not_configured" %]
+    TheSchwartz is not configured.  Please find the settings required in
+    [% constants.bz_locations.localconfig FILTER html %].
+
+  [% ELSIF error == "theschwartz_no_job_mapping" %]
+    Bugzilla::JobQueue::TheSchwartz has not been configured to handle
+    the job "[% job FILTER html %]".  This is a bug and needs to be rectified
+    before this job can be inserted into the job queue using TheSchwartz.
+
+  [% ELSIF error == "jobqueue_not_configured" %]
+    No suitable job queue system can be initialized.  Please ensure you
+    have configured the Bugzilla job queue system.
+
   [% ELSE %]
     [%# Try to find hooked error messages %]
     [% error_message = Hook.process("errors") %]

@@ -224,6 +224,9 @@ div#docslinks {
 .bz_obsolete {
     text-decoration: line-through;
 }
+.bz_patch {
+    background: #ffffcc;
+}
 .bz_inactive {
     text-decoration: line-through;
 }
@@ -231,6 +234,7 @@ div#docslinks {
 .bz_CLOSED td {
     text-decoration: line-through;
 }
+/* The bz_private rule needs to go after bz_patch in order to win */
 .bz_private {
     color: darkred;
     background: #f3eeee;

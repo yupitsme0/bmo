@@ -29,6 +29,7 @@ use Bugzilla::Constants;
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::Field;
+use Bugzilla::Install::Requirements;
 
 my $cgi = Bugzilla->cgi;
 my $template = Bugzilla->template;
@@ -55,6 +56,17 @@ my $action = $cgi->param('action') || 'menu';
 
 if ($action eq "menu") {
     # No need to do any searching in this case, so bail out early.
+    my $user = Bugzilla->login(LOGIN_OPTIONAL);
+    if ($user) {
+        $vars->{'products'} = $user->get_selectable_products;
+
+        my %cf_fixed_in;
+        foreach my $product (@{$vars->{'products'}}) {
+            $cf_fixed_in{$_->name} = 1 foreach (@{$product->cf_fixed_in});
+        }
+        my @cf_fixed_in = sort { vers_cmp (lc($a), lc($b)) } keys %cf_fixed_in;
+        $vars->{'cf_fixed_in'} = \@cf_fixed_in;
+    }
     print $cgi->header();
     $template->process("reports/menu.html.tmpl", $vars)
       || ThrowTemplateError($template->error());

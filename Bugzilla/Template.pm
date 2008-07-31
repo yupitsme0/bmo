@@ -151,6 +151,14 @@ sub get_format {
     };
 }
 
+# get the numerical portion of a talkback IID
+sub cleanTB {
+    my ($tbiid) = @_;
+    $tbiid =~ s/^TB//;
+    $tbiid =~ s/[^\d]+$//;
+    return $tbiid;
+}
+
 # This routine quoteUrls contains inspirations from the HTML::FromText CPAN
 # module by Gareth Rees <garethr@cre.canon.co.uk>.  It has been heavily hacked,
 # all that is really recognizable from the original is bits of the regular
@@ -230,6 +238,31 @@ sub quoteUrls {
 
     $text =~ s~\b(attachment\s*\#?\s*(\d+))
               ~($things[$count++] = get_attachment_link($2, $1)) &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
+    $text =~ s~\b(Incident\sID:\s*)((?:TB)?\d{7,8}\s?)\b
+              ~($things[$count++] = "$1<a href=\"http://talkback-public.mozilla.org/" . ((cleanTB($2) >= 16426810) ? "search/start" : "talkback/fastfind" ) . ".jsp?search=2\&amp;type=iid\&amp;id=$2\">$2</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
+    $text =~ s~\b(TB\d{7,8}\w)\b
+              ~($things[$count++] = "<a href=\"http://talkback-public.mozilla.org/" . ((cleanTB($1) >= 16426810) ? "search/start" : "talkback/fastfind" ) . ".jsp?search=2\&amp;type=iid\&amp;id=$1\">$1</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
+    $text =~ s~\b(?:UUID\s+|bp\-)([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12})\b
+              ~($things[$count++] = "<a href=\"http://crash-stats.mozilla.com/report/index/$1\">bp-$1</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
+    $text =~ s~\b((?:CVE|CAN)-\d{4}-\d{4})\b
+              ~($things[$count++] = "<a href=\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=$1\">$1</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
+    $text =~ s~\br(\d{4,})\b
+              ~($things[$count++] = "<a href=\"http://viewvc.svn.mozilla.org/vc?view=rev&amp;revision=$1\">r$1</a>") &&
                ("\0\0" . ($count-1) . "\0\0")
               ~egmxi;
 

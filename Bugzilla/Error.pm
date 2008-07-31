@@ -30,7 +30,6 @@ use base qw(Exporter);
 
 use Bugzilla::Constants;
 use Bugzilla::WebService::Constants;
-use Bugzilla::Util;
 use Date::Format;
 
 # We cannot use $^S to detect if we are in an eval(), because mod_perl
@@ -68,6 +67,7 @@ sub _throw_error {
         $mesg .= Bugzilla->user->login;
         $mesg .= (' actually ' . Bugzilla->sudoer->login) if Bugzilla->sudoer;
         $mesg .= "\n";
+        $mesg .= "Apache Process age: " . (time - $Bugzilla::ModPerl::ResponseHandler::startuptime) . " seconds.\n";
         my %params = Bugzilla->cgi->Vars;
         $Data::Dumper::Useqq = 1;
         for my $param (sort keys %params) {
@@ -146,6 +146,8 @@ sub ThrowTemplateError {
     # Try a template first; but if this one fails too, fall back
     # on plain old print statements.
     if (!$template->process("global/code-error.html.tmpl", $vars)) {
+        require Bugzilla::Util;
+        import Bugzilla::Util qw(html_quote);
         my $maintainer = Bugzilla->params->{'maintainer'};
         my $error = html_quote($vars->{'template_error_msg'});
         my $error2 = html_quote($template->error());

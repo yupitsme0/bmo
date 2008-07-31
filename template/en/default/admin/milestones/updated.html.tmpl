@@ -39,9 +39,16 @@
   <p>Updated Milestone sortkey to: '[% milestone.sortkey FILTER html %]'.</p>
 [% END %]
 
-[% UNLESS changes.value.defined || changes.sortkey.defined %]
-  <p>Nothing changed for milestone '[% milestone.name FILTER html %]'.</p>
+[% IF changes.is_active.defined %]
+  <p>Milestone is now [% "not" UNLESS milestone.is_active %] active.</p>
+[% END %]
 
+[% IF changes.is_searchable.defined %]
+  <p>Milestone is now [% "not" UNLESS milestone.is_searchable %] searchable.</p>
+[% END %]
+
+[% UNLESS changes.keys.size %]
+  <p>Nothing changed for milestone '[% milestone.name FILTER html %]'.</p>
 [% END %]
 
 [% PROCESS admin/milestones/footer.html.tmpl %]

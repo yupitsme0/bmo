@@ -184,6 +184,7 @@
       <style type="text/css">
         [% style %]
       </style>
+      [% style = "" %]
     [% END %]
 
     [%# CSS cascade, part 5: Custom Bugzilla stylesheet set (persistent).
@@ -212,10 +213,15 @@
              href="[% atomlink FILTER html %]">
     [% END %]
 
+    [% IF microsummary %]
+       <link rel="microsummary"
+             href="[% microsummary FILTER html %]">
+    [% END %]
+
     [%# Required for the 'Autodiscovery' feature in Firefox 2 and IE 7. %]
     <link rel="search" type="application/opensearchdescription+xml"
-                       title="[% terms.Bugzilla %]" href="./search_plugin.cgi">
-    <link rel="shortcut icon" href="images/favicon.ico" >
+                       title="[% terms.Bugzilla %]@Mozilla" href="./search_plugin.cgi">
+    <link rel="shortcut icon" href="skins/custom/images/bugzilla.png" >
     [% Hook.process("additional_header") %]
   </head>
 
@@ -229,6 +235,8 @@
                  [% ' ' %][% class FILTER css_class_quote %]
                [% END %]">
 
+  <div id="mozilla-org"><a href="http://www.mozilla.org/" title="Visit mozilla.org">Visit mozilla.org</a></div>
+
 [%# Migration note: the following file corresponds to the old Param
   # 'bannerhtml'
   #%]
@@ -241,7 +249,7 @@
 <table border="0" cellspacing="0" cellpadding="0" id="titles">
 <tr>
     <td id="title">
-      <p>[% terms.Bugzilla %]
+      <p>[% terms.Bugzilla %]@Mozilla
       [% " &ndash; $header" IF header %]</p>
     </td>
 

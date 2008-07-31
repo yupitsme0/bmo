@@ -80,6 +80,22 @@ versions:</a>
         [% END %]
       </td>
     </tr>
+    <tr>
+      <th align="right" valign="top">
+        <a href="editcf_fixed_in.cgi?product=[% product.name FILTER url_quote %]">Edit
+fixed in versions:</a>
+      </th>
+      <td>
+        [%- IF product.cf_fixed_in.size -%]
+          [% FOREACH v = product.cf_fixed_in %]
+            [% v.name FILTER html %]
+            <br>
+          [% END %]
+        [% ELSE %]
+          <font color="red">missing</font>
+        [% END %]
+      </td>
+    </tr>
     [% IF Param('usetargetmilestone') %]
       <tr>
         <th align="right" valign="top">

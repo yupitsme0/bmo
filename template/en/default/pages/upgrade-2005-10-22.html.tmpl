@@ -1,0 +1,88 @@
+[%# 1.0@bugzilla.org %]
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): David Miller <justdave@bugzilla.org>
+  #%]
+
+[% INCLUDE global/header.html.tmpl title = "Bugzilla Upgrade" %]
+
+<p><b>Last Updated:</b> 2005-10-22 21:00 PDT</p>
+
+<p>On Saturday, October 22, 2005, at 6pm PDT (1am UTC), bugzilla.mozilla.org
+was upgraded to Bugzilla version 2.20+ from CVS.</p>
+
+<h3>New Features</h3>
+
+<p>The following is a list of some of the new features and bugfixes that we
+picked up in the upgrade.
+This list has been generated from the changes listed in
+<a href="http://bonsai.mozilla.org/cvsquery.cgi?treeid=default&amp;module=Bugzilla&amp;branch=HEAD&amp;branchtype=match&amp;file=xml%24&amp;filetype=notregexp&amp;sortby=Date&amp;date=explicit&amp;mindate=2004-12-23+04%3A25%3A38&amp;maxdate=2005-07-07+23%3A30%3A00&amp;cvsroot=%2Fcvsroot">Bonsai
+for the Trunk</a> between our last upgrade and the 2.20 branch point, and
+<a href="http://bonsai.mozilla.org/cvsquery.cgi?treeid=default&amp;module=Bugzilla&amp;branch=BUGZILLA-2_20-BRANCH&amp;branchtype=match&amp;file=xml%24&amp;filetype=notregexp&amp;sortby=Date&amp;date=explicit&amp;mindate=2005-07-07+23%3A30%3A00&amp;maxdate=2005-10-22+00%3A00%3A00&amp;cvsroot=%2Fcvsroot">Bonsai
+for the 2.20 branch</a> from the branch point to present, but I've only
+included user-visible features which we're using on bugzilla.mozilla.org in
+this list.  You can click the Bonsai links if you want to see them all, but it's
+a LONG list. ;) Boldfaced items are "important".</p>
+
+<ul>
+<li><b>Marking an attachment as obsolete now cancels all unfulfilled requests on that attachment.</b></li>
+<li><b>You can now get an RSS feed of a buglist by dragging or copy/pasting the RSS link at the bottom of the buglist into your news reader, or by using the Live Bookmarks feature in Firefox.</b></li>
+<li>Search names are now preserved when clicking "Edit this search" from saved search results.</li>
+<li>Users can now cancel their own flag requests even if the flag has restricted permissions for who can grant/deny the flag.</li>
+<li>XML bug output now includes attachment flags.</li>
+<li>Bug change notification mails will now include an "In-Reply-To:" header referencing the "new bug" notification mail's message ID on all additional mails about a bug, to aid threading in mail clients.</li>
+<li>There is now a checkbox on the show bug page to add yourself to the CC list.</li>
+<li>It is now possible to clone the main fields on a bug into a new bug.</li>
+<li>Lots of CSS classes and IDs added to facilitate custom stylesheets.</li>
+<li>"Commenter" is now available as a field in boolean charts on the advanced query page.</li>
+<li>Users now have a general preferences panel in their user prefs with the following preferences:<ul>
+    <li>Whether or not to show quips at the top of buglists</li>
+    <li>What order to view comments on a bug (most-recent comments at the top is now an option)</li>
+    <li>The list separator character to use in CSV buglists</li>
+    </ul>
+<li>The search box on the guided bug entry form now searches all of the core products related to the product the user chose (for example, if the user selects Firefox, it will search Core and Toolkit as well)</li>
+<li>Any page is now capable of being a login page simply by adding the ?GoAheadAndLogin=1 option to the URL. All links have been changed to make index.cgi the default login page instead of query.cgi.</li>
+<li>The email preferences page now lists who is currently watching your account.</li>
+<li>A login form is now included on the index/home page.</li>
+
+</ul>
+
+<h3>Important Bug Fixes</h3>
+
+<ul>
+<li><b>Word-wrapping is now performed server-side at display time, rather than by your web browser, thus preventing the horizontal scrolling problem with comments posted by browsers that don't support client-side word wrapping in forms.</b></li>
+<li><b>Multiple crashes when granting/denying/removing requests have been quashed.</b></li>
+<li><b>The 'Edit Attachment' link is now available even if a user does not have 'editbugs' privs, thus allowing users to make requests and view the attachment metadata.</b></li>
+<li><b>Adding an attachment and making a request at the same time no longer loses your attachment if you have to confirm a user-match for the requestee field.  Instead it discards the requestee and tells you that it did so (in order to preserve the attachment).</b></li>
+<li>Filing a security bug in the Update product will now place the bug in the Update security group instead of the Webtools security group</li>
+<li>The query page will no longer add your default query options to the prefilled fields if you try to prefill a query form via URL parameters which only contains boolean chart options.</li>
+<li>Access keys which conflict with browser access keys were removed.</li>
+<li>Corrupted sort order cookies are now silently fixed instead of throwing a big red error box.</li>
+<li>Confirming a bug by voting on it no longer produces an SQL error.</li>
+<li>The Real Name columns in buglists now display an email address instead of nothing if the user does not have anything in their real name field on their account.</li>
+<li>Users are now allowed to rerequest set flags even if they don't have the privilege to set them.</li>
+<li>When using the "Find a Specific Bug" search, the results page no longer shows "only the 200 most relevant bugs are shown" if less than 200 bugs were found.</li>
+<li>Long format buglists now include the keywords field.</li>
+<li>Request queue header no longer requires horizontal scrolling for most users.</li>
+<li>Can no longer mark bugs as duplicates of each other.</li>
+
+</ul>
+
+<br>
+
+[% INCLUDE global/footer.html.tmpl %]

@@ -142,6 +142,31 @@ EOT
 EOT
     },
     {
+        name    => 'schwartz_db_dsn',
+        default => '',
+        desc    => <<EOT
+# VERY ADVANCED OPTION:
+# Configuration of a database DSN for TheSchwartz reliable job management
+# system.  If you don't know what this is, you don't want to play with it.
+EOT
+    },
+    {
+        name    => 'schwartz_db_user',
+        default => '',
+        desc    => <<EOT
+# If you are using TheSchwartz, this is the username for your database
+# account.  If you don't know what this means, pretend it doesn't exist.
+EOT
+    },
+    {
+        name    => 'schwartz_db_pass',
+        default => '',
+        desc    => <<EOT
+# The password for your TheSchwartz database account.  Again, if this is
+# gibberish, then please leave this option alone.
+EOT
+    },
+    {
         name    => 'index_html',
         default => 0,
         desc    => <<EOT

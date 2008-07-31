@@ -232,6 +232,11 @@
                     'query.html#list' => "$terms.Bug lists"} %]
     You may not search, or create saved searches, without any search terms.
 
+  [% ELSIF error == "cf_fixed_in_not_valid" %]
+    [% title = "Specified Fixed In Version Does Not Exist" %]
+    The fixed in version '[% cf_fixed_in FILTER html %]' for product
+    '[% product.name FILTER html %]' does not exist.
+
   [% ELSIF error == "chart_too_large" %]
     [% title = "Chart Too Large" %]
     Sorry, but 2000 x 2000 is the maximum size for a chart.
@@ -942,7 +947,7 @@
                          'milestones.html' => 'About Milestones'} %]
     Sorry, but [% milestone.name FILTER html %] is the default milestone
     for the '[% milestone.product.name FILTER html %]' product, and so
-    it cannot be deleted.
+    it cannot be deleted or made inactive.
 
   [% ELSIF error == "milestone_name_too_long" %]
     [% title = "Milestone Name Is Too Long" %]
@@ -1153,6 +1158,10 @@
                          'groups.html'     => 'Groups security'} %]
     Either no products have been defined to enter [% terms.bugs %] against or you have not
     been given access to any.
+
+  [% ELSIF error == "no_user_match" %]
+    [% title = "No User Match" %]
+    No user matched your user list.
 
   [% ELSIF error == "no_valid_action" %]
     [% title = "No valid action specified" %]
@@ -1677,5 +1686,7 @@
     milestone
   [% ELSIF class == "Bugzilla::Status" %]
     status
+  [% ELSIF class == "Bugzilla::FixedIn" %]
+    fixed in version
   [% END %]
 [% END %]

@@ -52,9 +52,16 @@ use Email::MIME::Modifier;
 use Email::Send;
 
 sub MessageToMTA {
-    my ($msg) = (@_);
+    my ($msg, $send_now) = (@_);
     my $method = Bugzilla->params->{'mail_delivery_method'};
     return if $method eq 'None';
+
+    # If we're queueing, then bail here unless we've been told that we
+    # should really just go ahead and send the mail now.
+    if (! $send_now && Bugzilla->params->{'use_mailer_queue'}) {
+        Bugzilla->job_queue->insert('send_mail', ( msg => ref $msg ? $$msg : $msg ));
+        return;
+    }
 
     my $email = ref($msg) ? $msg : Email::MIME->new($msg);
     $email->walk_parts(sub {

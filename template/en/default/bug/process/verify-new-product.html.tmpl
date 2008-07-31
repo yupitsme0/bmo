@@ -38,7 +38,8 @@
 
 <form action="process_bug.cgi" method="post">
 
-[% SET exclude_items = ['version', 'component', 'target_milestone'] %]
+[% SET exclude_items = ['version', 'component', 'target_milestone', 
+                        'cf_fixed_in'] %]
 [% IF verify_bug_groups %]
   [% exclude_items.push('bit-\d+') %]
 [% END %]
@@ -101,6 +102,17 @@
                  options=milestones
                  default=defaults.milestone
                  size=10 %]
+      </td>
+    [% END %]
+    [% IF cf_fixed_in.size %]
+      <td>
+        <b>Fixed In:</b><br>
+        [% PROCESS "global/select-menu.html.tmpl"
+                   name="cf_fixed_in"
+                   options=cf_fixed_ins
+                   default=defaults.cf_fixed_in
+                   size=10
+                   multiple=1 %]
       </td>
     [% END %]
   </tr>

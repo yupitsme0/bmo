@@ -970,6 +970,28 @@ my @orderstrings = split(/,\s*/, $db_order);
 my $search = new Bugzilla::Search('fields' => \@selectnames, 
                                   'params' => $params,
                                   'order' => \@orderstrings);
+
+my %db_order_column_name_map = (
+    'map_components.name' => 'component',
+    'map_products.name' => 'product',
+    'map_reporter.login_name' => 'reporter',
+    'map_assigned_to.login_name' => 'assigned_to',
+    'delta_ts' => 'opendate',
+    'creation_ts' => 'changeddate',
+);
+
+
+# contains field names of the columns being used to sort the table.
+my @order_columns;
+foreach my $o (@orderstrings) {
+    $o =~ s/bugs.//;
+    $o = $db_order_column_name_map{$o} if grep($_ eq $o, keys(%db_order_column_name_map));
+    next if (grep($_ eq $o, @order_columns));
+    push(@order_columns, $o);
+
+}
+
+
 my $query = $search->getSQL();
 
 if (defined $cgi->param('limit')) {
@@ -1120,6 +1142,15 @@ if (@bugidlist) {
 # Template Variable Definition
 ################################################################################
 
+# fields that have a custom sortkey. (so they are correctly sorted when using js)
+my @sortkey_fields = qw(milestones bug_status resolution bug_severity priority rep_platform
+                        op_sys);
+
+my %columns_sortkey;
+foreach my $field (@sortkey_fields) {
+    $columns_sortkey{$field} = get_field_values_sort_key($field);
+}
+
 # Define the variables and functions that will be passed to the UI template.
 
 $vars->{'bugs'} = \@bugs;
@@ -1127,6 +1158,7 @@ $vars->{'buglist'} = \@bugidlist;
 $vars->{'buglist_joined'} = join(',', @bugidlist);
 $vars->{'columns'} = $columns;
 $vars->{'displaycolumns'} = \@displaycolumns;
+$vars->{'columns_sortkey'} = \%columns_sortkey;
 
 $vars->{'openstates'} = [BUG_STATE_OPEN];
 $vars->{'closedstates'} = [map {$_->name} closed_bug_statuses()];
@@ -1225,7 +1257,9 @@ if ($dotweak && scalar @bugs) {
         my $product = new Bugzilla::Product({name => $products[0]});
         $vars->{'versions'} = [map($_->name ,@{$product->versions})];
         $vars->{'components'} = [map($_->name, @{$product->components})];
-        $vars->{'targetmilestones'} = [map($_->name, @{$product->milestones})]
+
+        my @milestones = grep($_->is_active, @{$product->milestones});
+        $vars->{'targetmilestones'} = [map($_->name, @milestones)]
             if Bugzilla->params->{'usetargetmilestone'};
     }
 }

@@ -48,6 +48,7 @@ use Bugzilla::Error;
 use Bugzilla::Util;
 use Bugzilla::Field;
 use Bugzilla::Flag;
+use Bugzilla::JobQueue;
 
 use File::Basename;
 use File::Spec::Functions;
@@ -112,6 +113,15 @@ sub init_page {
             }
         };
     }
+
+    ### MOZILLA HACK FOR NETSCALER PASS-THROUGH ###
+    if (i_am_cgi() && ($ENV{REMOTE_ADDR} eq "10.2.81.4")) {
+      $ENV{REMOTE_ADDR} = $ENV{HTTP_X_FORWARDED_FOR};
+    }
+    #if (i_am_cgi() && ($ENV{REMOTE_ADDR} =~ /^166\.87\.255\./)) {
+    #  print Bugzilla->cgi->redirect("/nuisancebugs2.html");
+    #  exit;
+    #}
 
     # If Bugzilla is shut down, do not allow anything to run, just display a
     # message to the user about the downtime and log out.  Scripts listed in 
@@ -306,6 +316,18 @@ sub logout_request {
     delete $class->request_cache->{sudoer};
     # We can't delete from $cgi->cookie, so logincookie data will remain
     # there. Don't rely on it: use Bugzilla->user->login instead!
+}
+
+# return a Bugzilla::JobQueue object
+sub job_queue {
+    my $class = shift;
+
+    $class->request_cache->{job_queue} ||= Bugzilla::JobQueue->new();
+
+    ThrowCodeError('jobqueue_not_configured')
+        unless $class->request_cache->{job_queue};
+
+    return $class->request_cache->{job_queue};
 }
 
 sub dbh {

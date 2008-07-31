@@ -123,7 +123,7 @@ sub PrefillForm {
                       "chfieldto", "chfieldvalue", "target_milestone",
                       "email", "emailtype", "emailreporter",
                       "emailassigned_to", "emailcc", "emailqa_contact",
-                      "emaillongdesc", "content",
+                      "emaillongdesc", "content", "cf_fixed_in",
                       "changedin", "votes", "short_desc", "short_desc_type",
                       "long_desc", "long_desc_type", "bug_file_loc",
                       "bug_file_loc_type", "status_whiteboard",
@@ -194,16 +194,20 @@ Bugzilla::Product::preload(\@selectable_products);
 # Create the component, version and milestone lists.
 my %components;
 my %versions;
+my %cf_fixed_in;
 my %milestones;
 
 foreach my $product (@selectable_products) {
     $components{$_->name} = 1 foreach (@{$product->components});
     $versions{$_->name}   = 1 foreach (@{$product->versions});
-    $milestones{$_->name} = 1 foreach (@{$product->milestones});
+    my @searchable_milestones = grep {$_->is_searchable} @{$product->milestones};
+    $milestones{$_->name} = 1 foreach @searchable_milestones;
+    $cf_fixed_in{$_->name} = 1 foreach (@{$product->cf_fixed_in});
 }
 
 my @components = sort(keys %components);
 my @versions = sort { vers_cmp (lc($a), lc($b)) } keys %versions;
+my @cf_fixed_in = sort { vers_cmp (lc($a), lc($b)) } keys %cf_fixed_in;
 my @milestones = sort(keys %milestones);
 
 $vars->{'product'} = \@selectable_products;
@@ -217,6 +221,7 @@ if (Bugzilla->params->{'useclassification'}) {
 $vars->{'component_'} = \@components;
 
 $vars->{'version'} = \@versions;
+$vars->{'cf_fixed_in'} = \@cf_fixed_in;
 
 if (Bugzilla->params->{'usetargetmilestone'}) {
     $vars->{'target_milestone'} = \@milestones;
@@ -348,6 +353,10 @@ $vars->{'known_name'} = $cgi->param('known_name');
 
 # Add in the defaults.
 $vars->{'default'} = \%default;
+
+if ($cgi->param('format') && $cgi->param('format') eq 'modern') {
+    $cgi->param('format','advanced');
+}
 
 $vars->{'format'} = $cgi->param('format');
 $vars->{'query_format'} = $cgi->param('query_format');

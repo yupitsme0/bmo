@@ -33,6 +33,7 @@ var useclassification = false;
 [% END %]
 var cpts = new Array();
 var vers = new Array();
+var cf_fixed_ins = new Array();
 [% IF Param('usetargetmilestone') %]
 var tms = new Array();
 [% END %]
@@ -65,9 +66,11 @@ var tms = new Array();
     [%- FOREACH item = p.components %]'[% item.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
   vers[[% n %]] = [
     [%- FOREACH item = p.versions -%]'[%  item.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
+  cf_fixed_ins[[% n %]] = [
+    [%- FOREACH item = p.cf_fixed_in -%]'[%  item.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
   [% IF Param('usetargetmilestone') %]
   tms[[% n %]]  = [
-     [%- FOREACH item = p.milestones %]'[% item.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
+     [%- FOREACH item = p.milestones %][% NEXT UNLESS item.is_searchable %]'[% item.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
   [% END %]
   [% n = n+1 %]
 [% END %]
@@ -90,14 +93,18 @@ function doOnSelectProduct(selectmode) {
         // If there is no classification selected, give us a chance to fill
         // the select fields with values from the possibly selected product.
         if (useclassification && f.classification.selectedIndex > -1) {
-            selectClassification(f.classification, f.product, f.component, f.version, milestone);
+            selectClassification(f.classification, f.product, f.component, f.version, milestone,
+                                 f.cf_fixed_in);
         } else {
-            selectProduct(f.product, f.component, f.version, milestone, null);
+            selectProduct(f.product, f.component, f.version, milestone, 
+                          f.cf_fixed_in, null);
         }
     } else if (selectmode == 1) {
-        selectClassification(f.classification, f.product, f.component, f.version, milestone);
+        selectClassification(f.classification, f.product, f.component, f.version, milestone,
+                             f.cf_fixed_in);
     } else {
-        selectProduct(f.product, f.component, f.version, milestone, null);
+        selectProduct(f.product, f.component, f.version, milestone, 
+                      f.cf_fixed_in, null);
     }
 }
 
@@ -242,6 +249,19 @@ function doOnSelectProduct(selectmode) {
               </tr>
             </table>
           </td>
+          <td valign="top">
+            <table>
+              <tr valign="bottom">
+                <th align="left">
+                  <label for="cf_fixed_in">Fixed In</label>:
+                </th>
+              </tr>
+              <tr valign="top">
+                [% PROCESS select sel = { name => 'cf_fixed_in',
+                                          size => 5 } %]
+              </tr>
+            </table>
+          </td>
         [% IF Param('usetargetmilestone') %]
           <td valign="top">
             <table>
@@ -354,7 +374,7 @@ function doOnSelectProduct(selectmode) {
         </tr>
         <tr valign="top">
           [% PROCESS select sel = { name => 'bug_status',
-                                    size => 7 } %]
+                                    size => 9 } %]
         </tr>
       </table>
     </td>
@@ -367,7 +387,7 @@ function doOnSelectProduct(selectmode) {
         </tr>
         <tr valign="top">
           [% PROCESS select sel = { name => 'resolution',
-                                    size => 7 } %]
+                                    size => 9 } %]
         </tr>
       </table>
     </td>
@@ -380,7 +400,7 @@ function doOnSelectProduct(selectmode) {
         </tr>
         <tr valign="top">
           [% PROCESS select sel = { name => 'bug_severity',
-                                    size => 7 }%]
+                                    size => 9 }%]
         </tr>
       </table>
     </td>
@@ -393,7 +413,7 @@ function doOnSelectProduct(selectmode) {
         </tr>
         <tr valign="top">
           [% PROCESS select sel = { name => 'priority',
-                                    size => 7 } %]
+                                    size => 9 } %]
         </tr>
       </table>
     </td>
@@ -406,7 +426,7 @@ function doOnSelectProduct(selectmode) {
         </tr>
         <tr valign="top">
           [% PROCESS select sel = { name => 'rep_platform',
-                                    size => 7 } %]
+                                    size => 9 } %]
         </tr>
       </table>
     </td>
@@ -419,7 +439,7 @@ function doOnSelectProduct(selectmode) {
         </tr>
         <tr valign="top">
           [% PROCESS select sel = { name => 'op_sys',
-                                    size => 7 } %]
+                                    size => 9 } %]
         </tr>
       </table>
     </td>

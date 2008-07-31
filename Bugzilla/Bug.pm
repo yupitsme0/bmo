@@ -33,6 +33,7 @@ use strict;
 use Bugzilla::Attachment;
 use Bugzilla::Constants;
 use Bugzilla::Field;
+use Bugzilla::FixedIn;
 use Bugzilla::Flag;
 use Bugzilla::FlagType;
 use Bugzilla::Keyword;
@@ -651,6 +652,7 @@ sub update {
     # Insert the values into the multiselect value tables
     my @multi_selects = grep {$_->type == FIELD_TYPE_MULTI_SELECT}
                              Bugzilla->active_custom_fields;
+    push(@multi_selects, new Bugzilla::Field({ name => 'cf_fixed_in'}));
     foreach my $field (@multi_selects) {
         my $name = $field->name;
         my ($removed, $added) = diff_arrays($old_bug->$name, $self->$name);
@@ -990,6 +992,24 @@ sub _check_cc {
     return [keys %cc_ids];
 }
 
+sub _check_cf_fixed_in {
+    my ($self, $fixed_in_names) = @_;
+    $fixed_in_names ||= [];
+
+    my @names;
+    foreach my $name (@$fixed_in_names) {
+        my $obj = new Bugzilla::FixedIn({ product => $self->product_obj,
+                                             name => $name });
+        if (!$obj) {
+            ThrowUserError('cf_fixed_in_not_valid', {
+                cf_fixed_in => $name,
+                product     => $self->producti_obj });
+        }
+        push(@names, $obj->name);
+    }
+    return \@names;
+}
+
 sub _check_comment {
     my ($invocant, $comment) = @_;
 
@@ -1211,8 +1231,12 @@ sub _check_groups {
         my $othercontrol  = $controls->{$id} 
                             && $controls->{$id}->{othercontrol};
         
+        # b.m.o.-specific hack - allow anyone to file bugs in the standard
+        # security group (2), the Webtools security group (12), the
+        # Update security group (23), mozorg-confidential (6), or infra (35)
         my $permit = ($membercontrol && $user->in_group($group->name))
-                     || $othercontrol;
+                     || $othercontrol
+                     || $id == 2 || $id == 12 || $id == 23 || $id == 6 || $id == 35;
 
         $add_groups{$id} = 1 if $permit;
     }
@@ -1578,7 +1602,7 @@ sub fields {
         # Keep this ordering in sync with bugzilla.dtd.
         qw(bug_id alias creation_ts short_desc delta_ts
            reporter_accessible cclist_accessible
-           classification_id classification
+           classification_id classification cf_fixed_in
            product component version rep_platform op_sys
            bug_status resolution dup_id
            bug_file_loc status_whiteboard keywords
@@ -1647,6 +1671,7 @@ sub reset_assigned_to {
     $self->set_assigned_to($comp->default_assignee);
 }
 sub set_cclist_accessible { $_[0]->set('cclist_accessible', $_[1]); }
+sub set_cf_fixed_in { $_[0]->set('cf_fixed_in', $_[1]); }
 sub set_comment_is_private {
     my ($self, $comment_id, $isprivate) = @_;
     return unless Bugzilla->user->is_insider;
@@ -1754,6 +1779,7 @@ sub set_product {
     my $comp_name = $params->{component} || $self->component;
     my $vers_name = $params->{version}   || $self->version;
     my $tm_name   = $params->{target_milestone};
+    my $fixed_in  = $params->{cf_fixed_in};
     # This way, if usetargetmilestone is off and we've changed products,
     # set_target_milestone will reset our target_milestone to
     # $product->default_milestone. But if we haven't changed products,
@@ -1772,6 +1798,7 @@ sub set_product {
         my $component_ok = eval { $self->set_component($comp_name);      1; };
         my $version_ok   = eval { $self->set_version($vers_name);        1; };
         my $milestone_ok = eval { $self->set_target_milestone($tm_name); 1; };
+        my $fixed_in_ok  = eval { $self->set_cf_fixed_in($fixed_in);     1; };
         # If there were any errors thrown, make sure we don't mess up any
         # other part of Bugzilla that checks $@.
         undef $@;
@@ -1779,7 +1806,9 @@ sub set_product {
         
         my $verified = $params->{change_confirmed};
         my %vars;
-        if (!$verified || !$component_ok || !$version_ok || !$milestone_ok) {
+        if (!$verified || !$component_ok || !$version_ok || !$milestone_ok
+            || !$fixed_in_ok)
+        {
             $vars{defaults} = {
                 # Note that because of the eval { set } above, these are
                 # already set correctly if they're valid, otherwise they're
@@ -1787,11 +1816,13 @@ sub set_product {
                 component => $self->component,
                 version   => $self->version,
                 milestone => $milestone_ok ? $self->target_milestone
-                                           : $product->default_milestone
+                                           : $product->default_milestone,
+                cf_fixed_in => $self->cf_fixed_in,
             };
             $vars{components} = [map { $_->name } @{$product->components}];
             $vars{milestones} = [map { $_->name } @{$product->milestones}];
             $vars{versions}   = [map { $_->name } @{$product->versions}];
+            $vars{cf_fixed_ins}  = [map { $_->name } @{$product->cf_fixed_in}];
         }
 
         if (!$verified) {
@@ -1831,6 +1862,7 @@ sub set_product {
         $self->set_component($comp_name);
         $self->set_version($vers_name);
         $self->set_target_milestone($tm_name);
+        $self->set_cf_fixed_in($fixed_in);
     }
     
     if ($product_changed) {
@@ -2228,6 +2260,26 @@ sub assigned_to {
     return $self->{'assigned_to_obj'};
 }
 
+sub bug_file_loc_changer {
+    my ($self) = @_;
+    return $self->{'bug_file_loc_changer'} 
+        if exists $self->{'bug_file_loc_changer'};
+    return new Bugzilla::User(0) if $self->{'error'};
+    my $dbh = Bugzilla->dbh;
+    my $last_changer_id = $dbh->selectrow_array(
+       "SELECT who
+          FROM bugs_activity
+               INNER JOIN fielddefs
+                          ON bugs_activity.fieldid = fielddefs.id
+         WHERE fielddefs.name = 'bug_file_loc'
+               AND bugs_activity.bug_id = ?
+      ORDER BY bug_when DESC
+         LIMIT 1");
+    if (!$last_changer_id) { $last_changer_id = $self->{'reporter_id'}; }
+    $self->{'bug_file_loc_changer'} = new Bugzilla::User($last_changer_id);
+    return $self->{'bug_file_loc_changer'};
+}
+
 sub blocked {
     my ($self) = @_;
     return $self->{'blocked'} if exists $self->{'blocked'};
@@ -2592,6 +2644,9 @@ sub choices {
     # Hack - this array contains "". See bug 106589.
     my @res = grep ($_, @{get_legal_field_values('resolution')});
 
+    my @milestones = grep($_->is_active || $_->name eq $self->target_milestone,
+                          @{$self->{prod_obj}->milestones});
+
     $self->{'choices'} =
       {
        'product' => \@prodlist,
@@ -2604,6 +2659,7 @@ sub choices {
        'component'    => [map($_->name, @{$self->product_obj->components})],
        'version'      => [map($_->name, @{$self->product_obj->versions})],
        'target_milestone' => [map($_->name, @{$self->product_obj->milestones})],
+       'cf_fixed_in' => [map($_->name, @{$self->product_obj->cf_fixed_in})],
       };
 
     return $self->{'choices'};
@@ -2621,6 +2677,23 @@ sub votes {
         undef, $self->bug_id);
     $self->{votes} ||= 0;
     return $self->{votes};
+}
+
+sub cf_fixed_in {
+    my $self = shift;
+    return [] if $self->{error};
+    my $dbh = Bugzilla->dbh;
+
+    if (!defined $self->{cf_fixed_in}) {
+        my $ids = $dbh->selectcol_arrayref(q{
+            SELECT id FROM cf_fixed_in, bug_cf_fixed_in
+            WHERE cf_fixed_in.value = bug_cf_fixed_in.value
+              AND cf_fixed_in.product_id = ?
+              AND bug_cf_fixed_in.bug_id = ?}, undef, ($self->{product_id}, $self->bug_id));
+
+        $self->{cf_fixed_in} = [map($_->name, @{Bugzilla::FixedIn->new_from_list($ids)})];
+    }
+    return $self->{cf_fixed_in};
 }
 
 # Convenience Function. If you need speed, use this. If you need
@@ -2838,7 +2911,7 @@ sub GetBugActivity {
                . $dbh->sql_string_concat('bugs_activity.fieldid', q{''}) .
                "), fielddefs.name, bugs_activity.attach_id, " .
         $dbh->sql_date_format('bugs_activity.bug_when', '%Y.%m.%d %H:%i:%s') .
-            ", bugs_activity.removed, bugs_activity.added, profiles.login_name
+            ", bugs_activity.removed, bugs_activity.added, profiles.login_name, bugs_activity.bug_id
           FROM bugs_activity
                $suppjoins
      LEFT JOIN fielddefs
@@ -2853,69 +2926,7 @@ sub GetBugActivity {
 
     my $list = $dbh->selectall_arrayref($query, undef, @args);
 
-    my @operations;
-    my $operation = {};
-    my $changes = [];
-    my $incomplete_data = 0;
-
-    foreach my $entry (@$list) {
-        my ($field, $fieldname, $attachid, $when, $removed, $added, $who) = @$entry;
-        my %change;
-        my $activity_visible = 1;
-
-        # check if the user should see this field's activity
-        if ($fieldname eq 'remaining_time'
-            || $fieldname eq 'estimated_time'
-            || $fieldname eq 'work_time'
-            || $fieldname eq 'deadline')
-        {
-            $activity_visible = 
-                Bugzilla->user->in_group(Bugzilla->params->{'timetrackinggroup'}) ? 1 : 0;
-        } else {
-            $activity_visible = 1;
-        }
-
-        if ($activity_visible) {
-            # This gets replaced with a hyperlink in the template.
-            $field =~ s/^Attachment\s*// if $attachid;
-
-            # Check for the results of an old Bugzilla data corruption bug
-            $incomplete_data = 1 if ($added =~ /^\?/ || $removed =~ /^\?/);
-
-            # An operation, done by 'who' at time 'when', has a number of
-            # 'changes' associated with it.
-            # If this is the start of a new operation, store the data from the
-            # previous one, and set up the new one.
-            if ($operation->{'who'}
-                && ($who ne $operation->{'who'}
-                    || $when ne $operation->{'when'}))
-            {
-                $operation->{'changes'} = $changes;
-                push (@operations, $operation);
-
-                # Create new empty anonymous data structures.
-                $operation = {};
-                $changes = [];
-            }
-
-            $operation->{'who'} = $who;
-            $operation->{'when'} = $when;
-
-            $change{'field'} = $field;
-            $change{'fieldname'} = $fieldname;
-            $change{'attachid'} = $attachid;
-            $change{'removed'} = $removed;
-            $change{'added'} = $added;
-            push (@$changes, \%change);
-        }
-    }
-
-    if ($operation->{'who'}) {
-        $operation->{'changes'} = $changes;
-        push (@operations, $operation);
-    }
-
-    return(\@operations, $incomplete_data);
+    return create_activity_hash($list);
 }
 
 # Update the bugs_activity table to reflect changes made in bugs.
@@ -3190,6 +3201,24 @@ sub check_can_change_field {
     {
         $$PrivilegesRequired = 3;
         return $user->in_group('canconfirm', $self->{'product_id'});
+    }
+    
+    # On b.m.o., canconfirm is really "cantriage"; users with canconfirm
+    # can also mark bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
+    if ($user->in_group('canconfirm', $self->{'product_id'})) {
+        if ($field eq 'bug_status'
+            && is_open_state($oldvalue)
+            && !is_open_state($newvalue))
+        {
+            return 1;
+        }
+        elsif ($field eq "resolution" && 
+               ($newvalue eq 'DUPLICATE' ||
+                $newvalue eq 'WORKSFORME' ||
+                $newvalue eq 'INCOMPLETE'))
+        {
+            return 1;
+        }
     }
 
     # Make sure that a valid bug ID has been given.

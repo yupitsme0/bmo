@@ -250,6 +250,7 @@ if (should_set('product')) {
             { component        => scalar $cgi->param('component'),
               version          => scalar $cgi->param('version'),
               target_milestone => scalar $cgi->param('target_milestone'),
+              cf_fixed_in      => [$cgi->param('cf_fixed_in')],
               change_confirmed => scalar $cgi->param('confirm_product_change'),
               other_bugs => \@bug_objects,
             });
@@ -302,7 +303,7 @@ if (defined $cgi->param('keywords')) {
 # the 'product' field wasn't defined in the CGI. It doesn't hurt to set
 # them twice.
 my @set_fields = qw(op_sys rep_platform priority bug_severity
-                    component target_milestone version
+                    component target_milestone version cf_fixed_in
                     bug_file_loc status_whiteboard short_desc
                     deadline remaining_time estimated_time);
 push(@set_fields, 'assigned_to') if !$cgi->param('set_default_assignee');

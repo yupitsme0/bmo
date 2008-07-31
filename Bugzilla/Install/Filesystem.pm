@@ -115,6 +115,8 @@ sub FILESYSTEM {
         'email_in.pl'     => { perms => $ws_executable },
         'sanitycheck.pl'  => { perms => $ws_executable },
         'install-module.pl' => { perms => $owner_executable },
+        'sendunsentbugmail.pl' => { perms => $ws_executable },
+        'verify-user.pl'  => { perms => $ws_executable },
 
         'docs/makedocs.pl'   => { perms => $owner_executable },
         'docs/style.css'       => { perms => $ws_readable },

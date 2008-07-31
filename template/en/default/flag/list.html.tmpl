@@ -29,14 +29,14 @@
     var id = flagField.name.replace(/flag(_type)?-(\d+)/, "requestee$1-$2");
     var requesteeField = document.getElementById(id);
     if (!requesteeField) return;
-    
+
     // Enable or disable the requestee field based on the value
     // of the flag field.
     if (flagField.value == "?") {
-        requesteeField.disabled = false;
+        requesteeField.parentNode.style.display = "";
         if (!no_focus) requesteeField.focus();
     } else                         
-        requesteeField.disabled = true;
+        requesteeField.parentNode.style.display = "none";
   }
   
   // Disables requestee fields when the window is loaded since they shouldn't
@@ -64,7 +64,7 @@
         id = inputElement.name.replace(/requestee(_type)?-(\d+)/, "flag$1-$2");
         flagField = document.getElementById(id);
         if (flagField && flagField.value != "?")
-            inputElement.disabled = true;
+            inputElement.parentNode.style.display = "none";
       }
     }
   }
@@ -85,7 +85,7 @@
 <table id="[% flag_table_id FILTER html %]">
   [% UNLESS flag_no_header %]
     <tr>
-      <th colspan="3">
+      <th colspan="3" align="left">
         Flags:
       </th>
       [% IF any_flags_requesteeble %]
@@ -103,7 +103,7 @@
     [% FOREACH flag = type.flags %]
       <tr>
         <td>
-          [% flag.setter.nick FILTER html %]:
+          <span title="[% flag.setter.identity FILTER html %]">[% flag.setter.nick FILTER html %]</span>:
         </td>
         <td>
           <label title="[% type.description FILTER html %]"
@@ -114,7 +114,7 @@
           <select id="flag-[% flag.id %]" name="flag-[% flag.id %]" 
                   title="[% type.description FILTER html %]"
                   onchange="toggleRequesteeField(this);"
-                  class="flag_select">
+                  class="flag_select flagname_[% type.name FILTER css_class_quote %]">
             [%# Only display statuses the user is allowed to set. %]
             [% IF user.can_request_flag(type) %]
               <option value="X"></option>
@@ -183,7 +183,7 @@
                   title="[% type.description FILTER html %]"
                   [% " disabled=\"disabled\"" UNLESS (type.is_requestable && user.can_request_flag(type)) || user.can_set_flag(type) %]
                   onchange="toggleRequesteeField(this);"
-                  class="flag_select">
+                  class="flag_select flagname_[% type.name FILTER css_class_quote %]">
             <option value="X"></option>
             [% IF type.is_requestable && user.can_request_flag(type) %]
               <option value="?">?</option>
@@ -237,7 +237,8 @@
                 title="[% type.description FILTER html %]"
                 [% " disabled=\"disabled\"" UNLESS (type.is_requestable && user.can_request_flag(type)) || user.can_set_flag(type) %]
                 onchange="toggleRequesteeField(this);"
-                class="flag_select">
+                class="flag_select flagname_[% type.name FILTER css_class_quote %]">
+
           <option value="X"></option>
           [% IF type.is_requestable && user.can_request_flag(type) %]
             <option value="?">?</option>

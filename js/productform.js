@@ -40,7 +40,9 @@
  * @global last_sel   Array that contains last list of products so we know what
  *                    has changed, and optimize for additions.
  */
-function selectClassification(classfield, product, component, version, milestone) {
+function selectClassification(classfield, product, component, version,
+                              milestone, cf_fixed_in)
+{
     // This is to avoid handling events that occur before the form
     // itself is ready, which could happen in buggy browsers.
     if (!classfield)
@@ -87,7 +89,7 @@ function selectClassification(classfield, product, component, version, milestone
     // Do the actual fill/update, reselect originally selected options.
     updateSelect(prods, sel, product, merging, null);
     restoreSelection(product, saved_prods);
-    selectProduct(product, component, version, milestone, null);
+    selectProduct(product, component, version, milestone, cf_fixed_in, null);
 }
 
 /**
@@ -119,7 +121,9 @@ function selectClassification(classfield, product, component, version, milestone
  * @global last_sel   Array that contains last list of products so we know what
  *                    has changed, and optimize for additions.
  */
-function selectProduct(product, component, version, milestone, anyval) {
+function selectProduct(product, component, version, milestone, 
+                       cf_fixed_in, anyval) 
+{
     // This is to avoid handling events that occur before the form
     // itself is ready, which could happen in buggy browsers.
     if (!product)
@@ -200,6 +204,12 @@ function selectProduct(product, component, version, milestone, anyval) {
         var saved_tms = get_selection(milestone, false, true, null);
         updateSelect(tms, sel, milestone, merging, anyval);
         restoreSelection(milestone, saved_tms);
+    }
+
+    if (cf_fixed_in) {
+        var saved_cf_fixed_in = get_selection(cf_fixed_in, false, true);
+        updateSelect(cf_fixed_ins, sel, cf_fixed_in, merging);
+        restoreSelection(cf_fixed_in, saved_cf_fixed_in);
     }
 }
 

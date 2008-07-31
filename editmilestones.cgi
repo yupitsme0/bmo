@@ -205,6 +205,8 @@ if ($action eq 'update') {
 
     $milestone->set_name($milestone_name);
     $milestone->set_sortkey($sortkey);
+    $milestone->set_is_active(scalar $cgi->param('is_active'));
+    $milestone->set_is_searchable(scalar $cgi->param('is_searchable'));
     my $changes = $milestone->update();
 
     delete_token($token);

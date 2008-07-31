@@ -71,6 +71,11 @@
                "Set to 0 to disable whining.",
 
   globalwatchers => "A comma-separated list of users who should receive a " _
-                    "copy of every notification mail the system sends." }
+                    "copy of every notification mail the system sends.",
+
+  use_mailer_queue => "If enabled, mail is spooled to the Bugzilla job queue.  This requires " _
+                      "you to have already configured the job queue system.  If you have not done " _
+                      "this, or don't know what this means, then turning on this option is a bad " _
+                      "idea and will cause your email to stop being sent." }
 
 %]

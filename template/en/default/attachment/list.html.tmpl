@@ -66,8 +66,9 @@
       [% IF attachment.isobsolete %]
         [% obsolete_attachments = obsolete_attachments + 1 %]
       [% END %]
-      <tr class="[% "bz_private" IF attachment.isprivate %][%-%]
-                 [%+ "bz_tr_obsolete" IF attachment.isobsolete %]">
+      <tr class="[% "bz_private" IF attachment.isprivate %]
+                 [% " bz_tr_obsolete" IF attachment.isobsolete %]
+                 [% " bz_patch" IF attachment.ispatch %]">
         <td valign="top">
           [% IF attachment.datasize %]
             <a name="a[% count %]" href="attachment.cgi?id=[% attachment.id %]"
@@ -96,8 +97,8 @@
               [%- attachment.attached FILTER time %]</a>,
 
             <a href="mailto:[% attachment.attacher.email FILTER html %]"
-               title="Write an email to the creator of the attachment">
-              [% attachment.attacher.name || attachment.attacher.login FILTER html %]
+               title="[% attachment.attacher.identity FILTER html %]">
+              [% attachment.attacher.display_name FILTER html %]
             </a>
           </span>
         </td>
