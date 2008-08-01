@@ -158,6 +158,7 @@ use constant UPDATE_VALIDATORS => {
     assigned_to         => \&_check_assigned_to,
     bug_status          => \&_check_bug_status,
     cclist_accessible   => \&Bugzilla::Object::check_boolean,
+    cf_fixed_in         => \&_check_cf_fixed_in,
     dup_id              => \&_check_dup_id,
     qa_contact          => \&_check_qa_contact,
     reporter_accessible => \&Bugzilla::Object::check_boolean,
@@ -2649,7 +2650,7 @@ sub choices {
     my @res = grep ($_, @{get_legal_field_values('resolution')});
 
     my @milestones = grep($_->is_active || $_->name eq $self->target_milestone,
-                          @{$self->{prod_obj}->milestones});
+                          @{$self->product_obj->milestones});
 
     $self->{'choices'} =
       {

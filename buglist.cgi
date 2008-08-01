@@ -1172,6 +1172,7 @@ $vars->{'urlquerypart'} = $params->canonicalise_query('order',
                                                       'cmdtype',
                                                       'query_based_on');
 $vars->{'order'} = $order;
+$vars->{'order_columns'} = \@order_columns;
 $vars->{'caneditbugs'} = 1;
 
 if (!Bugzilla->user->in_group('editbugs')) {

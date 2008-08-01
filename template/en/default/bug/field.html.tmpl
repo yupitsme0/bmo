@@ -38,8 +38,13 @@
 </th>
 
 <td class="field_value" [% "colspan=\"$value_span\"" FILTER none IF value_span %]>
+[% IF override_type.defined %]
+  [% SET field_type = override_type %]
+[% ELSE %]
+  [% SET field_type = field.type %]
+[% END %]
 [% IF editable %]
-  [% SWITCH field.type %]
+  [% SWITCH field_type %]
     [% CASE constants.FIELD_TYPE_FREETEXT %]
         <input id="[% field.name FILTER html %]" name="[% field.name FILTER html %]"
                value="[% value FILTER html %]" size="60"
@@ -63,12 +68,17 @@
       </script>
     [% CASE [ constants.FIELD_TYPE_SINGLE_SELECT 
               constants.FIELD_TYPE_MULTI_SELECT ] %]
+        [% IF override_legal_values.defined %]
+          [% SET legal_values = override_legal_values %]
+        [% ELSE %]
+          [% SET legal_values = field.legal_values %]
+        [% END %]
         <select id="[% field.name FILTER html %]" 
                 name="[% field.name FILTER html %]" 
-                [% IF field.type == constants.FIELD_TYPE_MULTI_SELECT %]
+                [% IF field_type == constants.FIELD_TYPE_MULTI_SELECT %]
                     [% SET field_size = 5 %]
-                    [% IF field.legal_values.size < 5 %]
-                        [% SET field_size = field.legal_values.size %]
+                    [% IF legal_values.size < 5 %]
+                        [% SET field_size = legal_values.size %]
                     [% END %]
                     size="[% field_size FILTER html %]" multiple="multiple"
                 [% END %]
@@ -79,7 +89,7 @@
               [% dontchange FILTER html %]
             </option>
           [% END %]
-          [% FOREACH legal_value = field.legal_values %]
+          [% FOREACH legal_value = legal_values %]
             <option value="[% legal_value FILTER html %]"
                 [%- " selected=\"selected\"" IF value.contains(legal_value).size %]>
                 [%- legal_value FILTER html %]</option>
@@ -92,7 +102,7 @@
           # field is defined, and then if this is passed but the multi-select
           # isn't, we know that the multi-select was emptied.
         %]
-        [% IF field.type == constants.FIELD_TYPE_MULTI_SELECT %]
+        [% IF field_type == constants.FIELD_TYPE_MULTI_SELECT %]
           <input type="hidden" name="defined_[% field.name FILTER html %]">
         [% END %]
      [% CASE constants.FIELD_TYPE_TEXTAREA %]
@@ -100,7 +110,7 @@
            id = field.name name = field.name minrows = 4 maxrows = 8
            cols = 60 defaultcontent = value %]
   [% END %]
-[% ELSIF field.type == constants.FIELD_TYPE_TEXTAREA %]
+[% ELSIF field_type == constants.FIELD_TYPE_TEXTAREA %]
   <div class="uneditable_textarea">[% value FILTER wrap_comment(60)
                                             FILTER html %]</div>
 [% ELSE %]

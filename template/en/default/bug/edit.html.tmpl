@@ -232,49 +232,21 @@
   <table cellpadding="1" cellspacing="1">
     <tr>
       <td>
-        [% IF user.id %]
-          <label for="comment" accesskey="c"><b>Additional <u>C</u>omments</b></label>:
-          [% IF Param("insidergroup") && user.in_group(Param("insidergroup")) %]
-            <input type="checkbox" name="commentprivacy" value="1"
-                   id="newcommentprivacy"
-                   onClick="updateCommentTagControl(this, form)">
-            <label for="newcommentprivacy">Private</label>
-          [% END %]
-          <br>
-          <a name="add_comment"></a>
-          [% INCLUDE global/textarea.html.tmpl
-                     name      = 'comment'
-                     id        = 'comment'
-                     minrows   = 10
-                     maxrows   = 25
-                     cols      = constants.COMMENT_COLS
-          %]
-          <br>
-          <div id="knob-buttons">
-            <input type="submit" value="Commit" id="commit">
-            [% IF bug.user.canmove %]
-              <input type="submit" name="action" id="action" value="[% Param("move-button-text") %]">
-            [% END %]
-          </div>
-        [% ELSE %]
-          <fieldset>
-            <legend>Note</legend>
-            <p>
-              You need to
-              <a href="show_bug.cgi?id=[% bug.bug_id %]&amp;GoAheadAndLogIn=1">log in</a>
-              before you can comment on or make changes to this [% terms.bug %].
-            </p>
-          </fieldset>
+        [% IF user.settings.comment_box_position.value == 'before_comments' %]
+          [% PROCESS comment_box %]
+          <hr>
         [% END %]
         [%# *** Additional Comments *** %]
-        <hr>
         <div id="comments">
         [% PROCESS bug/comments.html.tmpl
            comments = bug.longdescs
            mode = user.id ? "edit" : "show"
          %]
         </div>
-        
+        [% IF user.settings.comment_box_position.value == 'after_comments' %]
+          <hr>
+          [% PROCESS comment_box %]
+        [% END %]
       </td>
     </tr>
   </table>
@@ -928,8 +900,10 @@
 
   [% IF bug.choices.cf_fixed_in.size %]
    <tr>
-     [% PROCESS bug/field.html.tmpl 
+     [% INCLUDE bug/field.html.tmpl
          field = Bugzilla.get_fields({ name => 'cf_fixed_in' })
+         override_type  = constants.FIELD_TYPE_MULTI_SELECT
+         override_legal_values = bug.choices.cf_fixed_in
          value = bug.cf_fixed_in
          editable = bug.check_can_change_field('cf_fixed_in', 0, 1) 
          value_span = 2 %]
@@ -1132,6 +1106,43 @@
   [% value = undef %]
   [% onfocus = undef %]
   [% spellcheck = undef %]
+[% END %]
+
+[% BLOCK comment_box %]
+        [% IF user.id %]
+          <label for="comment" accesskey="c"><b>Additional <u>C</u>omments</b></label>:
+          [% IF Param("insidergroup") && user.in_group(Param("insidergroup")) %]
+            <input type="checkbox" name="commentprivacy" value="1"
+                   id="newcommentprivacy"
+                   onClick="updateCommentTagControl(this, form)">
+            <label for="newcommentprivacy">Private</label>
+          [% END %]
+          <br>
+          <a name="add_comment"></a>
+          [% INCLUDE global/textarea.html.tmpl
+                     name      = 'comment'
+                     id        = 'comment'
+                     minrows   = 10
+                     maxrows   = 25
+                     cols      = constants.COMMENT_COLS
+          %]
+          <br>
+          <div id="knob-buttons">
+            <input type="submit" value="Commit" id="commit">
+            [% IF bug.user.canmove %]
+              <input type="submit" name="action" id="action" value="[% Param("move-button-text") %]">
+            [% END %]
+          </div>
+        [% ELSE %]
+          <fieldset>
+            <legend>Note</legend>
+            <p>
+              You need to
+              <a href="show_bug.cgi?id=[% bug.bug_id %]&amp;GoAheadAndLogIn=1">log in</a>
+              before you can comment on or make changes to this [% terms.bug %].
+            </p>
+          </fieldset>
+        [% END %]
 [% END %]
 
 [%############################################################################%]

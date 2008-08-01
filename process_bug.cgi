@@ -303,7 +303,7 @@ if (defined $cgi->param('keywords')) {
 # the 'product' field wasn't defined in the CGI. It doesn't hurt to set
 # them twice.
 my @set_fields = qw(op_sys rep_platform priority bug_severity
-                    component target_milestone version cf_fixed_in
+                    component target_milestone version
                     bug_file_loc status_whiteboard short_desc
                     deadline remaining_time estimated_time);
 push(@set_fields, 'assigned_to') if !$cgi->param('set_default_assignee');
@@ -333,6 +333,9 @@ foreach my $b (@bug_objects) {
     }
     $b->reset_assigned_to if $cgi->param('set_default_assignee');
     $b->reset_qa_contact  if $cgi->param('set_default_qa_contact');
+    if (should_set('cf_fixed_in')) {
+        $b->set_cf_fixed_in([$cgi->param('cf_fixed_in')]);
+    }
 
     # And set custom fields.
     foreach my $field (@custom_fields) {

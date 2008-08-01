@@ -29,7 +29,7 @@ use Bugzilla::Constants;
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::Field;
-use Bugzilla::Install::Requirements;
+use Bugzilla::Install::Util qw(vers_cmp);
 
 my $cgi = Bugzilla->cgi;
 my $template = Bugzilla->template;

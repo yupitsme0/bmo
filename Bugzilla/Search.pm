@@ -122,7 +122,7 @@ sub init {
     
     my @multi_select_fields = Bugzilla->get_fields({ type => FIELD_TYPE_MULTI_SELECT,
                                                      obsolete => 0 });
-    push(@multi_select_fields, 'cf_fixed_in');
+    push(@multi_select_fields, new Bugzilla::Field({ name => 'cf_fixed_in'}));
 
     foreach my $field (@select_fields) {
         my $name = $field->name;
