@@ -250,6 +250,12 @@ sub LookupNamedQuery {
                                                 WHERE userid = ? AND name = ?
                                                       $extra",
                                                undef, @args);
+
+    # Some DBs (read: Oracle) incorrectly mark this string as UTF-8
+    # even though it has no UTF-8 characters in it, which prevents
+    # Bugzilla::CGI from later reading it correctly.
+    utf8::downgrade($result) if utf8::is_utf8($result);
+
     if (!defined($result)) {
         return 0 unless $throw_error;
         ThrowUserError("missing_query", {'queryname' => $name,
@@ -686,6 +692,8 @@ DefineColumn("relevance"         , "relevance"                  , "Relevance"   
 DefineColumn("deadline"          , $dbh->sql_date_format('bugs.deadline', '%Y-%m-%d') . " AS deadline", "Deadline");
 
 foreach my $field (Bugzilla->active_custom_fields) {
+    # Multi-select fields are not (yet) supported in buglists.
+    next if $field->type == FIELD_TYPE_MULTI_SELECT;
     DefineColumn($field->name, 'bugs.' . $field->name, $field->description);
 }
 
