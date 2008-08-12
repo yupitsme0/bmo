@@ -76,16 +76,20 @@ sub persist_login {
     {
         $cgi->send_cookie(-name => 'Bugzilla_login',
                           -value => $user->id,
+                          -secure => 1,
                           -expires => 'Fri, 01-Jan-2038 00:00:00 GMT');
         $cgi->send_cookie(-name => 'Bugzilla_logincookie',
                           -value => $login_cookie,
+                          -secure => 1,
                           -expires => 'Fri, 01-Jan-2038 00:00:00 GMT');
 
     }
     else {
         $cgi->send_cookie(-name => 'Bugzilla_login',
+                          -secure => 1,
                           -value => $user->id);
         $cgi->send_cookie(-name => 'Bugzilla_logincookie',
+                          -secure => 1,
                           -value => $login_cookie);
     }
 }
