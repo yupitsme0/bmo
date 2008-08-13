@@ -671,14 +671,15 @@ sub _check_groups {
         
         # b.m.o.-specific hack - allow anyone to file bugs in these groups:
         # core-security (2), mozilla-confidential (6), webtools-security (12),
-        # marketing-private (14), client-services-security (23), infra (35), 
+        # marketing-private (14), client-services-security (23),
+        # mozilla-corporation-confidential (26), infra (35), 
         # mozilla-messaging-confidential (45), websites-security (52),
         # bugzilla-security (53)
         my $permit = ($membercontrol && $user->in_group($group->name))
                      || $othercontrol
                      || $id == 2 || $id == 6 || $id == 12 || $id == 14
-                     || $id == 23 || $id == 35 || $id == 45 || $id == 52
-                     || $id == 53;
+                     || $id == 23 || $id == 26 || $id == 35 || $id == 45
+                     || $id == 52 || $id == 53;
 
         $add_groups{$id} = 1 if $permit;
     }
