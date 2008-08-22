@@ -265,7 +265,12 @@
 [% BLOCK section_title %]
   [%# That's the main table, which contains all editable fields. %]
   <div class="bz_alias_short_desc_container">
-    
+
+    <span class="last_comment_link">
+      <a href="#c[% bug.longdescs.size - 1 %]" 
+         accesskey="l"><b>L</b>ast Comment</a>
+    </span>
+   
     [% IF Param('useclassification') && bug.classification_id != 1 %]
       <b>[[% bug.classification FILTER html %]]</b>
     [% END %]
