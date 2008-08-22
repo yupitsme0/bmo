@@ -9,11 +9,6 @@ body {
 	background: #fff url("https://www.mozilla.org/images/subsite_back.gif") repeat-x;
 }
 
-body, td, th, input { /* redundant rules for bad browsers  */
-	font-family: verdana, sans-serif;
-	font-size: small;
-}
-
 #header {
 	margin-bottom: 0.5em;
 }
