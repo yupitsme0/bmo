@@ -36,8 +36,9 @@ use base qw(Exporter);
                              html_quote url_quote xml_quote
                              css_class_quote html_light_quote url_decode
                              i_am_cgi get_netaddr correct_urlbase
-                             lsearch create_activity_hash SqlifyDate
-                             ssl_require_redirect diff_arrays diff_strings
+                             lsearch ssl_require_redirect
+                             create_activity_hash SqlifyDate
+                             diff_arrays diff_strings
                              trim wrap_hard wrap_comment find_wrap_point
                              format_time format_time_decimal validate_date
                              validate_time
