@@ -61,7 +61,8 @@ sub REQUIRED_MODULES {
         module  => 'CGI',
         # Perl 5.10 requires CGI 3.33 due to a taint issue when
         # uploading attachments, see bug 416382.
-        version => (vers_cmp($perl_ver, '5.10') > -1) ? '3.33' : '2.93'
+        # Require CGI 3.21 for -httponly support, see bug 368502.
+        version => (vers_cmp($perl_ver, '5.10') > -1) ? '3.33' : '3.21'
     },
     {
         package => 'TimeDate',
@@ -475,7 +476,7 @@ EOT
         }
     }
 
-    if ($output && $check_results->{any_missing}) {
+    if ($output && $check_results->{any_missing} && !ON_WINDOWS) {
         print install_string('install_all', { perl => $^X });
     }
 }
