@@ -114,6 +114,13 @@
     The user account [% otheruser.login FILTER html %] has been deleted
     successfully.
 
+ [% ELSIF message_tag == "account_unlocked" %]
+    [% title = "Account Unlocked" %]
+    [% url = "index.cgi?GoAheadAndLogIn=1" %]
+    [% link = "Log in again." %]
+    <b>Your account has been unlocked</b>.
+    You will need to login now.
+
   [% ELSIF message_tag == "attachment_creation_failed" %]
     The [% terms.bug %] was created successfully, but attachment creation
     failed.

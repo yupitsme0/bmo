@@ -23,6 +23,7 @@
 #                 Lance Larsh <lance.larsh@oracle.com>
 #                 Dennis Melentyev <dennis.melentyev@infopulse.com.ua>
 #                 Akamai Technologies <bugzilla-dev@akamai.com>
+#                 Elliotte Martin <emartin@everythingsolved.com>
 
 package Bugzilla::DB::Schema;
 
@@ -1311,6 +1312,23 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
+
+    # PASSWORD LOCKOUT
+    # ------------
+
+    login_activity => {
+        FIELDS => [
+            user_id      => {TYPE => 'INT3', NOTNULL => 1,
+                             REFERENCES => {TABLE  => 'profiles', 
+                                            COLUMN => 'userid',
+                                            DELETE => 'CASCADE'}},
+            login_time   => {TYPE => 'DATETIME', NOTNULL => 1},
+            ip_addr      => {TYPE => 'varchar(40)', NOTNULL => 1},
+        ],
+        INDEXES => [
+            login_activity_user_id_idx   => ['user_id'],
+        ],
+    },
 };
 
 use constant FIELD_TABLE_SCHEMA => {

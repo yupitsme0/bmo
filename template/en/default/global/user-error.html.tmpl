@@ -204,6 +204,12 @@
 
     [% Hook.process("auth_failure") %]
 
+  [% ELSIF error == "account_locked" %]
+    [% title = "Account Locked" %]
+    Your account has been locked as you have exceeded the maximum number of
+    log in attempts.  An email has been sent that will allow you to unlock
+    your account.
+
   [% ELSIF error == "attachment_deletion_disabled" %]
     [% title = "Attachment Deletion Disabled" %]
     Attachment deletion is disabled on this installation.
@@ -793,6 +799,10 @@
     [% IF format %]
       Please use the format '<tt>[% format FILTER html %]</tt>'.
     [% END %]
+
+  [% ELSIF error == "illegal_user_id" %]
+    [% title = "Illegal User ID" %]
+    User ID '[% userid FILTER html %]' is not valid integer.
         
   [% ELSIF error == "insufficient_data_points" %]
     [% docslinks = {'reporting.html' => 'Reporting'} %]
@@ -1596,14 +1606,14 @@
     [% title = "Wrong Token" %]
     That token cannot be used to create a user account.
 
+  [% ELSIF error == "wrong_token_for_unlocking_account" %]
+    [% title = "Wrong Token" %]
+    That token cannot be used to unlock an account.
+
   [% ELSIF error == "zero_length_file" %]
     [% title = "File Is Empty" %]
     The file you are trying to attach is empty, does not exist, or you don't
     have permission to read it.
-
-  [% ELSIF error == "illegal_user_id" %]
-    [% title = "Illegal User ID" %]
-    User ID '[% userid FILTER html %]' is not valid integer.
 
   [% ELSE %]
 

@@ -163,6 +163,35 @@ sub IssuePasswordToken {
     MessageToMTA($message);
 }
 
+# Generates a random token, adds it to the tokens table, and sends it
+# to the user with instructions for using it to change their password.
+sub IssueTokenForLockedAccounts {
+    my ($user_id, $login_activity) = @_;
+    my $dbh = Bugzilla->dbh;
+
+    my ($token, $token_ts) = _create_token($user_id, 'unlock', 'account_locked');
+
+    # Mail the user the token along with instructions for using it.
+    my $user = new Bugzilla::User($user_id);
+    my $template = Bugzilla->template_inner($user->settings->{'lang'}->{'value'});
+    my $vars = {};
+
+    $vars->{'token'} = $token;
+    $vars->{'emailaddress'} = $user->email;
+    $vars->{'max_token_age'} = MAX_TOKEN_AGE;
+    $vars->{'token_ts'} = $token_ts;
+    $vars->{'login_activity'} = $login_activity;
+    $vars->{'max_logins'} = MAX_LOGIN_ATTEMPTS;
+
+    my $message = "";
+    $template->process("account/password/lockedout-password.txt.tmpl", 
+                        $vars, \$message)
+      || ThrowTemplateError($template->error());
+
+    MessageToMTA($message);
+}
+
+
 sub issue_session_token {
     # Generates a random token, adds it to the tokens table, and returns
     # the token to the caller.
@@ -394,6 +423,7 @@ Bugzilla::Token - Provides different routines to manage tokens.
     Bugzilla::Token::issue_new_user_account_token($login_name);
     Bugzilla::Token::IssueEmailChangeToken($user, $old_email, $new_email);
     Bugzilla::Token::IssuePasswordToken($user);
+    Bugzilla:Token::IssueTokenForLockedAccounts ($user_id, $ipaddrs, login_times);
     Bugzilla::Token::DeletePasswordTokens($user_id, $reason);
     Bugzilla::Token::Cancel($token, $cancelaction, $vars);
 
@@ -446,6 +476,19 @@ Bugzilla::Token - Provides different routines to manage tokens.
 
  Returns:     Nothing. It throws an error if the same user made the same
               request in the last few minutes.
+
+=item C<IssueTokenForLockedAccounts($user_id, $ip_addrs)>
+
+ Description: Sends a token per email to the given user. This token
+              can be used to reset the password if the user account has
+              been locked from too many failed logins.
+
+ Params:      $user_id  - User ID of the user requesting a new password.
+              @ip_addrs - An array of the IP addresses from which the login
+              attempts were made.
+              $login_times - An array of the times at which a login was attempted. 
+
+ Returns:     Nothing. 
 
 =item C<CleanTokenTable()>
 
