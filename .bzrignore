@@ -1,5 +1,6 @@
 ./graphs
 ./data
+./lib
 ./localconfig
 ./old-params.txt
 ./extensions

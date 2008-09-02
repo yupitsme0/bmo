@@ -1,4 +1,4 @@
-[%# The contents of this file are subject to the Mozilla Public
+﻿[%# The contents of this file are subject to the Mozilla Public
   # License Version 1.1 (the "License"); you may not use this file
   # except in compliance with the License. You may obtain a copy of
   # the License at http://www.mozilla.org/MPL/
@@ -271,12 +271,8 @@
          accesskey="l"><b>L</b>ast Comment</a>
     </span>
    
-    [% IF Param('useclassification') && bug.classification_id != 1 %]
-      <b>[[% bug.classification FILTER html %]]</b>
-    [% END %]
      <a href="show_bug.cgi?id=[% bug.bug_id %]">
-        <b>[% terms.Bug %]&nbsp;[% bug.bug_id FILTER html %]</b>
-     </a> - 
+        <b>[% terms.Bug %]&nbsp;[% bug.bug_id FILTER html %]</b></a> - 
      <span id="summary_alias_container" class="bz_default_hidden"> 
       [% IF Param("usebugaliases") %]
         [% IF bug.alias != "" %]
@@ -611,7 +607,8 @@
       </td>
       [% PROCESS input inputname => "keywords" size => 40 colspan => 2
                        value => bug.keywords.join(', ')
-                       onfocus => "this.chooser.open()" %]
+                       include_autocomplete=>"keywordsautocomplete"
+                       %]
     </tr>
   [% END %]
 [% END %]
@@ -791,26 +788,31 @@
                    IF user.settings.state_addselfcc.value == 'always'
                       || (!has_role
                           && user.settings.state_addselfcc.value == 'cc_unless_role') %]>
-            <label for="addselfcc">
-              Myself ([% INCLUDE user_identity user=> user FILTER collapse %])
-            </label>
+            <label for="addselfcc">Add me to CC list</label>
             <br> 
           [% END %]
         [% END %]
-        [% bug.cc.size || 0  FILTER html %] 
-        [% IF bug.cc.size == 1 %]
-          user
-        [% ELSE %]
-          users
-        [% END %]
-        [% IF user.id %]
-          [% IF bug.cc.contains( user.email ) %]
-            including you ([% INCLUDE user_identity user=> user FILTER collapse %])
-          [% END %]
-        [% END %]
-        <span id="cc_edit_area_showhide_container" class="bz_default_hidden">
-          (<a href="#" id="cc_edit_area_showhide">edit</a>)
-        </span>
+        <div id="cc_edit_area_showhide_container" class="bz_default_hidden">
+          <div id="cc_list_num_users">
+            [% bug.cc.size || 0  FILTER html %] 
+            [% IF bug.cc.size == 1 %]
+              user
+            [% ELSE %]
+              users
+            [% END %]
+            [% IF user.id %]
+              [% IF bug.cc.contains( user.email ) %]
+                including you
+              [% END %]
+            [% END %]
+            (<a href="#" id="cc_edit_area_showhide">edit</a>)
+          </div>
+          <ul class="cc_list_display"> 
+            [% FOREACH c = bug.cc %]
+              <li>[% c FILTER html %]</li>
+            [% END %]
+          </ul>
+        </div>
         <div id="cc_edit_area">
           <div>
             <div>
@@ -1083,15 +1085,24 @@
 
 [% BLOCK input %]
   [% IF no_td != 1 %]
-  <td[% " colspan=\"$colspan\"" IF colspan %]>
+  <td[% " colspan=\"$colspan\"" IF colspan %]
+     [% ' class="yui-skin-sam"' IF include_autocomplete %]  >
   [% END %]
     [% val = value ? value : bug.$inputname %]
     [% IF bug.check_can_change_field(inputname, 0, 1) %]
-       <input id="[% inputname %]" name="[% inputname %]"
+      [% IF include_autocomplete %]
+        <div id="[% include_autocomplete FILTER css_class_quote %]_container">
+      [% END %]    
+      <input id="[% inputname %]" name="[% inputname %]"
               value="[% val FILTER html %]"[% " size=\"$size\"" IF size %]
               [% " maxlength=\"$maxlength\"" IF maxlength %]
               [% " onfocus=\"$onfocus\"" IF onfocus %]
               [% " spellcheck=\"$spellcheck\"" IF spellcheck %]>
+      [% IF include_autocomplete %]
+          <div id="[% include_autocomplete FILTER css_class_quote %]">
+          </div>
+        </div>
+      [% END %]        
     [% ELSE %]
       [% IF size && val.length > size %]
         <span title="[% val FILTER html %]">
@@ -1111,6 +1122,7 @@
   [% value = undef %]
   [% onfocus = undef %]
   [% spellcheck = undef %]
+  [% include_autocomplete = undef %]
 [% END %]
 
 [% BLOCK comment_box %]
@@ -1131,6 +1143,7 @@
                      maxrows   = 25
                      cols      = constants.COMMENT_COLS
           %]
+
           <br>
           <div id="knob-buttons">
             <input type="submit" value="Commit" id="commit">
@@ -1160,11 +1173,14 @@
       [% IF user.name %]
         <a class="email" href="mailto:[% user.email FILTER html %]" 
            title="[% user.email FILTER html %]"
-          ><span class="fn">[% user.name FILTER html %]</span
+          >[% SET user_identity_output = user.name %]
+          [% Hook.process("user_identity") %]
+          <span class="fn">[%  user_identity_output FILTER html %]</span
         ></a>
       [% ELSE %]
         <a class="fn email" href="mailto:[% user.email FILTER html %]">
-          [% user.email FILTER html %]</a>
+          [% SET user_identity_output = user.email %]
+          [% Hook.process("user_identity") %][% user_identity_output FILTER html %]</a>
       [% END %]
     [% END %]</span>
 [% END %]

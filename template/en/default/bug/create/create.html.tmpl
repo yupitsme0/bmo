@@ -31,10 +31,11 @@
 [% PROCESS global/header.html.tmpl
   title = title
   style_urls = [ 'skins/standard/create_attachment.css',
-                 'skins/standard/yui/calendar.css' ]
+                 'skins/standard/yui/calendar.css',
+                 'skins/standard/yui/autocomplete.css' ]
   javascript_urls = [ "js/attachment.js", "js/util.js", "js/keyword-chooser.js",
                       "js/yui/yahoo-dom-event.js", "js/yui/calendar.js",
-                      "js/field.js" ]
+                      "js/field.js", "js/yui/autocomplete-min.js"  ]
 %]
 
 <script type="text/javascript">

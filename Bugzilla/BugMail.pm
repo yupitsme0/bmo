@@ -43,16 +43,6 @@ use Bugzilla::Component;
 use Bugzilla::Status;
 use Bugzilla::Mailer;
 
-use Crypt::SMIME;
-# This module has a _lot_ of dependencies. The advantage of using it is
-# that you can feed it the key from data you have, rather than needing
-# the key to be on a system keyring.
-use Crypt::OpenPGP;
-
-# Core Security group is group 2 on b.m.o. We may want to add other 
-# groups; this variable is a comma-separated list.
-use constant SECURITY_GROUPS => "2, 14"; # FIXME REMOVE 14
-
 use Date::Parse;
 use Date::Format;
 
@@ -467,13 +457,6 @@ sub Send {
         $recipients{$watcher_id}->{+REL_GLOBAL_WATCHER} = BIT_DIRECT;
     }
 
-    # Using raw SQL because we don't have a bug object.
-    my $issecure = Bugzilla->dbh->selectrow_array(
-       "SELECT COUNT(*) 
-          FROM bug_group_map 
-         WHERE bug_id = ? AND group_id IN (" . SECURITY_GROUPS. ")",
-        undef, $id);    
-
     # We now have a complete set of all the users, and their relationships to
     # the bug in question. However, we are not necessarily going to mail them
     # all - there are preferences, permissions checks and all sorts to do yet.
@@ -559,8 +542,7 @@ sub Send {
                                       \%fielddescription, 
                                       \@diffparts,
                                       $comments{$lang},
-                                      $anyprivate,
-                                      $issecure, 
+                                      $anyprivate, 
                                       ! $start, 
                                       $id,
                                       exists $watching{$user_id} ?
@@ -584,7 +566,7 @@ sub Send {
 
 sub sendMail {
     my ($user, $hlRef, $relRef, $valueRef, $dmhRef, $fdRef,
-        $diffRef, $newcomments, $anyprivate, $issecure, $isnew,
+        $diffRef, $newcomments, $anyprivate, $isnew,
         $id, $watchingRef) = @_;
 
     my %values = %$valueRef;
@@ -680,79 +662,8 @@ sub sendMail {
     push(@watchingrel, 'None') unless @watchingrel;
     push @watchingrel, map { user_id_to_login($_) } @$watchingRef;
 
-    my $sitespec = '@' . Bugzilla->params->{'urlbase'};
-    $sitespec =~ s/:\/\//\./; # Make the protocol look like part of the domain
-    $sitespec =~ s/^([^:\/]+):(\d+)/$1/; # Remove a port number, to relocate
-    if ($2) {
-        $sitespec = "-$2$sitespec"; # Put the port number back in, before the '@'
-    }
-    my $threadingmarker;
-    if ($isnew) {
-        $threadingmarker = "Message-ID: <bug-$id-" . $user->id . "$sitespec>";
-    }
-    else {
-        $threadingmarker = "In-Reply-To: <bug-$id-" . $user->id . "$sitespec>" .
-                            "\nReferences: <bug-$id-" . $user->id . "$sitespec>";
-    }
-    
+    my $threadingmarker = build_thread_marker($id, $user->id, $isnew);
 
-    my $key = "";
-    
-    if ($issecure) {
-      # In at least one security group. Move the summary into the body.
-      $diffs = "Summary: " . $values{'short_desc'} . "\n" . $diffs;
-      $values{'short_desc'} = "Bug has changed (security-sensitive)";
-      
-      # Look for a public key with which to encrypt.
-      # Key is the most recent attachment which is:
-      # - uploaded by the user 
-      # - attached to a secure bug 
-      # - non-obsolete 
-      # - described as "MAILKEY".
-      # Attachment MIME type is irrelevant.
-      #
-      # S/MIME Keys must be in PEM format (Base64-encoded X.509, .cer)
-      # PGP keys can be either binary or ASCII-armoured.
-      $key = Bugzilla->dbh->selectcol_arrayref(
-        "SELECT thedata 
-           FROM attachments, attach_data, bug_group_map 
-          WHERE attachments.submitter_id = ? 
-                AND attachments.isobsolete = 0 
-                AND attachments.bug_id = bug_group_map.bug_id 
-                AND bug_group_map.group_id IN (" . SECURITY_GROUPS . ") 
-                AND attachments.description = 'MAILKEY' 
-                AND attachments.attach_id = attach_data.id 
-       ORDER BY attach_id DESC", undef, $user->id);
-      $key = ($key && $key->[0]) ? $key->[0] : "";
-      
-      # Can't test properly for key validity here, so this will have to do
-      # "CERTIFICATE" is S/MIME; "PUBLIC KEY" is PGP.
-      if (!($key =~ /(BEGIN CERTIFICATE|PUBLIC KEY)/)) {
-        $diffs = "[Changes suppressed]";
-      }      
-    }
-     
-    # PGP Encryption
-    # PGP just works on the message body, so we do the encryption here.
-    if ($key =~ /PUBLIC KEY/) {      
-      my $pubring = new Crypt::OpenPGP::KeyRing(Data => $key);
-      my $pgp = new Crypt::OpenPGP(PubRing => $pubring);
-      
-      # "@" matches every email address in the public key ring - i.e. 
-      # precisely one, the one that we've added.
-      my $ciphertext = $pgp->encrypt(Data       => $diffs,
-                                     Recipients => "@",
-                                     Armour     => 1);
-      
-      if (defined($ciphertext)) {
-        $diffs = $ciphertext;
-      }
-      else {
-        $diffs = "\n\n\n*** ERROR: PGP ENCRYPTION FAILED. ***";
-        $diffs .= "\n" . $pgp->errstr() . "\n";
-      }
-    }
-    
     my $vars = {
         isnew => $isnew,
         to => $user->email,
@@ -787,30 +698,6 @@ sub sendMail {
     $template->process("email/newchangedmail.txt.tmpl", $vars, \$msg)
       || ThrowTemplateError($template->error());
     Bugzilla->template_inner("");
-
-    # S/MIME encryption
-    # S/MIME works on the entire message, so we do the encryption now it's
-    # been constructed.
-    if ($key =~ /BEGIN CERTIFICATE/) {
-      my $smime = new Crypt::SMIME();
-      
-      # This can fail if the key is bogus.
-      eval {
-        $smime->setPublicKey([$key]);
-      };
-      
-      if (!$@) {      
-        $msg = $smime->encrypt($msg);
-      }
-      else {
-        # Can't throw a Bugzilla UI error - it may well not be the fault of 
-        # the person making the change. So delete the entire message body 
-        # and append an error.
-        $msg =~ s/(show_bug\.cgi\?id=\d+).*$/$1/s;
-        $msg .= "\n\n\n*** ERROR: S/MIME ENCRYPTION FAILED. ***";
-        $msg .= "\n" . $@ . "\n";
-      }
-    }
 
     MessageToMTA($msg);
 
