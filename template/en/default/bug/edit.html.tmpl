@@ -175,6 +175,13 @@
           [%# *** Dependencies *** %]
           [% PROCESS section_dependson_blocks %]
           
+          [% IF user.id %]          
+            <tr>
+              <td colspan="2">
+                [% PROCESS commit_button id="_top"%]
+              </td>
+            </tr>
+          [% END %]
         </table>
       </td>
       <td>
@@ -1145,12 +1152,7 @@
           %]
 
           <br>
-          <div id="knob-buttons">
-            <input type="submit" value="Commit" id="commit">
-            [% IF bug.user.canmove %]
-              <input type="submit" name="action" id="action" value="[% Param("move-button-text") %]">
-            [% END %]
-          </div>
+          [% PROCESS commit_button id=""%]
         [% ELSE %]
           <fieldset>
             <legend>Note</legend>
@@ -1185,3 +1187,11 @@
     [% END %]</span>
 [% END %]
 
+[% BLOCK commit_button %]
+  <div class="knob-buttons">
+    <input type="submit" value="Commit" id="commit[% id FILTER css_class_quote %]">
+    [% IF bug.user.canmove %]
+      <input type="submit" name="action" id="action[% id FILTER css_class_quote %]" value="[% Param("move-button-text") %]">
+    [% END %]
+  </div>
+[% END %]
