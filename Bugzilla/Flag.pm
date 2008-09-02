@@ -477,6 +477,14 @@ sub _validate {
                                 'flagtype'  => $flag_type});
             }
 
+            # Check to see if the user has asked to opt out of this flag
+            if (!$requestee->is_requesteeble_for_flag($flag_type)) {
+                next if $skip_requestee_on_error;
+                ThrowUserError('flag_requestee_disabled',
+                               {'requestee' => $requestee,
+                                'flagtype'  => $flag_type});
+            }
+
             # This requestee can be set.
             push(@legal_requestees, $login);
         }

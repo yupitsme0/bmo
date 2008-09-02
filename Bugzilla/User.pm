@@ -367,6 +367,22 @@ sub settings {
     return $self->{'settings'};
 }
 
+# This isn't optimised; should ideally be in flagtype object
+# but its a bit painful to put this there for a specific user
+sub is_requesteeble_for_flag {
+    my ($self, $flag_type) = @_;
+
+    my $dbh = Bugzilla->dbh;
+
+    my ($disabled) = $dbh->selectrow_array("SELECT 1
+                                              FROM flag_user_disable
+                                             WHERE user_id = ?
+                                               AND flagtype_id = ?",
+                                           undef, $self->id, $flag_type->id);
+
+    return !$disabled;
+}
+
 sub flush_queries_cache {
     my $self = shift;
 

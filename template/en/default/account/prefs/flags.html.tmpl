@@ -1,0 +1,50 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # Contributor(s): Bradley Baetz <bbaetz@acm.org>
+  #
+  #%]
+
+[%# INTERFACE:
+  # flags: array of flagtype objects. May be empty
+  #    Note that only flags that are specifically requestable will show up here
+  #%]
+
+<p>
+  This page lists all the flags that you are able to be asked to set
+  on a bug or an attachment. You can opt-out this.
+</p>
+
+[% UNLESS flags.size %]
+  <p>You are not able to be asked to set any flags.</p>
+  [% dont_show_button = 1 %]
+[% ELSE %]
+  <table border="0" cellpadding="8">
+    <tr>
+      <th>Flag</th>
+      <th>Accepting Requests</th>
+    </tr>
+    [% FOREACH f = flags %]
+      <tr>
+        <td align="right">
+          [% f.name FILTER html %] - [% f.description FILTER html_light %]
+        </td>
+        <td>
+          <input name="flag-[% f.id %]" type="checkbox" id="flag-[% f.id %]" 
+          [% " checked='checked'"
+             IF Bugzilla.user.is_requesteeble_for_flag(f) %]>
+        </td>
+      </tr>
+    [% END %]
+  </table>
+[% END %]
+<br>

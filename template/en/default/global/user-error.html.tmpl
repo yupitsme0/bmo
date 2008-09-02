@@ -523,6 +523,12 @@
     You can't ask more than one person at a time for
     <em>[% type.name FILTER html %]</em>.
 
+  [% ELSIF error == "flag_requestee_disabled" %]
+    [% title = "Flag Requestee Has Disabled This Request" %]
+    [% requestee.identity FILTER html %] has disabled being asked to set the
+    <em>[% flagtype.name FILTER html %]</em> flag. Please select another
+    user.
+
   [% ELSIF error == "flag_requestee_needs_privs" %]
     [% title = "Flag Requestee Needs Privileges" %]
     [% requestee.identity FILTER html %] does not have permission to set the

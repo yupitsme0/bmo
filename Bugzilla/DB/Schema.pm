@@ -537,6 +537,29 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
+    # "flag_user_disable" allows users to opt-out of being requstable for
+    # certain flags
+    flag_user_disable => {
+        FIELDS => [
+            user_id     => {TYPE => 'INT3', NOTNULL => 1,
+                            REFERENCES => {TABLE  => 'profiles',
+                                           COLUMN => 'userid',
+                                           DELETE => 'CASCADE'}},
+            flagtype_id => {TYPE => 'INT2', NOTNULL => 1,
+                            REFERENCES => {TABLE => 'flagtypes',
+                                           COLUMN => 'id',
+                                           DELETE => 'CASCADE'}},
+        ],
+        INDEXES => [
+            flag_user_disable_user_id_idx => {
+                FIELDS  => [qw(user_id flagtype_id)],
+                TYPE    => 'UNIQUE',
+            },
+            flag_user_disable_flagtype_id_idx =>
+                [qw(flagtype_id)],
+        ],
+    },
+
     # General Field Information
     # -------------------------
 
