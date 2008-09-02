@@ -172,6 +172,17 @@ sub init {
                           "ON ldtime.bug_id = bugs.bug_id");
     }
 
+    if (grep($_ =~ /AS patches$/i, @$fieldsref)) {
+        my $extra = '';
+        if (Bugzilla->user->is_insider) {
+            $extra = " AND attach_patches.isprivate = 0";
+        }
+        push @supptables, "LEFT JOIN attachments AS attach_patches " .
+                          "ON bugs.bug_id = attach_patches.bug_id " .
+                          "AND attach_patches.ispatch = 1 " .
+                          "AND attach_patches.isobsolete = 0$extra";
+    }
+
     my $minvotes;
     if (defined $params->param('votes')) {
         my $c = trim($params->param('votes'));
