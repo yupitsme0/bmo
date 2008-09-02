@@ -64,3 +64,23 @@
 #summary tr td { 
     vertical-align:top;
 }
+
+/* custom styles for multiple stacked instances */
+#keywordsautocomplete_container{
+    width:25em; /* set width here */
+    padding-bottom:2em;
+}
+#keywordsautocomplete_container {
+    z-index:9000; /* z-index needed on top instance for ie & sf absolute inside relative issue */
+}
+#keywordsautocomplete .yui-ac-content { 
+    max-height:10em;
+    overflow:auto;
+    overflow-x:hidden; /* set scrolling */ 
+    _height:10em; /* ie6 */ 
+} 
+
+#keywords{
+    _position:absolute; /* abs pos needed for ie quirks */
+}
+

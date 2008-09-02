@@ -31,48 +31,35 @@
 [%#                                                                          #%]
 [%############################################################################%]
 
-<div id="keyword-chooser" style="display: none">
-  <table>
-    <tr>
-      <td valign="top">
-        Available&nbsp;Keywords:<br>
-        <select id="keyword-list" size="5" multiple>
-        [% FOREACH kwd = valid_keywords %]
-          [% UNLESS sel_keywords && lsearch(sel_keywords, kwd) != -1 %]
-           <option value="[% kwd FILTER html %]">[% kwd FILTER html %]</option>
-          [% END %]
-        [% END %]
-        </select>
-      </td>
-      <td valign="middle">
-        <button onclick="document.getElementById('keyword-chooser').chooserElement.chooser.choose(); return false;">-></button><br>
-        <button onclick="document.getElementById('keyword-chooser').chooserElement.chooser.unchoose(); return false;"><-</button>
-      </td>
-      <td valign="top">
-        Bug&nbsp;Keywords:<br>
-        <select id="bug-keyword-list" size="5" multiple>
-        [% FOREACH kwd = valid_keywords %]
-          [% IF sel_keywords && lsearch(sel_keywords, kwd) != -1 %]
-           <option value="[% kwd FILTER html %]">[% kwd FILTER html %]</option>
-          [% END %]
-        [% END %]
-        </select>
-      </td>
-      <td valign="middle">
-        <button type="button" onclick="document.getElementById('keyword-chooser').chooserElement.chooser.ok(); return false">OK</button>
-        <br>
-        <button type="button" onclick="document.getElementById('keyword-chooser').chooserElement.chooser.cancel(); return false" style="margin-top:3px;">Cancel</button>
-      </td>
-    </tr>
-  </table>
-</div>
-
 <script type="text/javascript">
-  var validKeywords = new Array();
+  function initKeywords() {
 
-  [% FOREACH kwd = valid_keywords %]
-    validKeywords[validKeywords.length] = "[% kwd FILTER html %]";
-  [% END %]
-
-  InitializeKeywordChooser(validKeywords);
+  
+    var validKeywords = new YAHOO.widget.DS_JSArray( [
+      [% FOREACH word IN valid_keywords %]
+        [ "[% word FILTER js %]", "[% valid_keywords_descriptions.${loop.index} FILTER js %]"][% ',' IF NOT loop.last %]
+      [% END %]
+    ]);
+    var keywordAutoComplete = new YAHOO.widget.AutoComplete("keywords" , 
+                                          "keywordsautocomplete" , validKeywords);
+    keywordAutoComplete.prehighlightClassName = "yui-ac-prehighlight";
+    //keywordAutoComplete.typeAhead = true;
+    keywordAutoComplete.useShadow = true;
+    keywordAutoComplete.minQueryLength = 0;
+    keywordAutoComplete.queryDelay = 0.05;
+    keywordAutoComplete.delimChar = [" "];
+    keywordAutoComplete.maxResultsDisplayed = [% valid_keywords.max %];
+    keywordAutoComplete.useIFrame = true;
+    keywordAutoComplete.textboxFocusEvent.subscribe( function(){
+      var sInputValue = YAHOO.util.Dom.get('keywords').value;
+      if(sInputValue.length === 0) {
+          var oSelf = this;
+          setTimeout(function(){oSelf.sendQuery(sInputValue);},0);
+      }
+    });
+    keywordAutoComplete.formatResult = function(oResultItem, sQuery) { 
+	    var sMarkup = "<span title='" +  oResultItem[1] + "'>" + oResultItem[0] + "<\/span> " ; 
+	    return (sMarkup); 
+    }; 
+  };initKeywords();
 </script>

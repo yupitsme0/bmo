@@ -1,4 +1,4 @@
-[%# The contents of this file are subject to the Mozilla Public
+﻿[%# The contents of this file are subject to the Mozilla Public
   # License Version 1.1 (the "License"); you may not use this file
   # except in compliance with the License. You may obtain a copy of
   # the License at http://www.mozilla.org/MPL/
@@ -611,7 +611,8 @@
       </td>
       [% PROCESS input inputname => "keywords" size => 40 colspan => 2
                        value => bug.keywords.join(', ')
-                       onfocus => "this.chooser.open()" %]
+                       include_autocomplete=>"keywordsautocomplete"
+                       %]
     </tr>
   [% END %]
 [% END %]
@@ -1081,15 +1082,24 @@
 
 [% BLOCK input %]
   [% IF no_td != 1 %]
-  <td[% " colspan=\"$colspan\"" IF colspan %]>
+  <td[% " colspan=\"$colspan\"" IF colspan %]
+     [% ' class="yui-skin-sam"' IF include_autocomplete %]  >
   [% END %]
     [% val = value ? value : bug.$inputname %]
     [% IF bug.check_can_change_field(inputname, 0, 1) %]
-       <input id="[% inputname %]" name="[% inputname %]"
+      [% IF include_autocomplete %]
+        <div id="[% include_autocomplete FILTER css_class_quote %]_container">
+      [% END %]    
+      <input id="[% inputname %]" name="[% inputname %]"
               value="[% val FILTER html %]"[% " size=\"$size\"" IF size %]
               [% " maxlength=\"$maxlength\"" IF maxlength %]
               [% " onfocus=\"$onfocus\"" IF onfocus %]
               [% " spellcheck=\"$spellcheck\"" IF spellcheck %]>
+      [% IF include_autocomplete %]
+          <div id="[% include_autocomplete FILTER css_class_quote %]">
+          </div>
+        </div>
+      [% END %]        
     [% ELSE %]
       [% IF size && val.length > size %]
         <span title="[% val FILTER html %]">
@@ -1109,6 +1119,7 @@
   [% value = undef %]
   [% onfocus = undef %]
   [% spellcheck = undef %]
+  [% include_autocomplete = undef %]
 [% END %]
 
 [% BLOCK comment_box %]
@@ -1129,6 +1140,7 @@
                      maxrows   = 25
                      cols      = constants.COMMENT_COLS
           %]
+
           <br>
           <div id="knob-buttons">
             <input type="submit" value="Commit" id="commit">
@@ -1158,11 +1170,14 @@
       [% IF user.name %]
         <a class="email" href="mailto:[% user.email FILTER html %]" 
            title="[% user.email FILTER html %]"
-          ><span class="fn">[% user.name FILTER html %]</span
+          >[% SET user_identity_output = user.name %]
+          [% Hook.process("user_identity") %]
+          <span class="fn">[%  user_identity_output FILTER html %]</span
         ></a>
       [% ELSE %]
         <a class="fn email" href="mailto:[% user.email FILTER html %]">
-          [% user.email FILTER html %]</a>
+          [% SET user_identity_output = user.email %]
+          [% Hook.process("user_identity") %][% user_identity_output FILTER html %]</a>
       [% END %]
     [% END %]</span>
 [% END %]
