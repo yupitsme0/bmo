@@ -192,6 +192,9 @@ if (defined $cgi->param('delta_ts')
     $vars->{'comments'} = Bugzilla::Bug::GetComments($first_bug->id,
                                                      "oldest_to_newest");
     $vars->{'bug'} = $first_bug;
+    # Hack for Mozilla to make the mid-air compatible with custom
+    # bug-activity reports.
+    $vars->{'bug_id'} = $first_bug->id;
     
     # Warn the user about the mid-air collision and ask them what to do.
     $template->process("bug/process/midair.html.tmpl", $vars)
