@@ -211,7 +211,9 @@ sub _check_is_searchable { $_[0]->_check_is($_[1], 'is_searchable') }
 sub _check_is {
     my ($self, $value, $field) = @_;
     $value = $self->check_boolean($value);
-    if ($self->$field != $value) {
+    # XXX If you change the name and isactive at the same time,
+    # you might be able to bypass this check.
+    if (!$value && $self->product->default_milestone eq $self->name) {
         ThrowUserError('milestone_is_default', { milestone => $self });
     }
     return $value;

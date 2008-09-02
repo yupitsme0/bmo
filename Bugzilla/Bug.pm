@@ -2677,7 +2677,7 @@ sub choices {
        'resolution'   => \@res,
        'component'    => [map($_->name, @{$self->product_obj->components})],
        'version'      => [map($_->name, @{$self->product_obj->versions})],
-       'target_milestone' => [map($_->name, @{$self->product_obj->milestones})],
+       'target_milestone' => [map($_->name, @milestones)],
        'cf_fixed_in' => [map($_->name, @{$self->product_obj->cf_fixed_in})],
       };
 
