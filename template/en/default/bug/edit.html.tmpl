@@ -271,12 +271,8 @@
          accesskey="l"><b>L</b>ast Comment</a>
     </span>
    
-    [% IF Param('useclassification') && bug.classification_id != 1 %]
-      <b>[[% bug.classification FILTER html %]]</b>
-    [% END %]
      <a href="show_bug.cgi?id=[% bug.bug_id %]">
-        <b>[% terms.Bug %]&nbsp;[% bug.bug_id FILTER html %]</b>
-     </a> - 
+        <b>[% terms.Bug %]&nbsp;[% bug.bug_id FILTER html %]</b></a> - 
      <span id="summary_alias_container" class="bz_default_hidden"> 
       [% IF Param("usebugaliases") %]
         [% IF bug.alias != "" %]
