@@ -78,6 +78,8 @@ use Bugzilla::Util;
 use Bugzilla::Constants;
 use Bugzilla::Error;
 
+use Scalar::Util qw(blessed);
+
 ###############################
 ####    Initialization     ####
 ###############################
@@ -95,6 +97,8 @@ use constant DB_COLUMNS => (
     'sortkey',
     'obsolete',
     'enter_bug',
+    'is_relationship',
+    'reverse_relationship_desc'
 );
 
 use constant REQUIRED_CREATE_FIELDS => qw(name description);
@@ -107,6 +111,8 @@ use constant VALIDATORS => {
     obsolete    => \&_check_obsolete,
     sortkey     => \&_check_sortkey,
     type        => \&_check_type,
+    is_relationship => \&Bugzilla::Object::check_boolean,
+    reverse_relationship_desc => \&_check_reverse_relationship_desc,
 };
 
 use constant UPDATE_COLUMNS => qw(
@@ -115,6 +121,8 @@ use constant UPDATE_COLUMNS => qw(
     sortkey
     obsolete
     enter_bug
+    is_relationship
+    reverse_relationship_desc
 );
 
 # How various field types translate into SQL data definitions.
@@ -261,6 +269,19 @@ sub _check_type {
     return $type;
 }
 
+sub _check_reverse_relationship_desc {
+    my ($invocant, $reverse_desc, $is_relationship) = @_;
+    $is_relationship = $self->is_relationship if blessed $invocant;
+ 
+    if (!defined($is_relationship) || $is_relationship == 0) {
+    	return '';
+    }
+    
+    $reverse_desc = clean_text($reverse_desc);
+    $reverse_desc || ThrowUserError('field_missing_reverse_relationship_desc');
+    return $reverse_desc;
+}
+
 =pod
 
 =head2 Instance Properties
@@ -381,6 +402,34 @@ sub legal_values {
     return $self->{'legal_values'};
 }
 
+=over
+
+=item C<is_relationship>
+
+Applies only to fields of type FIELD_TYPE_BUG_ID.
+A boolean specifying whether or not this field should have mutual
+one way relationships.
+
+=back
+
+=cut
+
+sub is_relationship  { return $_[0]->{is_relationship} }
+
+=over
+
+=item C<reverse_relationship_desc>
+
+Applies only to fields of type FIELD_TYPE_BUG_ID.
+Describes the reverse relationship if this field has is_relatiosnhip set to
+true.
+
+=back
+
+=cut
+
+sub reverse_relationship_desc { return $_[0]->{reverse_relationship_desc} }
+
 =pod
 
 =head2 Instance Mutators
@@ -412,6 +461,8 @@ sub set_enter_bug      { $_[0]->set('enter_bug',   $_[1]); }
 sub set_obsolete       { $_[0]->set('obsolete',    $_[1]); }
 sub set_sortkey        { $_[0]->set('sortkey',     $_[1]); }
 sub set_in_new_bugmail { $_[0]->set('mailhead',    $_[1]); }
+sub set_is_relationship{ $_[0]->set('is_relationship', $_[1]); }
+sub set_reverse_relationship_desc    { $_[0]->set('reverse_relationship_desc', $_[1]); }
 
 =pod
 
@@ -566,6 +617,9 @@ sub run_create_validators {
     my $params = $class->SUPER::run_create_validators(@_);
 
     $params->{name} = $class->_check_name($params->{name}, $params->{custom});
+    $params->{reverse_relationship_desc} = 
+              $class->_check_reverse_relationship_desc(
+              $params->{reverse_relationship_desc}, $params->{is_relationship});
     if (!exists $params->{sortkey}) {
         $params->{sortkey} = $dbh->selectrow_array(
             "SELECT MAX(sortkey) + 100 FROM fielddefs") || 100;

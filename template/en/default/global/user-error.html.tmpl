@@ -435,6 +435,10 @@
     [% title = "Missing Name for Field" %]
     You must enter a name for this field.
 
+  [% ELSIF error == "field_missing_reverse_relationship_desc" %]
+    [% title = "Missing Reverse Relationship Description for Field" %]
+    You must enter a Reverse Relationship Description for this field.
+
   [% ELSIF error == "fieldname_invalid" %]
     [% title = "Specified Field Does Not Exist" %]
     The field '[% field FILTER html %]' does not exist or 
@@ -1402,6 +1406,11 @@
     [% title = "Illegal Reassignment" %]
     To reassign [% terms.abug %], you must provide an address for
     the new assignee.
+
+  [% ELSIF error == "relationship_loop_single" %]
+    [% title = "Relationship Loop Detected" %]
+    [% field_desc FILTER html %] for [% terms.bug %] [%+ bug_id FILTER html %]
+    has a circular dependency on [% terms.bug %] [%+ dep_id FILTER html %].
 
   [% ELSIF error == "require_component" %]
     [% title = "Component Needed" %]

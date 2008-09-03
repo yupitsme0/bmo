@@ -65,6 +65,8 @@ elsif ($action eq 'new') {
         enter_bug   => scalar $cgi->param('enter_bug'),
         obsolete    => scalar $cgi->param('obsolete'),
         custom      => 1,
+        is_relationship => scalar $cgi->param('is_relationship'),
+        reverse_relationship_desc => scalar $cgi->param('reverse_desc'),
     });
 
     delete_token($token);
@@ -107,6 +109,12 @@ elsif ($action eq 'update') {
     $field->set_in_new_bugmail($cgi->param('new_bugmail'));
     $field->set_enter_bug($cgi->param('enter_bug'));
     $field->set_obsolete($cgi->param('obsolete'));
+    
+    if ($field->type == FIELD_TYPE_BUG_ID) {
+        $field->set_is_relationship($cgi->param('is_relationship'));
+        $field->set_reverse_relationship_desc($cgi->param('reverse_desc'));
+    }
+    
     $field->update();
 
     delete_token($token);

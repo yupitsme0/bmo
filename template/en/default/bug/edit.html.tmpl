@@ -924,6 +924,18 @@
                                      editable = bug.check_can_change_field(field.name, 0, 1)
                                      value_span = 2 %]
     </tr>
+    [% IF field.is_relationship %]
+    <tr>
+      <td class="field_label">
+        <b>[% field.reverse_relationship_desc FILTER html %]</b>:
+      </td>
+      <td>
+        [% FOREACH depbug = bug.related_bugs(field.name) %]
+           [% depbug FILTER bug_link(depbug) FILTER none %][% " " %]
+        [% END %]
+      </td>
+    </tr>
+    [% END %]
   [% END %]
 [% END %]
 

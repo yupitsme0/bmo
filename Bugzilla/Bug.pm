@@ -25,6 +25,7 @@
 #                 Max Kanat-Alexander <mkanat@bugzilla.org>
 #                 Frédéric Buclin <LpSolit@gmail.com>
 #                 Lance Larsh <lance.larsh@oracle.com>
+#                 Elliotte Martin <elliotte_martin@yahoo.com>
 
 package Bugzilla::Bug;
 
@@ -1613,10 +1614,48 @@ sub _check_select_field {
 }
 
 sub _check_bugid_field {
-    my ($invocant, $value, $field) = @_;
+    my ($self, $value, $field) = @_;
     return undef if !$value;
+
     ValidateBugID ($value, $field);
-    return $value;
+
+    # can't have a loop if this is a new bug
+    return $value if (!ref $self);
+    
+    # check for loop
+    my $ids = {$self->bug_id =>1};
+    relationship_loop_detect($field, $self->bug_id, $ids, $value);
+    
+    return $self->check($value, $field)->id;
+}
+
+sub relationship_loop_detect {
+    # Generates a dependency tree for a given bug.  Calls itself recursively
+    # to generate sub-trees for the bug's dependencies.
+    my ($field, $bug_id, $ids, $dep_id) = @_;
+
+    # Don't do anything if this bug doesn't have any dependencies.
+    return unless defined($dep_id);
+
+    # Get this dependency's record from the database
+    if (!$ids->{$dep_id}) {
+        $ids->{$dep_id} = 1;
+        $bug_id = $dep_id;
+        my $dbh = Bugzilla->dbh;
+        trick_taint($dep_id);
+        $dep_id = $dbh->selectrow_array("SELECT $field
+                                           FROM bugs
+                                          WHERE bug_id = ?", undef, $dep_id);
+
+        relationship_loop_detect($field, $bug_id, $ids, $dep_id);
+    }
+    else {
+        my $field = new Bugzilla::Field({'name' => $field});
+        ThrowUserError("relationship_loop_single", {'bug_id' => $bug_id,
+                        'dep_id' => $dep_id, 
+                        'field_desc' => $field->description});
+            
+    }    
 }
 
 #####################################################################
@@ -2319,6 +2358,23 @@ sub blocked {
 
 # Even bugs in an error state always have a bug_id.
 sub bug_id { $_[0]->{'bug_id'}; }
+
+
+sub related_bugs {
+    my ($self, $field_name) = @_;
+    return $self->{'related_bugs'}->{$field_name}
+      if exists $self->{'related_bugs'}->{$field_name};
+    return [] if $self->{'error'};
+
+    my $dbh = Bugzilla->dbh;
+    $self->{'related_bugs'}->{$field_name} = 
+        $dbh->selectcol_arrayref(
+            "SELECT bug_id FROM bugs WHERE " . $field_name . " = ? 
+           ORDER BY bug_id", undef, $self->bug_id);
+
+    return $self->{'related_bugs'}->{$field_name}; 
+}
+
 
 sub cc {
     my ($self) = @_;

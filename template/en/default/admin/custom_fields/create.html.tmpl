@@ -32,6 +32,26 @@
     var other_checkbox = document.getElementById(other_checkbox_id);
     other_checkbox.disabled = !this_checkbox.checked;
   }
+
+  // Disable Bug Field related fields if not Bug ID type.
+  function enableIsRelationship(this_select) {
+    var is_relationship = document.getElementById('is_relationship');
+    var bug_id_field_selected = this_select.options[this_select.selectedIndex].value == 6;
+    var reverse_desc = document.getElementById('reverse_desc');
+    is_relationship.disabled = !bug_id_field_selected;
+    if (!bug_id_field_selected)
+    	is_relationship.checked = 0;
+    if (!bug_id_field_selected)
+        reverse_desc.value = '';
+    reverse_desc.disabled = !bug_id_field_selected;
+  }
+
+  function toggleIsRelationship(this_checkbox) {
+    var reverse_desc = document.getElementById('reverse_desc');
+    reverse_desc.disabled = !this_checkbox.checked;
+    if (!this_checkbox.checked)
+        reverse_desc.value = "";
+  }
   //-->
 </script>
 
@@ -80,7 +100,8 @@
     <tr>
       <th align="right"><label for="type">Type:</label></th>
       <td>
-        <select id="type" name="type">
+        <select id="type" name="type"
+          onchange="enableIsRelationship(this)">
           [% FOREACH type = field_types.keys %]
             [% NEXT IF type == constants.FIELD_TYPE_UNKNOWN %]
             <option value="[% type FILTER html %]">[% field_types.$type FILTER html %]</option>
@@ -96,7 +117,17 @@
       <td>
         <input type="text" id="sortkey" name="sortkey" size="6" maxlength="6">
       </td>
-
+      <th align="right"><label for="is_relationship">Represents a [% terms.bug %] relationship:</label></th>
+      <td><input type="checkbox" id="is_relationship" name="is_relationship" value="1"
+                       onchange="toggleIsRelationship(this);">
+                       
+      </td>
+      <th>&nbsp;</th>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <th align="right"><label for="reverse_desc">Reverse Relationship Description:</label></th>
+      <td><input type="text" id="reverse_desc" name="reverse_desc" value="" size="40" disabled=true></td>
       <th>&nbsp;</th>
       <td>&nbsp;</td>
     </tr>

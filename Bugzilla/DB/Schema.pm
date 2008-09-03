@@ -581,6 +581,9 @@ use constant ABSTRACT_SCHEMA => {
                             DEFAULT => 'FALSE'},
             enter_bug   => {TYPE => 'BOOLEAN', NOTNULL => 1,
                             DEFAULT => 'FALSE'},
+            is_relationship => {TYPE => 'BOOLEAN', NOTNULL => 1,
+                            DEFAULT => 'FALSE'},
+            reverse_relationship_desc => {TYPE => 'TINYTEXT'},
         ],
         INDEXES => [
             fielddefs_name_idx    => {FIELDS => ['name'],
