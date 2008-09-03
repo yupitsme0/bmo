@@ -430,6 +430,32 @@ sub flags {
     return $self->{flags};
 }
 
+=over
+
+=item C<cf_fixed_in>
+
+selected fixed in values for this attachment.
+
+=back
+
+=cut
+
+sub cf_fixed_in {
+    my $self = shift;
+    my $dbh = Bugzilla->dbh;
+
+    if (!defined $self->{cf_fixed_in}) {
+        my $values = $dbh->selectcol_arrayref(q{
+            SELECT value 
+              FROM attachment_cf_fixed_in
+             WHERE attachment_cf_fixed_in.attach_id = ?},
+               undef, $self->id);
+
+        $self->{cf_fixed_in} = $values;
+    }
+    return $self->{cf_fixed_in};
+}
+
 # Instance methods; no POD documentation here yet because the only ones so far
 # are private.
 
@@ -740,6 +766,31 @@ sub validate_obsolete {
     return @obsolete_attachments;
 }
 
+sub validate_fixed_in {
+    my ($class, $bug, $throw_error) = @_;
+    my $cgi = Bugzilla->cgi;
+
+    my @fixed_in = $cgi->param('cf_fixed_in');
+    my $product = $bug->product_obj;
+    my @validated;
+    foreach my $item (@fixed_in) {
+        if ($throw_error) {
+            my $object = Bugzilla::FixedIn::check_version($product, $item);
+            push(@validated, $object->name);
+        }
+        else {
+            my $object = Bugzilla::FixedIn->new(
+                { product => $product, name => $item });
+            if ($object) {
+                push(@validated, $object->name);
+            }
+        }
+    }
+
+    $cgi->param('cf_fixed_in', @validated);
+
+}
+
 
 =pod
 
@@ -772,6 +823,7 @@ sub insert_attachment_for_bug {
     my $isurl;
     $class->validate_is_patch($throw_error) || return;
     $class->validate_description($throw_error) || return;
+    $class->validate_fixed_in($bug, $throw_error);
 
     if (Bugzilla->params->{'allow_attach_url'}
         && ($attachurl =~ /^(http|https|ftp):\/\/\S+/)
@@ -856,6 +908,24 @@ sub insert_attachment_for_bug {
     trick_taint($data);
     $sth->bind_param(1, $data, $dbh->BLOB_TYPE);
     $sth->execute();
+    
+    # Save "Fixed In" values
+    my @fixed_in = $cgi->param('cf_fixed_in');
+    if (scalar @fixed_in) {
+        foreach my $value (@fixed_in) {
+            trick_taint($value);
+            $dbh->do("INSERT INTO attachment_cf_fixed_in (attach_id, value) 
+                      VALUES (?,?)",
+                     undef, $attachid, $value);
+        }
+    
+        my $fieldid = get_field_id('attachment_cf_fixed_in.value');
+        $dbh->do('INSERT INTO bugs_activity (bug_id, attach_id, who, bug_when,
+                                             fieldid, removed, added)
+                  VALUES (?,?,?,?,?,?,?)',
+                  undef, ($bug->bug_id, $attachid, $user->id,
+                          $timestamp, $fieldid, '', join(", ", @fixed_in)));
+	}
 
     # If the file is to be stored locally, stream the file from the web server
     # to the local file without reading it into a local variable.
@@ -951,6 +1021,7 @@ sub remove_from_db {
     $dbh->bz_start_transaction();
     $dbh->do('DELETE FROM flags WHERE attach_id = ?', undef, $self->id);
     $dbh->do('DELETE FROM attach_data WHERE id = ?', undef, $self->id);
+    $dbh->do('DELETE FROM attachment_cf_fixed_in WHERE attach_id = ?', undef, $self->id);
     $dbh->do('UPDATE attachments SET mimetype = ?, ispatch = ?, isurl = ?, isobsolete = ?
               WHERE attach_id = ?', undef, ('text/plain', 0, 0, 1, $self->id));
     $dbh->bz_commit_transaction();

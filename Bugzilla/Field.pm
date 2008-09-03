@@ -197,6 +197,7 @@ use constant DEFAULT_FIELDS => (
     {name => 'attachments.isurl',     desc => 'Attachment is a URL'},
     {name => "owner_idle_time",       desc => "Time Since Assignee Touched"},
     {name => "cf_fixed_in",           desc => "Fixed In"},
+    {name => "attachment_cf_fixed_in.value",desc => "Attachment Fixed In"},
 );
 
 ##############
@@ -271,7 +272,7 @@ sub _check_type {
 
 sub _check_reverse_relationship_desc {
     my ($invocant, $reverse_desc, $is_relationship) = @_;
-    $is_relationship = $self->is_relationship if blessed $invocant;
+    $is_relationship = $invocant->is_relationship if blessed $invocant;
  
     if (!defined($is_relationship) || $is_relationship == 0) {
     	return '';

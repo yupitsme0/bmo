@@ -425,6 +425,20 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
+    attachment_cf_fixed_in => {
+        FIELDS => [
+            attach_id      => {TYPE => 'INT3', NOTNULL => 1,
+                               REFERENCES => {TABLE  => 'attachments',
+                                              COLUMN => 'attach_id',
+                                              DELETE => 'CASCADE'}},
+            value          => {TYPE => 'varchar(64)', NOTNULL => 1},
+        ],
+        INDEXES => [
+            attachment_cf_fixed_in_attach_id_idx => {FIELDS => [qw(attach_id value)],
+                                                      TYPE   => 'UNIQUE'},
+        ],
+	},
+	
     duplicates => {
         FIELDS => [
             dupe_of => {TYPE => 'INT3', NOTNULL => 1},

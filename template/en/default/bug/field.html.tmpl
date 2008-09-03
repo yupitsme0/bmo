@@ -30,6 +30,11 @@
   #               the field value.
   #%]
 
+
+[% SET use_label = 1 IF !use_label.defined %]
+[% SET use_td = 1 IF !use_td.defined %]
+
+[% IF use_label %]
 <th class="field_label">
   [% IF editable %]
     <label for="[% field.name FILTER html %]">
@@ -37,8 +42,11 @@
     [% field_descs.${field.name} FILTER html %]:
   [% '</label>' IF editable %]
 </th>
+[% END %]
 
+[% IF use_td %]
 <td class="field_value" [% "colspan=\"$value_span\"" FILTER none IF value_span %]>
+[% END %]
 [% IF override_type.defined %]
   [% SET field_type = override_type %]
 [% ELSE %]
@@ -140,4 +148,6 @@
 [% ELSE %]
   [% value.join(', ') FILTER html %]
 [% END %]
-</td>
+[% IF use_td %]
+  </td>
+[% END %]

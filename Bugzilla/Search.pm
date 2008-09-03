@@ -483,6 +483,7 @@ sub init {
         "^bug_group,(?!changed)" => \&_bug_group_nonchanged,
         "^attach_data\.thedata,changed" => \&_attach_data_thedata_changed,
         "^attach_data\.thedata," => \&_attach_data_thedata,
+        "^attachment_cf_fixed_in\.value," => \&_attachment_cf_fixed_in_value,
         "^attachments\.submitter," => \&_attachments_submitter,
         "^attachments\..*," => \&_attachments,
         "^flagtypes.name," => \&_flagtypes_name,
@@ -1482,6 +1483,24 @@ sub _attach_data_thedata {
     push(@$supptables, "INNER JOIN attach_data AS $dtable " .
                        "ON $dtable.id = $atable.attach_id");
     $$f = "$dtable.thedata";
+}
+
+sub _attachment_cf_fixed_in_value {
+    my $self = shift;
+    my %func_args = @_;
+    my ($chartid, $supptables, $f) =
+        @func_args{qw(chartid supptables f)};
+    
+    my $atable = "attachments_$$chartid";
+    my $dtable = "attachment_cf_fixed_in_$$chartid";
+
+    push(@$supptables, "INNER JOIN cf_fixed_in AS a_cf_fixed_in_$$chartid " .
+                       "ON bugs.product_id = a_cf_fixed_in_$$chartid.product_id");
+    push(@$supptables, "INNER JOIN attachments AS $atable " .
+                       "ON bugs.bug_id = $atable.bug_id");
+    push(@$supptables, "INNER JOIN attachment_cf_fixed_in AS $dtable " .
+                       "ON $dtable.attach_id = $atable.attach_id");
+    $$f = "$dtable.value";
 }
 
 sub _attachments_submitter {
