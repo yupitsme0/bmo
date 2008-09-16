@@ -125,17 +125,17 @@ hr {
 
 /* knob-buttons */
 
-#knob-buttons {
+.knob-buttons {
     margin-top: 10px;
     margin-bottom: 5px;
 }
 
-#knob-buttons p {
+.knob-buttons p {
     display: inline;
     padding-left: 10px;
 }
 
-#knob-buttons a {
+.knob-buttons a {
     font-size: 10pt;
 }
 

@@ -284,7 +284,7 @@ function handleWantsAttachment(wants_attachment) {
         [% ELSE %]
           operating system and platform. Please check them
         [% END %]
-        and, if we got it wrong, email [% Param('maintainer') %].
+        and make any corrections if necessary.
       </td>
     </tr>
   </tbody>
@@ -553,7 +553,6 @@ function handleWantsAttachment(wants_attachment) {
 </tbody>
 
 <tbody>
-  [% IF group.size %]
   <tr>
     <th>&nbsp;</th>
     <td colspan="3">
@@ -581,6 +580,7 @@ function handleWantsAttachment(wants_attachment) {
     </td>
   </tr>
 
+  [% IF group.size %]
   <tr>
     <td></td>
     <td colspan="3">

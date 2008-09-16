@@ -1,6 +1,7 @@
 ./graphs
 ./data
-./lib
+./duplicates.html
+./lib/*
 ./localconfig
 ./old-params.txt
 ./extensions
