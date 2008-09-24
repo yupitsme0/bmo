@@ -79,6 +79,14 @@ sub next_line {
 
     $this->{IN_HEADER} = 1;
 
+  # Hack for bzr
+  } elsif ($line =~ /^=== modified file '(.+)'/) {
+    $this->_maybe_end_file();
+
+    $this->{FILE_STATE}{filename} = $1;
+
+    $this->{IN_HEADER} = 1;
+
   } elsif ($line =~ /^diff\s*(-\S+\s*)*(\S+)\s*(\S*)/ && $3) {
     # Simple diff <dir> <dir>
     $this->_maybe_end_file();
