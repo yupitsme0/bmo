@@ -405,6 +405,7 @@ sub sqlify_criteria {
     # size before building a WHERE clause out of it
     my @criteria = ("1=1");
 
+    # Note that name is not a unique identifier....
     if ($criteria->{name}) {
         my $name = $dbh->quote($criteria->{name});
         trick_taint($name); # Detaint data as we have quoted it.
@@ -448,6 +449,13 @@ sub sqlify_criteria {
         detaint_natural($gid);
         push(@criteria, "(flagtypes.grant_group_id = $gid " .
                         " OR flagtypes.request_group_id = $gid)");
+    }
+    if ($criteria->{requesteeble_by}) {
+        my $user = $criteria->{requesteeble_by};
+        push(@criteria, "(flagtypes.is_requesteeble = 1 " .
+                        " AND (flagtypes.grant_group_id IS NULL " .
+                        "      OR flagtypes.grant_group_id IN " .
+                        "         ( " . $user->groups_as_string . ")))");
     }
     
     return @criteria;

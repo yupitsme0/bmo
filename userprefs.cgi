@@ -397,6 +397,37 @@ sub DoPermissions {
 
 # No SavePermissions() because this panel has no changeable fields.
 
+sub DoFlags {
+    my $user = Bugzilla->user;
+
+    $vars->{'flags'} = Bugzilla::FlagType::match({requesteeble_by => $user});
+}
+
+sub SaveFlags {
+    my $dbh = Bugzilla->dbh;
+    my $cgi = Bugzilla->cgi;
+
+    my $user = Bugzilla->user;
+
+    my $userid = $user->id;
+
+    my $disable_sth = $dbh->prepare("INSERT INTO flag_user_disable (user_id, flagtype_id) VALUES (?, ?)");
+    my $enable_sth = $dbh->prepare("DELETE FROM flag_user_disable WHERE user_id = ? AND flagtype_id = ?");
+
+    my $flags = Bugzilla::FlagType::match({requesteeble_by => $user});
+
+    # Note that the checkboxes on the webpage specify if the user *should*
+    # be requesteeble but the db entry is present if they *shouldn't*
+    foreach my $f (@$flags) {
+        if ($cgi->param('flag-' . $f->id) &&
+            !$user->is_requesteeble_for_flag($f)) {
+            $enable_sth->execute($userid, $f->id);
+        } elsif (!$cgi->param('flag-' . $f->id) &&
+                 $user->is_requesteeble_for_flag($f)) {
+            $disable_sth->execute($userid, $f->id);
+        }
+    }
+}
 
 sub DoSavedSearches {
     my $dbh = Bugzilla->dbh;
@@ -546,6 +577,11 @@ SWITCH: for ($current_tab_name) {
     };
     /^permissions$/ && do {
         DoPermissions();
+        last SWITCH;
+    };
+    /^flags$/ && do {
+        SaveFlags() if $cgi->param('dosave');
+        DoFlags();
         last SWITCH;
     };
     /^saved-searches$/ && do {

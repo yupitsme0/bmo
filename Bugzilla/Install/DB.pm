@@ -86,6 +86,13 @@ sub update_fielddefs_definition {
         }
     }
 
+    #2008-08-26 elliotte_martin@yahoo.com - Bug 251556
+    $dbh->bz_add_column('fielddefs', 'is_relationship',
+                        {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'FALSE'});
+
+    $dbh->bz_add_column('fielddefs', 'reverse_relationship_desc',
+                        {TYPE => 'TINYTEXT'});
+    
     # Remember, this is not the function for adding general table changes.
     # That is below. Add new changes to the fielddefs table above this
     # comment.

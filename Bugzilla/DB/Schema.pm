@@ -23,6 +23,7 @@
 #                 Lance Larsh <lance.larsh@oracle.com>
 #                 Dennis Melentyev <dennis.melentyev@infopulse.com.ua>
 #                 Akamai Technologies <bugzilla-dev@akamai.com>
+#                 Elliotte Martin <emartin@everythingsolved.com>
 
 package Bugzilla::DB::Schema;
 
@@ -424,6 +425,20 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
+    attachment_cf_fixed_in => {
+        FIELDS => [
+            attach_id      => {TYPE => 'INT3', NOTNULL => 1,
+                               REFERENCES => {TABLE  => 'attachments',
+                                              COLUMN => 'attach_id',
+                                              DELETE => 'CASCADE'}},
+            value          => {TYPE => 'varchar(64)', NOTNULL => 1},
+        ],
+        INDEXES => [
+            attachment_cf_fixed_in_attach_id_idx => {FIELDS => [qw(attach_id value)],
+                                                      TYPE   => 'UNIQUE'},
+        ],
+	},
+	
     duplicates => {
         FIELDS => [
             dupe_of => {TYPE => 'INT3', NOTNULL => 1},
@@ -537,6 +552,29 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
+    # "flag_user_disable" allows users to opt-out of being requstable for
+    # certain flags
+    flag_user_disable => {
+        FIELDS => [
+            user_id     => {TYPE => 'INT3', NOTNULL => 1,
+                            REFERENCES => {TABLE  => 'profiles',
+                                           COLUMN => 'userid',
+                                           DELETE => 'CASCADE'}},
+            flagtype_id => {TYPE => 'INT2', NOTNULL => 1,
+                            REFERENCES => {TABLE => 'flagtypes',
+                                           COLUMN => 'id',
+                                           DELETE => 'CASCADE'}},
+        ],
+        INDEXES => [
+            flag_user_disable_user_id_idx => {
+                FIELDS  => [qw(user_id flagtype_id)],
+                TYPE    => 'UNIQUE',
+            },
+            flag_user_disable_flagtype_id_idx =>
+                [qw(flagtype_id)],
+        ],
+    },
+
     # General Field Information
     # -------------------------
 
@@ -557,6 +595,9 @@ use constant ABSTRACT_SCHEMA => {
                             DEFAULT => 'FALSE'},
             enter_bug   => {TYPE => 'BOOLEAN', NOTNULL => 1,
                             DEFAULT => 'FALSE'},
+            is_relationship => {TYPE => 'BOOLEAN', NOTNULL => 1,
+                            DEFAULT => 'FALSE'},
+            reverse_relationship_desc => {TYPE => 'TINYTEXT'},
         ],
         INDEXES => [
             fielddefs_name_idx    => {FIELDS => ['name'],
@@ -1288,6 +1329,23 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
+
+    # PASSWORD LOCKOUT
+    # ------------
+
+    login_activity => {
+        FIELDS => [
+            user_id      => {TYPE => 'INT3', NOTNULL => 1,
+                             REFERENCES => {TABLE  => 'profiles', 
+                                            COLUMN => 'userid',
+                                            DELETE => 'CASCADE'}},
+            login_time   => {TYPE => 'DATETIME', NOTNULL => 1},
+            ip_addr      => {TYPE => 'varchar(40)', NOTNULL => 1},
+        ],
+        INDEXES => [
+            login_activity_user_id_idx   => ['user_id'],
+        ],
+    },
 };
 
 use constant FIELD_TABLE_SCHEMA => {

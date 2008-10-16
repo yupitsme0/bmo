@@ -691,6 +691,36 @@ DefineColumn("percentage_complete",
 DefineColumn("relevance"         , "relevance"                  , "Relevance"        );
 DefineColumn("deadline"          , $dbh->sql_date_format('bugs.deadline', '%Y-%m-%d') . " AS deadline", "Deadline");
 
+# Produce strings like "attachmentDesc - flag+, flag-, flag?(requestee)"
+# The conditionals handle the requestee being present only being
+# present in some cases; the rest is just concatenation
+my $patchq = "
+GROUP_CONCAT(CONCAT_WS(' - ', attach_patches.description,
+  (SELECT GROUP_CONCAT(CONCAT(attach_patches_flagtypes.name,
+                              attach_patches_flags.status,
+                              (CASE
+                               WHEN attach_patches_flags.status = '?' AND
+                                    attach_patches_requestee.login_name IS NOT NULL
+                                 THEN CONCAT(' (',
+                                             attach_patches_requestee.login_name,
+                                             ')')
+                               ELSE ''
+                               END))
+                       ORDER BY attach_patches_flagtypes.name,
+                                attach_patches_flags.status,
+                                attach_patches_flags.id
+                       SEPARATOR ', ')
+          FROM flags AS attach_patches_flags
+               INNER JOIN flagtypes AS attach_patches_flagtypes
+                         ON attach_patches_flags.type_id=attach_patches_flagtypes.id
+               LEFT JOIN profiles AS attach_patches_requestee
+                         ON attach_patches_flags.requestee_id=attach_patches_requestee.userid
+          WHERE attach_patches.bug_id=attach_patches_flags.bug_id
+        GROUP BY attach_patches.bug_id))
+ORDER BY attach_patches.attach_id SEPARATOR ', ') AS patches
+";
+DefineColumn("patches", $patchq, "Patches");
+
 foreach my $field (Bugzilla->active_custom_fields) {
     # Multi-select fields are not (yet) supported in buglists.
     next if $field->type == FIELD_TYPE_MULTI_SELECT;

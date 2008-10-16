@@ -235,6 +235,18 @@
                    id="contenttypeentry" name="contenttypeentry"
                    value="[% attachment.contenttype FILTER html %]"><br>
 
+            <b><label for="cf_fixed_in">Fixed In</label>:</b><br>
+            [% IF bug.choices.cf_fixed_in.size %]
+                   [% INCLUDE bug/field.html.tmpl
+                       field = Bugzilla.get_fields({ name => 'cf_fixed_in' })
+                       override_type  = constants.FIELD_TYPE_MULTI_SELECT
+                       override_legal_values = bug.choices.cf_fixed_in
+                       editable = bug.check_can_change_field('cf_fixed_in', 0, 1) 
+                       value = attachment.cf_fixed_in
+                       use_td = 0
+                       use_label = 0
+                       value_span = 1 %]
+            [% END %]
           <input type="checkbox" id="ispatch" name="ispatch" value="1"
                  [%+ 'checked="checked"' IF attachment.ispatch %]>
           <label for="ispatch">patch</label>

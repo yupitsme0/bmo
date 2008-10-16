@@ -438,6 +438,9 @@ sub edit {
   my $attachment = validateID();
   my $dbh = Bugzilla->dbh;
 
+  my $bug = new Bugzilla::Bug($attachment->bug_id);
+  $vars->{'bug'} = $bug;
+
   # Retrieve a list of attachments for this bug as well as a summary of the bug
   # to use in a navigation bar across the top of the screen.
   my $bugattachments =
@@ -488,6 +491,7 @@ sub update {
     Bugzilla::Attachment->validate_description(THROW_ERROR);
     Bugzilla::Attachment->validate_is_patch(THROW_ERROR);
     Bugzilla::Attachment->validate_content_type(THROW_ERROR) unless $cgi->param('ispatch');
+    Bugzilla::Attachment->validate_fixed_in($bug, THROW_ERROR);
     $cgi->param('isobsolete', $cgi->param('isobsolete') ? 1 : 0);
     $cgi->param('isprivate', $cgi->param('isprivate') ? 1 : 0);
 
@@ -554,6 +558,8 @@ sub update {
   trick_taint($contenttype);
   trick_taint($filename);
 
+  my $old_fixed_in = $attachment->cf_fixed_in;
+
   # Figure out when the changes were made.
   my ($timestamp) = $dbh->selectrow_array("SELECT NOW()");
     
@@ -614,6 +620,30 @@ sub update {
                   $attachment->isprivate, $updated_attachment->isprivate);
   }
   
+  # Save "Fixed In" values
+  my @fixed_in = $cgi->param('cf_fixed_in');
+  my ($removed, $added) = diff_arrays($old_fixed_in, \@fixed_in);
+  if (scalar @$removed || scalar @$added) {
+    $dbh->do("DELETE FROM attachment_cf_fixed_in WHERE attach_id = ?",
+              undef, $attachment->id);
+
+    foreach my $value (@fixed_in) {
+      trick_taint($value);
+      $dbh->do("INSERT INTO attachment_cf_fixed_in (attach_id, value) VALUES (?,?)",
+                undef, $attachment->id, $value);
+    }
+    
+    my $fieldid = get_field_id('attachment_cf_fixed_in.value');
+    my $rem_string = join(', ', @$removed);
+    my $add_string = join(', ', @$added);
+    trick_taint($rem_string);
+    trick_taint($add_string);
+    $dbh->do('INSERT INTO bugs_activity (bug_id, attach_id, who, bug_when,
+                                         fieldid, removed, added)
+              VALUES (?,?,?,?,?,?,?)',
+              undef, ($bug->id, $attachment->id, $user->id,
+                      $timestamp, $fieldid, $rem_string, $add_string));
+  }
   # Commit the transaction now that we are finished updating the database.
   $dbh->bz_commit_transaction();
 

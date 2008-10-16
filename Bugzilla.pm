@@ -82,13 +82,7 @@ use constant SHUTDOWNHTML_EXIT_SILENTLY => [
 # cause any fatal errors to result in a call stack trace to help track
 # down weird errors.
 #
-#sub die_with_dignity {
-#    use Carp ();
-#    my ($err_msg) = @_;
-#    print $err_msg;
-#    Carp::confess($err_msg);
-#}
-#$::SIG{__DIE__} = \&Bugzilla::die_with_dignity;
+$::SIG{__DIE__} = \&CGI::Carp::confess;
 
 # Note that this is a raw subroutine, not a method, so $class isn't available.
 sub init_page {
