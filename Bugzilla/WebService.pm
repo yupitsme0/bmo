@@ -88,6 +88,7 @@ sub initialize {
     my $self = shift;
     my %retval = $self->SUPER::initialize(@_);
     $retval{'serializer'} = Bugzilla::WebService::XMLRPC::Serializer->new;
+    $retval{'deserializer'} = Bugzilla::WebService::XMLRPC::Deserializer->new;
     return %retval;
 }
 
@@ -138,6 +139,26 @@ sub as_string {
 }
 
 1;
+
+package Bugzilla::WebService::XMLRPC::Deserializer;
+use strict;
+# We can't use "use base" because XMLRPC::Deserializer doesn't return
+# a true value.
+eval { require XMLRPC::Lite; };
+our @ISA = qw(XMLRPC::Deserializer);
+
+# This is the only way to capture the input parameters to every method.
+sub deserialize {
+    my $self = shift;
+    my $som = $self->SUPER::deserialize(@_);
+    if ($som->paramsin) {
+        Bugzilla->request_cache->{webservice_params} = $som->paramsin;
+    }
+    else {
+        Bugzilla->request_cache->{webservice_params} = {};
+    }
+    return $som;
+}
 
 __END__
 

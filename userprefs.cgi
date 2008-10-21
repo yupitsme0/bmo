@@ -151,10 +151,10 @@ sub SaveAccount {
         }
     }
 
-    my $realname = trim($cgi->param('realname'));
-    trick_taint($realname); # Only used in a placeholder
-    $dbh->do("UPDATE profiles SET realname = ? WHERE userid = ?",
-             undef, ($realname, $user->id));
+    $user->set_name($cgi->param('realname'));
+    Bugzilla::Hook::process('user-end_of_set_all', 
+                            { user => $user, params => { $cgi->Vars } });
+    $user->update();
 }
 
 

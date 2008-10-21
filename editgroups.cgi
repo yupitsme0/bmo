@@ -237,37 +237,14 @@ if ($action eq 'add') {
 
 if ($action eq 'new') {
     check_token_data($token, 'add_group');
-    # Check that a not already used group name is given, that
-    # a description is also given and check if the regular
-    # expression is valid (if any).
-    my $name = CheckGroupName($cgi->param('name'));
-    my $desc = CheckGroupDesc($cgi->param('desc'));
-    my $regexp = CheckGroupRegexp($cgi->param('regexp'));
-    my $isactive = $cgi->param('isactive') ? 1 : 0;
-    # This is an admin page. The URL is considered safe.
-    my $icon_url;
-    if ($cgi->param('icon_url')) {
-        $icon_url = clean_text($cgi->param('icon_url'));
-        trick_taint($icon_url);
-    }
-
-    # Add the new group
-    $dbh->do('INSERT INTO groups
-              (name, description, isbuggroup, userregexp, isactive, icon_url)
-              VALUES (?, ?, 1, ?, ?, ?)',
-              undef, ($name, $desc, $regexp, $isactive, $icon_url));
-
-    my $group = new Bugzilla::Group({name => $name});
-    my $admin = Bugzilla::Group->new({name => 'admin'})->id();
-    # Since we created a new group, give the "admin" group all privileges
-    # initially.
-    my $sth = $dbh->prepare('INSERT INTO group_group_map
-                             (member_id, grantor_id, grant_type)
-                             VALUES (?, ?, ?)');
-
-    $sth->execute($admin, $group->id, GROUP_MEMBERSHIP);
-    $sth->execute($admin, $group->id, GROUP_BLESS);
-    $sth->execute($admin, $group->id, GROUP_VISIBLE);
+    my $group = Bugzilla::Group->create({
+        name        => scalar $cgi->param('name'),
+        description => scalar $cgi->param('desc'),
+        userregexp  => scalar $cgi->param('regexp'),
+        isactive    => scalar $cgi->param('isactive'),
+        icon_url    => scalar $cgi->param('icon_url'),
+        isbuggroup  => 1,
+    });
 
     # Permit all existing products to use the new group if makeproductgroups.
     if ($cgi->param('insertnew')) {
@@ -277,7 +254,6 @@ if ($action eq 'new') {
                   SELECT ?, products.id, 0, ?, ?, 0 FROM products',
                   undef, ($group->id, CONTROLMAPSHOWN, CONTROLMAPNA));
     }
-    Bugzilla::Group::RederiveRegexp($regexp, $group->id);
     delete_token($token);
 
     $vars->{'message'} = 'group_created';
@@ -578,6 +554,9 @@ sub doGroupChanges {
     if (defined $cgi->param('icon_url')) {
         $group->set_icon_url($cgi->param('icon_url'));
     }
+
+    Bugzilla::Hook::process('group-end_of_set_all', 
+        { group => $group, params => { $cgi->Vars } });
 
     my $changes = $group->update();
 

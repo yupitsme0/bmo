@@ -42,6 +42,7 @@ use Bugzilla::Product;
 use Bugzilla::Component;
 use Bugzilla::Status;
 use Bugzilla::Mailer;
+use Bugzilla::Hook;
 
 use Date::Parse;
 use Date::Format;
@@ -699,6 +700,8 @@ sub sendMail {
       || ThrowTemplateError($template->error());
     Bugzilla->template_inner("");
 
+    Bugzilla::Hook::process('bugmail-before_queue', 
+                            { message => \$msg, bug_id => $id, to => $user });
     MessageToMTA($msg);
 
     return 1;

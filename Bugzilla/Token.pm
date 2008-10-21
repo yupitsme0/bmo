@@ -32,6 +32,7 @@ package Bugzilla::Token;
 
 use Bugzilla::Constants;
 use Bugzilla::Error;
+use Bugzilla::Hook;
 use Bugzilla::Mailer;
 use Bugzilla::Util;
 use Bugzilla::User;
@@ -160,6 +161,8 @@ sub IssuePasswordToken {
       || ThrowTemplateError($template->error());
 
     Bugzilla->template_inner("");
+    Bugzilla::Hook::process('token-before_password_reset_send', 
+                            { message => \$message, to => $user });
     MessageToMTA($message);
 }
 
