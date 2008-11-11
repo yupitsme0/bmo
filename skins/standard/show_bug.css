@@ -7,6 +7,16 @@
     font-weight: bold;
 }
 
+.bz_bug .edit_form {
+  width: 100%;
+}
+.bz_bug .edit_form table {
+  width: 100%;
+}
+.bz_bug .edit_form .text_input {
+  width: 100%;
+}
+
 .bz_column_spacer {
     width: 2em;
 }
@@ -67,7 +77,7 @@
 
 /* custom styles for multiple stacked instances */
 #keywordsautocomplete_container{
-    width:25em; /* set width here */
+    width:100%; /* set width here */
     padding-bottom:2em;
 }
 #keywordsautocomplete_container {

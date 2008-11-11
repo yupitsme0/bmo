@@ -146,7 +146,7 @@
   <input type="hidden" name="id" value="[% bug.bug_id %]">
 
   [% PROCESS section_title %]
-  <table>
+  <table class="edit_form">
     <tr>
       [%# 1st Column %]
       <td id="bz_show_bug_column_1" class="bz_show_bug_column">     
@@ -973,6 +973,7 @@
     <span id="[% dep.fieldname %]_input_area">
       [% IF bug.check_can_change_field(dep.fieldname, 0, 1) %]
         <input name="[% dep.fieldname %]" id="[% dep.fieldname %]"
+               class="text_input"
                value="[% bug.${dep.fieldname}.join(', ') %]">
       [% END %]
     </span>
@@ -1113,6 +1114,7 @@
         <div id="[% include_autocomplete FILTER css_class_quote %]_container">
       [% END %]    
       <input id="[% inputname %]" name="[% inputname %]"
+             class="text_input"
               value="[% val FILTER html %]"[% " size=\"$size\"" IF size %]
               [% " maxlength=\"$maxlength\"" IF maxlength %]
               [% " onfocus=\"$onfocus\"" IF onfocus %]
