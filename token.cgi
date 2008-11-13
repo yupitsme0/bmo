@@ -405,7 +405,7 @@ sub cancel_create_account {
 
 sub unlock_account {
     my ($token) = @_;
-    
+    my $dbh = Bugzilla->dbh; 
     trick_taint($token);
     
     my ($userid) = $dbh->selectrow_array('SELECT userid FROM tokens
