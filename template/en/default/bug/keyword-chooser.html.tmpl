@@ -48,7 +48,7 @@
     keywordAutoComplete.minQueryLength = 0;
     keywordAutoComplete.queryDelay = 0.05;
     keywordAutoComplete.delimChar = [" "];
-    keywordAutoComplete.maxResultsDisplayed = [% valid_keywords.max %];
+    keywordAutoComplete.maxResultsDisplayed = [% valid_keywords.max FILTER js %];
     keywordAutoComplete.useIFrame = true;
     keywordAutoComplete.textboxFocusEvent.subscribe( function(){
       var sInputValue = YAHOO.util.Dom.get('keywords').value;

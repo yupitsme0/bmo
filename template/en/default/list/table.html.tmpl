@@ -84,7 +84,7 @@
           class="first-child0
                 [%+ IF first_header %]
                    sortable_column_0
-                   sorted_[% lsearch(order_columns, 'bug_id') %]
+                   sorted_[% lsearch(order_columns, 'bug_id') FILTER html %]
                 [% END %]">
         [% desc = '' %]
         [% IF (om = order.match("^bugs\.bug_id( desc)?")) %]
@@ -139,7 +139,7 @@
   <th colspan="[% splitheader ? 2 : 1 %]"
       class="[%+ IF first_header %]
                    sortable_column_[% key FILTER html %]
-                   sorted_[% lsearch(order_columns, id) %]
+                   sorted_[% lsearch(order_columns, id) FILTER html %]
                 [% END %]">
     [% IF column.name.match('\s+AS\s+') %]
       [%# For aliased columns, use their ID for sorting. %]

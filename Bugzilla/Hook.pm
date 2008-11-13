@@ -516,6 +516,10 @@ This is called during L<Bugzilla::Object/create> and L<Bugzilla::Object/update>.
 This allows you to add validators for certain fields (or modify the existing
 validators) right before validation is actually done.
 
+Params:
+
+=over
+
 =item C<invocant> - The object or class being modified. You should probably
 call C<isa> on it, so that you only make a modification to a specific
 type of object
