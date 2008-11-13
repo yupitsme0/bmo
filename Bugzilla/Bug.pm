@@ -229,9 +229,6 @@ use constant UPDATE_COMMENT_COLUMNS => qw(
 # activity table.
 use constant MAX_LINE_LENGTH => 254;
 
-# Used in _check_comment(). Gives the max length allowed for a comment.
-use constant MAX_COMMENT_LENGTH => 65535;
-
 use constant SPECIAL_STATUS_WORKFLOW_ACTIONS => qw(
     none
     duplicate
@@ -719,6 +716,10 @@ sub update {
     $self->_sync_fulltext()
         if $self->{added_comments} || $changes->{short_desc};
 
+    # Remove obsolete internal variables.
+    delete $self->{'_old_assigned_to'};
+    delete $self->{'_old_qa_contact'};
+
     return $changes;
 }
 
@@ -1159,9 +1160,18 @@ sub _check_dup_id {
     
     $dupe_of = trim($dupe_of);
     $dupe_of || ThrowCodeError('undefined_field', { field => 'dup_id' });
-    # Make sure we can change the original bug (issue A on bug 96085)
+    # Validate the bug ID. The second argument will force ValidateBugID() to
+    # only make sure that the bug exists, and convert the alias to the bug ID
+    # if a string is passed. Group restrictions are checked below.
     ValidateBugID($dupe_of, 'dup_id');
-    
+
+    # If the dupe is unchanged, we have nothing more to check.
+    return $dupe_of if ($self->dup_id && $self->dup_id == $dupe_of);
+
+    # If we come here, then the duplicate is new. We have to make sure
+    # that we can view/change it (issue A on bug 96085).
+    check_is_visible($dupe_of);
+
     # Make sure a loop isn't created when marking this bug
     # as duplicate.
     my %dupes;
@@ -1734,6 +1744,8 @@ sub set_alias { $_[0]->set('alias', $_[1]); }
 sub set_assigned_to {
     my ($self, $value) = @_;
     $self->set('assigned_to', $value);
+    # Store the old assignee. check_can_change_field() needs it.
+    $self->{'_old_assigned_to'} = $self->{'assigned_to_obj'}->id;
     delete $self->{'assigned_to_obj'};
 }
 sub reset_assigned_to {
@@ -1801,7 +1813,7 @@ sub set_dup_id {
     my ($self, $dup_id) = @_;
     my $old = $self->dup_id || 0;
     $self->set('dup_id', $dup_id);
-    my $new = $self->dup_id || 0;
+    my $new = $self->dup_id;
     return if $old == $new;
     
     # Update the other bug.
@@ -1873,8 +1885,16 @@ sub set_product {
         Bugzilla->error_mode(ERROR_MODE_DIE);
         my $component_ok = eval { $self->set_component($comp_name);      1; };
         my $version_ok   = eval { $self->set_version($vers_name);        1; };
-        my $milestone_ok = eval { $self->set_target_milestone($tm_name); 1; };
         my $fixed_in_ok  = eval { $self->set_cf_fixed_in($fixed_in);     1; };
+        my $milestone_ok = 1;
+        # Reporters can move bugs between products but not set the TM.
+        if ($self->check_can_change_field('target_milestone', 0, 1)) {
+            $milestone_ok = eval { $self->set_target_milestone($tm_name); 1; };
+        }
+        else {
+            # Have to set this directly to bypass the validators.
+            $self->{target_milestone} = $product->default_milestone;
+        }
         # If there were any errors thrown, make sure we don't mess up any
         # other part of Bugzilla that checks $@.
         undef $@;
@@ -1926,6 +1946,7 @@ sub set_product {
         
         if (%vars) {
             $vars{product} = $product;
+            $vars{bug} = $self;
             my $template = Bugzilla->template;
             $template->process("bug/process/verify-new-product.html.tmpl",
                 \%vars) || ThrowTemplateError($template->error());
@@ -1937,8 +1958,14 @@ sub set_product {
         # just die if any of these are invalid.
         $self->set_component($comp_name);
         $self->set_version($vers_name);
-        $self->set_target_milestone($tm_name);
         $self->set_cf_fixed_in($fixed_in);
+        if ($self->check_can_change_field('target_milestone', 0, 1)) {
+            $self->set_target_milestone($tm_name);
+        }
+        else {
+            # Have to set this directly to bypass the validators.
+            $self->{target_milestone} = $product->default_milestone;
+        }
     }
     
     if ($product_changed) {
@@ -1968,6 +1995,10 @@ sub set_product {
 sub set_qa_contact {
     my ($self, $value) = @_;
     $self->set('qa_contact', $value);
+    # Store the old QA contact. check_can_change_field() needs it.
+    if ($self->{'qa_contact_obj'}) {
+        $self->{'_old_qa_contact'} = $self->{'qa_contact_obj'}->id;
+    }
     delete $self->{'qa_contact_obj'};
 }
 sub reset_qa_contact {
@@ -3337,14 +3368,16 @@ sub check_can_change_field {
     # Make sure that a valid bug ID has been given.
     if (!$self->{'error'}) {
         # Allow the assignee to change anything else.
-        if ($self->{'assigned_to'} == $user->id) {
+        if ($self->{'assigned_to'} == $user->id
+            || $self->{'_old_assigned_to'} && $self->{'_old_assigned_to'} == $user->id)
+        {
             return 1;
         }
 
         # Allow the QA contact to change anything else.
         if (Bugzilla->params->{'useqacontact'}
-            && $self->{'qa_contact'}
-            && ($self->{'qa_contact'} == $user->id))
+            && (($self->{'qa_contact'} && $self->{'qa_contact'} == $user->id)
+                || ($self->{'_old_qa_contact'} && $self->{'_old_qa_contact'} == $user->id)))
         {
             return 1;
         }
@@ -3404,6 +3437,8 @@ sub ValidateBugID {
     my $dbh = Bugzilla->dbh;
     my $user = Bugzilla->user;
 
+    ThrowUserError('improper_bug_id_field_value', { field => $field }) unless defined $id;
+
     # Get rid of leading '#' (number) mark, if present.
     $id =~ s/^\s*#//;
     # Remove whitespace
@@ -3426,12 +3461,17 @@ sub ValidateBugID {
     $dbh->selectrow_array("SELECT bug_id FROM bugs WHERE bug_id = ?", undef, $id)
       || ThrowUserError("bug_id_does_not_exist", {'bug_id' => $id});
 
-    return if (defined $field && ($field eq "dependson" || $field eq "blocked"));
-    
+    unless ($field && $field =~ /^(dependson|blocked|dup_id)$/) {
+        check_is_visible($id);
+    }
+}
+
+sub check_is_visible {
+    my $id = shift;
+    my $user = Bugzilla->user;
+
     return if $user->can_see_bug($id);
 
-    # The user did not pass any of the authorization tests, which means they
-    # are not authorized to see the bug.  Display an error and stop execution.
     # The error the user sees depends on whether or not they are logged in
     # (i.e. $user->id contains the user's positive integer ID).
     if ($user->id) {

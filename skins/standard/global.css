@@ -365,6 +365,7 @@ table.attachment_info td {
 /* For bug fields */
 .uneditable_textarea {
     width: 30em;
+    font-size: medium;
 }
 
 div.user_match {
@@ -429,18 +430,5 @@ form#Create .comment {
     color: green;
     margin: 0 0.5em;
     padding: 0.3em;
-    height: 4ex;
+    height: 8ex;
 }
-
-#keyword-chooser {
-    padding: 10px;
-    position: absolute;
-    z-index: 25;
-    top: 50px;
-    left: 50px;
-    border: 2px solid #404D6C;
-    -moz-border-radius: 5px;
-    background: white;
-}
-
-

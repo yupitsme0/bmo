@@ -65,6 +65,11 @@ sub MessageToMTA {
     }
 
     my $email = ref($msg) ? $msg : Email::MIME->new($msg);
+
+    # We add this header to mark the mail as "auto-generated" and
+    # thus to hopefully avoid auto replies.
+    $email->header_set('Auto-Submitted', 'auto-generated');
+
     $email->walk_parts(sub {
         my ($part) = @_;
         return if $part->parts > 1; # Top-level
@@ -88,8 +93,11 @@ sub MessageToMTA {
     $email->header_set('MIME-Version', '1.0') if !$email->header('MIME-Version');
 
     # Encode the headers correctly in quoted-printable
-    foreach my $header qw(From To Cc Reply-To Sender Errors-To Subject) {
-        if (my $value = $email->header($header)) {
+    foreach my $header ($email->header_names) {
+        my @values = $email->header($header);
+        # We don't recode headers that happen multiple times.
+        next if scalar(@values) > 1;
+        if (my $value = $values[0]) {
             if (Bugzilla->params->{'utf8'} && !utf8::is_utf8($value)) {
                 utf8::decode($value);
             }

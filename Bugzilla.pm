@@ -77,12 +77,7 @@ use constant SHUTDOWNHTML_EXIT_SILENTLY => [
 # Global Code
 #####################################################################
 
-# The following subroutine is for debugging purposes only.
-# Uncommenting this sub and the $::SIG{__DIE__} trap underneath it will
-# cause any fatal errors to result in a call stack trace to help track
-# down weird errors.
-#
-$::SIG{__DIE__} = \&CGI::Carp::confess;
+$::SIG{__DIE__} = i_am_cgi() ? \&CGI::Carp::confess : \&Carp::confess;
 
 # Note that this is a raw subroutine, not a method, so $class isn't available.
 sub init_page {
@@ -142,7 +137,13 @@ sub init_page {
 
         # For security reasons, log out users when Bugzilla is down.
         # Bugzilla->login() is required to catch the logincookie, if any.
-        my $user = Bugzilla->login(LOGIN_OPTIONAL);
+        my $user;
+        eval { $user = Bugzilla->login(LOGIN_OPTIONAL); };
+        if ($@) {
+            # The DB is not accessible. Use the default user object.
+            $user = Bugzilla->user;
+            $user->{settings} = {};
+        }
         my $userid = $user->id;
         Bugzilla->logout();
 
