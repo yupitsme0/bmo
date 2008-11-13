@@ -146,7 +146,7 @@
   <input type="hidden" name="id" value="[% bug.bug_id %]">
 
   [% PROCESS section_title %]
-  <table>
+  <table class="edit_form">
     <tr>
       [%# 1st Column %]
       <td id="bz_show_bug_column_1" class="bz_show_bug_column">     
@@ -406,6 +406,27 @@
       [% PROCESS bug/knob.html.tmpl %]
     </td>
   </tr>
+  [% IF Param('usestatuswhiteboard') %]
+    <tr>
+      <td class="field_label">
+        <label for="status_whiteboard" accesskey="w"><b><u>W</u>hiteboard</b></label>:
+      </td>
+      [% PROCESS input inputname => "status_whiteboard" size => "40" colspan => 2 %]
+    </tr>
+  [% END %]
+
+  [% IF use_keywords %]
+    <tr>
+      <td class="field_label">
+        <label for="keywords" accesskey="k">
+          <b><a href="describekeywords.cgi"><u>K</u>eywords</a></b></label>:
+      </td>
+      [% PROCESS input inputname => "keywords" size => 40 colspan => 2
+                       value => bug.keywords.join(', ')
+                       include_autocomplete=>"keywordsautocomplete"
+                       %]
+    </tr>
+  [% END %]
 [% END %]
 
 [%############################################################################%]
@@ -568,14 +589,17 @@
     <td>
       [% IF bug.check_can_change_field("bug_file_loc", 0, 1) %]
         <span id="bz_url_edit_container" class="bz_default_hidden"> 
-        [% IF bug.bug_file_loc 
-           AND NOT bug.bug_file_loc.match("^(javascript|data)") %]
-           <a href="[% bug.bug_file_loc FILTER html %]" target="_blank"
-              title="[% bug.bug_file_loc FILTER html %]">
-             [% bug.bug_file_loc FILTER truncate(40) FILTER html %]</a>
-        [% ELSE %]
-          [% bug.bug_file_loc FILTER html %]
-        [% END %]
+        <a href="[% bug.bug_file_loc FILTER html %]" target="_blank"
+           title="[% bug.bug_file_loc FILTER html %]"
+           [% IF bug.bug_file_loc 
+                 AND bug.bug_file_loc.match("^(javascript|data)") 
+           %]
+             onclick="return confirm(
+                 'This is a &quot;data&quot; or &quot;javascript&quot; URL,'
+                 + ' which can possibly be harmful. The full URL is:\n\n'
+                 + '[% bug.bug_file_loc FILTER js FILTER html %]\n\nContinue?')"
+           [% END %]>
+          [% bug.bug_file_loc FILTER truncate(40) FILTER html %]</a>
         (<a href="#" id="bz_url_edit_action">edit</a>)</span>
       [% END %]
       <span id="bz_url_input_area">
@@ -597,28 +621,6 @@
       [% END %]
     </td>
   </tr>
-  
-  [% IF Param('usestatuswhiteboard') %]
-    <tr>
-      <td class="field_label">
-        <label for="status_whiteboard" accesskey="w"><b><u>W</u>hiteboard</b></label>:
-      </td>
-      [% PROCESS input inputname => "status_whiteboard" size => "40" colspan => 2 %]
-    </tr>
-  [% END %]
-  
-  [% IF use_keywords %]
-    <tr>
-      <td class="field_label">
-        <label for="keywords" accesskey="k">
-          <b><a href="describekeywords.cgi"><u>K</u>eywords</a></b></label>:
-      </td>
-      [% PROCESS input inputname => "keywords" size => 40 colspan => 2
-                       value => bug.keywords.join(', ')
-                       include_autocomplete=>"keywordsautocomplete"
-                       %]
-    </tr>
-  [% END %]
 [% END %]
 
 [%############################################################################%]
@@ -932,6 +934,18 @@
                                      editable = bug.check_can_change_field(field.name, 0, 1)
                                      value_span = 2 %]
     </tr>
+    [% IF field.is_relationship %]
+    <tr>
+      <td class="field_label">
+        <b>[% field.reverse_relationship_desc FILTER html %]</b>:
+      </td>
+      <td>
+        [% FOREACH depbug = bug.related_bugs(field.name) %]
+           [% depbug FILTER bug_link(depbug) FILTER none %][% " " %]
+        [% END %]
+      </td>
+    </tr>
+    [% END %]
   [% END %]
 [% END %]
 
@@ -962,6 +976,7 @@
     <span id="[% dep.fieldname %]_input_area">
       [% IF bug.check_can_change_field(dep.fieldname, 0, 1) %]
         <input name="[% dep.fieldname %]" id="[% dep.fieldname %]"
+               class="text_input"
                value="[% bug.${dep.fieldname}.join(', ') %]">
       [% END %]
     </span>
@@ -1102,6 +1117,7 @@
         <div id="[% include_autocomplete FILTER css_class_quote %]_container">
       [% END %]    
       <input id="[% inputname %]" name="[% inputname %]"
+             class="text_input"
               value="[% val FILTER html %]"[% " size=\"$size\"" IF size %]
               [% " maxlength=\"$maxlength\"" IF maxlength %]
               [% " onfocus=\"$onfocus\"" IF onfocus %]

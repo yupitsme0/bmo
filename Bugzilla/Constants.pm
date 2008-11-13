@@ -121,6 +121,7 @@ use File::Basename;
     FIELD_TYPE_MULTI_SELECT
     FIELD_TYPE_TEXTAREA
     FIELD_TYPE_DATETIME
+    FIELD_TYPE_BUG_ID
 
     USAGE_MODE_BROWSER
     USAGE_MODE_CMDLINE
@@ -149,6 +150,9 @@ use File::Basename;
     MAX_MILESTONE_SIZE
     MAX_COMPONENT_SIZE
     MAX_FREETEXT_LENGTH
+    
+    MAX_LOGIN_ATTEMPTS
+    LOGIN_LOCKOUT_INTERVAL
 );
 
 @Bugzilla::Constants::EXPORT_OK = qw(contenttypes);
@@ -347,6 +351,7 @@ use constant FIELD_TYPE_SINGLE_SELECT => 2;
 use constant FIELD_TYPE_MULTI_SELECT => 3;
 use constant FIELD_TYPE_TEXTAREA  => 4;
 use constant FIELD_TYPE_DATETIME  => 5;
+use constant FIELD_TYPE_BUG_ID  => 6;
 
 # The maximum number of days a token will remain valid.
 use constant MAX_TOKEN_AGE => 3;
@@ -421,6 +426,14 @@ use constant MAX_COMPONENT_SIZE => 64;
 
 # Maximum length allowed for free text fields.
 use constant MAX_FREETEXT_LENGTH => 255;
+
+# Maximum failed logins to lock account
+use constant MAX_LOGIN_ATTEMPTS => 5;
+
+# Lockout interval.  If the maximum login attempts occurs during this period
+# the account is locked (60 minutes)
+use constant LOGIN_LOCKOUT_INTERVAL => 60;
+
 
 sub bz_locations {
     # We know that Bugzilla/Constants.pm must be in %INC at this point.

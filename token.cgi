@@ -20,6 +20,7 @@
 #
 # Contributor(s): Myk Melez <myk@mozilla.org>
 #                 Frédéric Buclin <LpSolit@gmail.com>
+#                 Elliotte Martin <emartin@everythingsolved.com>
 
 ############################################################################
 # Script Initialization
@@ -95,6 +96,10 @@ if ($cgi->param('t')) {
       Bugzilla::Token::Cancel($::token, 'wrong_token_for_creating_account');
       ThrowUserError('wrong_token_for_creating_account');
   }
+  if ( ($::action eq 'unlock_account') && $tokentype ne 'unlock' ) {
+     Bugzilla::Token::Cancel($::token, "wrong_token_for_unlocking_account");
+    ThrowUserError("wrong_token_for_unlocking_account");
+  }
 }
 
 
@@ -157,6 +162,8 @@ if ($::action eq 'reqpw') {
     confirm_create_account();
 } elsif ($::action eq 'cancel_new_account') {
     cancel_create_account();
+} elsif ($::action eq 'unlock_account') {
+    unlock_account($cgi->param('t'));
 } else { 
     # If the action that the user wants to take (specified in the "a" form field)
     # is none of the above listed actions, display an error telling the user 
@@ -391,6 +398,28 @@ sub cancel_create_account {
     $vars->{'account'} = $login_name;
     Bugzilla::Token::Cancel($::token, $vars->{'message'});
 
+    print $cgi->header();
+    $template->process('global/message.html.tmpl', $vars)
+      || ThrowTemplateError($template->error());
+}
+
+sub unlock_account {
+    my ($token) = @_;
+    
+    trick_taint($token);
+    
+    my ($userid) = $dbh->selectrow_array('SELECT userid FROM tokens
+                                           WHERE token = ?', undef, $token);
+    $dbh->bz_start_transaction();
+
+    $dbh->do('DELETE FROM login_activity WHERE user_id = ?', undef, $userid );
+    $dbh->do('DELETE FROM tokens WHERE token = ?', undef, $token);
+        
+    $dbh->bz_commit_transaction();
+
+    my $vars = {'message' => "account_unlocked"};
+
+    # Display the template
     print $cgi->header();
     $template->process('global/message.html.tmpl', $vars)
       || ThrowTemplateError($template->error());

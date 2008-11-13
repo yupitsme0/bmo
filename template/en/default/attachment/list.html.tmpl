@@ -52,7 +52,7 @@
 <br>
 <table id="attachment_table" cellspacing="0" cellpadding="4">
   <tr>
-    <th colspan="[% show_attachment_flags ? 3 : 2 %]" align="left">
+    <th colspan="[% show_attachment_flags ? 4 : 3 %]" align="left">
       <a name="a0" id="a0">Attachments</a>
     </th>
   </tr>
@@ -101,6 +101,11 @@
               [% attachment.attacher.display_name FILTER html %]
             </a>
           </span>
+
+          [% IF attachment.cf_fixed_in.size %]
+            <br><strong>Fixed In:</strong>
+            [%+ attachment.cf_fixed_in.join(", ") FILTER html %]
+          [% END %]
         </td>
 
         [% IF show_attachment_flags %]
@@ -118,7 +123,7 @@
             [% END %]
           </td>
         [% END %]
-
+        
         <td valign="top">
           <a href="attachment.cgi?id=[% attachment.id %]&amp;action=edit">Details</a>
           [% IF attachment.ispatch && patchviewerinstalled %]
@@ -131,7 +136,7 @@
   [% END %]
 
   <tr class="bz_attach_footer">
-    <td colspan="[% show_attachment_flags ? 3 : 2 %]">
+    <td colspan="[% show_attachment_flags ? 4 : 3 %]">
       [% IF attachments.size %]
         <span class="bz_attach_view_hide">
           [% IF obsolete_attachments %]

@@ -156,7 +156,7 @@ sub product_id { return $_[0]->{'product_id'}; }
 sub check_version {
     my ($product, $version_name) = @_;
 
-    $version_name || ThrowUserError('object_not_specified', 
+    $version_name || ThrowUserError('object_name_not_specified', 
                                     { class => __PACKAGE__ });
     my $version = new Bugzilla::FixedIn(
         { product => $product, name => $version_name });

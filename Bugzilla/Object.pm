@@ -24,6 +24,7 @@ use strict;
 package Bugzilla::Object;
 
 use Bugzilla::Constants;
+use Bugzilla::Hook;
 use Bugzilla::Util;
 use Bugzilla::Error;
 
@@ -58,10 +59,14 @@ sub _init {
     my $class = shift;
     my ($param) = @_;
     my $dbh = Bugzilla->dbh;
-    my $columns = join(',', $class->DB_COLUMNS);
-    my $table   = $class->DB_TABLE;
+    my @cols  = $class->DB_COLUMNS;
+    my $table = $class->DB_TABLE;
     my $name_field = $class->NAME_FIELD;
     my $id_field   = $class->ID_FIELD;
+
+    Bugzilla::Hook::process('object-columns', 
+        { invocant => $class, columns => \@cols });
+    my $columns = join(',', @cols);
 
     my $id = $param unless (ref $param eq 'HASH');
     my $object;
@@ -187,8 +192,12 @@ sub match {
 sub _do_list_select {
     my ($class, $where, $values) = @_;
     my $table = $class->DB_TABLE;
-    my $cols  = join(',', $class->DB_COLUMNS);
+    my @columns = $class->DB_COLUMNS;
     my $order = $class->LIST_ORDER;
+
+    Bugzilla::Hook::process('object-columns', 
+                           { invocant => $class, columns => \@columns });
+    my $cols = join(',', @columns);
 
     my $sql = "SELECT $cols FROM $table";
     if (defined $where) {
@@ -217,13 +226,16 @@ sub set {
     my ($self, $field, $value) = @_;
 
     # This method is protected. It's used to help implement set_ functions.
-    caller->isa('Bugzilla::Object')
+    my $caller = caller;
+    $caller->isa('Bugzilla::Object') || $caller->isa('Bugzilla::Hook')
         || ThrowCodeError('protection_violation', 
-                          { caller     => caller,
+                          { caller     => $caller,
                             superclass => __PACKAGE__,
                             function   => 'Bugzilla::Object->set' });
 
     my %validators = (%{$self->VALIDATORS}, %{$self->UPDATE_VALIDATORS});
+    Bugzilla::Hook::process('object-validators',
+        { invocant => $self, validators => \%validators, update => 1 });
     if (exists $validators{$field}) {
         my $validator = $validators{$field};
         $value = $self->$validator($value, $field);
@@ -247,11 +259,15 @@ sub update {
     $dbh->bz_start_transaction();
 
     my $old_self = $self->new($self->id);
-    
+   
+    my @columns = $self->UPDATE_COLUMNS; 
     my %numeric = map { $_ => 1 } $self->NUMERIC_COLUMNS;
     my %date    = map { $_ => 1 } $self->DATE_COLUMNS;
+    Bugzilla::Hook::process('object-columns', 
+        { invocant => $self, columns => \@columns, update => 1 });
+
     my (@update_columns, @values, %changes);
-    foreach my $column ($self->UPDATE_COLUMNS) {
+    foreach my $column (@columns) {
         my ($old, $new) = ($old_self->{$column}, $self->{$column});
         # This has to be written this way in order to allow us to set a field
         # from undef or to undef, and avoid warnings about comparing an undef
@@ -291,6 +307,9 @@ sub create {
     my ($class, $params) = @_;
     my $dbh = Bugzilla->dbh;
 
+    Bugzilla::Hook::process('object-before_create',
+                            { class => $class, params => $params });
+
     $dbh->bz_start_transaction();
     $class->check_required_create_fields($params);
     my $field_values = $class->run_create_validators($params);
@@ -313,15 +332,17 @@ sub check_required_create_fields {
 sub run_create_validators {
     my ($class, $params) = @_;
 
-    my $validators = $class->VALIDATORS;
+    my %validators = %{ $class->VALIDATORS };
+    Bugzilla::Hook::process('object-validators',
+                            { invocant => $class, validators => \%validators });
 
     my %field_values;
     # We do the sort just to make sure that validation always
     # happens in a consistent order.
     foreach my $field (sort keys %$params) {
         my $value;
-        if (exists $validators->{$field}) {
-            my $validator = $validators->{$field};
+        if (exists $validators{$field}) {
+            my $validator = $validators{$field};
             $value = $class->$validator($params->{$field}, $field);
         }
         else {

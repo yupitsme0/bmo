@@ -93,6 +93,9 @@
             <type>[% a.contenttype FILTER xml %]</type>
             <size>[% a.datasize FILTER xml %]</size>
             <attacher>[% a.attacher.email FILTER xml %]</attacher>
+            [% FOREACH cf_fixed_in = a.cf_fixed_in %]
+              <cf_fixed_in>[% cf_fixed_in FILTER xml %]</cf_fixed_in> 
+            [% END %]
         [% IF displayfields.attachmentdata %]
             <data encoding="base64">[% a.data FILTER base64 %]</data>
         [% END %]        

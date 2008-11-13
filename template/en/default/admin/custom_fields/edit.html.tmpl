@@ -36,6 +36,14 @@
     var other_checkbox = document.getElementById(other_checkbox_id);
     other_checkbox.disabled = !this_checkbox.checked;
   }
+  
+  function toggleIsRelationship(this_checkbox) {
+    var reverse_desc = document.getElementById('reverse_desc');
+    reverse_desc.disabled = !this_checkbox.checked;
+    if (!this_checkbox.checked)
+        reverse_desc.value = "";
+  }
+  
   //-->
 </script>
 
@@ -83,9 +91,27 @@
                value="[% field.sortkey FILTER html %]">
       </td>
 
-      <th>&nbsp;</th>
-      <td>&nbsp;</td>
+      [% IF field.type == constants.FIELD_TYPE_BUG_ID %]
+       <th align="right"><label for="is_relationship">Represents a [% terms.bug %] relationship:</label></th>
+       <td><input type="checkbox" id="is_relationship" name="is_relationship" value="1"
+                  onchange="toggleIsRelationship(this);"
+          [%- " checked" IF field.is_relationship %]>
+       </td>
+      [% ELSE %]
+       <th>&nbsp;</th>
+       <td>&nbsp;</td>
+      [% END %]
     </tr>
+    [% IF field.type == constants.FIELD_TYPE_BUG_ID %]
+       <tr>
+        <th align="right"><label for="reverse_desc">Reverse Relationship Description:</label></th>
+        <td><input type="text" id="reverse_desc" name="reverse_desc" size="40"
+                 value="[% field.reverse_relationship_desc FILTER html %]"></td>
+
+        <th>&nbsp;</th>
+        <td>&nbsp;</td>
+       </tr>
+    [% END %]
     [% IF field.type == constants.FIELD_TYPE_SINGLE_SELECT
           || field.type == constants.FIELD_TYPE_MULTI_SELECT %]
       <tr>

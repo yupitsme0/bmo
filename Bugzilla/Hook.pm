@@ -30,7 +30,7 @@ use strict;
 
 sub process {
     my ($name, $args) = @_;
-    
+
     # get a list of all extensions
     my @extensions = glob(bz_locations()->{'extensionsdir'} . "/*");
     
@@ -45,6 +45,18 @@ sub process {
         next if $extension =~ m{/CVS$} || $extension =~ m{/\.[^/]+$};
         next if -e "$extension/disabled";
         if (-e $extension.'/code/'.$name.'.pl') {
+            if (Bugzilla->usage_mode == USAGE_MODE_BROWSER) {
+                $args->{'input_params'} = { Bugzilla->cgi->Vars };
+            }
+            elsif (Bugzilla->usage_mode == USAGE_MODE_WEBSERVICE) {
+                # We have the || {} there because the "webservice" hook
+                # is called before the webservice params are parsed and set.
+                $args->{'input_params'} = 
+                    Bugzilla->request_cache->{webservice_params} || {};
+            }
+            else {
+                $args->{'input_params'} = {};
+            }
             Bugzilla->hook_args($args);
             # Allow extensions to load their own libraries.
             local @INC = ("$extension/lib", @INC);
@@ -122,6 +134,16 @@ Some L<hooks|/HOOKS> have params that are passed to them.
 These params are accessible through L<Bugzilla/hook_args>.
 That returns a hashref. Very frequently, if you want your
 hook to do anything, you have to modify these variables.
+
+B<All> hooks are passed an argument called C<input_params>. When Bugzilla
+is being used via the normal web interface, this will contain the
+CGI parameters as a hashref. When Bugzilla is being used via the WebService,
+C<input_params> contains the arguments passed into the method that is 
+currently being called. If Bugzilla is being used some other way, it will
+be an empty hashref.
+
+Note that C<input_params> contains unvalidated data directly from external
+sources, and so you should be careful to validate it before using it.
 
 =head2 Versioning Extensions
 
@@ -217,6 +239,25 @@ The definition is structured as:
 
 =back
 
+=head2 bugmail-before_queue
+
+Called inside L<Bugzilla::BugMail>, right before the message is sent to
+the mailqueue (that is, before C<MessageToMTA> is called.
+
+Params:
+
+=over
+
+=item C<message> - A reference to the full text of the email that is 
+about to be sent. You can modify this to modify the message.
+
+=item C<bug_id> - The numeric id of the bug that a notification is being
+sent for.
+
+=item C<to> - The L<Bugzilla::User> that this message is going to.
+
+=back
+
 =head2 colchange-columns
 
 This happens in F<colchange.cgi> right after the list of possible display
@@ -268,6 +309,21 @@ Params:
 =item C<new_flags> - The snapshot of flag summaries after the change. Call
 C<my ($removed, $added) = diff_arrays(old_flags, new_flags)> to get the list of
 changed flags, and search for a specific condition like C<added eq 'review-'>.
+
+=back
+
+=head2 group-end_of_set_all
+
+Called after all C<set> functions are called in C<editgroups.cgi>, but
+before C<update> is called.
+
+Params:
+
+=over
+
+=item C<group> - The L<Bugzilla::Group> that is being updated.
+
+=item C<params> - The parameters passed to the CGI, as a hashref.
 
 =back
 
@@ -336,6 +392,49 @@ database when run.
 
 =back
 
+=head2 mailer-before_send
+
+Called right before L<Bugzilla::Mailer> sends a message to the MTA.
+
+Params:
+
+=over
+
+=item C<email> - The C<Email::MIME> object that's about to be sent.
+
+=back
+
+=head2 token-before_password_reset_send
+
+Called right before L<Bugzilla::Token> sends a password reset email
+to a user.
+
+Params:
+
+=over
+
+=item C<message> - A reference to the entire email message about to be
+sent, as text.
+
+=item C<to> - The L<Bugzilla::User> that the message is being sent to.
+
+=back
+
+=head2 user-end_of_set_all
+
+Called after all C<set> functions are called in C<userprefs.cgi>, but
+before C<update> is called.
+
+Params:
+
+=over
+
+=item C<user> - The L<Bugzilla::User> that is being updated.
+
+=item C<params> - The parameters passed to the CGI, as a hashref.
+
+=back
+
 =head2 webservice
 
 This hook allows you to add your own modules to the WebService. (See
@@ -366,6 +465,66 @@ It's recommended that all the keys you put in C<dispatch> start with the
 name of your extension, so that you don't conflict with the standard Bugzilla
 WebService functions (and so that you also don't conflict with other
 plugins).
+
+=back
+
+=head2 object-before_create
+
+This is called inside of L<Bugzilla::Object/create> before B<anything> is
+done.
+
+One thing you might want to do in this hook is modify C<params> based on
+C<input_params>, if you've added custom columns to an object.
+
+Params:
+
+=over
+
+=item C<class> - The class of the object being created. You probably want to
+use C<isa> on this to check what class it is, to make modifications to
+specific classes.
+
+=item C<params> - The parameters passed to C<create>.
+
+=back
+
+=head2 object-columns
+
+This is called inside of L<Bugzilla::Object> in multiple places. Using this,
+you can add additional DB columns to objects. 
+
+Params:
+
+=over
+
+=item C<invocant> - The object or class being modified. You should probably
+call C<isa> on it, so that you only make a modification to a specific
+type of object.
+
+=item C<columns> - The list of columns that will be updated. If you've
+added a new column to the DB for a type of object, you should add it to
+this array so that C<update>, C<new>, etc. will work with the column.
+
+item C<update> - True when this hook is called from C<update>, in case you
+want to exclude your column from updates.
+
+=back
+
+=head2 object-validators
+
+This is called during L<Bugzilla::Object/create> and L<Bugzilla::Object/update>.
+This allows you to add validators for certain fields (or modify the existing
+validators) right before validation is actually done.
+
+=item C<invocant> - The object or class being modified. You should probably
+call C<isa> on it, so that you only make a modification to a specific
+type of object
+
+=item C<validators> - A hashref that maps field names to code refs. These are
+validators for those fields. You can modify this hashref to add, remove,
+or modify validators.
+
+=item C<update> - True if we're being called from L<Bugzilla:Object/update>.
 
 =back
 
