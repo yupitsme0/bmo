@@ -382,7 +382,7 @@ sub init {
 
     my $sql_deadlinefrom;
     my $sql_deadlineto;
-    if (Bugzilla->user->in_group(Bugzilla->params->{'timetrackinggroup'})){
+    if ($user->in_group(Bugzilla->params->{'timetrackinggroup'})) {
       my $deadlinefrom;
       my $deadlineto;
             
@@ -815,8 +815,10 @@ sub init {
                  $field =~ /^(relevance|actual_time|percentage_complete)/);
         # The structure of fields is of the form:
         # [foo AS] {bar | bar.baz} [ASC | DESC]
-        # Only the mandatory part bar OR bar.baz is of interest
-        if ($field =~ /(?:.*\s+AS\s+)?(\w+(\.\w+)?)(?:\s+(ASC|DESC))?$/i) {
+        # Only the mandatory part bar OR bar.baz is of interest.
+        # But for Oracle, it needs the real name part instead.
+        my $regexp = $dbh->GROUPBY_REGEXP;
+        if ($field =~ /$regexp/i) {
             push(@groupby, $1) if !grep($_ eq $1, @groupby);
         }
     }
@@ -857,12 +859,9 @@ sub GetByWordList {
         my $word = $w;
         if ($word ne "") {
             $word =~ tr/A-Z/a-z/;
-            $word = $dbh->quote(quotemeta($word));
+            $word = $dbh->quote('(^|[^a-z0-9])' . quotemeta($word) . '($|[^a-z0-9])');
             trick_taint($word);
-            $word =~ s/^'//;
-            $word =~ s/'$//;
-            $word = '(^|[^a-z0-9])' . $word . '($|[^a-z0-9])';
-            push(@list, $dbh->sql_regexp($field, "'$word'"));
+            push(@list, $dbh->sql_regexp($field, $word));
         }
     }
 
@@ -1259,12 +1258,7 @@ sub _commenter_exact {
         $$sequence++;
     }
     my $table = "longdescs_$chartseq";
-    my $extra = "";
-    if (Bugzilla->params->{"insidergroup"} 
-        && !Bugzilla->user->in_group(Bugzilla->params->{"insidergroup"})) 
-    {
-        $extra = "AND $table.isprivate < 1";
-    }
+    my $extra = $user->is_insider ? "" : "AND $table.isprivate < 1";
     push(@$supptables, "LEFT JOIN longdescs AS $table " .
                        "ON $table.bug_id = bugs.bug_id $extra " .
                        "AND $table.who IN ($match)");
@@ -1283,12 +1277,7 @@ sub _commenter {
         $$sequence++;
     }
     my $table = "longdescs_$chartseq";
-    my $extra = "";
-    if (Bugzilla->params->{"insidergroup"} 
-        && !Bugzilla->user->in_group(Bugzilla->params->{"insidergroup"})) 
-    {
-        $extra = "AND $table.isprivate < 1";
-    }
+    my $extra = $self->{'user'}->is_insider ? "" : "AND $table.isprivate < 1";
     $$f = "login_name";
     $$ff = "profiles.login_name";
     $$funcsbykey{",$$t"}($self, %func_args);
@@ -1307,12 +1296,7 @@ sub _long_desc {
         @func_args{qw(chartid supptables f)};
     
     my $table = "longdescs_$$chartid";
-    my $extra = "";
-    if (Bugzilla->params->{"insidergroup"} 
-        && !Bugzilla->user->in_group(Bugzilla->params->{"insidergroup"})) 
-    {
-        $extra = "AND $table.isprivate < 1";
-    }
+    my $extra = $self->{'user'}->is_insider ? "" : "AND $table.isprivate < 1";
     push(@$supptables, "LEFT JOIN longdescs AS $table " .
                        "ON $table.bug_id = bugs.bug_id $extra");
     $$f = "$table.thetext";
@@ -1325,12 +1309,7 @@ sub _longdescs_isprivate {
         @func_args{qw(chartid supptables f)};
     
     my $table = "longdescs_$$chartid";
-    my $extra = "";
-    if (Bugzilla->params->{"insidergroup"}
-        && !Bugzilla->user->in_group(Bugzilla->params->{"insidergroup"}))
-    {
-        $extra = "AND $table.isprivate < 1";
-    }
+    my $extra = $self->{'user'}->is_insider ? "" : "AND $table.isprivate < 1";
     push(@$supptables, "LEFT JOIN longdescs AS $table " .
                       "ON $table.bug_id = bugs.bug_id $extra");
     $$f = "$table.isprivate";
@@ -1472,12 +1451,7 @@ sub _attach_data_thedata {
     
     my $atable = "attachments_$$chartid";
     my $dtable = "attachdata_$$chartid";
-    my $extra = "";
-    if (Bugzilla->params->{"insidergroup"} 
-        && !Bugzilla->user->in_group(Bugzilla->params->{"insidergroup"})) 
-    {
-        $extra = "AND $atable.isprivate = 0";
-    }
+    my $extra = $self->{'user'}->is_insider ? "" : "AND $atable.isprivate = 0";
     push(@$supptables, "INNER JOIN attachments AS $atable " .
                        "ON bugs.bug_id = $atable.bug_id $extra");
     push(@$supptables, "INNER JOIN attach_data AS $dtable " .
@@ -1510,12 +1484,7 @@ sub _attachments_submitter {
         @func_args{qw(chartid supptables f)};
     
     my $atable = "map_attachment_submitter_$$chartid";
-    my $extra = "";
-    if (Bugzilla->params->{"insidergroup"}
-        && !Bugzilla->user->in_group(Bugzilla->params->{"insidergroup"}))
-    {
-        $extra = "AND $atable.isprivate = 0";
-    }
+    my $extra = $self->{'user'}->is_insider ? "" : "AND $atable.isprivate = 0";
     push(@$supptables, "INNER JOIN attachments AS $atable " .
                        "ON bugs.bug_id = $atable.bug_id $extra");
     push(@$supptables, "LEFT JOIN profiles AS attachers_$$chartid " .
@@ -1531,12 +1500,7 @@ sub _attachments {
     my $dbh = Bugzilla->dbh;
     
     my $table = "attachments_$$chartid";
-    my $extra = "";
-    if (Bugzilla->params->{"insidergroup"} 
-        && !Bugzilla->user->in_group(Bugzilla->params->{"insidergroup"})) 
-    {
-        $extra = "AND $table.isprivate = 0";
-    }
+    my $extra = $self->{'user'}->is_insider ? "" : "AND $table.isprivate = 0";
     push(@$supptables, "INNER JOIN attachments AS $table " .
                        "ON bugs.bug_id = $table.bug_id $extra");
     $$f =~ m/^attachments\.(.*)$/;

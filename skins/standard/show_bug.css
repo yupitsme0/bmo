@@ -71,6 +71,7 @@
 .bz_time_tracking_table .bz_summarize_time {
     text-align: right;
 }
+
 #summary tr td { 
     vertical-align:top;
 }
@@ -111,3 +112,7 @@
     padding:0px;
     white-space:nowrap;
 }   
+
+#status { 
+    margin-bottom: 3ex;
+}

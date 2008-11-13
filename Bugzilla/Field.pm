@@ -275,7 +275,7 @@ sub _check_reverse_relationship_desc {
     $is_relationship = $invocant->is_relationship if blessed $invocant;
  
     if (!defined($is_relationship) || $is_relationship == 0) {
-    	return '';
+        return '';
     }
     
     $reverse_desc = clean_text($reverse_desc);

@@ -39,7 +39,7 @@
           [% f.name FILTER html %] - [% f.description FILTER html_light %]
         </td>
         <td>
-          <input name="flag-[% f.id %]" type="checkbox" id="flag-[% f.id %]" 
+          <input name="flag-[% f.id FILTER html %]" type="checkbox" id="flag-[% f.id FILTER html %]" 
           [% " checked='checked'"
              IF Bugzilla.user.is_requesteeble_for_flag(f) %]>
         </td>

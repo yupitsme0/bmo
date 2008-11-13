@@ -84,6 +84,7 @@ use File::Basename;
     LIST_OF_BUGS
 
     COMMENT_COLS
+    MAX_COMMENT_LENGTH
 
     CMT_NORMAL
     CMT_DUPE_OF
@@ -160,7 +161,7 @@ use File::Basename;
 # CONSTANTS
 #
 # Bugzilla version
-use constant BUGZILLA_VERSION => "3.2rc1+";
+use constant BUGZILLA_VERSION => "3.2rc2+";
 
 # These are unique values that are unlikely to match a string or a number,
 # to be used in criteria for match() functions and other things. They start
@@ -264,6 +265,8 @@ use constant LIST_OF_BUGS => 1;
 
 # The column length for displayed (and wrapped) bug comments.
 use constant COMMENT_COLS => 80;
+# Used in _check_comment(). Gives the max length allowed for a comment.
+use constant MAX_COMMENT_LENGTH => 65535;
 
 # The type of bug comments.
 use constant CMT_NORMAL => 0;

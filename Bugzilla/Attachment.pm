@@ -925,7 +925,7 @@ sub insert_attachment_for_bug {
                   VALUES (?,?,?,?,?,?,?)',
                   undef, ($bug->bug_id, $attachid, $user->id,
                           $timestamp, $fieldid, '', join(", ", @fixed_in)));
-	}
+    }
 
     # If the file is to be stored locally, stream the file from the web server
     # to the local file without reading it into a local variable.

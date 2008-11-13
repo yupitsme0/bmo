@@ -200,7 +200,6 @@
 ],
 
 'list/table.html.tmpl' => [
-  'tableheader',
   'bug.bug_id', 
   'abbrev.$id.title || field_descs.$id || column.title',
 ],
@@ -312,7 +311,6 @@
   '" colspan=\"$colspan\"" IF colspan',
   '" size=\"$size\"" IF size',
   '" maxlength=\"$maxlength\"" IF maxlength',
-  '" onfocus=\"$onfocus\"" IF onfocus',
   'flag.status',
   '" spellcheck=\"$spellcheck\"" IF spellcheck',
 ],
