@@ -10,8 +10,15 @@
 .bz_bug .edit_form {
   width: 100%;
 }
-.bz_bug .edit_form table {
+.bz_show_bug_column_table {
   width: 100%;
+}
+.bz_show_bug_column_table .field_label {
+  width: auto;
+  text-align: right;
+}
+.bz_bug td.flags_label {
+  text-align: left;
 }
 .bz_bug .edit_form .text_input {
   width: 100%;
