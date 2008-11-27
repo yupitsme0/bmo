@@ -67,7 +67,7 @@ sub _throw_error {
         $mesg .= Bugzilla->user->login;
         $mesg .= (' actually ' . Bugzilla->sudoer->login) if Bugzilla->sudoer;
         $mesg .= "\n";
-        $mesg .= "Apache Process age: " . (time - $Bugzilla::ModPerl::ResponseHandler::startuptime) . " seconds.\n";
+        $mesg .= "Apache Process age: " . (time - $Bugzilla::ModPerl::ResponseHandler::startuptime) . " seconds.\n" if $ENV{SERVER_SOFTWARE};
         my %params = Bugzilla->cgi->Vars;
         $Data::Dumper::Useqq = 1;
         for my $param (sort keys %params) {
@@ -77,6 +77,9 @@ sub _throw_error {
             # limit line length
             $val =~ s/^(.{512}).*$/$1\[CHOP\]/;
             $mesg .= "[$$] " . Data::Dumper->Dump([$val],["param($param)"]);
+        }
+        if ($error eq 'extension_invalid') {
+            $mesg .= "[$$] " . Data::Dumper->Dump([$vars],["vars"]);
         }
         for my $var (sort keys %ENV) {
             my $val = $ENV{$var};

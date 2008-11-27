@@ -20,10 +20,13 @@
 # Contributor(s): Mark Smith <mark@mozilla.com>
 
 use strict;
-use lib '.';
+use lib qw(. lib);
 use Bugzilla;
 use Bugzilla::Error;
+use Bugzilla::Constants;
 use Getopt::Long;
+
+Bugzilla->usage_mode(USAGE_MODE_CMDLINE);
 
 # get options
 my %opts = ( foreground => 0, debug => 0, help => 0 );
