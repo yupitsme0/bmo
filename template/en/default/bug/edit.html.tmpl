@@ -150,7 +150,7 @@
     <tr>
       [%# 1st Column %]
       <td id="bz_show_bug_column_1" class="bz_show_bug_column">     
-        <table>
+        <table class="bz_show_bug_column_table">
           [%# *** ID, product, component, status, resolution, Hardware, and  OS *** %]
           [% PROCESS section_status %]
           
@@ -189,7 +189,7 @@
       </td>
       [%# 2nd Column %]
       <td id="bz_show_bug_column_2" class="bz_show_bug_column">
-        <table cellpadding="3" cellspacing="1">
+        <table cellpadding="3" cellspacing="1" class="bz_show_bug_column_table">
         [%# *** Reported and modified dates *** %]
          [% PROCESS section_dates %]
          
@@ -892,7 +892,7 @@
   [% END %]
   [% IF show_bug_flags %]
     <tr>
-      <td class="field_label">
+      <td class="field_label flags_label">
         <label><b>Flags:</b></label>
       </td>
       <td></td>
