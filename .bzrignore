@@ -5,6 +5,7 @@
 ./localconfig
 ./old-params.txt
 ./extensions
+./extensions/securemail
 ./docs/pdf
 ./docs/txt
 ./docs/xml/bugzilla.ent
