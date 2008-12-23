@@ -239,7 +239,7 @@ function PutDescription() {
 
   [%# We override rep_platform and op_sys for simplicity. The values chosen
       are based on which are most common in the b.m.o database %]
-  [% rep_platform = [ "PC", "Macintosh", "All", "Other" ] %]
+  [% rep_platform = [ "x86", "x86_64", "PowerPC", "All", "Other" ] %]
 
   <tr bgcolor="[% tablecolour %]">
     <td align="right" valign="top">
@@ -479,7 +479,7 @@ function PutDescription() {
           [% sec_bit = 23 %] [%# client-services-security %]
         [% ELSIF product.name == "Mozilla Messaging" %]
           [% sec_bit = 45 %] [%# mozilla-messaging-confidential %]
-        [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center" OR product.name == "Sumo" %]
+        [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center" OR product.name == "support.mozilla.com" %]
           [% sec_bit = 52 %] [%# websites-security %]
         [% ELSIF product.name == "Bugzilla" OR product.name == "Testopia" %]
           [% sec_bit = 53 %] [%# bugzilla-security %]

@@ -566,7 +566,7 @@ function handleWantsAttachment(wants_attachment) {
         [% sec_bit = 23 %] [%# client-services-security %]
       [% ELSIF product.name == "Mozilla Messaging" %]
         [% sec_bit = 45 %] [%# mozilla-messaging-confidential %]
-      [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center" OR product.name == "Sumo" %]
+      [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center" OR product.name == "support.mozilla.com" %]
         [% sec_bit = 52 %] [%# websites-security %]
       [% ELSIF product.name == "Bugzilla" OR product.name == "Testopia" %]
         [% sec_bit = 53 %] [%# bugzilla-security %]
