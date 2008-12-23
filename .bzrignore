@@ -8,6 +8,7 @@
 ./docs/pdf
 ./docs/txt
 ./docs/xml/bugzilla.ent
+./cvs-update.log
 ./Bugzilla/.htaccess
 ./skins/contrib
 ./skins/custom/IE-fixes.css
