@@ -161,16 +161,10 @@ sub _handle_login_result {
         ThrowCodeError($result->{error}, $result->{details});
     }
     elsif ($fail_code == AUTH_NODATA) {
-        if ($login_type == LOGIN_REQUIRED) {
-            # This seems like as good as time as any to get rid of
-            # old crufty junk in the logincookies table.  Get rid
-            # of any entry that hasn't been used in a month.
-            $dbh->do("DELETE FROM logincookies WHERE " .
-                     $dbh->sql_to_days('NOW()') . " - " .
-                     $dbh->sql_to_days('lastused') . " > 30");
-            $self->{_info_getter}->fail_nodata($self);
-        }
-        # Otherwise, we just return the "default" user.
+        $self->{_info_getter}->fail_nodata($self) 
+            if $login_type == LOGIN_REQUIRED;
+
+        # If we're not LOGIN_REQUIRED, we just return the default user.
         $user = Bugzilla->user;
     }
     # The username/password may be wrong

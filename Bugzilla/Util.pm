@@ -200,6 +200,16 @@ sub xml_quote {
     $var =~ s/>/\&gt;/g;
     $var =~ s/\"/\&quot;/g;
     $var =~ s/\'/\&apos;/g;
+    
+    # the following nukes characters disallowed by the XML 1.0
+    # spec, Production 2.2. 1.0 declares that only the following 
+    # are valid:
+    # (#x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF])
+    $var =~ s/([\x{0001}-\x{0008}]|
+               [\x{000B}-\x{000C}]|
+               [\x{000E}-\x{0019}]|
+               [\x{D800}-\x{DFFF}]|
+               [\x{FFFE}-\x{FFFF}])//gx;
     return $var;
 }
 
@@ -583,7 +593,7 @@ sub get_netaddr {
 
 sub disable_utf8 {
     if (Bugzilla->params->{'utf8'}) {
-        binmode STDOUT, ':raw'; # Turn off UTF8 encoding.
+        binmode STDOUT, ':bytes'; # Turn off UTF8 encoding.
     }
 }
 

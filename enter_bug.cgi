@@ -308,6 +308,7 @@ sub pickos {
               /\(.*Windows.*NT.*\)/ && do {push @os, "Windows NT";};
             };
             /\(.*Mac OS X.*\)/ && do {
+              /\(.*Intel.*Mac OS X 10.5.*\)/ && do {push @os, "Mac OS X 10.5";};
               /\(.*Intel.*Mac OS X.*\)/ && do {push @os, "Mac OS X 10.4";};
               /\(.*Mac OS X.*\)/ && do {push @os, ("Mac OS X 10.3", "Mac OS X 10.0", "Mac OS X");};
             };
@@ -425,14 +426,17 @@ if ($cloned_bug_id) {
     # We need to ensure that we respect the 'insider' status of
     # the first comment, if it has one. Either way, make a note
     # that this bug was cloned from another bug.
-
-    my $isprivate             = $cloned_bug->longdescs->[0]->{'isprivate'};
+    # We cannot use $cloned_bug->longdescs because this method
+    # depends on the "comment_sort_order" user pref, and we
+    # really want the first comment of the bug.
+    my $bug_desc = Bugzilla::Bug::GetComments($cloned_bug_id, 'oldest_to_newest');
+    my $isprivate = $bug_desc->[0]->{'isprivate'};
 
     $vars->{'comment'}        = "";
     $vars->{'commentprivacy'} = 0;
 
-    if ( !($isprivate) || Bugzilla->user->is_insider ) {
-        $vars->{'comment'}        = $cloned_bug->longdescs->[0]->{'body'};
+    if (!$isprivate || Bugzilla->user->is_insider) {
+        $vars->{'comment'}        = $bug_desc->[0]->{'body'};
         $vars->{'commentprivacy'} = $isprivate;
     }
 
