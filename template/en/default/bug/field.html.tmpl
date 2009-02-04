@@ -35,13 +35,13 @@
 [% SET use_td = 1 IF !use_td.defined %]
 
 [% IF use_label %]
-<th class="field_label">
+<td>
   [% IF editable %]
     <label for="[% field.name FILTER html %]">
   [% END %]
-    [% field_descs.${field.name} FILTER html %]:
+    [% field_descs.${field.name} FILTER html FILTER no_break %]
   [% '</label>' IF editable %]
-</th>
+</td>
 [% END %]
 
 [% IF use_td %]
@@ -118,6 +118,11 @@
             </option>
           [% END %]
           [% FOREACH legal_value = legal_values %]
+            [% IF field.name == "cf_blocking_fennec" %]
+              [% IF NOT user.in_group("fennec-drivers") %]
+                [% NEXT UNLESS legal_value == "---" OR legal_value == "?" OR value.contains(legal_value).size %]
+              [% END %]
+            [% END %]
             <option value="[% legal_value FILTER html %]"
                 [%- " selected=\"selected\"" IF value.contains(legal_value).size %]>
                 [%- legal_value FILTER html %]</option>

@@ -197,14 +197,14 @@
          [% PROCESS section_cclist %]
          
          [% PROCESS section_spacer %] 
-         
-         [% PROCESS section_customfields %]
-         
-         [% PROCESS section_spacer %]
-         
-         [% Hook.process("after_custom_fields") %]
-                
+                         
          [% PROCESS section_flags %]
+
+         [% PROCESS section_spacer %] 
+
+         [% PROCESS section_customfields %]
+
+         [% Hook.process("after_custom_fields") %]
 
         </table>
       </td>
@@ -948,6 +948,10 @@
 
   [% USE Bugzilla %]
   [% FOREACH field = Bugzilla.active_custom_fields %]
+    [% IF field.name == "cf_blocking_fennec" %]
+       [% NEXT UNLESS bug.product == "Fennec" OR bug.product == "Core" OR
+                      bug.product == "Toolkit" OR bug.product == "NSPR" %]
+    [% END %]
     <tr>
       [% PROCESS bug/field.html.tmpl value=bug.${field.name}
                                      editable = bug.check_can_change_field(field.name, 0, 1)

@@ -3332,6 +3332,20 @@ sub check_can_change_field {
         }
     }
 
+    # Only users in the appropriate drivers group can change the cf_blocking_* fields.
+    if ($field =~ /^cf_blocking_/) {
+        unless ($newvalue eq '---' || $newvalue eq '?' || ($oldvalue eq '0' && $newvalue eq '1')) {
+            my $drivers_group;
+            if ($field eq 'cf_blocking_fennec') {
+                $drivers_group = 'fennec-drivers';
+            }
+            if (!$drivers_group || !$user->in_group($drivers_group)) {
+                $$PrivilegesRequired = 3;
+                return 0;
+            }
+        }
+    }
+
     # Allow anyone with (product-specific) "editbugs" privs to change anything.
     if ($user->in_group('editbugs', $self->{'product_id'})) {
         return 1;

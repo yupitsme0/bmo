@@ -91,7 +91,8 @@ use constant MAPPINGS => {
                 "attachmentdata" => "attach_data.thedata",
                 "attachdata" => "attach_data.thedata",
                 "attachmentmimetype" => "attachments.mimetype",
-                "attachmimetype" => "attachments.mimetype"
+                "attachmimetype" => "attachments.mimetype",
+                "blocking-fennec" => "cf_blocking_fennec"
 };
 
 # We might want to put this into localconfig or somewhere
