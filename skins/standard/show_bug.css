@@ -127,3 +127,7 @@
 #knob-buttons {
     float: right;
 }
+
+.last_comment_link {
+    margin-left: 1em;
+}
