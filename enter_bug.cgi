@@ -413,7 +413,7 @@ if ($cloned_bug_id) {
     $vars->{'deadline'}       = $cloned_bug->deadline;
 
     if (defined $cloned_bug->cc) {
-        $vars->{'cc'}         = join (" ", @{$cloned_bug->cc});
+        $vars->{'cc'}         = join (", ", @{$cloned_bug->cc});
     } else {
         $vars->{'cc'}         = formvalue('cc');
     }
