@@ -102,9 +102,13 @@
             [% FOREACH cf_fixed_in = a.cf_fixed_in %]
               <cf_fixed_in>[% cf_fixed_in FILTER xml %]</cf_fixed_in> 
             [% END %]
-        [% IF displayfields.attachmentdata %]
-            <data encoding="base64">[% a.data FILTER base64 %]</data>
-        [% END %]        
+            [%# This is here so automated clients can still use attachment.cgi %]
+            [% IF displayfields.token && user.id %]
+              <token>[% issue_hash_token([a.id, a.modification_time]) FILTER xml %]</token>
+            [% END %]
+            [% IF displayfields.attachmentdata %]
+              <data encoding="base64">[% a.data FILTER base64 %]</data>
+            [% END %]        
 
             [% FOREACH flag = a.flags %]
               <flag name="[% flag.type.name FILTER xml %]"
