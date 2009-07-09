@@ -292,6 +292,9 @@ sub Send {
             if ($old =~ /client-services-security/ || $new =~ /client-services-security/) {
                 push(@ccs, login_to_id('amo-admins@mozilla.org'));
             }
+            if ($old =~ /tamarin-security/ || $new =~ /tamarin-security/) {
+                push(@ccs, login_to_id('tamarinsecurity@adobe.com'));
+            }
             if ($old =~ /core-security/ || $new =~ /core-security/) {
                 push(@ccs, login_to_id('security@mozilla.org'));
             }
