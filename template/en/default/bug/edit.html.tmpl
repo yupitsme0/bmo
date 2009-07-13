@@ -953,6 +953,17 @@
        [% NEXT UNLESS bug.product == "Fennec" OR bug.product == "Core" OR
                       bug.product == "Toolkit" OR bug.product == "NSPR" %]
     [% END %]
+    [% IF field.name == "cf_blocking_191" OR field.name == "cf_status_191" %]
+       [% NEXT UNLESS bug.product == "AUS" OR bug.product == "Camino" OR
+                      bug.product == "Core Graveyard" OR bug.product == "Core" OR
+                      bug.product == "Directory" OR bug.product == "Firefox" OR
+                      bug.product == "MailNews Core" OR bug.product == "Mozilla Localizations" OR
+                      bug.product == "NSPR" OR bug.product == "NSS" OR
+                      bug.product == "Other Applications" OR bug.product == "SeaMonkey" OR
+                      bug.product == "Toolkit" OR bug.product == "addons.mozilla.org" OR
+                      (bug.product == "mozilla.org" AND bug.component == "Release Engineering") OR
+                      (bug.product == "mozilla.org" AND bug.component == "Release Engineering: Future") %]
+    [% END %]
     <tr>
       [% PROCESS bug/field.html.tmpl value=bug.${field.name}
                                      editable = bug.check_can_change_field(field.name, 0, 1)

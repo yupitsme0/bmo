@@ -123,6 +123,11 @@
                 [% NEXT UNLESS legal_value == "---" OR legal_value == "?" OR value.contains(legal_value).size %]
               [% END %]
             [% END %]
+            [% IF field.name == "cf_blocking_191" OR field.name == "cf_status_191" %]
+              [% IF NOT user.in_group("mozilla-stable-branch-drivers") %]
+                [% NEXT UNLESS legal_value == "---" OR legal_value == "?" OR value.contains(legal_value).size %]
+              [% END %]
+            [% END %]
             <option value="[% legal_value FILTER html %]"
                 [%- " selected=\"selected\"" IF value.contains(legal_value).size %]>
                 [%- legal_value FILTER html %]</option>
