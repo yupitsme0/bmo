@@ -3326,37 +3326,16 @@ sub check_can_change_field {
     }
 
     # Only users in the appropriate drivers group can change the cf_blocking_* fields.
-    if ($field eq 'cf_blocking_fennec') {
-        unless ($newvalue eq '---' || $newvalue eq '?') {
-            if (!$user->in_group('fennec-drivers')) {
+    if ($field =~ /^cf_blocking_/) {
+        unless ($newvalue eq '---' || $newvalue eq '?' || ($oldvalue eq '0' && $newvalue eq '1')) {
+            my $drivers_group;
+            if ($field eq 'cf_blocking_fennec') {
+                $drivers_group = 'fennec-drivers';
+            }
+            if (!$drivers_group || !$user->in_group($drivers_group)) {
                 $$PrivilegesRequired = 3;
                 return 0;
             }
-        }
-    }
-    if ($field eq 'cf_blocking_191') {
-        # require 'mozilla-stable-branch-drivers' to set anything other than --- and ?
-        unless ($newvalue eq '---' || $newvalue eq '?') {
-            if (!$user->in_group('mozilla-stable-branch-drivers')) {
-                $$PrivilegesRequired = 3;
-                return 0;
-            }
-        }
-        # Require 'canconfirm' to change those two
-        if (!user->in_group('canconfirm')) {
-            $$PrivilegesRequired = 3;
-            return 0;
-        }
-    }
-    if ($field eq 'cf_status_191') {
-        if ($newvalue eq 'wanted' && !$user->in_group('mozilla-stable-branch-drivers')) {
-            $$PrivilegesRequired = 3;
-            return 0;
-        }
-        # Require 'canconfirm' to change anything else
-        if (!user->in_group('canconfirm')) {
-            $$PrivilegesRequired = 3;
-            return 0;
         }
     }
 
