@@ -211,8 +211,8 @@
                    id="contenttypeentry" name="contenttypeentry"
                    value="[% attachment.contenttype FILTER html %]"><br>
 
-            <b><label for="cf_fixed_in">Fixed In</label>:</b><br>
             [% IF bug.choices.cf_fixed_in.size %]
+              <b><label for="cf_fixed_in">Fixed In</label>:</b><br>
                    [% INCLUDE bug/field.html.tmpl
                        field = Bugzilla.get_fields({ name => 'cf_fixed_in' })
                        override_type  = constants.FIELD_TYPE_MULTI_SELECT

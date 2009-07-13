@@ -949,6 +949,7 @@
 
   [% USE Bugzilla %]
   [% FOREACH field = Bugzilla.active_custom_fields %]
+    [% NEXT IF NOT user.id AND field.value == "---" %]
     [% IF field.name == "cf_blocking_fennec" %]
        [% NEXT UNLESS bug.product == "Fennec" OR bug.product == "Core" OR
                       bug.product == "Toolkit" OR bug.product == "NSPR" %]
