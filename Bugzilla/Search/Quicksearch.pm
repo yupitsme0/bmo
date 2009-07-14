@@ -93,8 +93,8 @@ use constant MAPPINGS => {
                 "attachmentmimetype" => "attachments.mimetype",
                 "attachmimetype" => "attachments.mimetype",
                 "blocking-fennec" => "cf_blocking_fennec",
-                "blocking-191" => "cf_blocking_191",
-                "status-191" => "cf_status_191"
+                "blocking1.9.1" => "cf_blocking_191",
+                "status1.9.1" => "cf_status_191"
 };
 
 # We might want to put this into localconfig or somewhere
