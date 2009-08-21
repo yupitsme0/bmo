@@ -129,6 +129,7 @@ $dbh->do("DELETE FROM profiles_activity");
 $dbh->do("DELETE FROM namedqueries");
 $dbh->do("DELETE FROM tokens");
 $dbh->do("DELETE FROM logincookies");
+$dbh->do("DELETE FROM login_activity");
 
 # Delete unnecessary attachment data.
 print "Removing attachment data to preserve disk space...\n";
