@@ -1,0 +1,377 @@
+[%# 1.0@bugzilla.org %]
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Mozilla Corporation.
+  # Portions created by Mozilla are Copyright (C) 2008 Mozilla
+  # Corporation. All Rights Reserved.
+  #
+  # Contributor(s): Reed Loden <reed@mozilla.com>
+  #                 David Tran <dtran@mozilla.com>
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% PROCESS global/header.html.tmpl
+   title = "Mozilla Corporation Internal Swag Requests"
+   style_urls = [ 'skins/custom/calendar.css' ]
+   javascript_urls = [ 'js/calendar.js', 'js/swag.js', 'js/form_validate.js' ]
+%]
+
+[% USE Bugzilla %]
+
+<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Internal Swag Request</div>
+
+<p><strong>Internal Swag Request:</strong> Please use this form to file a request for internal SWAG. </p>
+
+<p>Process:</p>
+
+<ol><li>Complete and submit request below.</li>
+  <li>Your request will be reviewed by Sarah Doherty &lt;sarah@mozilla.com&gt;, Mary Colvig &lt;mary@mozilla.com&gt; or the appropriate person in marketing..</li>
+  <li> Get your SWAG if it gets approved!</li>
+</ol>
+ 
+<p>These requests will only be visible internally in all cases and only to the
+person who submitted the request and any persons designated in the CC line.</p>
+
+<script language="javascript" type="text/javascript">
+  function trySubmit() {
+  var out = 'Requester: the_requester\r\nEmail: the_email\r\nPurpose: the_purpose\r\nAttendees: the_attendees\r\nUse For: the_use_for\r\nQuantities/Types:\r\nthe_quantities\r\nMen\'s T-Shirt Quantities:\r\nmens_tshirt_quantities\r\nWomen\'s T-Shirt Quantities:\r\nwomens_tshirt_quantities\r\nAdditional Swag: additional_swag\r\nDelivered by: the_date\r\nDescription: the_description';
+
+  var date = document.getElementById('date').value;
+  var firstname = document.getElementById('firstname').value;
+  var lastname = document.getElementById('lastname').value;
+  var requester = firstname + ' ' + lastname;
+  var shortdesc = 'Internal Swag Request (' + date + ') - ' + requester;
+  var attendees = document.getElementById('attendees').value;
+  attendees = attendees=="--Please Select--"? "" : attendees;
+  var swag_types = new Array("Lanyards", "Stickers", "Bracelets", "Tattoos", "Buttons", "Posters");
+  var quantities = '';
+
+  for(var i in swag_types) {
+  quantities += swag_types[i] + ': ' + evalToNumberString(document.getElementById(swag_types[i]).value) + '\r\n';
+  }
+  quantities += 'Total items: ' + evalToNumberString(document.getElementById('Totalswag').value) + '\r\n';
+
+  var mens_tshirts = 'S: ' + evalToNumberString(document.getElementById('mens_s').value) + '\r\nM: ' + evalToNumberString(document.getElementById('mens_m').value) + '\r\nL: ' + evalToNumberString(document.getElementById('mens_l').value) + '\r\nXL:' + evalToNumberString(document.getElementById('mens_xl').value) + '\r\nXXL: ' + evalToNumberString(document.getElementById('mens_xxl').value) + '\r\nXXXL: ' + evalToNumberString(document.getElementById('mens_xxxl').value) + '\r\nTotal Items: ' + evalToNumberString(document.getElementById('mens_total').value);
+
+  var womens_tshirts = 'S: ' + evalToNumberString(document.getElementById('womens_s').value) + '\r\nM: ' + evalToNumberString(document.getElementById('womens_m').value) + '\r\nL: ' + evalToNumberString(document.getElementById('womens_l').value) + '\r\nXL:' + evalToNumberString(document.getElementById('womens_xl').value) + '\r\nXXL: ' + evalToNumberString(document.getElementById('womens_xxl').value) + '\r\nXXXL: ' + evalToNumberString(document.getElementById('womens_xxxl').value) + '\r\nTotal Items: ' + evalToNumberString(document.getElementById('womens_total').value);
+
+  out = out.replace( /the_requester/, requester);
+  out = out.replace( /the_email/, document.getElementById('email').value);
+  out = out.replace( /the_purpose/, document.getElementById('purpose').value);
+  out = out.replace( /the_attendees/, attendees);
+  out = out.replace( /the_use_for/, document.getElementById('usefor').value);
+  out = out.replace( /the_quantities/, quantities);
+  out = out.replace( /mens_tshirt_quantities/, mens_tshirts);
+  out = out.replace( /womens_tshirt_quantities/, womens_tshirts);
+  out = out.replace( /additional_swag/, document.getElementById('additional').value);
+  out = out.replace( /the_date/, document.getElementById('date').value);
+  out = out.replace( /the_description/, document.getElementById('description').value);
+
+  document.getElementById('comment').value = out;
+  document.getElementById('short_desc').value = shortdesc;
+  
+  return true;
+}
+
+function validateAndSubmit() {
+
+  var valid_email = isValidEmail(document.getElementById('email').value);
+  var firstname_filled = isFilledOut('firstname');
+  var lastname_filled = isFilledOut('lastname');
+  var purpose_filled = isFilledOut('purpose');
+  var date_filled = isFilledOut('date');
+  var alert_text = '';
+
+  if(!firstname_filled) alert_text += "Please enter your first name\n";
+  if(!lastname_filled) alert_text += "Please enter your last name\n";
+  if(!valid_email) alert_text += "Please enter a valid email address\n";
+  if(!purpose_filled) alert_text += "Please enter a purpose for the swag.\n";
+  if(!date_filled) alert_text += "Please enter a date\n";
+  
+  //Everything required is filled out..try to submit the form!
+  if(firstname_filled && lastname_filled && valid_email && purpose_filled && date_filled) {
+    return trySubmit();
+  }
+
+  //alert text, stay here on the pagee
+  else {
+    alert(alert_text);
+    return false;
+  }
+}
+
+</script>
+
+<form method="post" action="post_bug.cgi" id="swagRequestForm" enctype="multipart/form-data"
+      onSubmit="return validateAndSubmit();">
+
+        <input type="hidden" name="product" value="Marketing">
+        <input type="hidden" name="component" value="Swag Requests">
+        <input type="hidden" name="rep_platform" value="All">
+        <input type="hidden" name="op_sys" value="Other">
+        <input type="hidden" name="priority" value="--">
+        <input type="hidden" name="version" value="unspecified">
+        <input type="hidden" name="bug_severity" id="bug_severity" value="normal">
+
+        <input type="hidden" name="comment" id="comment" value="">
+        <input type="hidden" name="short_desc" id="short_desc" value="">
+	<input type="hidden" name="bit-26" value="1">
+<table>
+
+<tr>
+  <td align="right"><strong>First Name: *</strong></td>
+  <td align="left">
+    <input type="text" name="firstname" id="firstname" value="" size="20" maxlength="20" />
+  </td>
+</tr>
+<tr>
+  <td align="right"><strong>Last Name: *</strong></td>
+  <td align="left">
+    <input type="text" name="lastname" id="lastname" value="" size="20" maxlength="20"/>
+  </td>
+</tr>
+
+<tr>
+  <td align="right"><strong>Email Address: *</strong></td>
+  <td>
+    <input type="text" name="email" id="email" value="" size="50" maxlength="50"/>
+  </td>
+</tr>
+
+<tr>
+  <td align="right"><strong>What is the name of the event or purpose of the swag? *</strong></td>
+  <td>
+    <input type="text" name="purpose" id="purpose" value="" size="50" maxlength="50"/>
+  </td>
+</tr>
+
+
+<tr>
+  <td align="right"><strong>When do you need your swag delivered by? *</strong></td>
+  <td>
+    <input type="text" name="date" id="date" value="" size="10" maxlength="10" readonly onfocus="cal.showCal(this);"/>
+  </td>
+</tr>
+
+<tr>
+  <td align="right"><strong>How many attendees will be at the event?</strong></td>
+  <td>
+    <select name="attendees" id="attendees">
+      <option value="--Please Select--" selected>--Please Select--</option>
+      <option value="1-4">1-4</option>
+      <option value="5-9">5-9</option>
+      <option value="10-19">10-19</option>
+      <option value="20-99">20-99</option>
+      <option value="100-499">100-499</option>
+      <option value="500-9,999">500-9,999</option>
+      <option value="10,000+">10,000+</option>
+      <option value="N/A">N/A</option>
+      </select>
+  </td>
+</tr>
+
+<tr>
+  <td align="right"><strong>How will you be using the swag?</strong></td>
+  <td>
+    <textarea id="usefor" name="usefor" rows="10" cols="50"></textarea>
+  </td>
+</tr>
+
+<!-- Question 5. What quantity of the swag below do you need? -->
+<tr>
+  <td align="right"><strong>What quantity of swag below do you need?</strong></td>
+</tr>
+
+<tr>
+  <td></td>
+  <td align="left">
+    <table>
+      <tr>
+	<td align="right"><strong>Lanyards:</strong></td>
+	<td>
+	  <input type="text" name="Lanyards" id="Lanyards" value="" size="5" maxlength="5" onChange="calculateTotalSwag();"/>
+	</td>
+      </tr>
+      
+      <tr>
+	<td align="right"><strong>Stickers:</strong></td>
+	<td>
+	  <input type="text" name="Stickers" id="Stickers" value="" size="5" maxlength="5" onChange="calculateTotalSwag();"/>
+	</td>
+      </tr>
+      
+      <tr>
+	<td align="right"><strong>Bracelets:</strong></td>
+	<td>
+	  <input type="text" name="Bracelets" id="Bracelets" value="" size="5" maxlength="5" onChange="calculateTotalSwag();"/>
+	</td>
+      </tr>
+      
+      <tr>
+	<td align="right"><strong>Tattoos:</strong></td>
+	<td>
+	  <input type="text" name="Tattoos" id="Tattoos" value="" size="5" maxlength="5" onChange="calculateTotalSwag();"/>
+	</td>
+      </tr>
+      
+      <tr>
+	<td align="right"><strong>Buttons(small):</strong></td>
+	<td>
+	  <input type="text" name="Buttons" id="Buttons" value="" size="5" maxlength="5" onChange="calculateTotalSwag();"/>
+	</td>
+      </tr>
+      
+      <tr>
+	<td align="right"><strong>Posters:</strong></td>
+	<td>
+	  <input type="text" name="Posters" id="Posters" value="" size="5" maxlength="5" onChange="calculateTotalSwag();"/>
+	</td>
+      </tr>
+       
+      <tr>
+	<td align="right"><strong>Total Swag:</strong></td>
+	<td>
+	  <input type="text" name="Totalswag" id="Totalswag" value="" size="5" maxlength="5" disabled/>
+	</td>
+      </tr>
+     
+      </table>
+    </td>
+</tr>
+
+<!-- Question 6. T-Shirts -->
+<tr>
+  <td align="right"><strong>What quantity of t-shirts do you need?</strong></td>
+</tr>
+<tr>
+  <td></td>
+  <td align="left">
+    <table>
+      <tr><td></td><td><strong>Men's</strong></td><td><strong>Women's</strong></td></tr>
+      <tr><td align="right"><strong>S:</strong></td>
+	<td>
+	  <input type="text" name="mens_s" id="mens_s" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalMensShirts();"/>
+	</td>
+	<td>
+	  <input type="text" name="womens_s" id="womens_s" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalWomensShirts();"/>
+	</td>
+      </tr>
+      <tr><td align="right"><strong>M:</strong></td>
+	<td>
+	  <input type="text" name="mens_m" id="mens_m" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalMensShirts();"/>
+	</td>
+	<td>
+	  <input type="text" name="womens_m" id="womens_m" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalWomensShirts();"/>
+	</td>
+      </tr>
+      <tr><td align="right"><strong>L:</strong></td>
+	<td>
+	  <input type="text" name="mens_l" id="mens_l" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalMensShirts();"/>
+	</td>
+	<td>
+	  <input type="text" name="womens_l" id="womens_l" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalWomensShirts();"/>
+	</td>
+      </tr>
+      
+      <tr><td align="right"><strong>XL:</strong></td>
+	<td>
+	  <input type="text" name="mens_xl" id="mens_xl" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalMensShirts();"/>
+	</td>
+	<td>
+	  <input type="text" name="womens_xl" id="womens_xl" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalWomensShirts();"/>
+	</td>
+      </tr>
+      
+      <tr><td align="right"><strong>XXL:</strong></td>
+	<td>
+	  <input type="text" name="mens_xxl" id="mens_xxl" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalMensShirts();"/>
+	</td>
+	<td>
+	  <input type="text" name="womens_xxl" id="womens_xxl" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalWomensShirts();"/>
+	</td>
+      </tr>
+      
+      <tr><td align="right"><strong>XXXL:</strong></td>
+	<td>
+	  <input type="text" name="mens_xxxl" id="mens_xxxl" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalMensShirts();"/>
+	</td>
+	<td>
+	  <input type="text" name="womens_xxxl" id="womens_xxxl" value="" size="5" 
+		 maxlength="5" onChange="calculateTotalWomensShirts();" />
+	</td>
+      </tr>
+
+      <tr><td align="right"><strong>Total:</strong></td>
+	<td>
+	  <input type="text" name="mens_total" id="mens_total" value="" size="5" 
+		 maxlength="5" disabled/>
+	</td>
+	<td>
+	  <input type="text" name="womens_total" id="womens_total" value="" size="5" 
+		 maxlength="5" disabled />
+	</td>
+      </tr>
+    </table>
+    
+  </td>
+</tr>
+
+
+<tr>
+  <th align="right"><strong>Any additional swag needed?</strong></th>
+  <td>
+    <textarea id="additional" name="additional" rows="10" cols="50"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <td align="right"><strong>CC&nbsp;(optional):</strong></td>
+  <td colspan="3">
+    <input name="cc" id="cc" size="60"
+           value="[% cc FILTER html %]">
+  </td>
+</tr>
+
+<tr>
+  <th align="right"><label for="description">Description</label>:</th>
+  <td>
+    <em>Any additional comments?</em><br>
+
+    <textarea id="description" name="description" rows="10" cols="50"></textarea>
+  </td>
+</tr>
+
+  </table>
+  <br>
+  <input type="submit" value="Submit Request">
+
+<p>
+  * - Required field
+  Thanks for contacting us.
+   You will be notified by email of any progress made in resolving your request.
+
+</p>
+
+[% PROCESS global/footer.html.tmpl %]
