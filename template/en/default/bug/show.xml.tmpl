@@ -148,8 +148,7 @@
     [% IF name == "cf_blocking_fennec" %]
        [% NEXT UNLESS bug.product == "Fennec" OR bug.product == "Core" OR
                       bug.product == "Toolkit" OR bug.product == "NSPR" %]
-    [% END %]
-    [% IF name == "cf_blocking_191" OR name == "cf_status_191" %]
+    [% ELSIF name.match("^cf_blocking_") OR name.match("^cf_status_") %]
        [% NEXT UNLESS bug.product == "AUS" OR bug.product == "Camino" OR
                       bug.product == "Core Graveyard" OR bug.product == "Core" OR
                       bug.product == "Directory" OR bug.product == "Firefox" OR
