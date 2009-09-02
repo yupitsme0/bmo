@@ -1031,7 +1031,7 @@ sub _check_cf_fixed_in {
         if (!$obj) {
             ThrowUserError('cf_fixed_in_not_valid', {
                 cf_fixed_in => $name,
-                product     => $self->producti_obj });
+                product     => $self->product_obj });
         }
         push(@names, $obj->name);
     }
