@@ -3332,6 +3332,9 @@ sub check_can_change_field {
             if ($field eq 'cf_blocking_fennec') {
                 $drivers_group = 'fennec-drivers';
             }
+            elsif ($field eq 'cf_blocking_193') {
+                $drivers_group = 'mozilla-1.9-drivers';
+            }
             else { # any other cf_blocking_
                 $drivers_group = 'mozilla-stable-branch-drivers';
             }
