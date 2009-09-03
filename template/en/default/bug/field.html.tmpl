@@ -119,7 +119,7 @@
           [% END %]
           [% FOREACH legal_value = legal_values %]
             [% IF field.name.match("^cf_blocking_") %]
-              [% NEXT UNLESS bug.check_can_change_field(field.name, 0, legal_value) %]
+              [% NEXT UNLESS bug.check_can_change_field(field.name, 0, legal_value) OR value.contains(legal_value).size %]
             [% END %]
             [% IF field.name.match("^cf_status_") %]
               [% IF NOT user.in_group("mozilla-stable-branch-drivers") %]
