@@ -254,6 +254,7 @@
                      maxrows   = 25
                      cols      = constants.COMMENT_COLS
           %]
+          [% Hook.process("after_comment_textarea") %]
           <br>
           [% PROCESS commit_button id=""%]
           <table class="status" cellspacing="0" cellpadding="0">
@@ -371,8 +372,16 @@
     [%#############%]
     
     <tr>
+       [% IF bug.check_can_change_field('product', 0, 1) %]
+         [% prod_list = user.get_enterable_products %]
+         [% IF NOT user.can_enter_product(bug.product) %]
+           [% prod_list.unshift(bug.product_obj) %]
+         [% END %]
+       [% END %]
+
        [% INCLUDE bug/field.html.tmpl
             bug = bug, field = select_fields.product,
+            override_legal_values = prod_list
             desc_url = 'describecomponents.cgi', value = bug.product
             editable = bug.check_can_change_field('product', 0, 1) %]
     </tr>
