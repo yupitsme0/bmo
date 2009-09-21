@@ -200,7 +200,7 @@ sub quoteUrls {
     my $urlbase_re = '(' . join('|',
         map { qr/$_/ } grep($_, Bugzilla->params->{'urlbase'}, 
                             Bugzilla->params->{'sslbase'})) . ')';
-    $text =~ s~\b(${urlbase_re}\Qshow_bug.cgi?id=\E([0-9]+)(\#c([0-9]+))?)\b
+    $text =~ s~\b(${urlbase_re}\Qshow_bug.cgi?id=\E([0-9]+)((\#[ac][0-9]+))?)\b
               ~($things[$count++] = get_bug_link($3, $1, $5)) &&
                ("\0\0" . ($count-1) . "\0\0")
               ~egox;
@@ -382,7 +382,12 @@ sub get_bug_link {
 
         my $linkval = "show_bug.cgi?id=$bug_num";
         if (defined $comment_num) {
-            $linkval .= "#c$comment_num";
+            if ($comment_num =~ /^#/) {
+                $linkval .= "$comment_num";
+            }
+            else {
+                $linkval .= "#c$comment_num";
+            }
         }
         return qq{$pre<a href="$linkval" title="$title">$link_text</a>$post};
     }
