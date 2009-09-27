@@ -499,6 +499,8 @@ sub Send {
             # Make sure the user isn't in the nomail list, and the insider and 
             # dep checks passed.
             if ($user->email_enabled &&
+                ($user->login !~ /bugs$/) &&
+                ($user->login !~ /\.tld$/) &&
                 $insider_ok &&
                 $dep_ok)
             {
