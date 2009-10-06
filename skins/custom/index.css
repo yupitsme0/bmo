@@ -2,3 +2,4 @@
  * Custom rules for index.css.
  * The rules you put here override rules in that stylesheet.
  */
+#get_help { background: url(images/help.gif)     no-repeat; }

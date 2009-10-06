@@ -128,26 +128,10 @@ YAHOO.util.Event.onDOMReady(onLoadActions);
     <tr>
       <td>
         <h1 id="welcome"> Welcome to mozilla.org's [% terms.Bugzilla %]</h1>
-        <div id="steps">
-            <img style="float:left;" src="skins/custom/images/help.gif" alt="">
-            <h2>Got a problem?</h2>
 
-            <ul>
-            <li><a href="http://www.mozilla.org/support/">Get help with your mozilla.org product</a></li>
-            <li><a href="http://hendrix.mozilla.org/">Leave quick feedback</a></li>
-            <li><a href="page.cgi?id=broken-website.html">Report a broken website</a></li>
-            <li><a href="enter_bug.cgi">Report a [% terms.bug %]</a> - latest release only
-                [% IF NOT user.id %]
-                  (you'll need an
-                  <a href="createaccount.cgi">account</a>)
-                [% END %]
-            </li>
-            </ul>
-        </div>
-      </td>
-    </tr> 
-    <tr>
-      <td>
+        <a id="get_help" class="bz_common_actions"
+           href="page.cgi?id=get_help.html"><span>Get Help</span></a>
+
         <a id="enter_bug" class="bz_common_actions"
            href="enter_bug.cgi"><span>File [% terms.aBug %]</span></a>
       
