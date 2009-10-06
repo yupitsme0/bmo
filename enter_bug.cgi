@@ -75,7 +75,7 @@ if ($product_name eq '') {
     ThrowUserError('no_products') unless scalar(@enterable_products);
 
     my $classification = Bugzilla->params->{'useclassification'} ?
-        scalar($cgi->param('classification')) : '__all';
+        (scalar($cgi->param('classification')) || '__all') : '__all';
 
     # Unless a real classification name is given, we sort products
     # by classification.
