@@ -241,7 +241,7 @@ sub quoteUrls {
               ~($things[$count++] = "$1<a href=\"http://talkback-public.mozilla.org/" . ((cleanTB($2) >= 16426810) ? "search/start" : "talkback/fastfind" ) . ".jsp?search=2\&amp;type=iid\&amp;id=$2\">$2</a>") &&
                ("\0\0" . ($count-1) . "\0\0")
               ~egmxi;
-`
+
     $text =~ s~\b(TB\d{7,8}\w)\b
               ~($things[$count++] = "<a href=\"http://talkback-public.mozilla.org/" . ((cleanTB($1) >= 16426810) ? "search/start" : "talkback/fastfind" ) . ".jsp?search=2\&amp;type=iid\&amp;id=$1\">$1</a>") &&
                ("\0\0" . ($count-1) . "\0\0")
