@@ -237,6 +237,31 @@ sub quoteUrls {
                ("\0\0" . ($count-1) . "\0\0")
               ~egmxi;
 
+    $text =~ s~\b(Incident\sID:\s*)((?:TB)?\d{7,8}\s?)\b
+              ~($things[$count++] = "$1<a href=\"http://talkback-public.mozilla.org/" . ((cleanTB($2) >= 16426810) ? "search/start" : "talkback/fastfind" ) . ".jsp?search=2\&amp;type=iid\&amp;id=$2\">$2</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+`
+    $text =~ s~\b(TB\d{7,8}\w)\b
+              ~($things[$count++] = "<a href=\"http://talkback-public.mozilla.org/" . ((cleanTB($1) >= 16426810) ? "search/start" : "talkback/fastfind" ) . ".jsp?search=2\&amp;type=iid\&amp;id=$1\">$1</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
+    $text =~ s~\b(?:UUID\s+|bp\-)([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12})\b
+              ~($things[$count++] = "<a href=\"http://crash-stats.mozilla.com/report/index/$1\">bp-$1</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
+    $text =~ s~\b((?:CVE|CAN)-\d{4}-\d{4})\b
+              ~($things[$count++] = "<a href=\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=$1\">$1</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
+    $text =~ s~\br(\d{4,})\b
+              ~($things[$count++] = "<a href=\"http://viewvc.svn.mozilla.org/vc?view=rev&amp;revision=$1\">r$1</a>") &&
+               ("\0\0" . ($count-1) . "\0\0")
+              ~egmxi;
+
     # Current bug ID this comment belongs to
     my $current_bugurl = $curr_bugid ? "show_bug.cgi?id=$curr_bugid" : "";
 
