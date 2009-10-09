@@ -65,6 +65,10 @@ sub SETTINGS {
                             default => "quoted_reply" },
     # 2008-08-27 LpSolit@gmail.com -- Bug 182238
     timezone           => { subclass => 'Timezone', default => 'local' },
+    # 2006-12-14 justdave@mozilla.com -- Bug 322327
+    # BMO LOCAL HACK
+    product_chooser    => { options => ['pretty_product_chooser', 'full_product_chooser'],
+                            default => 'pretty_product_chooser' },
     }
 };
 
