@@ -69,6 +69,10 @@ sub SETTINGS {
     # BMO LOCAL HACK
     product_chooser    => { options => ['pretty_product_chooser', 'full_product_chooser'],
                             default => 'pretty_product_chooser' },
+    # 2007-01-13 reed@reedloden.com -- Bug 367003
+    # BMO LOCAL HACK
+    comment_box_position => { options => ['before_comments', 'after_comments'],
+                              default => 'after_comments' },
     }
 };
 
