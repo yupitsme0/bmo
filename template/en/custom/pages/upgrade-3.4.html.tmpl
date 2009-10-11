@@ -1,0 +1,49 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): David Miller <justdave@bugzilla.org>
+  #%]
+
+[% INCLUDE global/header.html.tmpl title = "Bugzilla Upgrade" %]
+[% USE date %]
+
+<p><b>Last Updated:</b> [% date.format(template.modtime, "%d-%b-%Y %H:%M %Z") %]</p>
+<!-- <p><b>Includes changes made to Bugzilla-trunk through:</b> 21-Dec-2006</p>
+
+<p>On Tuesday, December 26, 2006, at 6pm PST (2am UTC), bugzilla.mozilla.org
+was upgraded to the current prerelease of Bugzilla version 3.0 (currently 2.23.3+/2.23.4).</p> -->
+
+This upgrade is still in progress, this page will be updated with more complete release notes as I get time, and prior to deployment on b.m.o.  The best way to provide feedback currently is to discuss in #bmo on IRC.  Once this list dwindles a little, I'll start asking that you file bugs instead.
+
+<h3>Known Issues</h3>
+
+The following is a list of issues which are known to be broken or incomplete with this upgrade so far.  I will remove from this list as I fix things, and add to it as things are reported to me.
+
+<ul>
+
+<li>Client-side javascript sorting of buglists is currently broken</li>
+<li>Security-group is not yet settable on new bugs by people not in the group</li>
+<li>Microsummaries on buglists are still missing</li>
+<li>Keyword autocomplete is currently disabled - lots of complaints about the current implementation in production and I'm not sure what we're doing with it yet.</li>
+<li>CLOSED status and EXPIRED resolution are still visible</li>
+<li>Home page is temporary, perhaps.  I was experimenting with the big buttons from upstream, and replaced the big red box with the "Get Help" button.  The stuff that was in the red box will be on the linked page, eventually.  Or we could put it back how it was and get rid of the huge buttons.</li>
+<li>Theming work?  I suppose now is a good opportunity to try to bring the site in line with the new mozilla.org theme, but not sure how to tie it in without wasting a lot of space on the page.</li>
+
+</ul>
+<br>
+
+[% INCLUDE global/footer.html.tmpl %]
