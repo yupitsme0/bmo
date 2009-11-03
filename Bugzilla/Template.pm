@@ -151,6 +151,14 @@ sub get_format {
     };
 }
 
+# get the numerical portion of a talkback IID
+sub cleanTB {
+    my ($tbiid) = @_;
+    $tbiid =~ s/^TB//;
+    $tbiid =~ s/[^\d]+$//;
+    return $tbiid;
+}
+
 # This routine quoteUrls contains inspirations from the HTML::FromText CPAN
 # module by Gareth Rees <garethr@cre.canon.co.uk>.  It has been heavily hacked,
 # all that is really recognizable from the original is bits of the regular
