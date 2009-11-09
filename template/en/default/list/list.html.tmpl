@@ -42,6 +42,11 @@
 [%# Page Header                                                              #%]
 [%############################################################################%]
 
+[% microsummary = "buglist.cgi?$urlquerypart&title=$title&ctype=microsummary" %]
+[% IF searchname %]
+  [% microsummary = "?cmdtype=runnamed&namedcmd=$searchname&ctype=microsummary" %]
+[% END %]
+
 [% PROCESS global/header.html.tmpl
   title = title
   style = style
@@ -49,6 +54,7 @@
   javascript_urls = [ "js/util.js", "js/field.js", "js/yui/calendar.js" ]
   style_urls = [ "skins/standard/buglist.css", "skins/standard/yui/calendar.css" ]
   doc_section = "query.html#list"
+  microsummary = microsummary
 %]
 
 <div class="bz_query_head" align="center">
