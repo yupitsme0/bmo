@@ -3497,6 +3497,24 @@ sub check_can_change_field {
         return $user->in_group('canconfirm', $self->{'product_id'});
     }
 
+    # On b.m.o., canconfirm is really "cantriage"; users with canconfirm
+    # can also mark bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
+    if ($user->in_group('canconfirm', $self->{'product_id'})) {
+        if ($field eq 'bug_status'
+            && is_open_state($oldvalue)
+            && !is_open_state($newvalue))
+        {
+            return 1;
+        }
+        elsif ($field eq "resolution" && 
+               ($newvalue eq 'DUPLICATE' ||
+                $newvalue eq 'WORKSFORME' ||
+                $newvalue eq 'INCOMPLETE'))
+        {
+            return 1;
+        }
+    }
+
     # Make sure that a valid bug ID has been given.
     if (!$self->{'error'}) {
         # Allow the assignee to change anything else.

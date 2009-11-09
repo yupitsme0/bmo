@@ -145,6 +145,14 @@
   <select name="resolution" id="resolution">
     [% FOREACH r = bug.choices.resolution %]
       [% NEXT IF r == "MOVED" && bug.resolution != "MOVED" %]
+      [% IF bug.user.canconfirm &&
+            !(bug.user.canedit || bug.user.isreporter) %]
+        [% NEXT IF r != "WORKSFORME" && r != "INCOMPLETE" %]
+      [% END %]
+      [% IF bug.user.isreporter &&
+            !(bug.user.canconfirm || bug.user.canedit) %]
+        [% NEXT IF r == "INCOMPLETE" %]
+      [% END %]
       <option value="[% r FILTER html %]"
       [% "selected" IF r == bug.resolution %]>
         [% get_resolution(r) FILTER html %]</option>
