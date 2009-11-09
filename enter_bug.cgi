@@ -206,15 +206,15 @@ sub pickplatform {
         # no choice is valid, we return "Other".
         for ($ENV{'HTTP_USER_AGENT'}) {
         #PowerPC
-            /\(.*PowerPC.*\)/i && do {@platform = "Macintosh"; last;};
-            /\(.*PPC.*\)/ && do {@platform = "Macintosh"; last;};
-            /\(.*AIX.*\)/ && do {@platform = "Macintosh"; last;};
+            /\(.*PowerPC.*\)/i && do {@platform = "PowerPC"; last;};
+            /\(.*PPC.*\)/ && do {@platform = "PowerPC"; last;};
+            /\(.*AIX.*\)/ && do {@platform = "PowerPC"; last;};
         #Intel x86
-            /\(.*Intel.*\)/ && do {@platform = "PC"; last;};
-            /\(.*[ix0-9]86.*\)/ && do {@platform = "PC"; last;};
+            /\(.*Intel.*\)/ && do {@platform = "x86"; last;};
+            /\(.*[ix0-9]86.*\)/ && do {@platform = "x86"; last;};
         #Versions of Windows that only run on Intel x86
-            /\(.*Win(?:dows |)[39M].*\)/ && do {@platform = "PC"; last};
-            /\(.*Win(?:dows |)16.*\)/ && do {@platform = "PC"; last;};
+            /\(.*Win(?:dows |)[39M].*\)/ && do {@platform = "x86"; last};
+            /\(.*Win(?:dows |)16.*\)/ && do {@platform = "x86"; last;};
         #Sparc
             /\(.*sparc.*\)/ && do {@platform = "Sun"; last;};
             /\(.*sun4.*\)/ && do {@platform = "Sun"; last;};
@@ -226,24 +226,24 @@ sub pickplatform {
             /\(.*IRIX.*\)/i && do {@platform = "SGI"; last;};
             /\(.*MIPS.*\)/i && do {@platform = "SGI"; last;};
         #68k
-            /\(.*68K.*\)/ && do {@platform = "Macintosh"; last;};
-            /\(.*680[x0]0.*\)/ && do {@platform = "Macintosh"; last;};
+            /\(.*68K.*\)/ && do {@platform = "PowerPC"; last;};
+            /\(.*680[x0]0.*\)/ && do {@platform = "PowerPC"; last;};
         #HP
             /\(.*9000.*\)/ && do {@platform = "HP"; last;};
         #ARM
 #            /\(.*ARM.*\) && do {$platform = "ARM";};
         #Stereotypical and broken
-            /\(.*Macintosh.*\)/ && do {@platform = "Macintosh"; last;};
-            /\(.*Mac OS [89].*\)/ && do {@platform = "Macintosh"; last;};
-            /\(Win.*\)/ && do {@platform = "PC"; last;};
-            /\(.*Win(?:dows[ -])NT.*\)/ && do {@platform = "PC"; last;};
+            /\(.*Macintosh.*\)/ && do {@platform = "PowerPC"; last;};
+            /\(.*Mac OS [89].*\)/ && do {@platform = "PowerPC"; last;};
+            /\(Win.*\)/ && do {@platform = "x86"; last;};
+            /\(.*Win(?:dows[ -])NT.*\)/ && do {@platform = "x86"; last;};
             /\(.*OSF.*\)/ && do {@platform = "DEC"; last;};
             /\(.*HP-?UX.*\)/i && do {@platform = "HP"; last;};
             /\(.*IRIX.*\)/i && do {@platform = "SGI"; last;};
             /\(.*(SunOS|Solaris).*\)/ && do {@platform = "Sun"; last;};
         #Braindead old browsers who didn't follow convention:
-            /Amiga/ && do {@platform = "Macintosh"; last;};
-            /WinMosaic/ && do {@platform = "PC"; last;};
+            /Amiga/ && do {@platform = "PowerPC"; last;};
+            /WinMosaic/ && do {@platform = "x86"; last;};
         }
     }
 
@@ -335,6 +335,8 @@ sub pickos {
               /\(.*Mac OS 8.*\)/ && do {push @os, "Mac System 8.6";};
             };
             /\(.*Darwin.*\)/ && do {push @os, ("Mac OS X 10.0", "Mac OS X");};
+            /\(.*Intel.*Mac OS X.*\)/ && do {push @os, ("Mac OS X 10.4", "Mac OS X");};
+            /\(.*Mac OS X.*\)/ && do {push @os, ("Mac OS X 10.3", "Mac OS X 10.0", "Mac OS X");};
         # Silly
             /\(.*Mac.*\)/ && do {
               /\(.*Mac.*PowerPC.*\)/ && do {push @os, "Mac System 9.x";};
