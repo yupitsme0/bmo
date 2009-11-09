@@ -365,6 +365,10 @@ $vars->{'columnlist'} = $cgi->param('columnlist');
 # Add in the defaults.
 $vars->{'default'} = \%default;
 
+if ($cgi->param('format') && $cgi->param('format') eq 'modern') {
+    $cgi->param('format','advanced');
+}
+
 $vars->{'format'} = $cgi->param('format');
 $vars->{'query_format'} = $cgi->param('query_format');
 
