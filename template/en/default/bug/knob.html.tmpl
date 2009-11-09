@@ -154,6 +154,7 @@
             !(bug.user.canconfirm || bug.user.canedit) %]
         [% NEXT IF r == "INCOMPLETE" %]
       [% END %]
+      [% NEXT IF r == "EXPIRED" && r != bug.resolution %]
       <option value="[% r FILTER html %]"
       [% "selected" IF r == bug.resolution %]>
         [% get_resolution(r) FILTER html %]</option>
