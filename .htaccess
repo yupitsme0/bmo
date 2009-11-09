@@ -2,3 +2,13 @@
 <FilesMatch ^(.*\.pm|.*\.pl|.*localconfig.*)$>
   deny from all
 </FilesMatch>
+
+# Point users to signed version of duplicates report
+Redirect /duplicates.xul jar:http://bugzilla.mozilla.org/duplicates.jar!/duplicates.xul
+
+Redirect permanent /queryhelp.cgi https://bugzilla.mozilla.org/query.cgi?format=advanced&help=1
+Redirect permanent /bug_status.html https://bugzilla.mozilla.org/page.cgi?id=fields.html
+Redirect permanent /duplicates.rdf https://bugzilla.mozilla.org/data/duplicates.rdf
+Redirect permanent /bugwritinghelp.html https://bugzilla.mozilla.org/page.cgi?id=bug-writing.html
+Redirect permanent /etiquette.html https://bugzilla.mozilla.org/page.cgi?id=etiquette.html
+Redirect permanent /duplicates.html https://bugzilla.mozilla.org/duplicates.cgi
