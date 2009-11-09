@@ -3481,6 +3481,36 @@ sub check_can_change_field {
         }
     }
 
+    # Only users in the appropriate drivers group can change the cf_blocking_* fields.
+    if ($field =~ /^cf_blocking_/) {
+        unless ($newvalue eq '---' || $newvalue eq '?' || ($oldvalue eq '0' && $newvalue eq '1')) {
+            my $drivers_group;
+            if ($field eq 'cf_blocking_fennec') {
+                $drivers_group = 'fennec-drivers';
+            }
+            if ($field eq 'cf_blocking_191') {
+                $drivers_group = 'mozilla-stable-branch-drivers';
+            }
+            if (!$drivers_group || !$user->in_group($drivers_group)) {
+                $$PrivilegesRequired = 3;
+                return 0;
+            }
+        }
+    }
+
+    if ($field =~ /^cf_status_/) {
+        # Only drivers can set wanted.
+        if ($newvalue eq 'wanted' && !$user->in_group('mozilla-stable-branch-drivers')) {
+            $$PrivilegesRequired = 3;
+            return 0;
+        }
+        # Require 'canconfirm' to change anything else
+        if (!$user->in_group('canconfirm', $self->{'product_id'})) {
+            $$PrivilegesRequired = 3;
+            return 0;
+        }
+    }
+
     # Allow anyone with (product-specific) "editbugs" privs to change anything.
     if ($user->in_group('editbugs', $self->{'product_id'})) {
         return 1;
