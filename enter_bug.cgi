@@ -65,6 +65,12 @@ my $vars = {};
 # All pages point to the same part of the documentation.
 $vars->{'doc_section'} = 'bugreports.html';
 
+$cgi->param(-name=>'format',-value=>'guided') 
+    if !$cgi->param('format') && !$user->in_group('canconfirm');
+
+$cgi->delete('format') 
+    if ($cgi->param('format') && ($cgi->param('format') eq "__default__"));
+
 my $product_name = trim($cgi->param('product') || '');
 # Will contain the product object the bug is created in.
 my $product;
