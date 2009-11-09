@@ -37,6 +37,7 @@
       # for compatibility with older versions. %]
     [% NEXT IF !bug.isopened && (bug.everconfirmed && bug_status.name == "UNCONFIRMED"
                                  || !bug.everconfirmed && bug_status.name == "REOPENED") %]
+    [% NEXT IF bug_status.name == "CLOSED" %]
     [% IF NOT bug_status_select_displayed %]
       <select name="bug_status" id="bug_status">
       [% bug_status_select_displayed = 1 %]
