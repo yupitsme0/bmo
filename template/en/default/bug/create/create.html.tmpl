@@ -594,6 +594,41 @@ TUI_hide_default('expert_fields');
   [% END %]
 </tbody>
 
+<tbody>
+  <tr>
+    <th>&nbsp;</th>
+    <td colspan="3">
+      [% IF product.name == "mozilla.org" %]
+        [% sec_bit = 6 %] [%# mozilla-confidential %]
+      [% ELSIF product.name == "Webtools" %]
+        [% sec_bit = 12 %] [%# webtools-security %]
+      [% ELSIF product.name == "Marketing" %]
+        [% sec_bit = 14 %] [%# marketing-private %]
+      [% ELSIF product.name == "addons.mozilla.org" OR product.name == "AUS" OR product.name == "Weave" %]
+        [% sec_bit = 23 %] [%# client-services-security %]
+      [% ELSIF product.name == "Mozilla Corporation" %]
+        [% sec_bit = 26 %] [%# mozilla-corporation-confidential %]
+      [% ELSIF product.name == "Mozilla Messaging" %]
+        [% sec_bit = 45 %] [%# mozilla-messaging-confidential %]
+      [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center"
+               OR product.name == "support.mozilla.com" OR product.name == "quality.mozilla.org"
+               OR product.name == "Bespin" %]
+        [% sec_bit = 52 %] [%# websites-security %]
+      [% ELSIF product.name == "Bugzilla" OR product.name == "Testopia" %]
+        [% sec_bit = 53 %] [%# bugzilla-security %]
+      [% ELSIF product.name == "Tamarin" %]
+        [% sec_bit = 65 %] [%# tamarin-security %]
+      [% ELSE %]
+        [% sec_bit = 2 %]   [%# core-security %]
+      [% END %]
+      <input type="checkbox" name="bit-[% sec_bit %]" value="1">
+      This is a security problem that should be kept confidential until addressed
+      (<a href="http://www.mozilla.org/projects/security/security-bugs-policy.html">security policy</a>).
+      <br><br>
+    </td>
+  </tr>
+</tbody>
+
 <tbody class="expert_fields">
   [% IF group.size %]
   <tr>

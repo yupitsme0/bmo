@@ -284,6 +284,29 @@ sub Send {
         $diffpart->{'text'} = $difftext;
         push(@diffparts, $diffpart);
         push(@changedfields, $what);
+
+        # If the security bit is being set or unset, CC the appropriate
+        # security list. This is to make sure security bugs don't get lost.
+        if ($fieldname eq "bug_group") {
+            if ($old =~ /bugzilla-security/ || $new =~ /bugzilla-security/) {
+                push(@ccs, login_to_id('security@bugzilla.org'));
+            }
+            if ($old =~ /websites-security/ || $new =~ /websites-security/) {
+                push(@ccs, login_to_id('website-drivers@mozilla.org'));
+            }
+            if ($old =~ /webtools-security/ || $new =~ /webtools-security/) {
+                push(@ccs, login_to_id('webtools-security@mozilla.org'));
+            }
+            if ($old =~ /client-services-security/ || $new =~ /client-services-security/) {
+                push(@ccs, login_to_id('amo-admins@mozilla.org'));
+            }
+            if ($old =~ /tamarin-security/ || $new =~ /tamarin-security/) {
+                push(@ccs, login_to_id('tamarinsecurity@adobe.com'));
+            }
+            if ($old =~ /core-security/ || $new =~ /core-security/) {
+                push(@ccs, login_to_id('security@mozilla.org'));
+            }
+        }
     }
     $values{'changed_fields'} = join(' ', @changedfields);
 
