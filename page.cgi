@@ -52,7 +52,7 @@ if ($id) {
     }
 
     my $vars = {};
-    $vars->{bzr_history} = sub { return `cd /data/www/bugzilla.mozilla.org; /usr/bin/bzr log -rlast:10..` };
+    $vars->{bzr_history} = sub { return `cd /data/www/bugzilla.mozilla.org; /usr/bin/bzr log -n0 -rlast:10..` };
 
     Bugzilla::Hook::process('page-before_template', 
                             { page_id => $id, vars => $vars });
