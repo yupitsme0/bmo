@@ -61,3 +61,13 @@ pre
 #attachment_table {
         width: 50em;
 }
+
+/* createaccount styling */
+.support_div {
+    width: 40%;
+    font-size: 80%;
+}
+
+.support_div > img {
+  padding: 5px 20px;
+}
