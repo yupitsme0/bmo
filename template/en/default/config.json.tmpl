@@ -148,10 +148,13 @@
           "flag_type": [
           [% flag_types = 
               component.flag_types.bug.merge(component.flag_types.attachment) %]
+          [%-# "first" flag used to get commas right; can't use loop.last() in case
+             # last flag is inactive %]
+          [% first = 1 %]
           [% FOREACH flag_type = flag_types %]
             [% NEXT UNLESS flag_type.is_active %]
             [% all_visible_flag_types.${flag_type.id} = flag_type %]
-            [% flag_type.id FILTER json %][% ',' UNLESS loop.last() %]
+            [% ',' UNLESS first %][% flag_type.id FILTER json %][% first = 0 %]
           [% END %]]
         } [% ',' UNLESS loop.last() %]
       [% END %]
