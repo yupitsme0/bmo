@@ -51,9 +51,11 @@ if ($id) {
         ThrowCodeError("bad_page_cgi_id", { "page_id" => $id });
     }
 
-    my %vars;
+    my $vars = {};
+    $vars->{bzr_history} = sub { return `cd /data/www/bugzilla.mozilla.org; /usr/bin/bzr log -rlast:10..` };
+
     Bugzilla::Hook::process('page-before_template', 
-                            { page_id => $id, vars => \%vars });
+                            { page_id => $id, vars => $vars });
 
     my $format = $template->get_format("pages/$1", undef, $2);
     
@@ -61,7 +63,7 @@ if ($id) {
 
     print $cgi->header($format->{'ctype'});
 
-    $template->process("$format->{'template'}", \%vars)
+    $template->process("$format->{'template'}", $vars)
       || ThrowTemplateError($template->error());
 }
 else {

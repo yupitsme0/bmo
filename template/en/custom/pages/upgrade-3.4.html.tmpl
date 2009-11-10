@@ -42,6 +42,11 @@ The following is a list of issues which are known to be broken or incomplete wit
 <li>Home page is less temporary, now. I have more theme work coming from pyrzak to clean up the front page with its current theme and skin the interior the match (but without all the bloat in the header on the internal pages), since initial reactions to that theme were positive when it was posted to planet.</li>
 
 </ul>
+
+<h3>Last Ten Commits</h3>
+
+<pre>[% bzr_history.join('') FILTER html %]</pre>
+
 <br>
 
 [% INCLUDE global/footer.html.tmpl %]
