@@ -146,7 +146,7 @@ sub COLUMNS {
                                      ON attach_patches_flags.requestee_id=attach_patches_requestee.userid
                       WHERE attach_patches.bug_id=attach_patches_flags.bug_id
                     GROUP BY attach_patches.bug_id))
-            ORDER BY attach_patches.attach_id SEPARATOR ', ') AS patches";
+            ORDER BY attach_patches.attach_id SEPARATOR ', ') AS patches",
     );
 
     # Backward-compatibility for old field names. Goes new_name => old_name.
@@ -294,7 +294,7 @@ sub init {
                           "ON ldtime.bug_id = bugs.bug_id");
     }
 
-    if (grep($_ =~ /AS patches$/i, @$fieldsref)) {
+    if (grep($_ =~ /AS patches$/i, @fields)) {
         my $extra = '';
         if (Bugzilla->user->is_insider) {
             $extra = " AND attach_patches.isprivate = 0";
