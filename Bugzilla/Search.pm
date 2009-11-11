@@ -107,6 +107,7 @@ sub COLUMNS {
         assigned_to_realname => { title => 'Assignee'   },
         reporter_realname    => { title => 'Reporter'   },
         qa_contact_realname  => { title => 'QA Contact' },
+        patches              => { title => 'Patches'    },
     );
 
     # Next we define columns that have special SQL instead of just something
