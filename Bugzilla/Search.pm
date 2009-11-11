@@ -125,7 +125,7 @@ sub COLUMNS {
                    . " * ($actual_time / ($actual_time + bugs.remaining_time))"
               . " END)",
         patches =>
-            "GROUP_CONCAT(CONCAT_WS(' - ', attach_patches.description,
+            "GROUP_CONCAT(CONCAT_WS(': ', attach_patches.description,
               (SELECT GROUP_CONCAT(CONCAT(attach_patches_flagtypes.name,
                                           attach_patches_flags.status,
                                           (CASE
@@ -147,7 +147,7 @@ sub COLUMNS {
                                      ON attach_patches_flags.attach_id = attach_patches_attachments.attach_id AND attach_patches_attachments.isobsolete=0
                            LEFT JOIN profiles AS attach_patches_requestee
                                      ON attach_patches_flags.requestee_id=attach_patches_requestee.userid
-                      WHERE attach_patches.bug_id=attach_patches_flags.bug_id
+                      WHERE attach_patches.bug_id=attach_patches_flags.bug_id AND attach_patches.attach_id=attach_patches_attachments.attach_id
                     GROUP BY attach_patches.bug_id))
             ORDER BY attach_patches.attach_id SEPARATOR ', ')",
     );
