@@ -142,12 +142,14 @@ sub COLUMNS {
                                    SEPARATOR ', ')
                       FROM flags AS attach_patches_flags
                            INNER JOIN flagtypes AS attach_patches_flagtypes
-                                     ON attach_patches_flags.type_id=attach_patches_flagtypes.id
+                                     ON attach_patches_flags.type_id=attach_patches_flagtypes.id AND attach_patches_flags.attach_id IS NOT NULL
+                           INNER JOIN attachments AS attach_patches_attachments
+                                     ON attach_patches_flags.attach_id = attach_patches_attachments.attach_id AND attach_patches_attachments.isobsolete=0
                            LEFT JOIN profiles AS attach_patches_requestee
                                      ON attach_patches_flags.requestee_id=attach_patches_requestee.userid
                       WHERE attach_patches.bug_id=attach_patches_flags.bug_id
                     GROUP BY attach_patches.bug_id))
-            ORDER BY attach_patches.attach_id SEPARATOR ', ') AS patches",
+            ORDER BY attach_patches.attach_id SEPARATOR ', ')",
     );
 
     # Backward-compatibility for old field names. Goes new_name => old_name.
@@ -189,6 +191,7 @@ sub COLUMNS {
         $columns{$id} = { name => $sql, title => $field->description };
     }
 
+    $columns{"patches"}->{name} = $special_sql{"patches"};
     # The short_short_desc column is identical to short_desc
     $columns{'short_short_desc'} = $columns{'short_desc'};
 
@@ -235,7 +238,6 @@ sub init {
 
     my @select_fields = 
         Bugzilla->get_fields({ type => FIELD_TYPE_SINGLE_SELECT });
-    
     my @multi_select_fields = Bugzilla->get_fields({
         type     => [FIELD_TYPE_MULTI_SELECT, FIELD_TYPE_BUG_URLS],
         obsolete => 0 });
@@ -295,9 +297,9 @@ sub init {
                           "ON ldtime.bug_id = bugs.bug_id");
     }
 
-    if (grep($_ =~ /AS patches$/i, @fields)) {
+    if (grep($_ eq 'patches', @fields)) {
         my $extra = '';
-        if (Bugzilla->user->is_insider) {
+        if (!(Bugzilla->user->is_insider)) {
             $extra = " AND attach_patches.isprivate = 0";
         }
         push @supptables, "LEFT JOIN attachments AS attach_patches " .
@@ -981,7 +983,7 @@ sub init {
         # These fields never go into the GROUP BY (bug_id goes in
         # explicitly, below).
         next if (grep($_ eq $field, EMPTY_COLUMN, 
-                      qw(bug_id actual_time percentage_complete)));
+                      qw(bug_id actual_time percentage_complete patches)));
         my $col = COLUMNS->{$field}->{name};
         push(@groupby, $col) if !grep($_ eq $col, @groupby);
     }
