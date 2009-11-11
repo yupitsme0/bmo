@@ -207,7 +207,8 @@ my %milestones;
 foreach my $product (@selectable_products) {
     $components{$_->name} = 1 foreach (@{$product->components});
     $versions{$_->name}   = 1 foreach (@{$product->versions});
-    $milestones{$_->name} = 1 foreach (@{$product->milestones});
+    my @searchable_milestones = grep {$_->is_searchable} @{$product->milestones};
+    $milestones{$_->name} = 1 foreach @searchable_milestones;
 }
 
 my @components = sort(keys %components);

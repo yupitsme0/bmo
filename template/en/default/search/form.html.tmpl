@@ -69,7 +69,8 @@ var tms = new Array();
     [%- FOREACH item = p.versions -%]'[%  item.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
   [% IF Param('usetargetmilestone') %]
   tms[[% n %]]  = [
-     [%- FOREACH item = p.milestones %]'[% item.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
+     [%- FOREACH item = p.milestones %][% NEXT UNLESS item.is_searchable %]'[% item.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
+
   [% END %]
   [% n = n+1 %]
 [% END %]

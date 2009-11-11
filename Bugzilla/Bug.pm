@@ -2903,6 +2903,9 @@ sub choices {
     # Hack - this array contains "". See bug 106589.
     my @res = grep ($_, @{get_legal_field_values('resolution')});
 
+    my @milestones = grep($_->is_active || $_->name eq $self->target_milestone,
+                          @{$self->product_obj->milestones});
+
     $self->{'choices'} =
       {
        'product' => \@prodlist,
@@ -2914,7 +2917,7 @@ sub choices {
        'resolution'   => \@res,
        'component'    => [map($_->name, @{$self->product_obj->components})],
        'version'      => [map($_->name, @{$self->product_obj->versions})],
-       'target_milestone' => [map($_->name, @{$self->product_obj->milestones})],
+       'target_milestone' => [map($_->name, @milestones)],
       };
 
     return $self->{'choices'};

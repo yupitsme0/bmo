@@ -542,6 +542,13 @@ sub update_table_definitions {
     $dbh->bz_alter_column('series', 'query',
         { TYPE => 'MEDIUMTEXT', NOTNULL => 1 });
 
+    # 2008-02-11 rmaia@everythingsolved.com - Bug 274
+    $dbh->bz_add_column('milestones', 'is_active',
+                        {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
+
+    $dbh->bz_add_column('milestones', 'is_searchable',
+                        {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
+
     # Add FK to multi select field tables
     _add_foreign_keys_to_multiselects();
 
