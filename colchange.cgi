@@ -75,6 +75,8 @@ if (Bugzilla::Keyword::keyword_count()) {
     push(@masterlist, "keywords");
 }
 
+push(@masterlist, "patches");
+
 if (Bugzilla->user->in_group(Bugzilla->params->{"timetrackinggroup"})) {
     push(@masterlist, ("estimated_time", "remaining_time", "actual_time",
                        "percentage_complete", "deadline")); 
