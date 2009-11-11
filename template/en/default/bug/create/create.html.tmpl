@@ -31,9 +31,12 @@
 [% PROCESS global/header.html.tmpl
   title = title
   style_urls = [ 'skins/standard/create_attachment.css',
-                 'skins/standard/yui/calendar.css' ]
-  javascript_urls = [ "js/attachment.js", "js/util.js", "js/yui/calendar.js",
-                      "js/field.js", "js/yui/cookie.js", "js/TUI.js" ]
+                 'skins/standard/yui/calendar.css',
+                 'skins/standard/yui/autocomplete.css' ]
+  javascript_urls = [ "js/attachment.js", "js/util.js", "js/keyword-chooser.js",
+                      "js/yui/yahoo-dom-event.js", "js/yui/calendar.js",
+                      "js/field.js", "js/yui/cookie.js", "js/TUI.js",
+                      "js/yui/autocomplete-min.js" ]
 %]
 
 <script type="text/javascript">
@@ -692,6 +695,12 @@ TUI_hide_default('expert_fields');
   </table>
   <input type="hidden" name="form_name" value="enter_bug">
 </form>
+
+[% IF use_keywords %]
+  [% PROCESS "bug/keyword-chooser.html.tmpl"
+    sel_keywords = keywords.split(', ')
+  %]
+[% END %]
 
 [%# Links or content with more information about the bug being created. %]
 [% Hook.process("end") %]

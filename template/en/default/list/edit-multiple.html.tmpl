@@ -285,6 +285,12 @@
 
 </table>
 
+[% IF use_keywords %]
+  [% PROCESS "bug/keyword-chooser.html.tmpl"
+    sel_keywords = keywords.split(', ')
+  %]
+[% END %]
+
 <b><label for="comment">Additional Comments:</label></b>
 [% IF user.is_insider %]
   <input type="checkbox" name="commentprivacy" value="1"

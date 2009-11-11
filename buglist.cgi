@@ -1131,6 +1131,7 @@ if ($dotweak && scalar @bugs) {
                                         object => 'multiple_bugs'});
     }
     $vars->{'dotweak'} = 1;
+    $vars->{'valid_keywords'} = [map($_->name, Bugzilla::Keyword->get_all)];
     $vars->{'use_keywords'} = 1 if Bugzilla::Keyword::keyword_count();
   
     # issue_session_token needs to write to the master DB.
