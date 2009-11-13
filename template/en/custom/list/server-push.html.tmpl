@@ -29,11 +29,15 @@
 <html>
   <head>
     <title>[% terms.Bugzilla %] is pondering your search</title>
+    <script src="skins/custom/bugs.js"></script>
   </head>
-  <body>
+  <body style="overflow: hidden">
     <div style="margin-top: 15%; text-align: center;">
-      <center><img src="skins/custom/images/mozchomp.gif" alt=""></center>
-      <h1>Please wait while your bugs are retrieved.</h1>
+      <img src="skins/custom/images/mozchomp.gif" alt="" 
+           style="z-index: 1; position: relative">
+      <h1 style="z-index: 1; position: relative">
+        Please wait while your bugs are retrieved.
+      </h1>
     </div>
 
     [% IF debug %]
