@@ -207,6 +207,12 @@
 
     [% Hook.process("auth_failure") %]
 
+  [% ELSIF error == "account_locked" %]
+    [% title = "Account Locked" %]
+    Your account has been locked as you have exceeded the maximum number of
+    log in attempts.  An email has been sent that will allow you to unlock
+    your account.
+
   [% ELSIF error == "attachment_deletion_disabled" %]
     [% title = "Attachment Deletion Disabled" %]
     Attachment deletion is disabled on this installation.
@@ -838,7 +844,7 @@
     [% title = "Illegal Regular Expression" %]
     The regular expression you provided [% value FILTER html %] is not valid.
     The error was: [% dberror FILTER html %].
-        
+
   [% ELSIF error == "insufficient_data_points" %]
     [% docslinks = {'reporting.html' => 'Reporting'} %]
     We don't have enough data points to make a graph (yet).
@@ -1645,6 +1651,10 @@
     "[% value FILTER html %]" is not a valid value for a
     &lt;[% type FILTER html %]&gt; field. (See the XML-RPC specification
     for details.)
+
+  [% ELSIF error == "wrong_token_for_unlocking_account" %]
+    [% title = "Wrong Token" %]
+    That token cannot be used to unlock an account.
 
   [% ELSIF error == "zero_length_file" %]
     [% title = "File Is Empty" %]

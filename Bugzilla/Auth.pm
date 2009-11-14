@@ -64,10 +64,16 @@ sub login {
         return $self->_handle_login_result($login_info, $type);
     }
 
+    # Save the username as check_credentials can return a new login_info hash
+    # with only a 'failure' key.  The sub _handle_login_result requires a 
+    # username if $login_info->{failure} == AUTH_LOGINFAILED.
+    my $username = $login_info->{username};
+    
     # Now verify his username and password against the DB, LDAP, etc.
     if ($self->{_info_getter}->{successful}->requires_verification) {
         $login_info = $self->{_verifier}->check_credentials($login_info);
         if ($login_info->{failure}) {
+            $login_info->{username} = $username;
             return $self->_handle_login_result($login_info, $type);
         }
         $login_info =
@@ -78,6 +84,7 @@ sub login {
     }
 
     if ($login_info->{failure}) {
+        $login_info->{username} = $username;
         return $self->_handle_login_result($login_info, $type);
     }
 
@@ -146,6 +153,9 @@ sub _handle_login_result {
         if ($self->{_info_getter}->{successful}->requires_persistence) {
             $self->{_persister}->persist_login($user);
         }
+        
+        # remove any traces of failed logins from the login_activity table
+        $dbh->do(q{DELETE FROM login_activity WHERE user_id = ?}, undef, $user->id );
     }
     elsif ($fail_code == AUTH_ERROR) {
         ThrowCodeError($result->{error}, $result->{details});
@@ -161,7 +171,14 @@ sub _handle_login_result {
     # Don't let the user know whether the username exists or whether
     # the password was just wrong. (This makes it harder for a cracker
     # to find account names by brute force)
-    elsif ($fail_code == AUTH_LOGINFAILED or $fail_code == AUTH_NO_SUCH_USER) {
+    elsif ($fail_code == AUTH_LOGINFAILED) {
+        my $username = $result->{username};
+        $user = new Bugzilla::User({ name => $username });
+        
+        $user->check_account_locked();
+        ThrowUserError("invalid_username_or_password");
+    }
+    elsif ($fail_code == AUTH_NO_SUCH_USER) {
         ThrowUserError("invalid_username_or_password");
     }
     # The account may be disabled

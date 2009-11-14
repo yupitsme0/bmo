@@ -1721,6 +1721,53 @@ sub validate_password {
     return 1;
 }
 
+sub check_account_locked {
+    my ($self) = @_;
+    my $dbh = Bugzilla->dbh;
+    
+    $dbh->bz_start_transaction();
+    
+    # delete any login attempts that occurred over an hour ago
+    my $time = $dbh->sql_interval(LOGIN_LOCKOUT_INTERVAL, 'MINUTE');
+    $dbh->do(qq{DELETE FROM login_activity
+                WHERE user_id = ? AND login_time < NOW() - $time},
+                undef, $self->id);
+         
+    # If there have been 5 unsuccessful password attempts in an hour then
+    # lock the account and let them know.
+    my $attempts = $dbh->selectrow_array( q{SELECT COUNT(*)
+                                              FROM login_activity 
+                                             WHERE user_id = ?},
+                                        undef, $self->id);
+                                        
+    if ($attempts == MAX_LOGIN_ATTEMPTS) {
+        $dbh->bz_commit_transaction();
+        ThrowUserError("account_locked");
+    }
+    
+    my $cgi = Bugzilla->cgi;
+    my $ip_addr = $cgi->remote_addr;
+
+    trick_taint($ip_addr);
+    
+    $dbh->do("INSERT INTO login_activity (user_id, ip_addr, login_time) 
+              VALUES (?, ?, now())", undef, ($self->id, $ip_addr));
+              
+    $dbh->bz_commit_transaction();
+              
+    $attempts++;
+    
+    if ($attempts == MAX_LOGIN_ATTEMPTS ) {
+        my $login_activity = $dbh->selectall_arrayref(
+            'SELECT login_time, ip_addr FROM login_activity WHERE user_id = ?',
+            {'Slice' => {}}, $self->id);
+
+        #send email for unlocking the account
+        Bugzilla::Token::IssueTokenForLockedAccounts(
+            $self->id, $login_activity);
+        ThrowUserError("account_locked");
+    }
+}
 
 1;
 
@@ -2108,6 +2155,12 @@ i.e. if the 'insidergroup' parameter is set and the user belongs to this group.
 
 Returns true if the user is a global watcher,
 i.e. if the 'globalwatchers' parameter contains the user.
+
+=item C<check_account_locked>
+
+Adds the IP address and time to the login_activity table if there is a failed
+login due to an invalid password.  After 5 failed attempts the account is locked
+and user is sent an email with instructions on how to unlock the account.
 
 =back
 

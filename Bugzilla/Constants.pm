@@ -161,6 +161,8 @@ use File::Basename;
 
     PASSWORD_DIGEST_ALGORITHM
     PASSWORD_SALT_LENGTH
+    MAX_LOGIN_ATTEMPTS
+    LOGIN_LOCKOUT_INTERVAL
 );
 
 @Bugzilla::Constants::EXPORT_OK = qw(contenttypes);
@@ -461,6 +463,13 @@ use constant PASSWORD_DIGEST_ALGORITHM => 'SHA-256';
 # How long of a salt should we use? Note that if you change this, none
 # of your users will be able to log in until they reset their passwords.
 use constant PASSWORD_SALT_LENGTH => 8;
+
+# Maximum failed logins to lock account
+use constant MAX_LOGIN_ATTEMPTS => 5;
+
+# Lockout interval.  If the maximum login attempts occurs during this period
+# the account is locked (60 minutes)
+use constant LOGIN_LOCKOUT_INTERVAL => 60;
 
 sub bz_locations {
     # We know that Bugzilla/Constants.pm must be in %INC at this point.

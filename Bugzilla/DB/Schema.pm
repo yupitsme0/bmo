@@ -1494,6 +1494,23 @@ use constant ABSTRACT_SCHEMA => {
         ],
     },
 
+    # PASSWORD LOCKOUT
+    # ------------
+
+    login_activity => {
+        FIELDS => [
+            user_id      => {TYPE => 'INT3', NOTNULL => 1,
+                             REFERENCES => {TABLE  => 'profiles', 
+                                            COLUMN => 'userid',
+                                            DELETE => 'CASCADE'}},
+            login_time   => {TYPE => 'DATETIME', NOTNULL => 1},
+            ip_addr      => {TYPE => 'varchar(40)', NOTNULL => 1},
+        ],
+        INDEXES => [
+            login_activity_user_id_idx   => ['user_id'],
+        ],
+    },
+
     # SCHEMA STORAGE
     # --------------
 
