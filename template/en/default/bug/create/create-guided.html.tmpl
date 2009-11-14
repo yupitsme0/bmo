@@ -69,9 +69,9 @@ function PutDescription() {
 
 [%# Include other products if sensible %]
 [% IF product.name == "Firefox" %]
-  [% productstring = "product=SeaMonkey&amp;product=Firefox" %]
+  [% productstring = "product=Toolkit&amp;product=Core&amp;product=Firefox" %]
 [% ELSIF product.name == "Thunderbird" %]
-  [% productstring = "product=SeaMonkey&amp;product=Thunderbird" %]
+  [% productstring = "product=MailNews%20Core&amp;product=Thunderbird" %]
 [% ELSE %]
   [% productstring = BLOCK %]product=[% product.name FILTER url_quote %][% END %]
 [% END %]
