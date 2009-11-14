@@ -620,6 +620,9 @@ Bugzilla::Hook::process("enter_bug-entrydefaultvars", { vars => $vars });
 
 $vars->{'default'} = \%default;
 
+# For pretty-product-chooser
+$vars->{'format'} = $cgi->param('format');
+
 my $format = $template->get_format("bug/create/create",
                                    scalar $cgi->param('format'), 
                                    scalar $cgi->param('ctype'));
