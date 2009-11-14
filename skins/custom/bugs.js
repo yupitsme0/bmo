@@ -206,11 +206,6 @@ function onload() {
   // flag this function so we don't do the same thing twice
   arguments.callee.done = true;
   
-  document.body.addEventListener("mousemove", onmousemove, false);
-  document.body.addEventListener("mouseover", onmouseover, false);
-  document.body.addEventListener("mouseout", onmouseout, false);
-  document.body.addEventListener("click", onclick, false);
-
   // Create a few bugs
   for (var i = 0; i < START_BUGS; i++) {
     bugs.push(new Bug);
@@ -219,6 +214,8 @@ function onload() {
   window.setInterval(moveBugs, (1000 / FPS));
 }
 
+// Defining these event handlers automatically installs them for the entire 
+// page. Neat.
 function onmousemove(e) {
   // Stash for use when the timer fires
   mX = e.clientX;
@@ -237,4 +234,5 @@ function onclick() {
   bugs.push(new Bug);
 }
 
-window.addEventListener("load", onload, false);
+// onload event doesn't fire on multipart/x-mixed-replace
+window.setTimeout(onload, 200);
