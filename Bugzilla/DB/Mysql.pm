@@ -321,7 +321,7 @@ EOT
                                                     {Columns=>[1,2]}) };
     my @isam_tables;
     foreach my $name (keys %table_status) {
-        push(@isam_tables, $name) if $table_status{$name} eq "ISAM";
+        push(@isam_tables, $name) if (defined($table_status{$name}) && $table_status{$name} eq "ISAM");
     }
 
     if(scalar(@isam_tables)) {
