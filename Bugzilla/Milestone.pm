@@ -41,6 +41,8 @@ use constant DB_COLUMNS => qw(
     value
     product_id
     sortkey
+    is_active
+    is_searchable
 );
 
 use constant REQUIRED_CREATE_FIELDS => qw(
