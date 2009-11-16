@@ -239,6 +239,9 @@ div#docslinks {
     margin: 0;
 }
 
+.bz_patch {
+    background: #ffffcc;
+}
 .bz_obsolete {
     text-decoration: line-through;
 }
