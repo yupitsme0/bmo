@@ -512,3 +512,7 @@ form#Create .comment {
 #down_button {
     background-image: url(global/down.png);
 }
+#hideme0911 {
+    visibility: hidden;
+    display: none;
+}
