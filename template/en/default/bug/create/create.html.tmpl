@@ -480,12 +480,12 @@ TUI_hide_default('expert_fields');
        [% NEXT UNLESS product.name == "Fennec" OR product.name == "Core" OR
                       product.name == "Toolkit" OR product.name == "NSPR" %]
     [% END %]
-    [% IF field.name == "cf_blocking_191" OR field.name == "cf_status_191" %]
+    [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
        [% NEXT UNLESS product.name == "AUS" OR product.name == "Camino" OR
                       product.name == "Core Graveyard" OR product.name == "Core" OR
                       product.name == "Directory" OR product.name == "Firefox" OR
                       product.name == "MailNews Core" OR product.name == "Mozilla Localizations" OR
-                      product.name == "NSPR" OR product.name == "NSS" OR
+                      product.name == "NSPR" OR product.name == "NSS" OR product.name == "Fennec" OR
                       product.name == "Other Applications" OR product.name == "SeaMonkey" OR
                       product.name == "Toolkit" OR product.name == "addons.mozilla.org" %]
     [% END %]
