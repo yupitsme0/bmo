@@ -479,7 +479,6 @@ TUI_hide_default('expert_fields');
     [% IF field.name == "cf_blocking_fennec" %]
        [% NEXT UNLESS product.name == "Fennec" OR product.name == "Core" OR
                       product.name == "Toolkit" OR product.name == "NSPR" %]
-    [% END %]
     [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
        [% NEXT UNLESS product.name == "AUS" OR product.name == "Camino" OR
                       product.name == "Core Graveyard" OR product.name == "Core" OR
