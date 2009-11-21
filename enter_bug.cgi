@@ -619,6 +619,10 @@ $vars->{'group'} = \@groups;
 
 Bugzilla::Hook::process("enter_bug-entrydefaultvars", { vars => $vars });
 
+# hack to allow the bug entry templates to use check_can_change_field to see if
+# various field values should be available to the current user
+$default{'check_can_change_field'} = sub { return Bugzilla::Bug::check_can_change_field(\%default, @_) };
+
 $vars->{'default'} = \%default;
 
 # For pretty-product-chooser
