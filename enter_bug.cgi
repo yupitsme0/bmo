@@ -476,6 +476,7 @@ else {
     $vars->{'dependson'}      = formvalue('dependson');
     $vars->{'blocked'}        = formvalue('blocked');
     $vars->{'deadline'}       = formvalue('deadline');
+    $vars->{'status_whiteboard'} = formvalue('status_whiteboard');
 
     $vars->{'cc'}             = join(', ', $cgi->param('cc'));
 
