@@ -93,7 +93,7 @@ if ($token) {
       Bugzilla::Token::Cancel($token, 'wrong_token_for_creating_account');
       ThrowUserError('wrong_token_for_creating_account');
   }
-  if ( ($::action eq 'unlock_account') && $tokentype ne 'unlock' ) {
+  if ( ($action eq 'unlock_account') && $tokentype ne 'unlock' ) {
     Bugzilla::Token::Cancel($token, "wrong_token_for_unlocking_account");
     ThrowUserError("wrong_token_for_unlocking_account");
   }
@@ -167,7 +167,7 @@ if ($action eq 'reqpw') {
     confirm_create_account($token);
 } elsif ($action eq 'cancel_new_account') {
     cancel_create_account($token);
-} elsif ($::action eq 'unlock_account') {
+} elsif ($action eq 'unlock_account') {
     unlock_account($cgi->param('t'));
 } else { 
     # If the action that the user wants to take (specified in the "a" form field)
