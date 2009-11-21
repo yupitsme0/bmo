@@ -188,7 +188,9 @@ function moveBugs() {
       if (Math.abs(offsetX) < (INERTIA * STEP / 2) && 
           Math.abs(offsetY) < (INERTIA * STEP / 2)) 
       {
-        bug.placeRandomly();
+        // Remove bug
+        bugs = bugs.slice(0, i).concat(bugs.slice(i + 1));
+        bug.img.parentNode.removeChild(bug.img);
       }
       
       var dX = offsetX < 0 ? -1 : (offsetX > 0 ? 1 : 0);
@@ -235,4 +237,4 @@ function onclick() {
 }
 
 // onload event doesn't fire on multipart/x-mixed-replace
-window.setTimeout(onload, 200);
+window.setTimeout(onload, 5000);
