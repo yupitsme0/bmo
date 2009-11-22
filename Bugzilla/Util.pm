@@ -679,7 +679,8 @@ sub SqlifyDate {
     }
     my $date = str2time($str);
     if (!defined($date)) {
-        ThrowUserError("illegal_date", { date => $str });
+        require Bugzilla::Error;
+        Bugzilla::Error::ThrowUserError("illegal_date", { date => $str });
     }
     return time2str("%Y-%m-%d %H:%M:%S", $date);
 }
