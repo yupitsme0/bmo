@@ -85,21 +85,14 @@ function trySubmit() {
 <tr>
   <td align="right"><strong>Request Type:</strong></td>
   <td>
-<select name="component">
-  <option value="Copyright">Copyright</option>
-  <option value="Corporate Governance">Corporate Governance</option>
-  <option value="Distribution/Bundling">Distribution/Bundling</option>
-  <option value="Employment">Employment Issues</option>
-  <option value="General" selected="selected">General (or Unknown)</option>
-  <option value="Human Resources">Human Resources</option>
-  <option value="Licensing">Licensing</option>
-  <option value="NDA">Non-Disclosure Agreements (NDAs)</option>
-  <option value="Patent">Patent Issues</option>
-  <option value="Privacy or EULA">Privacy or EULA</option>
-  <option value="Standards">Standards</option>
-  <option value="Trademark">Trademark Issues</option>
-  <option value="Vendor/Services">Vendor/Services</option>
-</select>
+    <select name="component">
+      [%- FOREACH c = product.components %]
+        <option value="[% c.name FILTER html %]"
+          [% " selected=\"selected\"" IF c.name == default.component_ %]>
+          [% c.name FILTER html -%]
+        </option>
+      [%- END %]
+    </select>
   </td>
 </tr>
 
