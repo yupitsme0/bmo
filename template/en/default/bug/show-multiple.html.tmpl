@@ -180,13 +180,13 @@
     [% USE Bugzilla %]
     [% field_counter = 0 %]
     [% FOREACH field = Bugzilla.active_custom_fields %]
-        [% IF field == "cf_blocking_fennec" %]
+        [% IF field.name == "cf_blocking_fennec" %]
            [% NEXT UNLESS bug.product == "Fennec" OR bug.product == "Core" OR
                           bug.product == "Toolkit" OR bug.product == "NSPR" %]
-        [% ELSIF field.match("^cf_blocking_thunderbird") OR field.match("^cf_status_thunderbird") %]
+        [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cf_status_thunderbird") %]
            [% NEXT UNLESS bug.product == "Thunderbird" OR bug.product == "MailNews Core" OR
                           bug.product == "Mozilla Messaging" %]
-        [% ELSIF field.match("^cf_blocking_") OR field.match("^cf_status_") %]
+        [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
            [% NEXT UNLESS bug.product == "AUS" OR bug.product == "Camino" OR
                           bug.product == "Core Graveyard" OR bug.product == "Core" OR
                           bug.product == "Directory" OR bug.product == "Firefox" OR
