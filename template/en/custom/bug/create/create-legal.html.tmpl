@@ -88,7 +88,7 @@ function trySubmit() {
     <select name="component">
       [%- FOREACH c = product.components %]
         <option value="[% c.name FILTER html %]"
-          [% " selected=\"selected\"" IF c.name == default.component_ %]>
+          [% " selected=\"selected\"" IF c.name == "General" %]>
           [% c.name FILTER html -%]
         </option>
       [%- END %]
