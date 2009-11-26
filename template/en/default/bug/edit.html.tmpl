@@ -964,6 +964,9 @@
     [% IF field.name == "cf_blocking_fennec" %]
        [% NEXT UNLESS bug.product == "Fennec" OR bug.product == "Core" OR
                       bug.product == "Toolkit" OR bug.product == "NSPR" %]
+    [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cg_status_thunderbird") %]
+       [% NEXT UNLESS bug.product == "Thunderbird" OR bug.product == "MailNews Core" OR
+                      bug.product == "Mozilla Messaging" %]
     [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
        [% NEXT UNLESS bug.product == "AUS" OR bug.product == "Camino" OR
                       bug.product == "Core Graveyard" OR bug.product == "Core" OR

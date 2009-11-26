@@ -479,6 +479,9 @@ TUI_hide_default('expert_fields');
     [% IF field.name == "cf_blocking_fennec" %]
        [% NEXT UNLESS product.name == "Fennec" OR product.name == "Core" OR
                       product.name == "Toolkit" OR product.name == "NSPR" %]
+    [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cg_status_thunderbird") %]
+       [% NEXT UNLESS product.name == "Thunderbird" OR product.name == "MailNews Core" OR
+                      product.name == "Mozilla Messaging" %]
     [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
        [% NEXT UNLESS product.name == "AUS" OR product.name == "Camino" OR
                       product.name == "Core Graveyard" OR product.name == "Core" OR
@@ -486,7 +489,9 @@ TUI_hide_default('expert_fields');
                       product.name == "MailNews Core" OR product.name == "Mozilla Localizations" OR
                       product.name == "NSPR" OR product.name == "NSS" OR product.name == "Fennec" OR
                       product.name == "Other Applications" OR product.name == "SeaMonkey" OR
-                      product.name == "Toolkit" OR product.name == "addons.mozilla.org" %]
+                      product.name == "Toolkit" OR product.name == "addons.mozilla.org" OR
+                      (product.name == "mozilla.org" AND component.name == "Release Engineering") OR
+                      (product.name == "mozilla.org" AND component.name == "Release Engineering: Future") %]
     [% END %]
     [% SET value = ${field.name}.defined ? ${field.name} : "" %]
     <tr>

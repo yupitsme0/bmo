@@ -3497,6 +3497,9 @@ sub check_can_change_field {
             elsif ($field eq 'cf_blocking_193') {
                 $drivers_group = 'mozilla-1.9-drivers';
             }
+            elsif ($field eq 'cf_blocking_thunderbird30') {
+                $drivers_group = 'thunderbird-drivers';
+            }
             else { # any other cf_blocking_
                 $drivers_group = 'mozilla-stable-branch-drivers';
             }
@@ -3509,7 +3512,14 @@ sub check_can_change_field {
 
     if ($field =~ /^cf_status_/) {
         # Only drivers can set wanted.
-        if ($newvalue eq 'wanted' && !$user->in_group('mozilla-stable-branch-drivers')) {
+        my $drivers_group;
+        if ($field eq 'cf_status_thunderbird30') {
+            $drivers_group = 'thunderbird-drivers';
+        }
+        else {
+            $drivers_group = 'mozilla-stable-branch-drivers';
+        }
+        if ($newvalue eq 'wanted' && !$user->in_group($drivers_group)) {
             $$PrivilegesRequired = 3;
             return 0;
         }
