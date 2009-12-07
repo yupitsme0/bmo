@@ -37,15 +37,16 @@
 
 [% qorder = order FILTER url_quote IF order %]
 
+[% microsummary = "buglist.cgi?$urlquerypart&title=$title&ctype=microsummary" %]
+[% IF searchname %]
+  [% quotedsearchname = searchname FILTER url_quote %]
+  [% microsummary = "?cmdtype=runnamed&namedcmd=$quotedsearchname&ctype=microsummary" %]
+[% END %]
+
 
 [%############################################################################%]
 [%# Page Header                                                              #%]
 [%############################################################################%]
-
-[% microsummary = "buglist.cgi?$urlquerypart&title=$title&ctype=microsummary" %]
-[% IF searchname %]
-  [% microsummary = "?cmdtype=runnamed&namedcmd=$searchname&ctype=microsummary" %]
-[% END %]
 
 [% PROCESS global/header.html.tmpl
   title = title
