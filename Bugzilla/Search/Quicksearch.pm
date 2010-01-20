@@ -94,6 +94,7 @@ use constant MAPPINGS => {
                 "attachmimetype" => "attachments.mimetype",
                 "blocking-fennec" => "cf_blocking_fennec",
                 "blocking1.9.1" => "cf_blocking_191",
+                "blocking1.9.2" => "cf_blocking_192",
                 "blocking1.9.3" => "cf_blocking_193",
                 "status1.9.1" => "cf_status_191",
                 "status1.9.2" => "cf_status_192",
