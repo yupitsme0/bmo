@@ -99,7 +99,9 @@ use constant MAPPINGS => {
                 "status1.9.1" => "cf_status_191",
                 "status1.9.2" => "cf_status_192",
                 "blocking-thunderbird3.0" => "cf_blocking_thunderbird30",
-                "status-thunderbird3.0" => "cf_status_thunderbird30"
+                "blocking-thunderbird3.1" => "cf_blocking_thunderbird31",
+                "status-thunderbird3.0" => "cf_status_thunderbird30",
+                "status-thunderbird3.1" => "cf_status_thunderbird31"
 };
 
 # We might want to put this into localconfig or somewhere
