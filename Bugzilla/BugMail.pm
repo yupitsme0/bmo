@@ -642,6 +642,7 @@ sub sendMail {
     my $vars = {
         isnew => $isnew,
         to => $user->email,
+        to_user => $user,
         bugid => $id,
         alias => Bugzilla->params->{'usebugaliases'} ? $values{'alias'} : "",
         classification => $values{'classification'},
