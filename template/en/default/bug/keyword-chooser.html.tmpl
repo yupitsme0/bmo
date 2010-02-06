@@ -33,7 +33,9 @@
 
 <script type="text/javascript">
   function initKeywords() {
-
+    if( ! document.getElementById('keywords')){
+      return false;
+    }
   
     var validKeywords = new YAHOO.widget.DS_JSArray( [ "",
       [% FOREACH word IN valid_keywords %]
