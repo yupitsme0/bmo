@@ -448,7 +448,7 @@ function PutDescription() {
           [% sec_bit = 45 %] [%# mozilla-messaging-confidential %]
         [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center"
                  OR product.name == "support.mozilla.com" OR product.name == "quality.mozilla.org"
-                 OR product.name == "Bespin" %]
+                 OR product.name == "Bespin" OR product.name == "support.mozillamessaging.com" %]
           [% sec_bit = 52 %] [%# websites-security %]
         [% ELSIF product.name == "Bugzilla" OR product.name == "Testopia" %]
           [% sec_bit = 53 %] [%# bugzilla-security %]
