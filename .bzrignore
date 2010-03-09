@@ -47,3 +47,5 @@
 ./skins/custom/help.css
 ./skins/custom/setup.css
 ./skins/custom/yui/
+./t/.htaccess
+./contrib/.htaccess
