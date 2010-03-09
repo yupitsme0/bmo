@@ -31,13 +31,14 @@
 
 <div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Swag Request</div>
 
-<p><strong>Swag Request:</strong> Please use this form to file a request for SWAG. </p>
+<p><strong>Swag Request:</strong> Please use this form to file a request for swag. </p>
 
 <p>Process:</p>
 
-<ol><li>Complete and submit request below.</li>
+<ol>
+  <li>Complete and submit request below.</li>
   <li>Your request will be reviewed by Sarah Doherty &lt;sarah@mozilla.com&gt;, Mary Colvig &lt;mary@mozilla.com&gt; or the appropriate person in marketing..</li>
-  <li> Get your SWAG if it gets approved!</li>
+  <li> Get your swag if it gets approved!</li>
 </ol>
  
 <p>These requests will only be visible to the person who submitted the request,
@@ -60,10 +61,10 @@ function trySubmit() {
 function validateAndSubmit() {
 
   var alert_text = '';
-  if(!isFilledOut('firstname')) alert_text += "Please enter your first name\n";;
+  if(!isFilledOut('firstname')) alert_text += "Please enter your first name\n";
   if(!isFilledOut('lastname')) alert_text += "Please enter your last name\n";
   if(!isValidEmail(document.getElementById('email').value)) alert_text += "Please enter a valid email address\n";
-  if(!isFilledOut('purpose')) alert_text += "Please enter a purpose for the swag.\n";
+  if(!isFilledOut('purpose')) alert_text += "Please enter an event name or purpose for the swag.\n";
   if(!isFilledOut('date')) alert_text += "Please enter an event date.\n";
   if(!isFilledOut('shiptofirstname')) alert_text += "Please enter the Ship To first name.\n";
   if(!isFilledOut('shiptolastname')) alert_text += "Please enter the Ship To last name.\n";
@@ -79,10 +80,8 @@ function validateAndSubmit() {
   }
 
   //alert text, stay here on the pagee
-  else {
-    alert(alert_text);
-    return false;
-  }
+  alert(alert_text);
+  return false;
 }
 
 </script>
@@ -330,53 +329,54 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <td colspan="4"><strong>Ship to:</strong></td>
+  <td colspan="4"><br><br><strong>Ship to:</strong></td>
 </tr>
 <tr>
-  <td align="right"><strong>First name:</strong></td>
-  <td colspan="3"><input name="shiptofirstname"></td>
-</td>
-<td>
-  <td align="right"><strong>Last name:</strong></td>
-  <td colspan="3"><input name="shiptolastname"></td>
+  <td align="right"><strong>First name: *</strong></td>
+  <td colspan="3"><input name="shiptofirstname" id="shiptofirstname"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Address</strong></td>
-  <td colspan="3"><input name="shiptoaddress"></td>
+  <td align="right"><strong>Last name: *</strong></td>
+  <td colspan="3"><input name="shiptolastname" id="shiptolastname"></td>
+</tr>
+<tr>
+  <td align="right"><strong>Address *</strong></td>
+  <td colspan="3"><input name="shiptoaddress" id="shiptoaddress" size="60"></td>
 </tr>
 <tr>
   <td align="right"><strong>Address 2</strong></td>
-  <td colspan="3"><input name="shiptoaddress2"></td>
+  <td colspan="3"><input name="shiptoaddress2" id="shiptoaddress2" size="60"></td>
 </tr>
 <tr>
-  <td align="right"><strong>City</strong></td>
-  <td colspan="3"><input name="shiptocity"></td>
-</td>
-<td>
+  <td align="right"><strong>City *</strong></td>
+  <td colspan="3"><input name="shiptocity" id="shiptocity" size="60"></td>
+</tr>
+<tr>
   <td align="right"><strong>State</strong></td>
-  <td colspan="3"><input name="shiptostate"></td>
+  <td colspan="3"><input name="shiptostate" id="shiptostate"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Country</strong></td>
-  <td colspan="3"><input name="shiptocountry"></td>
-</td>
-<td>
+  <td align="right"><strong>Country *</strong></td>
+  <td colspan="3"><input name="shiptocountry" id="shiptocountry" size="60"></td>
+</tr>
+<tr>
   <td align="right"><strong>Postal Code</strong></td>
-  <td colspan="3"><input name="shiptopcode"></td>
+  <td colspan="3"><input name="shiptopcode" id="shiptopcode"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Telephone</strong></td>
-  <td colspan="3"><input name="shiptophone"></td>
-</td>
-<td>
+  <td align="right"><strong>Telephone *</strong></td>
+  <td colspan="3"><input name="shiptophone" id="shiptophone"></td>
+</tr>
+<tr>
   <td align="right"><strong>Personal ID/RUT</strong><br><small>(if your country requires this)</small></td>
-  <td colspan="3"><input name="shiptoidrut"></td>
+  <td colspan="3"><input name="shiptoidrut" id="shiptoidrut"></td>
 </tr>
 
+<tr><td colspan="4"><br><br></td></tr>
 <tr>
   <th align="right"><strong>How will you inform us of the event's success?</strong></th>
   <td>
-    <textarea id="additional" name="howtoinform" rows="10" cols="50"></textarea>
+    <textarea id="additional" name="howtoinform" id="howtoinform" rows="10" cols="50"></textarea>
   </td>
 </tr>
 

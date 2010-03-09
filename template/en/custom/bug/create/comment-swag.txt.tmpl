@@ -34,10 +34,10 @@ Attendees: [% IF cgi.param('attendees') != "--Please Select--" %][% cgi.param('a
 Use For: [% cgi.param('usefor') %]
 
 Quantities/Types:
-[% swag_types = [ "Lanyards", "Stickers", "Bracelets", "Tatoos", "Buttons", "Posters" ] -%]
-[% FOREACH stype IN swag_types -%]
-[% stype %]: [% cgi.param(stype) %]
-[% END -%]
+[% swag_types = [ "Lanyards", "Stickers", "Bracelets", "Tatoos", "Buttons", "Posters" ] %]
+[% FOREACH stype IN swag_types %]
+[%+ stype %]: [% cgi.param(stype) +%]
+[% END %]
 Total items: [% cgi.param("Totalswag") %]
 
 Men's T-Shirt Quantities:
