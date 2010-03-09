@@ -22,16 +22,16 @@
 [% PROCESS global/variables.none.tmpl %]
 
 [% PROCESS global/header.html.tmpl
-   title = "Mozilla Corporation Internal Swag Requests"
+   title = "Mozilla Corporation Swag Requests"
    style_urls = [ 'skins/custom/calendar.css' ]
    javascript_urls = [ 'js/calendar.js', 'js/swag.js', 'js/form_validate.js' ]
 %]
 
 [% USE Bugzilla %]
 
-<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Internal Swag Request</div>
+<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Swag Request</div>
 
-<p><strong>Internal Swag Request:</strong> Please use this form to file a request for internal SWAG. </p>
+<p><strong>Swag Request:</strong> Please use this form to file a request for SWAG. </p>
 
 <p>Process:</p>
 
@@ -40,45 +40,18 @@
   <li> Get your SWAG if it gets approved!</li>
 </ol>
  
-<p>These requests will only be visible internally in all cases and only to the
-person who submitted the request and any persons designated in the CC line.</p>
+<p>These requests will only be visible to the person who submitted the request,
+any persons designated in the CC line, and authorized members of the Mozilla
+Marketing team.</p>
 
 <script language="javascript" type="text/javascript">
-  function trySubmit() {
-  var out = 'Requester: the_requester\r\nEmail: the_email\r\nPurpose: the_purpose\r\nAttendees: the_attendees\r\nUse For: the_use_for\r\nQuantities/Types:\r\nthe_quantities\r\nMen\'s T-Shirt Quantities:\r\nmens_tshirt_quantities\r\nWomen\'s T-Shirt Quantities:\r\nwomens_tshirt_quantities\r\nAdditional Swag: additional_swag\r\nDelivered by: the_date\r\nDescription: the_description';
+function trySubmit() {
 
   var date = document.getElementById('date').value;
   var firstname = document.getElementById('firstname').value;
   var lastname = document.getElementById('lastname').value;
   var requester = firstname + ' ' + lastname;
   var shortdesc = 'Internal Swag Request (' + date + ') - ' + requester;
-  var attendees = document.getElementById('attendees').value;
-  attendees = attendees=="--Please Select--"? "" : attendees;
-  var swag_types = new Array("Lanyards", "Stickers", "Bracelets", "Tattoos", "Buttons", "Posters");
-  var quantities = '';
-
-  for(var i in swag_types) {
-  quantities += swag_types[i] + ': ' + evalToNumberString(document.getElementById(swag_types[i]).value) + '\r\n';
-  }
-  quantities += 'Total items: ' + evalToNumberString(document.getElementById('Totalswag').value) + '\r\n';
-
-  var mens_tshirts = 'S: ' + evalToNumberString(document.getElementById('mens_s').value) + '\r\nM: ' + evalToNumberString(document.getElementById('mens_m').value) + '\r\nL: ' + evalToNumberString(document.getElementById('mens_l').value) + '\r\nXL:' + evalToNumberString(document.getElementById('mens_xl').value) + '\r\nXXL: ' + evalToNumberString(document.getElementById('mens_xxl').value) + '\r\nXXXL: ' + evalToNumberString(document.getElementById('mens_xxxl').value) + '\r\nTotal Items: ' + evalToNumberString(document.getElementById('mens_total').value);
-
-  var womens_tshirts = 'S: ' + evalToNumberString(document.getElementById('womens_s').value) + '\r\nM: ' + evalToNumberString(document.getElementById('womens_m').value) + '\r\nL: ' + evalToNumberString(document.getElementById('womens_l').value) + '\r\nXL:' + evalToNumberString(document.getElementById('womens_xl').value) + '\r\nXXL: ' + evalToNumberString(document.getElementById('womens_xxl').value) + '\r\nXXXL: ' + evalToNumberString(document.getElementById('womens_xxxl').value) + '\r\nTotal Items: ' + evalToNumberString(document.getElementById('womens_total').value);
-
-  out = out.replace( /the_requester/, requester);
-  out = out.replace( /the_email/, document.getElementById('email').value);
-  out = out.replace( /the_purpose/, document.getElementById('purpose').value);
-  out = out.replace( /the_attendees/, attendees);
-  out = out.replace( /the_use_for/, document.getElementById('usefor').value);
-  out = out.replace( /the_quantities/, quantities);
-  out = out.replace( /mens_tshirt_quantities/, mens_tshirts);
-  out = out.replace( /womens_tshirt_quantities/, womens_tshirts);
-  out = out.replace( /additional_swag/, document.getElementById('additional').value);
-  out = out.replace( /the_date/, document.getElementById('date').value);
-  out = out.replace( /the_description/, document.getElementById('description').value);
-
-  document.getElementById('comment').value = out;
   document.getElementById('short_desc').value = shortdesc;
   
   return true;
@@ -116,6 +89,7 @@ function validateAndSubmit() {
 <form method="post" action="post_bug.cgi" id="swagRequestForm" enctype="multipart/form-data"
       onSubmit="return validateAndSubmit();">
 
+        <input type="hidden" name="format" value="swag">
         <input type="hidden" name="product" value="Marketing">
         <input type="hidden" name="component" value="Swag Requests">
         <input type="hidden" name="rep_platform" value="All">
