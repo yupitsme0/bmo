@@ -30,7 +30,7 @@
 Requester: [% cgi.param('firstname') %] [% cgi.param('lastname') %] 
 Email: [% cgi.param('email') %]
 Purpose: [% cgi.param('purpose') %]
-Attendees: [% IF cgi.param('attendees') != "--Please Select--" THEN cgi.param('attendees') ELSE "" %]
+Attendees: [% IF cgi.param('attendees') != "--Please Select--" %][% cgi.param('attendees') %][% END %]
 Use For: [% cgi.param('usefor') %]
 
 Quantities/Types:
