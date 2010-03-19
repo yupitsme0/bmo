@@ -29,9 +29,8 @@
 [% cgi = Bugzilla.cgi %]
 Requester: [% cgi.param('firstname') %] [% cgi.param('lastname') %] 
 Email: [% cgi.param('email') %]
-Purpose: [% cgi.param('purpose') %]
+Event Name: [% cgi.param('eventname') %]
 Attendees: [% IF cgi.param('attendees') != "--Please Select--" %][% cgi.param('attendees') %][% END %]
-Use For: [% cgi.param('usefor') %]
 
 Quantities/Types:
 [% swag_types = [ "Lanyards", "Stickers", "Bracelets", "Tatoos", "Buttons", "Posters" ] %]
@@ -59,6 +58,8 @@ XXXL: [% cgi.param("womens_xxxl") %]
 Total Items: [% cgi.param("womens_total") %]
 
 Additional Swag: [% cgi.param("additional") %]
+Use For: [% cgi.param('usefor') %]
+
 Delivered by: [% cgi.param("date") %]
 
 Ship to:

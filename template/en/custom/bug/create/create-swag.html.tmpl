@@ -22,14 +22,14 @@
 [% PROCESS global/variables.none.tmpl %]
 
 [% PROCESS global/header.html.tmpl
-   title = "Mozilla Corporation Swag Requests"
+   title = "Swag Request Form"
    style_urls = [ 'skins/custom/calendar.css' ]
    javascript_urls = [ 'js/calendar.js', 'js/swag.js', 'js/form_validate.js' ]
 %]
 
 [% USE Bugzilla %]
 
-<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Swag Request</div>
+<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Swag Request Form</div>
 
 <p><strong>Swag Request:</strong> Please use this form to file a request for swag. </p>
 
@@ -37,7 +37,7 @@
 
 <ol>
   <li>Complete and submit request below.</li>
-  <li>Your request will be reviewed by Sarah Doherty &lt;sarah@mozilla.com&gt;, Mary Colvig &lt;mary@mozilla.com&gt; or the appropriate person in marketing..</li>
+  <li>Your request will be reviewed by Sarah Doherty &lt;sarah@mozilla.com&gt;, Mary Colvig &lt;mary@mozilla.com&gt; or the appropriate person in marketing.</li>
   <li> Get your swag if it gets approved!</li>
 </ol>
  
@@ -70,7 +70,7 @@ function validateAndSubmit() {
   if(!isFilledOut('firstname')) alert_text += "Please enter your first name\n";
   if(!isFilledOut('lastname')) alert_text += "Please enter your last name\n";
   if(!isValidEmail(document.getElementById('email').value)) alert_text += "Please enter a valid email address\n";
-  if(!isFilledOut('purpose')) alert_text += "Please enter an event name or purpose for the swag.\n";
+  if(!isFilledOut('eventname')) alert_text += "Please enter an event name.\n";
   if(!isFilledOut('date')) alert_text += "Please enter an event date.\n";
   if(!isFilledOut('shiptofirstname')) alert_text += "Please enter the Ship To first name.\n";
   if(!isFilledOut('shiptolastname')) alert_text += "Please enter the Ship To last name.\n";
@@ -109,35 +109,51 @@ function validateAndSubmit() {
 <table>
 
 <tr>
-  <td align="right"><strong>First Name: *</strong></td>
+  <td align="right"><strong>First Name: <span style="color: red;">*</span></strong></td>
   <td align="left">
     <input type="text" name="firstname" id="firstname" value="" size="20" maxlength="20" />
   </td>
 </tr>
 <tr>
-  <td align="right"><strong>Last Name: *</strong></td>
+  <td align="right"><strong>Last Name: <span style="color: red;">*</span></strong></td>
   <td align="left">
     <input type="text" name="lastname" id="lastname" value="" size="20" maxlength="20"/>
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Email Address: *</strong></td>
+  <td align="right"><strong>Email Address: <span style="color: red;">*</span></strong></td>
   <td>
     <input type="text" name="email" id="email" value="" size="50" maxlength="50"/>
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>What is the name of the event or purpose of the swag? *</strong></td>
+  <td align="right"><strong>CC:</strong></td>
+  <td colspan="3">
+    <input name="cc" id="cc" size="50"
+           value="[% cc FILTER html %]">
+  </td>
+</tr>
+
+<tr>
+  <td><!-- spacer -->&nbsp;</td>
+</tr>
+
+<tr>
+  <td><!-- spacer -->&nbsp;</td>
+</tr>
+
+<tr>
+  <td align="right"><strong>Name of Event: <span style="color: red;">*</span></strong></td>
   <td>
-    <input type="text" name="purpose" id="purpose" value="" size="50" maxlength="50"/>
+    <input type="text" name="eventname" id="eventname" value="" size="50" maxlength="50"/>
   </td>
 </tr>
 
 
 <tr>
-  <td align="right"><strong>When do you need your swag delivered by? *</strong></td>
+  <td align="right"><strong>When do you need your swag delivered by? <span style="color: red;">*</span></strong></td>
   <td>
     <input type="text" name="date" id="date" value="" size="10" maxlength="10" readonly onfocus="cal.showCal(this);"/>
   </td>
@@ -161,19 +177,16 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>How will you be using the swag?</strong></td>
-  <td>
-    <textarea id="usefor" name="usefor" rows="10" cols="50"></textarea>
-  </td>
-</tr>
-
-<!-- Question 5. What quantity of the swag below do you need? -->
-<tr>
-  <td align="right"><strong>What quantity of swag below do you need?</strong></td>
+  <td><!-- spacer -->&nbsp;</td>
 </tr>
 
 <tr>
-  <td></td>
+  <td><!-- spacer -->&nbsp;</td>
+</tr>
+
+<!-- Question 5. What quantities of swag do you need? -->
+<tr>
+  <td align="right"><strong>What quantities of swag do you need?</td>
   <td align="left">
     <table>
       <tr>
@@ -205,7 +218,7 @@ function validateAndSubmit() {
       </tr>
       
       <tr>
-	<td align="right"><strong>Buttons(small):</strong></td>
+	<td align="right"><strong>Buttons:</strong></td>
 	<td>
 	  <input type="text" name="Buttons" id="Buttons" value="" size="5" maxlength="5" onChange="calculateTotalSwag();"/>
 	</td>
@@ -232,9 +245,6 @@ function validateAndSubmit() {
 <!-- Question 6. T-Shirts -->
 <tr>
   <td align="right"><strong>What quantity of t-shirts do you need?</strong></td>
-</tr>
-<tr>
-  <td></td>
   <td align="left">
     <table>
       <tr><td></td><td><strong>Men's</strong></td><td><strong>Women's</strong></td></tr>
@@ -319,33 +329,33 @@ function validateAndSubmit() {
 
 
 <tr>
-  <th align="right"><strong>Any additional swag needed?</strong></th>
+  <td align="right"><strong>Any additional swag needed?</strong></td>
   <td>
-    <textarea id="additional" name="additional" rows="10" cols="50"></textarea>
+    <textarea id="additional" name="additional" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>CC&nbsp;(optional):</strong></td>
-  <td colspan="3">
-    <input name="cc" id="cc" size="60"
-           value="[% cc FILTER html %]">
+  <td align="right"><strong>How will you be using the swag?</strong></td>
+  <td>
+    <textarea id="usefor" name="usefor" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
 <tr>
-  <td colspan="4"><br><br><strong>Ship to:</strong></td>
+  <td align="right"><br><br><strong>Ship to:</strong></td>
+  <td colspan="3"></td>
 </tr>
 <tr>
-  <td align="right"><strong>First name: *</strong></td>
+  <td align="right"><strong>First name: <span style="color: red;">*</span></strong></td>
   <td colspan="3"><input name="shiptofirstname" id="shiptofirstname"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Last name: *</strong></td>
+  <td align="right"><strong>Last name: <span style="color: red;">*</span></strong></td>
   <td colspan="3"><input name="shiptolastname" id="shiptolastname"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Address *</strong></td>
+  <td align="right"><strong>Address <span style="color: red;">*</span></strong></td>
   <td colspan="3"><input name="shiptoaddress" id="shiptoaddress" size="60"></td>
 </tr>
 <tr>
@@ -353,23 +363,23 @@ function validateAndSubmit() {
   <td colspan="3"><input name="shiptoaddress2" id="shiptoaddress2" size="60"></td>
 </tr>
 <tr>
-  <td align="right"><strong>City *</strong></td>
-  <td colspan="3"><input name="shiptocity" id="shiptocity" size="60"></td>
+  <td align="right"><strong>City <span style="color: red;">*</span></strong></td>
+  <td colspan="3"><input name="shiptocity" id="shiptocity"></td>
 </tr>
 <tr>
   <td align="right"><strong>State</strong></td>
   <td colspan="3"><input name="shiptostate" id="shiptostate"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Country *</strong></td>
-  <td colspan="3"><input name="shiptocountry" id="shiptocountry" size="60"></td>
+  <td align="right"><strong>Country <span style="color: red;">*</span></strong></td>
+  <td colspan="3"><input name="shiptocountry" id="shiptocountry"></td>
 </tr>
 <tr>
   <td align="right"><strong>Postal Code</strong></td>
   <td colspan="3"><input name="shiptopcode" id="shiptopcode"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Telephone *</strong></td>
+  <td align="right"><strong>Telephone <span style="color: red;">*</span></strong></td>
   <td colspan="3"><input name="shiptophone" id="shiptophone"></td>
 </tr>
 <tr>
@@ -379,16 +389,16 @@ function validateAndSubmit() {
 
 <tr><td colspan="4"><br><br></td></tr>
 <tr>
-  <th align="right"><strong>How will you inform us of the event's success?</strong></th>
+  <td align="right"><strong>How will you inform us of the event's success?</strong></td>
   <td>
-    <textarea id="additional" name="howtoinform" id="howtoinform" rows="10" cols="50"></textarea>
+    <textarea id="additional" name="howtoinform" id="howtoinform" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
 <tr>
-  <th align="right"><label for="comment">Any additional comments?</label>:</th>
+  <td align="right"><label for="comment"><strong>Any additional comments?</strong></label></td>
   <td>
-    <textarea id="comment" name="comment" rows="10" cols="50"></textarea>
+    <textarea id="comment" name="comment" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
@@ -397,10 +407,9 @@ function validateAndSubmit() {
   <input type="submit" value="Submit Request">
 
 <p>
-  * - Required field
+  <strong><span style="color: red;">*</span></strong> - Required field<br />
   Thanks for contacting us.
    You will be notified by email of any progress made in resolving your request.
-
 </p>
 
 [% PROCESS global/footer.html.tmpl %]
