@@ -3531,12 +3531,20 @@ sub check_can_change_field {
         {
             return 1;
         }
-        elsif ($field eq "resolution" && 
+        elsif ($field eq 'resolution' && 
                ($newvalue eq 'DUPLICATE' ||
                 $newvalue eq 'WORKSFORME' ||
                 $newvalue eq 'INCOMPLETE'))
         {
             return 1;
+        }
+    }
+
+    # On b.m.o., the EXPIRED resolution should only be settable by gerv.
+    if ($field eq 'resolution' && $newvalue eq 'EXPIRED') {
+        if ($user->login ne 'gerv@mozilla.org') {
+            $$PrivilegesRequired = 3;
+            return 0;
         }
     }
 
