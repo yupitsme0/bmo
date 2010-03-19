@@ -22,22 +22,22 @@
 [% PROCESS global/variables.none.tmpl %]
 
 [% PROCESS global/header.html.tmpl
-   title = "Mozilla Corporation Marketing Event Requests"
+   title = "Marketing Event Request Form"
    style_urls = [ 'skins/custom/calendar.css' ]
    javascript_urls = [ 'js/calendar.js', 'js/swag.js', 'js/form_validate.js' ]
 %]
 
 [% USE Bugzilla %]
 
-<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Marketing Event Request</div>
+<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Marketing Event Request Form</div>
 
-<p><strong>Marketing Event Request:</strong> Please use this form to file a request for an event. </p>
+<p><strong>Marketing Event Request:</strong> Please use this form to file a request for an event.</p>
 
 <p>Process:</p>
 
 <ol>
   <li>Complete and submit request below.</li>
-  <li>Your request will be reviewed by Sarah Doherty &lt;sarah@mozilla.com&gt;, William Quiviger &lt;william@mozilla.com&gt; or the appropriate person in marketing..</li>
+  <li>Your request will be reviewed by Sarah Doherty &lt;sarah@mozilla.com&gt;, William Quiviger &lt;william@mozilla.com&gt; or the appropriate person in marketing.</li>
 </ol>
  
 <p>These requests will only be visible to the person who submitted the request,
@@ -93,58 +93,78 @@ function validateAndSubmit() {
 <table>
 
 <tr>
-  <td align="right"><strong>First Name: *</strong></td>
+  <td align="right"><strong>First Name: <span style="color: red;">*</span></strong></td>
   <td align="left">
     <input type="text" name="firstname" id="firstname" value="" size="20" maxlength="20" />
   </td>
 </tr>
 <tr>
-  <td align="right"><strong>Last Name: *</strong></td>
+  <td align="right"><strong>Last Name: <span style="color: red;">*</span></strong></td>
   <td align="left">
     <input type="text" name="lastname" id="lastname" value="" size="20" maxlength="20"/>
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Email Address: *</strong></td>
+  <td align="right"><strong>Email Address: <span style="color: red;">*</span></strong></td>
   <td>
     <input type="text" name="email" id="email" value="" size="50" maxlength="50"/>
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Event Name: *</strong></td>
+  <td align="right"><strong>CC&nbsp;(optional):</strong></td>
+  <td colspan="3">
+    <input name="cc" id="cc" size="50"
+           value="[% cc FILTER html %]">
+  </td>
+</tr>
+
+<tr>
+  <td><!-- spacer -->&nbsp;</td>
+</tr>
+
+<tr>
+  <td><!-- spacer -->&nbsp;</td>
+</tr>
+
+<tr>
+  <td align="right"><strong>Event Name: <span style="color: red;">*</span></strong></td>
   <td>
     <input type="text" name="eventname" id="eventname" value="" size="50" maxlength="50"/>
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Event Date: *</strong></td>
+  <td align="right"><strong>Event Date: <span style="color: red;">*</span></strong></td>
   <td>
     <input type="text" name="date" id="date" value="" size="10" maxlength="10" readonly onfocus="cal.showCal(this);"/>
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Event Location: *</strong><br /><small>(City, Country; or City, State)</small></td>
+  <td align="right"><strong>Event Location: <span style="color: red;">*</span></strong><br /><small>(City, Country; or City, State)</small></td>
   <td>
-    <input type="text" name="location" id="location" value="" size="60" maxlength="80" />
+    <input type="text" name="location" id="location" value="" size="50" maxlength="80" />
   </td>
 </tr>
 
 <tr>
   <td align="right"><strong>Event Website:</strong></td>
   <td>
-    <input type="text" name="website" id="website" value="" size="60" maxlength="120" />
+    <input type="text" name="website" id="website" value="" size="50" maxlength="120" />
   </td>
 </tr>
 
 <tr>
   <td align="right"><strong>Event Description and Overall Goals:</strong></td>
   <td>
-    <textarea id="goals" name="goals" rows="10" cols="50"></textarea>
+    <textarea id="goals" name="goals" rows="5" cols="50"></textarea>
   </td>
+</tr>
+
+<tr>
+  <td><!-- spacer -->&nbsp;</td>
 </tr>
 
 <tr>
@@ -177,9 +197,9 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <th align="right"><strong>Estimated cost of Mozilla's<br />participation - cost<br />breakdown (excluding swag):</strong></th>
+  <td align="right"><strong>Estimated cost of Mozilla's<br />participation - cost<br />breakdown (excluding swag):</strong></td>
   <td>
-    <textarea id="additional" name="cost" id="cost" rows="10" cols="50"></textarea>
+    <textarea id="additional" name="cost" id="cost" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
@@ -192,9 +212,9 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <th align="right"><label for="comment">Any additional comments?</label>:</th>
+  <td align="right"><label for="comment"><strong>Any additional comments?</strong></label></td>
   <td>
-    <textarea id="comment" name="comment" rows="10" cols="50"></textarea>
+    <textarea id="comment" name="comment" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
@@ -203,7 +223,7 @@ function validateAndSubmit() {
   <input type="submit" value="Submit Request">
 
 <p>
-  * - Required field
+  <strong><span style="color: red;">*</span></strong> - Required field<br />
   Thanks for contacting us.
    You will be notified by email of any progress made in resolving your request.
 
