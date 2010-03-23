@@ -72,13 +72,6 @@ function validateAndSubmit() {
   if(!isValidEmail(document.getElementById('email').value)) alert_text += "Please enter a valid email address\n";
   if(!isFilledOut('eventname')) alert_text += "Please enter an event name.\n";
   if(!isFilledOut('date')) alert_text += "Please enter an event date.\n";
-  if(!isFilledOut('shiptofirstname')) alert_text += "Please enter the Ship To first name.\n";
-  if(!isFilledOut('shiptolastname')) alert_text += "Please enter the Ship To last name.\n";
-  if(!isFilledOut('shiptoaddress')) alert_text += "Please enter the Ship To address.\n";
-  if(!isFilledOut('shiptocity')) alert_text += "Please enter the Ship To city.\n";
-  if(!isFilledOut('shiptocountry')) alert_text += "Please enter the Ship To country.\n";
-  if(!isFilledOut('shiptopcode')) alert_text += "Please enter the Ship To postal code.\n";
-  if(!isFilledOut('shiptophone')) alert_text += "Please enter the Ship To telephone number.\n";
   
   //Everything required is filled out..try to submit the form!
   if(alert_text == '') {
@@ -347,15 +340,15 @@ function validateAndSubmit() {
   <td colspan="3"></td>
 </tr>
 <tr>
-  <td align="right"><strong>First name: <span style="color: red;">*</span></strong></td>
+  <td align="right"><strong>First name:</strong></td>
   <td colspan="3"><input name="shiptofirstname" id="shiptofirstname"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Last name: <span style="color: red;">*</span></strong></td>
+  <td align="right"><strong>Last name:</strong></td>
   <td colspan="3"><input name="shiptolastname" id="shiptolastname"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Address <span style="color: red;">*</span></strong></td>
+  <td align="right"><strong>Address</strong></td>
   <td colspan="3"><input name="shiptoaddress" id="shiptoaddress" size="60"></td>
 </tr>
 <tr>
@@ -363,7 +356,7 @@ function validateAndSubmit() {
   <td colspan="3"><input name="shiptoaddress2" id="shiptoaddress2" size="60"></td>
 </tr>
 <tr>
-  <td align="right"><strong>City <span style="color: red;">*</span></strong></td>
+  <td align="right"><strong>City</strong></td>
   <td colspan="3"><input name="shiptocity" id="shiptocity"></td>
 </tr>
 <tr>
@@ -371,7 +364,7 @@ function validateAndSubmit() {
   <td colspan="3"><input name="shiptostate" id="shiptostate"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Country <span style="color: red;">*</span></strong></td>
+  <td align="right"><strong>Country</strong></td>
   <td colspan="3"><input name="shiptocountry" id="shiptocountry"></td>
 </tr>
 <tr>
@@ -379,7 +372,7 @@ function validateAndSubmit() {
   <td colspan="3"><input name="shiptopcode" id="shiptopcode"></td>
 </tr>
 <tr>
-  <td align="right"><strong>Telephone <span style="color: red;">*</span></strong></td>
+  <td align="right"><strong>Telephone</strong></td>
   <td colspan="3"><input name="shiptophone" id="shiptophone"></td>
 </tr>
 <tr>
