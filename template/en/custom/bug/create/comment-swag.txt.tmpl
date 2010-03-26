@@ -63,11 +63,11 @@ Use For: [% cgi.param('usefor') %]
 Delivered by: [% cgi.param("date") %]
 
 Ship to:
-[% cgi.param("shiptofirstname") +%] [% cgi.param("shiptolastname") +%]
-[% cgi.param("shiptoaddress") +%]
-[% cgi.param("shiptoaddress2") +%]
-[% cgi.param("shiptocity") +%] [% cgi.param("shiptostate") +%] [% cgi.param("shiptopcode") +%]
-[% cgi.param("shiptocountry") %]
+[% cgi.param("shiptofirstname") +%] [%+ cgi.param("shiptolastname") +%]
+[%+ cgi.param("shiptoaddress") +%]
+[%+ cgi.param("shiptoaddress2") +%]
+[%+ cgi.param("shiptocity") +%] [%+ cgi.param("shiptostate") +%] [%+ cgi.param("shiptopcode") +%]
+[%+ cgi.param("shiptocountry") %]
 
 Phone: [% cgi.param("shiptophone") %]
 [% IF cgi.param("shiptoidrut") %]Personal ID/RUT: [% cgi.param("shiptoidrut") %][% END %]
