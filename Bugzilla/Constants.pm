@@ -163,6 +163,8 @@ use File::Basename;
     PASSWORD_SALT_LENGTH
     MAX_LOGIN_ATTEMPTS
     LOGIN_LOCKOUT_INTERVAL
+    
+    CGI_URI_LIMIT
 );
 
 @Bugzilla::Constants::EXPORT_OK = qw(contenttypes);
@@ -170,7 +172,7 @@ use File::Basename;
 # CONSTANTS
 #
 # Bugzilla version
-use constant BUGZILLA_VERSION => "3.4.5";
+use constant BUGZILLA_VERSION => "3.4.6+";
 
 # These are unique values that are unlikely to match a string or a number,
 # to be used in criteria for match() functions and other things. They start
@@ -470,6 +472,11 @@ use constant MAX_LOGIN_ATTEMPTS => 5;
 # Lockout interval.  If the maximum login attempts occurs during this period
 # the account is locked (60 minutes)
 use constant LOGIN_LOCKOUT_INTERVAL => 60;
+
+# Certain scripts redirect to GET even if the form was submitted originally
+# via POST such as buglist.cgi. This value determines whether the redirect
+# can be safely done or not based on the web server's URI length setting.
+use constant CGI_URI_LIMIT => 8000;
 
 sub bz_locations {
     # We know that Bugzilla/Constants.pm must be in %INC at this point.

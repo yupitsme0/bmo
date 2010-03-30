@@ -34,6 +34,7 @@ use Bugzilla;
 use Bugzilla::Constants;
 use Bugzilla::Error;
 use Bugzilla::Keyword;
+use Bugzilla::Product;
 use Bugzilla::Status;
 use Bugzilla::Field;
 
@@ -75,6 +76,17 @@ if ($cgi->param('product')) {
     }
 } else {
     $vars->{'products'} = $user->get_selectable_products;
+}
+
+Bugzilla::Product::preload($vars->{'products'});
+
+# Allow consumers to specify whether or not they want flag data.
+if (defined $cgi->param('flags')) {
+    $vars->{'show_flags'} = $cgi->param('flags');
+}
+else {
+    # We default to sending flag data.
+    $vars->{'show_flags'} = 1;
 }
 
 # Create separate lists of open versus resolved statuses.  This should really
