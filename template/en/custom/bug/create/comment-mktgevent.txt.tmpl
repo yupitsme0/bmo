@@ -27,7 +27,7 @@
   #%]  
 [% USE Bugzilla %]
 [% cgi = Bugzilla.cgi %]
-Requester: [% cgi.param('firstname') %] [% cgi.param('lastname') %] 
+Requester: [% cgi.param('firstname') %] [%+ cgi.param('lastname') %] 
 Email: [% cgi.param('email') %]
 Event Name: [% cgi.param('eventname') %]
 Event Date: [% cgi.param("date") %]
