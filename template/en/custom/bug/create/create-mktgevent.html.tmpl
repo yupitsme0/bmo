@@ -63,6 +63,7 @@ function validateAndSubmit() {
   if(!isValidEmail(document.getElementById('email').value)) alert_text += "Please enter a valid email address\n";
   if(!isFilledOut('eventname')) alert_text += "Please enter an event name.\n";
   if(!isFilledOut('date')) alert_text += "Please enter an event date.\n";
+  if(!isFilledOut('goals')) alert_text += "Please enter the event goals.\n";
   
   //Everything required is filled out..try to submit the form!
   if(alert_text == '') {
