@@ -69,7 +69,6 @@
 >
 <!ELEMENT attachid (#PCDATA)>
 <!ELEMENT date (#PCDATA)>
-<!ELEMENT delta_ts (#PCDATA)>
 <!ELEMENT desc (#PCDATA)>
 <!ELEMENT filename (#PCDATA)>
 <!ELEMENT type (#PCDATA)>
@@ -82,7 +81,7 @@
 <!ATTLIST flag
           name CDATA #REQUIRED
           id CDATA #REQUIRED
-          type_id CDATA
+          type_id CDATA #IMPLIED
           status CDATA #REQUIRED
           setter CDATA #IMPLIED
           requestee CDATA #IMPLIED
