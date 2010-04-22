@@ -24,8 +24,8 @@
 
 [% bugidsummary = bug.bug_id _ ': ' _ bug.short_desc %]
 [% attidsummary = attachment.id _ ': ' _ attachment.description %]
-[% statuses = { '+' => "granted" , '-' => 'denied' , 'X' => "canceled" ,
-                '?' => "asked" } %]
+[% statuses = { '+' => "granted" , '-' => "not granted" ,
+                'X' => "canceled" , '?' => "asked" } %]
 
 [% to_identity = "" %]
 [% on_behalf_of = 0 %]
