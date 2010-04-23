@@ -91,7 +91,10 @@
    icon="labs.png"
 %]
 <tr>
-   <td><img src="skins/custom/producticons/other.png" height="64" width="64"></td>
+   <td><a href="[% target FILTER url_quote i%]?full=1
+             [%- IF cloned_bug_id %]&amp;cloned_bug_id=[% cloned_bug_id FILTER url_quote %][% END -%]
+             [%- IF format %]&amp;format=[% format FILTER url_quote %][% END %]">
+             <img src="skins/custom/producticons/other.png" height="64" width="64" border="0"></a></td>
    <td><h2 align="left" style="margin-bottom: 0px;"><a href="[% target FILTER url_quote i%]?full=1
              [%- IF cloned_bug_id %]&amp;cloned_bug_id=[% cloned_bug_id FILTER url_quote %][% END -%]
              [%- IF format %]&amp;format=[% format FILTER url_quote %][% END %]">
