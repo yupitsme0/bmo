@@ -3481,6 +3481,13 @@ sub check_can_change_field {
                 return 0;
             }
         }
+        if ($newvalue eq '?') {
+            if ($field =~ /^cf_blocking_thunderbird/ &&
+                !$user->in_group('thunderbird-trusted-requesters')) {
+                $$PrivilegesRequired = 3;
+                return 0;
+            }
+        }
     }
 
     if ($field =~ /^cf_status_/) {
