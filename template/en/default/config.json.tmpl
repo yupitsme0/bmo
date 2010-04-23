@@ -175,7 +175,7 @@
 
       "group": [
       [% FOREACH group = product.groups_valid %]
-        "[% group.name FILTER json %]"[% ',' UNLESS loop.last() %]
+        [% group.id %][% ',' UNLESS loop.last() %]
       [% END %]
       ]
     }[% ',' UNLESS loop.last() %]
@@ -184,8 +184,8 @@
   
   "group": {
   [% FOREACH group = product.groups_valid %]
-    "[% group.name FILTER json %]": {
-      "id": [% group.id %],
+    "[% group.id %]": {
+      "name": "[% group.name FILTER json %]",
       "description": "[% group.description FILTER json %]",
       "is_accepting_bugs": [% group.is_bug_group %],
       "is_active": [% group.is_active %]
@@ -199,8 +199,8 @@
       "name": "[% flag_type.name FILTER json %]",
       "description": "[% flag_type.description FILTER json %]",
       [% IF user.in_group("editcomponents") %]
-        "request_group": "[% flag_type.request_group.name FILTER json %]",
-        "grant_group": "[% flag_type.grant_group.name FILTER json %]",
+        "request_group": [% flag_type.request_group.id %],
+        "grant_group": [% flag_type.grant_group.id %],
       [% END %]
       "is_for_bugs": [% flag_type.target_type == "bug" ? 1 : 0 %],
       "is_requestable": [% flag_type.is_requestable %],
