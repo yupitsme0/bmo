@@ -121,6 +121,14 @@
     [% END %]
 [% END %]
 
+[%# *** Disclaimer for Legal bugs *** %]
+[% IF bug.product == "Legal" %]
+  <div id="legal_disclaimer">
+    The material and information contained herein is Confidential and
+    subject to Attorney-Client Privilege and Work Product Doctrine.
+  </div>
+[% END %]
+
 [% IF mode == "edit" %]
   <a href="#" onclick="toggle_all_comments('collapse'); return false;">Collapse All Comments</a> -
   <a href="#" onclick="toggle_all_comments('expand'); return false;">Expand All Comments</a>
