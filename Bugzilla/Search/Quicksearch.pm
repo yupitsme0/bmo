@@ -101,7 +101,9 @@ use constant MAPPINGS => {
                 "blocking-thunderbird3.0" => "cf_blocking_thunderbird30",
                 "blocking-thunderbird3.1" => "cf_blocking_thunderbird31",
                 "status-thunderbird3.0" => "cf_status_thunderbird30",
-                "status-thunderbird3.1" => "cf_status_thunderbird31"
+                "status-thunderbird3.1" => "cf_status_thunderbird31",
+                "blocking-seamonkey2.1" => "cf_blocking_seamonkey21",
+                "status-seamonkey2.1" => "cf_status_seamonkey21"
 };
 
 # We might want to put this into localconfig or somewhere

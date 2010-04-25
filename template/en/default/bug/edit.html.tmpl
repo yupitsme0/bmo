@@ -967,6 +967,10 @@
     [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cf_status_thunderbird") %]
        [% NEXT UNLESS bug.product == "Thunderbird" OR bug.product == "MailNews Core" OR
                       bug.product == "Mozilla Messaging" %]
+    [% ELSIF field.name.match("^cf_blocking_seamonkey") OR field.name.match("^cf_status_seamonkey") %]
+       [% NEXT UNLESS bug.product == "Composer" OR bug.product == "MailNews Core" OR
+                      bug.product == "Mozilla Localizations" OR bug.product == "Other Applications" OR
+                      bug.product == "SeaMonkey" %]
     [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
        [% NEXT UNLESS bug.product == "AUS" OR bug.product == "Camino" OR
                       bug.product == "Core Graveyard" OR bug.product == "Core" OR

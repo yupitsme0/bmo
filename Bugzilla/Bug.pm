@@ -3473,6 +3473,9 @@ sub check_can_change_field {
             elsif ($field =~ /^cf_blocking_thunderbird/) {
                 $drivers_group = 'thunderbird-drivers';
             }
+            elsif ($field =~ /^cf_blocking_seamonkey/) {
+                $drivers_group = 'seamonkey-council';
+            }
             else { # any other cf_blocking_
                 $drivers_group = 'mozilla-stable-branch-drivers';
             }
@@ -3498,6 +3501,9 @@ sub check_can_change_field {
         }
         elsif ($field =~ /^cf_status_thunderbird/) {
             $drivers_group = 'thunderbird-drivers';
+        }
+        elsif ($field =~ /^cf_status_seamonkey/) {
+            $drivers_group = 'seamonkey-council';
         }
         else {
             $drivers_group = 'mozilla-stable-branch-drivers';
