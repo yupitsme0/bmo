@@ -797,7 +797,7 @@ C<obsolete> - boolean - Whether this field is obsolete. Defaults to 0.
 sub create {
     my $class = shift;
     my $fieldvalues = shift;
-    my $original_obsolete = undef;
+    my $original_obsolete;
 
     if ($fieldvalues->{'custom'}) {
         $original_obsolete = $fieldvalues->{'obsolete'};
@@ -811,7 +811,8 @@ sub create {
 
     my $dbh = Bugzilla->dbh;
     if ($field->custom) {
-        $fieldvalues->{'obsolete'} = $original_obsolete;
+        # restore the obsolete value that got stashed earlier (in memory)
+        $field->set_obsolete($original_obsolete);
         my $name = $field->name;
         my $type = $field->type;
         if (SQL_DEFINITIONS->{$type}) {
@@ -828,8 +829,8 @@ sub create {
             # Insert a default value of "---" into the legal values table.
             $dbh->do("INSERT INTO $name (value) VALUES ('---')");
         }
-        # restore the obsolete value that got stashed earlier
-        $field->set_obsolete($original_obsolete);
+        # safe to write the original 'obsolete' value to the database now
+        $field->update;
     }
 
     return $field;
