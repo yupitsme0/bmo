@@ -796,10 +796,22 @@ C<obsolete> - boolean - Whether this field is obsolete. Defaults to 0.
 
 sub create {
     my $class = shift;
-    my $field = $class->SUPER::create(@_);
+    my $fieldvalues = shift;
+    my $original_obsolete = undef;
+
+    if ($fieldvalues->{'custom'}) {
+        $original_obsolete = $fieldvalues->{'obsolete'};
+        # If the field is active in the fields list before all of the data
+        # structures are created, anything accessing Bug.pm  will crash.  So
+        # stash a copy of the intended obsolete value for later and force it
+        # to be obsolete on initial creation.  See bug 531243 for details.
+        $fieldvalues->{'obsolete'} = 1;
+    }
+    my $field = $class->SUPER::create($fieldvalues);
 
     my $dbh = Bugzilla->dbh;
     if ($field->custom) {
+        $fieldvalues->{'obsolete'} = $original_obsolete;
         my $name = $field->name;
         my $type = $field->type;
         if (SQL_DEFINITIONS->{$type}) {
@@ -816,6 +828,8 @@ sub create {
             # Insert a default value of "---" into the legal values table.
             $dbh->do("INSERT INTO $name (value) VALUES ('---')");
         }
+        # restore the obsolete value that got stashed earlier
+        $field->set_obsolete($original_obsolete);
     }
 
     return $field;
