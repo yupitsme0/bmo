@@ -3519,6 +3519,14 @@ sub check_can_change_field {
         }
     }
 
+    # On b.m.o., the EXPIRED resolution should only be settable by gerv.
+    if ($field eq 'resolution' && $newvalue eq 'EXPIRED') {
+        if ($user->login ne 'gerv@mozilla.org') {
+            $$PrivilegesRequired = 3;
+            return 0;
+        }
+    }
+
     # Allow anyone with (product-specific) "editbugs" privs to change anything.
     if ($user->in_group('editbugs', $self->{'product_id'})) {
         return 1;
@@ -3550,14 +3558,6 @@ sub check_can_change_field {
                 $newvalue eq 'INCOMPLETE'))
         {
             return 1;
-        }
-    }
-
-    # On b.m.o., the EXPIRED resolution should only be settable by gerv.
-    if ($field eq 'resolution' && $newvalue eq 'EXPIRED') {
-        if ($user->login ne 'gerv@mozilla.org') {
-            $$PrivilegesRequired = 3;
-            return 0;
         }
     }
 
