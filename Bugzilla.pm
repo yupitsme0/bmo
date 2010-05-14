@@ -107,8 +107,8 @@ sub init_page {
         };
     }
 
-    ### MOZILLA HACK FOR NETSCALER PASS-THROUGH ###
-    if (i_am_cgi() && ($ENV{REMOTE_ADDR} eq "10.2.82.4")) {
+    ### MOZILLA HACK FOR ZXTM PASS-THROUGH ###
+    if (i_am_cgi() && (grep {$ENV{REMOTE_ADDR} eq $_} qw( 10.2.82.100 10.2.82.101 10.2.82.102 10.2.82.103 10.2.82.104 )) {
       my @ips = split(/[, ]+/, $ENV{HTTP_X_FORWARDED_FOR});
       my @trusted_proxies = ('59.151.50.247','59.151.50.248');
       while (my $remoteip = pop @ips) {
