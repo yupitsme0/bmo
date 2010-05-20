@@ -120,6 +120,14 @@
     [% END %]
 [% END %]
 
+[%# *** Disclaimer for Legal bugs *** %]
+[% IF bug.product == "Legal" %]
+  <div id="legal_disclaimer">
+    The material and information contained herein is Confidential and
+    subject to Attorney-Client Privilege and Work Product Doctrine.
+  </div>
+[% END %]
+
 <!-- This auto-sizes the comments and positions the collapse/expand links 
      to the right. -->
 <table class="bz_comment_table" cellpadding="0" cellspacing="0"><tr>

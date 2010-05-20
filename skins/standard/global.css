@@ -251,6 +251,9 @@ div#docslinks {
     margin: 0;
 }
 
+.bz_patch {
+    background: #ffffcc;
+}
 .bz_obsolete {
     text-decoration: line-through;
 }
@@ -531,4 +534,8 @@ form#Create .comment {
 
 #down_button {
     background-image: url(global/down.png);
+}
+#hideme0911 {
+    visibility: hidden;
+    display: none;
 }

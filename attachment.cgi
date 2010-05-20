@@ -541,6 +541,7 @@ sub insert {
   $vars->{'bugs'} = [new Bugzilla::Bug($bugid)];
   $vars->{'header_done'} = 1;
   $vars->{'contenttypemethod'} = $cgi->param('contenttypemethod');
+  $vars->{'valid_keywords'} = [map($_->name, Bugzilla::Keyword->get_all)];
 
   my $recipients =  { 'changer' => $user->login, 'owner' => $owner };
   $vars->{'sent_bugmail'} = Bugzilla::BugMail::Send($bugid, $recipients);
@@ -669,6 +670,7 @@ sub update {
     $vars->{'attachment'} = $attachment;
     $vars->{'bugs'} = [$bug];
     $vars->{'header_done'} = 1;
+    $vars->{'valid_keywords'} = [map($_->name, Bugzilla::Keyword->get_all)];
     $vars->{'sent_bugmail'} = 
         Bugzilla::BugMail::Send($bug->id, { 'changer' => $user->login });
 
@@ -741,7 +743,7 @@ sub delete_attachment {
         # Required to display the bug the deleted attachment belongs to.
         $vars->{'bugs'} = [$bug];
         $vars->{'header_done'} = 1;
-
+        $vars->{'valid_keywords'} = [map($_->name, Bugzilla::Keyword->get_all)]; 
         $vars->{'sent_bugmail'} =
             Bugzilla::BugMail::Send($bug->id, { 'changer' => $user->login });
 

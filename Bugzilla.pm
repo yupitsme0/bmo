@@ -116,6 +116,22 @@ sub init_page {
     if (basename($0) ne 'attachment.cgi') {
         do_ssl_redirect_if_required();
     }
+    
+    ### MOZILLA HACK FOR ZXTM PASS-THROUGH ###
+    if (i_am_cgi() && (grep {$ENV{REMOTE_ADDR} eq $_} qw( 10.2.82.100 10.2.82.101 10.2.82.102 10.2.82.103 10.2.82.104 ))) {
+      my @ips = split(/[, ]+/, $ENV{HTTP_X_FORWARDED_FOR});
+      my @trusted_proxies = ('59.151.50.247','59.151.50.248');
+      while (my $remoteip = pop @ips) {
+        next if grep { $_ eq $remoteip } @trusted_proxies;
+        $ENV{REMOTE_ADDR} = $remoteip;
+        last;
+      }
+    }
+    
+    #if (i_am_cgi() && ($ENV{REMOTE_ADDR} =~ /^166\.87\.255\./)) {
+    #  print Bugzilla->cgi->redirect("/nuisancebugs2.html");
+    #  exit;
+    #}
 
     # If Bugzilla is shut down, do not allow anything to run, just display a
     # message to the user about the downtime and log out.  Scripts listed in 

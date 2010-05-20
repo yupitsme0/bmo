@@ -238,6 +238,14 @@ my ($flags, $new_flags) = Bugzilla::Flag->extract_flags_from_cgi($bug, undef, $v
 $bug->set_flags($flags, $new_flags);
 $bug->update($timestamp);
 
+my @cc = ();
+push (@cc, 'security@mozilla.org') if (grep {$_ == 2} @selected_groups); # core-security
+push (@cc, 'webtools-security@mozilla.org') if (grep {$_ == 12} @selected_groups); # webtools-security
+push (@cc, 'amo-admins@mozilla.org') if (grep {$_ == 23} @selected_groups); # client-services-security
+push (@cc, 'website-drivers@mozilla.org') if (grep {$_ == 52} @selected_groups); # websites-security
+push (@cc, 'security@bugzilla.org') if (grep {$_ == 53} @selected_groups); # bugzilla-security
+$vars->{'mailrecipients'} = {'changer' => $user->login, 'cc' => \@cc};
+
 $vars->{'id'} = $id;
 $vars->{'bug'} = $bug;
 
@@ -245,6 +253,7 @@ Bugzilla::Hook::process('post_bug_after_creation', { vars => $vars });
 
 ThrowCodeError("bug_error", { bug => $bug }) if $bug->error;
 
+$vars->{'valid_keywords'} = [map($_->name, Bugzilla::Keyword->get_all)];
 if ($token) {
     trick_taint($token);
     $dbh->do('UPDATE tokens SET eventdata = ? WHERE token = ?', undef, 

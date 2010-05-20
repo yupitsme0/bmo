@@ -41,6 +41,8 @@ use constant DB_COLUMNS => qw(
     value
     product_id
     sortkey
+    is_active
+    is_searchable
 );
 
 use constant REQUIRED_CREATE_FIELDS => qw(
@@ -51,11 +53,15 @@ use constant REQUIRED_CREATE_FIELDS => qw(
 use constant UPDATE_COLUMNS => qw(
     value
     sortkey
+    is_active
+    is_searchable
 );
 
 use constant VALIDATORS => {
     product => \&_check_product,
     sortkey => \&_check_sortkey,
+    is_active     => \&_check_is_active,
+    is_searchable => \&_check_is_searchable,
 };
 
 use constant UPDATE_VALIDATORS => {
@@ -199,12 +205,29 @@ sub _check_product {
     return Bugzilla->user->check_can_admin_product($product->name);
 }
 
+sub _check_is_active     { $_[0]->_check_is($_[1], 'is_active')     }
+sub _check_is_searchable { $_[0]->_check_is($_[1], 'is_searchable') }
+
+sub _check_is {
+    my ($self, $value, $field) = @_;
+    $value = $self->check_boolean($value);
+    # XXX If you change the name and isactive at the same time,
+    # you might be able to bypass this check.
+    if (!$value && $self->product->default_milestone eq $self->name) {
+        ThrowUserError('milestone_is_default', { milestone => $self });
+    }
+    return $value;
+}
+
 ################################
 # Methods
 ################################
 
 sub set_name { $_[0]->set('value', $_[1]); }
 sub set_sortkey { $_[0]->set('sortkey', $_[1]); }
+
+sub set_is_active     { $_[0]->set('is_active',     $_[1]); }
+sub set_is_searchable { $_[0]->set('is_searchable', $_[1]); }
 
 sub bug_count {
     my $self = shift;
@@ -226,6 +249,8 @@ sub bug_count {
 sub name       { return $_[0]->{'value'};      }
 sub product_id { return $_[0]->{'product_id'}; }
 sub sortkey    { return $_[0]->{'sortkey'};    }
+sub is_active  { return $_[0]->{'is_active'};  }
+sub is_searchable { return $_[0]->{'is_searchable'};}
 
 sub product {
     my $self = shift;

@@ -128,6 +128,8 @@ sub FILESYSTEM {
         'jobqueue.pl'     => { perms => $owner_executable },
         'migrate.pl'      => { perms => $owner_executable },
         'install-module.pl' => { perms => $owner_executable },
+        'sendunsentbugmail.pl' => { perms => $ws_executable },
+        'verify-user.pl'  => { perms => $ws_executable },
 
         "$localconfig.old" => { perms => $owner_readable },
 
@@ -146,7 +148,7 @@ sub FILESYSTEM {
     # recurse through. These are directories we didn't create
     # in checkesetup.pl.
     my %non_recurse_dirs = (
-        '.'  => $ws_dir_readable,
+        '.'  => 0755,
         docs => $ws_dir_readable,
     );
 

@@ -102,6 +102,8 @@ foreach my $status (@{$vars->{'status'}}) {
 }
 $vars->{'open_status'} = \@open_status;
 $vars->{'closed_status'} = \@closed_status;
+$vars->{'initial_status'} = Bugzilla::Status->can_change_to;
+$vars->{'status_objects'} = [Bugzilla::Status->get_all];
 
 # Generate a list of fields that can be queried.
 my @fields = @{Bugzilla::Field->match({obsolete => 0})};

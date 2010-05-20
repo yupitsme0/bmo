@@ -417,8 +417,10 @@ sub update_table_definitions {
     _fix_broken_all_closed_series();
     # 2005-08-14 bugreport@peshkin.net -- Bug 304583
     # Get rid of leftover DERIVED group permissions
-    use constant GRANT_DERIVED => 1;
-    $dbh->do("DELETE FROM user_group_map WHERE grant_type = " . GRANT_DERIVED);
+    # Note: We used to have "use constant GRANT_DERIVED => 1;"
+    $dbh->do("DELETE FROM user_group_map WHERE grant_type = 1");
+
+    _rederive_regex_groups();
 
     _rederive_regex_groups();
 
@@ -547,6 +549,13 @@ sub update_table_definitions {
     # 2008-01-18 xiaoou.wu@oracle.com - Bug 414292
     $dbh->bz_alter_column('series', 'query',
         { TYPE => 'MEDIUMTEXT', NOTNULL => 1 });
+
+    # 2008-02-11 rmaia@everythingsolved.com - Bug 274
+    $dbh->bz_add_column('milestones', 'is_active',
+                        {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
+
+    $dbh->bz_add_column('milestones', 'is_searchable',
+                        {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
 
     # Add FK to multi select field tables
     _add_foreign_keys_to_multiselects();

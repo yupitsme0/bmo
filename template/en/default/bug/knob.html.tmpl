@@ -74,6 +74,7 @@
   var close_status_array = [
     [% FOREACH status = bug.choices.bug_status %]
       [% NEXT IF status.is_open %]
+      [% NEXT IF status.name == "CLOSED" %]
       '[% status.name FILTER js %]'[% ',' UNLESS loop.last %]
     [% END %]
   ];

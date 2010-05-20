@@ -34,17 +34,7 @@
    style = "#somebugs { width: 100%; height: 500px }"
  %]
 
-<p>
-  <font color="red">
-    This is a template used on mozilla.org.  This template, and the
-    comment-guided.txt.tmpl template that formats the data submitted via 
-    the form in this template, are included as a demo of what it's
-    possible to do with custom templates in general, and custom [% terms.bug %]
-    entry templates in particular. As much of the text will not apply, 
-    you should alter it 
-    if you want to use this form on your [% terms.Bugzilla %] installation.
-  </font>
-</p>
+[% INCLUDE 'bug/create/user-message.html.tmpl' %]
 
 [% tablecolour = "#FFFFCC" %]
 
@@ -79,9 +69,9 @@ function PutDescription() {
 
 [%# Include other products if sensible %]
 [% IF product.name == "Firefox" %]
-  [% productstring = "product=Mozilla%20Application%20Suite&amp;product=Firefox" %]
+  [% productstring = "product=Toolkit&amp;product=Core&amp;product=Firefox" %]
 [% ELSIF product.name == "Thunderbird" %]
-  [% productstring = "product=Mozilla%20Application%20Suite&amp;product=Thunderbird" %]
+  [% productstring = "product=MailNews%20Core&amp;product=Thunderbird" %]
 [% ELSE %]
   [% productstring = BLOCK %]product=[% product.name FILTER url_quote %][% END %]
 [% END %]
@@ -111,7 +101,7 @@ function PutDescription() {
     <input type="hidden" name="product" value="[% product.name FILTER html %]">
     [% IF product.name == "Firefox" OR 
           product.name == "Thunderbird" OR 
-          product.name == "Mozilla Application Suite" OR
+          product.name == "SeaMonkey" OR
           product.name == "Camino" %]
       <input type="hidden" name="product" value="Core">
       <input type="hidden" name="product" value="Toolkit">
@@ -215,7 +205,7 @@ function PutDescription() {
 
   [%# We override rep_platform and op_sys for simplicity. The values chosen
       are based on which are most common in the b.m.o database %]
-  [% rep_platform = [ "PC", "Macintosh", "All", "Other" ] %]
+  [% rep_platform = [ "x86", "x86_64", "PowerPC", "All", "Other" ] %]
 
   <tr bgcolor="[% tablecolour %]">
     <td align="right" valign="top">
@@ -238,7 +228,7 @@ function PutDescription() {
     </td>
   </tr>
 
-  [% IF product.name.match("Firefox|Camino|Mozilla Application Suite") %]
+  [% IF product.name.match("Firefox|Camino|SeaMonkey") %]
     [% matches = cgi.user_agent('Gecko/(\d+)') %]
     [% buildid = cgi.user_agent() IF matches %]
   [% END %]
@@ -439,6 +429,43 @@ function PutDescription() {
   </tr>
 
   <tr>
+    <td valign="middle" align="right">
+      <b>Security</b>
+    </td>
+    <td valign="top">
+      <p>
+        [% IF product.name == "mozilla.org" %]
+          [% sec_bit = 6 %] [%# mozilla-confidential %]
+        [% ELSIF product.name == "Webtools" %]
+          [% sec_bit = 12 %] [%# webtools-security %]
+        [% ELSIF product.name == "Marketing" %]
+          [% sec_bit = 14 %] [%# marketing-private %]
+        [% ELSIF product.name == "addons.mozilla.org" OR product.name == "AUS" OR product.name == "Weave" %]
+          [% sec_bit = 23 %] [%# client-services-security %]
+        [% ELSIF product.name == "Mozilla Corporation" %]
+          [% sec_bit = 26 %] [%# mozilla-corporation-confidential %]
+        [% ELSIF product.name == "Mozilla Messaging" %]
+          [% sec_bit = 45 %] [%# mozilla-messaging-confidential %]
+        [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center"
+                 OR product.name == "support.mozilla.com" OR product.name == "quality.mozilla.org"
+                 OR product.name == "Bespin" OR product.name == "support.mozillamessaging.com" %]
+          [% sec_bit = 52 %] [%# websites-security %]
+        [% ELSIF product.name == "Bugzilla" OR product.name == "Testopia" %]
+          [% sec_bit = 53 %] [%# bugzilla-security %]
+        [% ELSIF product.name == "Tamarin" %]
+          [% sec_bit = 65 %] [%# tamarin-security %]
+        [% ELSE %]
+          [% sec_bit = 2 %]   [%# core-security %]
+        [% END %]
+        <input type="checkbox" name="bit-[% sec_bit %]" value="1">
+        This is a security problem that should be kept confidential until addressed
+        (see the mozilla.org <a href="http://www.mozilla.org/projects/security/security-bugs-policy.html">security policy</a> 
+        for more details).
+      </p>
+    </td>
+  </tr>
+
+  <tr bgcolor="[% tablecolour %]">
     <td valign="top" align="right">
       <b>Severity</b>
     </td>

@@ -1410,8 +1410,17 @@ sub _check_groups {
         my $othercontrol  = $controls->{$id} 
                             && $controls->{$id}->{othercontrol};
         
+        # b.m.o.-specific hack - allow anyone to file bugs in these groups:
+        # core-security (2), mozilla-confidential (6), webtools-security (12),
+        # marketing-private (14), client-services-security (23),
+        # mozilla-corporation-confidential (26), infra (35), 
+        # mozilla-messaging-confidential (45), websites-security (52),
+        # bugzilla-security (53), consulting (59), tamarin-security (65)
         my $permit = ($membercontrol && $user->in_group($group->name))
-                     || $othercontrol;
+                     || $othercontrol
+                     || $id == 2 || $id == 6 || $id == 12 || $id == 14
+                     || $id == 23 || $id == 26 || $id == 35 || $id == 45
+                     || $id == 52 || $id == 53 || $id == 59 || $id == 65;
 
         $add_groups{$id} = 1 if $permit;
     }
@@ -2997,12 +3006,15 @@ sub choices {
         unshift(@products, $self->product_obj);
     }
 
+    my @milestones = grep($_->is_active || $_->name eq $self->target_milestone,
+                          @{$self->product_obj->milestones});
+                          
     my %choices = (
         bug_status => $self->statuses_available,
         product    => \@products,
         component  => $self->product_obj->components,
         version    => $self->product_obj->versions,
-        target_milestone => $self->product_obj->milestones,
+        target_milestone => \@milestones,
     );
 
     my $resolution_field = new Bugzilla::Field({ name => 'resolution' });
@@ -3492,6 +3504,73 @@ sub check_can_change_field {
         }
     }
 
+    # Only users in the appropriate drivers group can change the cf_blocking_* fields.
+    if ($field =~ /^cf_blocking_/) {
+        unless ($newvalue eq '---' || $newvalue eq '?' || ($oldvalue eq '0' && $newvalue eq '1')) {
+            my $drivers_group;
+            if ($field eq 'cf_blocking_fennec') {
+                $drivers_group = 'fennec-drivers';
+            }
+            elsif ($field eq 'cf_blocking_193') {
+                $drivers_group = 'mozilla-1.9-drivers';
+            }
+            elsif ($field =~ /^cf_blocking_thunderbird/) {
+                $drivers_group = 'thunderbird-drivers';
+            }
+            elsif ($field =~ /^cf_blocking_seamonkey/) {
+                $drivers_group = 'seamonkey-council';
+            }
+            else { # any other cf_blocking_
+                $drivers_group = 'mozilla-stable-branch-drivers';
+            }
+            if (!$drivers_group || !$user->in_group($drivers_group)) {
+                $$PrivilegesRequired = 3;
+                return 0;
+            }
+        }
+        if ($newvalue eq '?') {
+            if ($field =~ /^cf_blocking_thunderbird/ &&
+                !$user->in_group('thunderbird-trusted-requesters')) {
+                $$PrivilegesRequired = 3;
+                return 0;
+            }
+        }
+    }
+
+    if ($field =~ /^cf_status_/) {
+        # Only drivers can set wanted.
+        my $drivers_group;
+        if ($field eq 'cf_status_193') {
+            $drivers_group = 'mozilla-1.9-drivers';
+        }
+        elsif ($field =~ /^cf_status_thunderbird/) {
+            $drivers_group = 'thunderbird-drivers';
+        }
+        elsif ($field =~ /^cf_status_seamonkey/) {
+            $drivers_group = 'seamonkey-council';
+        }
+        else {
+            $drivers_group = 'mozilla-stable-branch-drivers';
+        }
+        if ($newvalue eq 'wanted' && !$user->in_group($drivers_group)) {
+            $$PrivilegesRequired = 3;
+            return 0;
+        }
+        # Require 'canconfirm' to change anything else
+        if (!$user->in_group('canconfirm', $self->{'product_id'})) {
+            $$PrivilegesRequired = 3;
+            return 0;
+        }
+    }
+
+    # On b.m.o., the EXPIRED resolution should only be settable by gerv.
+    if ($field eq 'resolution' && $newvalue eq 'EXPIRED') {
+        if ($user->login ne 'gerv@mozilla.org') {
+            $$PrivilegesRequired = 3;
+            return 0;
+        }
+    }
+
     # Allow anyone with (product-specific) "editbugs" privs to change anything.
     if ($user->in_group('editbugs', $self->{'product_id'})) {
         return 1;
@@ -3501,6 +3580,24 @@ sub check_can_change_field {
     if ($self->_changes_everconfirmed($field, $oldvalue, $newvalue)) {
         $$PrivilegesRequired = 3;
         return $user->in_group('canconfirm', $self->{'product_id'});
+    }
+
+    # On b.m.o., canconfirm is really "cantriage"; users with canconfirm
+    # can also mark bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
+    if ($user->in_group('canconfirm', $self->{'product_id'})) {
+        if ($field eq 'bug_status'
+            && is_open_state($oldvalue)
+            && !is_open_state($newvalue))
+        {
+            return 1;
+        }
+        elsif ($field eq 'resolution' && 
+               ($newvalue eq 'DUPLICATE' ||
+                $newvalue eq 'WORKSFORME' ||
+                $newvalue eq 'INCOMPLETE'))
+        {
+            return 1;
+        }
     }
 
     # Make sure that a valid bug ID has been given.

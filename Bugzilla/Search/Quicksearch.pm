@@ -69,7 +69,20 @@ use constant MAPPINGS => {
     "attachmentdata" => "attach_data.thedata",
     "attachdata"     => "attach_data.thedata",
     "attachmentmimetype" => "attachments.mimetype",
-    "attachmimetype" => "attachments.mimetype"
+    "attachmimetype" => "attachments.mimetype",
+
+    "blocking-fennec" => "cf_blocking_fennec",
+    "blocking1.9.1" => "cf_blocking_191",
+    "blocking1.9.2" => "cf_blocking_192",
+    "blocking1.9.3" => "cf_blocking_193",
+    "status1.9.1" => "cf_status_191",
+    "status1.9.2" => "cf_status_192",
+    "blocking-thunderbird3.0" => "cf_blocking_thunderbird30",
+    "blocking-thunderbird3.1" => "cf_blocking_thunderbird31",
+    "status-thunderbird3.0" => "cf_status_thunderbird30",
+    "status-thunderbird3.1" => "cf_status_thunderbird31",
+    "blocking-seamonkey2.1" => "cf_blocking_seamonkey21",
+    "status-seamonkey2.1" => "cf_status_seamonkey21"
 };
 
 sub FIELD_MAP {

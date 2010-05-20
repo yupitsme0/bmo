@@ -1,0 +1,67 @@
+[%# ***** BEGIN LICENSE BLOCK *****
+  # Version: MPL 1.1
+  #
+  # The contents of this file are subject to the Mozilla Public License Version
+  # 1.1 (the "License"); you may not use this file except in compliance with
+  # the License. You may obtain a copy of the License at
+  # http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS IS" basis,
+  # WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  # for the specific language governing rights and limitations under the
+  # License.
+  #
+  # The Original Code is Keyword Picker.
+  #
+  # The Initial Developer of the Original Code is America Online, Inc.
+  # Portions created by the Initial Developer are Copyright (C) 2004
+  # Mozilla Foundation. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Christopher A. Aillon <christopher@aillon.com> (Original Author)
+  #
+  # ***** END LICENSE BLOCK *****
+  #%]
+
+[%############################################################################%]
+[%# Keyword Picker                                                           #%]
+[%############################################################################%]
+[%#                                                                          #%]
+[%# If you edit this file, you might also need to edit js/keyword-chooser.js #%]
+[%#                                                                          #%]
+[%############################################################################%]
+
+<script type="text/javascript">
+  function initKeywords() {
+    if( ! document.getElementById('keywords')){
+      return false;
+    }
+  
+    var validKeywords = new YAHOO.widget.DS_JSArray( [ "",
+      [% FOREACH word IN valid_keywords %]
+        [ "[% word FILTER js %]", "[% valid_keywords_descriptions.${loop.index} FILTER js %]"][% ',' IF NOT loop.last %]
+      [% END %]
+    ]);
+    var keywordAutoComplete = new YAHOO.widget.AutoComplete("keywords" , 
+                                          "keywordsautocomplete" , validKeywords);
+    keywordAutoComplete.prehighlightClassName = "yui-ac-prehighlight";
+    //keywordAutoComplete.typeAhead = true;
+    keywordAutoComplete.useShadow = true;
+    keywordAutoComplete.minQueryLength = 0;
+    keywordAutoComplete.queryDelay = 0.05;
+    keywordAutoComplete.delimChar = [" "];
+    keywordAutoComplete.maxResultsDisplayed = [% valid_keywords.max FILTER js %];
+    keywordAutoComplete.useIFrame = true;
+    keywordAutoComplete.textboxFocusEvent.subscribe( function(){
+      var sInputValue = YAHOO.util.Dom.get('keywords').value;
+      if(sInputValue.length === 0) {
+          var oSelf = this;
+          setTimeout(function(){oSelf.sendQuery(sInputValue);},0);
+      }
+    });
+    keywordAutoComplete.formatResult = function(oResultItem, sQuery) { 
+        var sMarkup = "<span title='" +  oResultItem[1] + "'>" + oResultItem[0] + "<\/span> " ; 
+        return (sMarkup); 
+    }; 
+  };initKeywords();
+</script>

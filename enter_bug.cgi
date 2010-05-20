@@ -65,6 +65,12 @@ my $vars = {};
 # All pages point to the same part of the documentation.
 $vars->{'doc_section'} = 'bugreports.html';
 
+$cgi->param(-name=>'format',-value=>'guided') 
+    if !$cgi->param('format') && !$user->in_group('canconfirm');
+
+$cgi->delete('format') 
+    if ($cgi->param('format') && ($cgi->param('format') eq "__default__"));
+
 my $product_name = trim($cgi->param('product') || '');
 # Will contain the product object the bug is created in.
 my $product;
@@ -75,7 +81,7 @@ if ($product_name eq '') {
     ThrowUserError('no_products') unless scalar(@enterable_products);
 
     my $classification = Bugzilla->params->{'useclassification'} ?
-        scalar($cgi->param('classification')) : '__all';
+        (scalar($cgi->param('classification')) || '__all') : '__all';
 
     # Unless a real classification name is given, we sort products
     # by classification.
@@ -340,6 +346,8 @@ sub pickos {
               /\(.*Mac OS 8.*\)/ && do {push @os, "Mac System 8.6";};
             };
             /\(.*Darwin.*\)/ && do {push @os, ("Mac OS X 10.0", "Mac OS X");};
+            /\(.*Intel.*Mac OS X.*\)/ && do {push @os, ("Mac OS X 10.4", "Mac OS X");};
+            /\(.*Mac OS X.*\)/ && do {push @os, ("Mac OS X 10.3", "Mac OS X 10.0", "Mac OS X");};
         # Silly
             /\(.*Mac.*\)/ && do {
               /\(.*Mac.*PowerPC.*\)/ && do {push @os, "Mac System 9.x";};
@@ -391,6 +399,7 @@ $vars->{'bug_severity'}          = get_legal_field_values('bug_severity');
 $vars->{'rep_platform'}          = get_legal_field_values('rep_platform');
 $vars->{'op_sys'}                = get_legal_field_values('op_sys');
 
+$vars->{'valid_keywords'}        = [map($_->name, Bugzilla::Keyword->get_all)];
 $vars->{'assigned_to'}           = formvalue('assigned_to');
 $vars->{'assigned_to_disabled'}  = !$has_editbugs;
 $vars->{'cc_disabled'}           = 0;
@@ -484,6 +493,7 @@ else {
     $vars->{'blocked'}        = formvalue('blocked');
     $vars->{'deadline'}       = formvalue('deadline');
     $vars->{'estimated_time'} = formvalue('estimated_time');
+    $vars->{'status_whiteboard'} = formvalue('status_whiteboard');
 
     $vars->{'cc'}             = join(', ', $cgi->param('cc'));
 
@@ -522,7 +532,8 @@ if ( ($cloned_bug_id) &&
 
 # Get list of milestones.
 if ( Bugzilla->params->{'usetargetmilestone'} ) {
-    $vars->{'target_milestone'} = [map($_->name, @{$product->milestones})];
+    $vars->{'target_milestone'} = [map {$_->name}
+                                       grep {$_->is_active} @{$product->milestones}];
     if (formvalue('target_milestone')) {
        $default{'target_milestone'} = formvalue('target_milestone');
     } else {
@@ -628,7 +639,14 @@ $vars->{'group'} = \@groups;
 
 Bugzilla::Hook::process('enter_bug_entrydefaultvars', { vars => $vars });
 
+# hack to allow the bug entry templates to use check_can_change_field to see if
+# various field values should be available to the current user
+$default{'check_can_change_field'} = sub { return Bugzilla::Bug::check_can_change_field(\%default, @_) };
+
 $vars->{'default'} = \%default;
+
+# For pretty-product-chooser
+$vars->{'format'} = $cgi->param('format');
 
 my $format = $template->get_format("bug/create/create",
                                    scalar $cgi->param('format'), 

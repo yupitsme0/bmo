@@ -37,6 +37,12 @@
 
 [% qorder = order FILTER url_quote IF order %]
 
+[% microsummary = "buglist.cgi?$urlquerypart&title=$title&ctype=microsummary" %]
+[% IF searchname %]
+  [% quotedsearchname = searchname FILTER url_quote %]
+  [% microsummary = "?cmdtype=runnamed&namedcmd=$quotedsearchname&ctype=microsummary" %]
+[% END %]
+
 
 [%############################################################################%]
 [%# Page Header                                                              #%]
@@ -46,9 +52,13 @@
   title = title
   style = style
   atomlink = "buglist.cgi?$urlquerypart&title=$title&ctype=atom" 
-  javascript_urls = [ "js/util.js", "js/field.js", "js/yui/calendar.js" ]
-  style_urls = [ "skins/standard/buglist.css", "skins/standard/yui/calendar.css" ]
+  javascript_urls = [ "js/util.js", "js/keyword-chooser.js", "js/field.js",
+                      "js/yui/yahoo-dom-event.js", "js/yui/calendar.js",
+                      "js/sorttable.js", "js/yui/autocomplete-min.js" ]
+  style_urls = [ "skins/standard/buglist.css", "skins/standard/yui/calendar.css",
+                 "skins/standard/yui/autocomplete.css" ]
   doc_section = "query.html#list"
+  microsummary = microsummary
 %]
 
 <div class="bz_query_head" align="center">

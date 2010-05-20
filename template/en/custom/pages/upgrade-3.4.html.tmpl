@@ -1,0 +1,59 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): David Miller <justdave@bugzilla.org>
+  #%]
+
+[% INCLUDE global/header.html.tmpl title = "Bugzilla Upgrade" %]
+[% USE date %]
+
+<p><b>Last Updated:</b> [% date.format(template.modtime, "%d-%b-%Y %H:%M %Z") %]</p>
+<!-- <p><b>Includes changes made to Bugzilla-trunk through:</b> 21-Dec-2006</p>
+
+<p>On Tuesday, December 26, 2006, at 6pm PST (2am UTC), bugzilla.mozilla.org
+was upgraded to the current prerelease of Bugzilla version 3.0 (currently 2.23.3+/2.23.4).</p> -->
+
+This upgrade is still in progress, but just about wrapped up.  The best way to
+provide feedback currently is to discuss in #bmo on IRC.  There's enough in
+place now to file bugs if you find problems that aren't listed below.  Please
+file them in the <a
+href="https://bugzilla.mozilla.org/enter_bug.cgi?product=mozilla.org&amp;component=Bugzilla:+Other+b.m.o+Issues&amp;blocked=bmo-upgrade">production
+Bugzilla system</a>.
+
+<h3>Known Issues</h3>
+
+The following is a list of issues which are known to be broken or incomplete with this upgrade so far.  I will remove from this list as I fix things, and add to it as things are reported to me.
+
+<ul>
+
+<li>The BMO theme is default, and will be shown to not-logged-in users.  Logged in users can change it in their prefs (for now).  So far, the Home page is the only thing different, based on Boriss' design that people seemed to like when it was posted on Planet Mozilla.  Pyrzak is working to clean up the front page with its current theme and skin the interior to match (but without all the bloat in the header on the internal pages), but I'll revert to the existing Dusk skin if it's not ready by the time we deploy.</li>
+<li>The <a href="https://bugzilla.mozilla.org/showdependencytree.cgi?id=503055&hide_resolved=1">stuff filed in Bugzilla</a>. Some of those may be dropped because people are adding wishlist stuff that doesn't really block the upgrade.</li>
+
+</ul>
+
+<h3>What's New</h3>
+
+I'll get a more user-friendly summary here soon, but in the mean time, you can view Bugzilla's changelog
+<a href="http://www.bugzilla.org/status/changes.html">here</a>.  The period of time in question is from (branch)/3.3.1 to 3.3.4, 3.3.4 to 3.4rc1, and 3.4rc1 to today on the 3.4 branch.
+
+<h3>Last Ten Commits</h3>
+
+<pre>[% bzr_history.join('') FILTER html %]</pre>
+
+<br>
+
+[% INCLUDE global/footer.html.tmpl %]

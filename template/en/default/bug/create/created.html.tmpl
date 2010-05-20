@@ -34,6 +34,10 @@
 [% PROCESS global/header.html.tmpl
   title = "$terms.Bug $id Submitted &ndash; $filtered_desc"
   header = "$terms.Bug&nbsp;$id Submitted"
+  javascript_urls = [ "js/keyword-chooser.js", 
+                      "js/yui/yahoo-dom-event.js", 
+                      "js/yui/autocomplete-min.js" ]
+  style_urls = [ "skins/standard/yui/autocomplete.css" ]
 %]
 
 [% header_done = 1 %]

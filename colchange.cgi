@@ -82,6 +82,8 @@ if (Bugzilla->user->is_timetracker) {
                        "percentage_complete", "deadline")); 
 }
 
+push(@masterlist, "patches");
+
 push(@masterlist, ("short_desc", "short_short_desc"));
 
 my @custom_fields = grep { $_->type != FIELD_TYPE_MULTI_SELECT }

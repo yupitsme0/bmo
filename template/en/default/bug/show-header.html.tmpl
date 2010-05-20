@@ -34,8 +34,12 @@
 [% title = "$terms.Bug $bug.bug_id &ndash; $filtered_desc" %]
 [% header = "$terms.Bug&nbsp;$bug.bug_id" %]
 [% header_addl_info = "Last modified: $filtered_timestamp" %]
-[% javascript_urls = [ "js/util.js", "js/field.js", "js/yui/calendar.js" ] %]
+[% javascript_urls = [ "js/util.js", "js/field.js", "js/yui/calendar.js",
+                       "js/keyword-chooser.js",
+                       "js/yui/yahoo-dom-event.js", 
+                       "js/yui/autocomplete-min.js" ] %]
 [% style_urls = [ "skins/standard/yui/calendar.css",
+                  "skins/standard/yui/autocomplete.css",
                   "skins/standard/show_bug.css" ] %]
 [% doc_section = "bug_page.html" %]
 

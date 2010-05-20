@@ -76,6 +76,7 @@ if ($id) {
 
     my %vars = ( 
       quicksearch_field_names => \&quicksearch_field_names,
+      bzr_history => sub { return `cd /data/www/bugzilla.mozilla.org; /usr/bin/bzr log -n0 -rlast:10..` }
     );
     Bugzilla::Hook::process('page_before_template', 
                             { page_id => $id, vars => \%vars });

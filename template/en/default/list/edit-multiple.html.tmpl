@@ -288,6 +288,12 @@
 
 </table>
 
+[% IF use_keywords %]
+  [% PROCESS "bug/keyword-chooser.html.tmpl"
+    sel_keywords = keywords.split(', ')
+  %]
+[% END %]
+
 <b><label for="comment">Additional Comments:</label></b>
 [% IF user.is_insider %]
   <input type="checkbox" name="commentprivacy" value="1"
@@ -410,6 +416,7 @@
     [% FOREACH r = resolutions %]
       [% NEXT IF !r %]
       [% NEXT IF r == "DUPLICATE" || r == "MOVED" %]
+      [% NEXT IF r == "EXPIRED" AND user.login != "gerv@mozilla.org" %]
       <option value="[% r FILTER html %]">[% display_value("resolution", r) FILTER html %]</option>
     [% END %]
   </select>

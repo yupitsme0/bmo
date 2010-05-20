@@ -1,0 +1,90 @@
+/*
+ * Custom rules for index.css.
+ * The rules you put here override rules in that stylesheet.
+ */
+body {
+    padding-top:0 !important;
+    background: #eee url(img/header.png) top left repeat-x !important;
+}
+#header{
+ background: url(img/mozilla-logo.png) no-repeat scroll;
+ padding-top: 28px;
+ text-align:right;
+}
+
+#header .links {
+  
+  border: 0 transparent none;
+}
+
+#header .links a, #header .links a:hover,  #header .links a:visited{
+    color:white;
+    margin-right:2ex;
+}
+#header .links .separator{
+    display:none;
+}
+#welcome{
+  color: white;
+  margin-bottom: 80px;
+}
+
+
+#titles{
+  display: none;
+} 
+
+a{   
+    color: #394a71;
+} 
+a, #welcome{
+    font-family: Optima,"Palatino",sans-serif;
+}
+#message{
+  position:absolute;
+  top: 110px;
+  
+}
+
+.bz_common_actions{
+    list-style-type: none;
+    margin: 1em 0;
+    margin-left: 200px;
+    padding: 4px 0 7px 50px;
+}
+
+.bz_common_actions, .bz_common_actions:hover, .bz_common_actions:visited{
+    text-decoration: underline;
+}
+
+
+.bz_common_actions {
+    float: none;
+    height: 4ex;
+    width: 20em;
+    text-align: left;
+    line-height:2ex;
+}
+.bz_common_actions span{
+    top: 0;
+}
+#page-index table{
+  width: 100%;
+}
+#enter_bug{
+   position: relative;
+   background: transparent url(img/actions-sprite.png)  no-repeat scroll -84px top;
+}
+
+#query{
+  background: transparent url(img/actions-sprite.png) no-repeat scroll -41px -40px;
+
+}
+
+#account{
+ background: transparent url(img/actions-sprite.png) no-repeat scroll 0 -147px;
+}
+#get_help {
+ background: transparent url(img/actions-sprite.png) no-repeat scroll 0px -200px !important;
+}
+
