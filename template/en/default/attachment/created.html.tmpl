@@ -28,12 +28,7 @@
 [% bug = bugs.0 %]
 [% PROCESS "bug/show-header.html.tmpl" %]
 [% PROCESS global/header.html.tmpl
-  title = "Attachment $attachment.id added to $terms.Bug $attachment.bug_id"
-  javascript_urls = [ "js/keyword-chooser.js", 
-                      "js/yui/yahoo-dom-event.js",
-                      "js/yui/autocomplete-min.js" ]
-  style_urls = [ "skins/standard/yui/autocomplete.css" ]
-%]
+  title = "Attachment $attachment.id added to $terms.Bug $attachment.bug_id" %]
 
 <dl>
   <dt>
