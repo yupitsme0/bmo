@@ -114,7 +114,7 @@
   "version": "[% constants.BUGZILLA_VERSION FILTER json %]",
   "maintainer": "[% Param('maintainer') FILTER json %]",
   "announcement": "[% Param('announcehtml') FILTER json %]",
-  "max_attachment_size": "[% (Param('maxattachmentsize') * 1000) FILTER json %]",
+  "max_attachment_size": [% (Param('maxattachmentsize') * 1000) FILTER json %],
   
 [% IF Param('useclassification') %]
   [% classifications = user.get_selectable_classifications() %]
@@ -187,8 +187,8 @@
     "[% group.id %]": {
       "name": "[% group.name FILTER json %]",
       "description": "[% group.description FILTER json %]",
-      "is_accepting_bugs": [% group.is_bug_group %],
-      "is_active": [% group.is_active %]
+      "is_accepting_bugs": [% group.is_bug_group ? 'true' : 'false' %],
+      "is_active": [% group.is_active ? 'true' : 'false' %]
     }[% ',' UNLESS loop.last() %]
   [% END %]
   },
@@ -199,13 +199,17 @@
       "name": "[% flag_type.name FILTER json %]",
       "description": "[% flag_type.description FILTER json %]",
       [% IF user.in_group("editcomponents") %]
-        "request_group": [% flag_type.request_group.id %],
-        "grant_group": [% flag_type.grant_group.id %],
+        [% IF flag_type.request_group_id %]
+          "request_group": [% flag_type.request_group_id %],
+        [% END %]
+        [% IF flag_type.grant_group_id %]
+          "grant_group": [% flag_type.grant_group_id %],
+        [% END %]
       [% END %]
-      "is_for_bugs": [% flag_type.target_type == "bug" ? 1 : 0 %],
-      "is_requestable": [% flag_type.is_requestable %],
-      "is_specifically_requestable": [% flag_type.is_requesteeble %],
-      "is_multiplicable": [% flag_type.is_multiplicable %]
+      "is_for_bugs": [% flag_type.target_type == "bug" ? 'true' : 'false'  %],
+      "is_requestable": [% flag_type.is_requestable ? 'true' : 'false' %],
+      "is_specifically_requestable": [% flag_type.is_requesteeble ? 'true' : 'false' %],
+      "is_multiplicable": [% flag_type.is_multiplicable ? 'true' : 'false' %]
     }[% ',' UNLESS loop.last() %]
   [% END %]
   },
@@ -289,7 +293,7 @@
         },
       [% END %]
       [% IF newname.match("^cf_") %]
-        "is_on_bug_entry": [% item.enter_bug %],
+        "is_on_bug_entry": [% item.enter_bug ? 'true' : 'false' %],
       [% END %]
       "type": [% item.type || type_id_for.$newname || 0 %]
     }[% ',' UNLESS loop.last() %]
