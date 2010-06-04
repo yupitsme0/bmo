@@ -12,3 +12,6 @@ Redirect permanent /duplicates.rdf https://bugzilla.mozilla.org/data/duplicates.
 Redirect permanent /bugwritinghelp.html https://bugzilla.mozilla.org/page.cgi?id=bug-writing.html
 Redirect permanent /etiquette.html https://bugzilla.mozilla.org/page.cgi?id=etiquette.html
 Redirect permanent /duplicates.html https://bugzilla.mozilla.org/duplicates.cgi
+
+RewriteEngine On
+RewriteRule ^forms/(itrequest|brownbag|itrequest|legal|mktgevent|mozpr|newhire|poweredby|presentation|swag|trademark)$ https://bugzilla.mozilla.org/enter_bug.cgi?product=mozilla.org&format=$1 [PT,QSA]
