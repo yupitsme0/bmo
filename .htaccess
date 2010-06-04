@@ -14,4 +14,4 @@ Redirect permanent /etiquette.html https://bugzilla.mozilla.org/page.cgi?id=etiq
 Redirect permanent /duplicates.html https://bugzilla.mozilla.org/duplicates.cgi
 
 RewriteEngine On
-RewriteRule ^form/(itrequest|brownbag|itrequest|legal|mktgevent|mozpr|newhire|poweredby|presentation|swag|trademark)$ https://bugzilla.mozilla.org/enter_bug.cgi?product=mozilla.org&format=$1 [PT,QSA]
+RewriteRule ^form/(itrequest|brownbag|itrequest|legal|mktgevent|mozpr|newhire|poweredby|presentation|swag|trademark)$ /enter_bug.cgi?product=mozilla.org&format=$1 [PT,QSA]
