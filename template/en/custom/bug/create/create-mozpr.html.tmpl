@@ -179,8 +179,7 @@ TUI_hide_default('expert_fields');
 -->
 </script>
 
-[% IF user.in_group("mozilla-corporation-confidential")
-   OR user.in_group("mozilla-messaging-confidential") %]
+[% IF user.in_group("mozilla-confidential") %]
 
 [% USE Bugzilla %]
 [% SET select_fields = {} %]
