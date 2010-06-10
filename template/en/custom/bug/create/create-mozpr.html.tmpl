@@ -149,6 +149,15 @@ function set_assign_to() {
     }
 }
 
+function fix_component() {
+    var form = document.Create;
+    var location = form.location.options[form.location.selectedIndex].value;
+    var fakecomp = form.fakecomp.options[form.fakecomp.selectedIndex].value;
+    var newcomp = location + " - " + fakecomp;
+    form.component.value = newcomp;
+    set_assign_to();
+}
+
 function handleWantsAttachment(wants_attachment) {
     if (wants_attachment) {
         document.getElementById('attachment_false').style.display = 'none';
@@ -170,6 +179,9 @@ TUI_hide_default('expert_fields');
 -->
 </script>
 
+[% IF user.in_group("mozilla-corporation-confidential")
+   OR user.in_group("mozilla-messaging-confidential") %]
+
 [% USE Bugzilla %]
 [% SET select_fields = {} %]
 [% FOREACH field = Bugzilla.get_fields(
@@ -183,17 +195,8 @@ TUI_hide_default('expert_fields');
 <input type="hidden" name="product" value="[% product.name FILTER html %]">
 <input type="hidden" name="token" value="[% token FILTER html %]">
 
-<table cellspacing="4" cellpadding="2" border="0">
+<table cellspacing="4" cellpadding="2" border="0" style="background: url(skins/custom/producticons/presshat.png) top right no-repeat">
 <tbody>
-  <tr>
-    <td colspan="4">
-    [%# Migration note: The following file corresponds to the old Param
-      # 'entryheaderhtml'
-      #%]
-    [% INCLUDE 'bug/create/user-message.html.tmpl' %]
-    </td>
-  </tr>
-
   <tr>
     <td colspan="4">
         <a id="expert_fields_controller" class="controller bz_default_hidden"
@@ -216,13 +219,35 @@ TUI_hide_default('expert_fields');
   </tr>
 
   [%# We can't use the select block in these two cases for various reasons. %]
+[% matches = default.component_.matches('^(.*) - (.*)$') %]
+[% default.location = matches.0 %]
+[% default.fakecomp = matches.1 %]
+[% IF default.location == '' %]
+  [% default.location = 'US' %]
+[% END %]
+[% locations = [] %]
+[% fakecomps = [] %]
+[% FOREACH c = product.components %]
+  [% matches = c.name.match('^(.*) - (.*)$') %]
+  [% locations.push(matches.0) %]
+  [% fakecomps.push(matches.1) %]
+[% END %]
+[% locations = locations.unique %]
+[% fakecomps = fakecomps.unique %]
   <tr>
     <th>
-      <a href="describecomponents.cgi?product=[% product.name FILTER url_quote %]">
-      Component</a>:
+      Location:
     </th>
     <td>
-      <select name="component" onchange="set_assign_to();" size="7">
+  
+      <select name="location" onchange="fix_component();" size="7">
+        [% FOREACH l = locations %]
+          <option value="[% l FILTER html %]" [% " selected=\"selected\"" IF l == default.location %]>
+          [% l FILTER html %]
+          </option>
+        [% END %]
+      </select>
+      <select name="component" onchange="set_assign_to();" size="7" style="display: none">
         [%# Build the lists of assignees and QA contacts if "usemenuforusers" is enabled. %]
         [% IF Param("usemenuforusers") %]
           [% assignees_list = user.get_userlist.clone %]
@@ -244,6 +269,21 @@ TUI_hide_default('expert_fields');
       </select>
     </td>
 
+  </tr>
+  <tr>
+    <th>
+      Request type:
+    </th>
+    <td>
+  
+      <select name="fakecomp" onchange="fix_component();" size="7">
+        [% FOREACH f = fakecomps %]
+          <option value="[% f FILTER html %]" [% " selected=\"selected\"" IF f == default.fakecomp %]>
+          [% f FILTER html %]
+          </option>
+        [% END %]
+      </select>
+    </td>
     <td colspan="2">
       [%# Enclose the fieldset in a nested table so that its width changes based
         # on the length on the component description. %]
@@ -251,82 +291,18 @@ TUI_hide_default('expert_fields');
         <tr>
           <td>
             <fieldset>
-              <legend>Component Description</legend>
-              <div id="comp_desc" class="comment">Select a component to read its description.</div>
+              <legend>Request Description</legend>
+              <div id="comp_desc" class="comment">Select a request type to read its description.</div>
             </fieldset>
           </td>
         </tr>
       </table>
+      <input type="hidden" name="bug_severity" value="[% default.bug_severity %]">
+      <input type="hidden" name="rep_platform" value="[% default.rep_platform %]">
+      <input type="hidden" name="op_sys" value="[% default.op_sys %]">
     </td>
   </tr>
-
-  <tr>
-    <th rowspan="3">Version:</th>
-    <td rowspan="3">
-      <select name="version" size="5">
-        [%- FOREACH v = version %]
-          <option value="[% v FILTER html %]"
-            [% ' selected="selected"' IF v == default.version %]>[% v FILTER html -%]
-          </option>
-        [%- END %]
-      </select>
-    </td>
-
-    [% INCLUDE bug/field.html.tmpl
-      bug = default, field = select_fields.bug_severity, editable = 1, 
-      value = default.bug_severity %]
-  </tr>
-
-  <tr>
-    [% INCLUDE bug/field.html.tmpl
-      bug = default, field = select_fields.rep_platform, editable = 1,
-      value = default.rep_platform %]
-  </tr>
-
-  <tr>
-    [% INCLUDE bug/field.html.tmpl 
-       bug = default, field = select_fields.op_sys, editable = 1, 
-       value = default.op_sys %]
-  </tr>
 </tbody>
-
-<tbody class="expert_fields">
-  <tr>
-    [% IF Param('usetargetmilestone') && Param('letsubmitterchoosemilestone') %]
-      [% sel = { description => 'Target Milestone', name => 'target_milestone' } %]
-      [% INCLUDE select %]
-    [% ELSE %]
-      <td colspan="2">&nbsp;</td>
-    [% END %]
-
-    [% IF Param('letsubmitterchoosepriority') %]
-      [% INCLUDE bug/field.html.tmpl
-        bug = default, field = select_fields.priority, editable = 1, 
-        value = default.priority %]
-    [% ELSE %]
-      <td colspan="2">&nbsp;</td>
-    [% END %]
-  </tr>
-</tbody>
-
-[% IF !Param('defaultplatform') || !Param('defaultopsys') %]
-  <tbody>
-    <tr>
-      <th>&nbsp;</th>
-      <td colspan="3" class="comment">
-        We've made a guess at your
-        [% IF Param('defaultplatform') %]
-          operating system. Please check it
-        [% ELSIF Param('defaultopsys') %]
-          platform. Please check it
-        [% ELSE %]
-          operating system and platform. Please check them
-        [% END %]
-        and make any corrections if necessary.
-      </td>
-    </tr>
-  </tbody>
-[% END %]
 
 <tbody class="expert_fields">
   <tr>
@@ -471,42 +447,6 @@ TUI_hide_default('expert_fields');
   </tr>
 </tbody>
 
-<tbody class="expert_fields">
-  [% USE Bugzilla %]
-
-  [% FOREACH field = Bugzilla.active_custom_fields %]
-    [% NEXT UNLESS field.enter_bug %]
-    [% IF field.name == "cf_blocking_fennec" %]
-       [% NEXT UNLESS product.name == "Fennec" OR product.name == "Core" OR
-                      product.name == "Toolkit" OR product.name == "NSPR" %]
-    [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cf_status_thunderbird") %]
-       [% NEXT UNLESS product.name == "Thunderbird" OR product.name == "MailNews Core" OR
-                      product.name == "Mozilla Messaging" %]
-    [% ELSIF field.name.match("^cf_blocking_seamonkey") OR field.name.match("^cf_status_seamonkey") %]
-       [% NEXT UNLESS product.name == "Composer" OR product.name == "MailNews Core" OR
-                      product.name == "Mozilla Localizations" OR product.name == "Other Applications" OR
-                      product.name == "SeaMonkey" %]
-    [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
-       [% NEXT UNLESS product.name == "AUS" OR product.name == "Camino" OR
-                      product.name == "Core Graveyard" OR product.name == "Core" OR
-                      product.name == "Directory" OR product.name == "Firefox" OR
-                      product.name == "MailNews Core" OR product.name == "Mozilla Localizations" OR
-                      product.name == "NSPR" OR product.name == "NSS" OR product.name == "Fennec" OR
-                      product.name == "Other Applications" OR product.name == "SeaMonkey" OR
-                      product.name == "Toolkit" OR product.name == "addons.mozilla.org" OR
-                      (product.name == "mozilla.org" AND component.name == "Release Engineering") OR
-                      (product.name == "mozilla.org" AND component.name == "Release Engineering: Future") OR
-                      (product.name == "Websites" AND component.name == "getpersonas.com") %]
-    [% END %]
-    [% SET value = ${field.name}.defined ? ${field.name} : "" %]
-    <tr>
-      [% INCLUDE bug/field.html.tmpl 
-        bug = default, field = field, value = value, editable = 1, 
-        value_span = 3 %]
-    </tr>
-  [% END %]
-</tbody>
-
 <tbody>
 
   <tr>
@@ -626,41 +566,6 @@ TUI_hide_default('expert_fields');
   [% END %]
 </tbody>
 
-<tbody>
-  <tr>
-    <th>&nbsp;</th>
-    <td colspan="3">
-      [% IF product.name == "mozilla.org" %]
-        [% sec_bit = 6 %] [%# mozilla-confidential %]
-      [% ELSIF product.name == "Webtools" %]
-        [% sec_bit = 12 %] [%# webtools-security %]
-      [% ELSIF product.name == "Marketing" %]
-        [% sec_bit = 14 %] [%# marketing-private %]
-      [% ELSIF product.name == "addons.mozilla.org" OR product.name == "AUS" OR product.name == "Weave" %]
-        [% sec_bit = 23 %] [%# client-services-security %]
-      [% ELSIF product.name == "Mozilla Corporation" %]
-        [% sec_bit = 26 %] [%# mozilla-corporation-confidential %]
-      [% ELSIF product.name == "Mozilla Messaging" %]
-        [% sec_bit = 45 %] [%# mozilla-messaging-confidential %]
-      [% ELSIF product.name == "Websites" OR product.name == "Mozilla Developer Center"
-               OR product.name == "support.mozilla.com" OR product.name == "quality.mozilla.org"
-               OR product.name == "Bespin" OR product.name == "support.mozillamessaging.com" %]
-        [% sec_bit = 52 %] [%# websites-security %]
-      [% ELSIF product.name == "Bugzilla" OR product.name == "Testopia" %]
-        [% sec_bit = 53 %] [%# bugzilla-security %]
-      [% ELSIF product.name == "Tamarin" %]
-        [% sec_bit = 65 %] [%# tamarin-security %]
-      [% ELSE %]
-        [% sec_bit = 2 %]   [%# core-security %]
-      [% END %]
-      <input type="checkbox" name="bit-[% sec_bit %]" value="1">
-      This is a security problem that should be kept confidential until addressed
-      (<a href="http://www.mozilla.org/projects/security/security-bugs-policy.html">security policy</a>).
-      <br><br>
-    </td>
-  </tr>
-</tbody>
-
 <tbody class="expert_fields">
   [% IF group.size %]
   <tr>
@@ -720,6 +625,12 @@ TUI_hide_default('expert_fields');
 
 [%# Links or content with more information about the bug being created. %]
 [% Hook.process("end") %]
+
+[% ELSE %]
+
+<p>Sorry, you do not have access to this page.</p>
+
+[% END %]
 
 [% PROCESS global/footer.html.tmpl %]
 
