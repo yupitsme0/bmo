@@ -180,7 +180,7 @@ use File::Basename;
 # CONSTANTS
 #
 # Bugzilla version
-use constant BUGZILLA_VERSION => "3.6+";
+use constant BUGZILLA_VERSION => "3.6.1+";
 
 # These are unique values that are unlikely to match a string or a number,
 # to be used in criteria for match() functions and other things. They start
@@ -403,6 +403,7 @@ use constant contenttypes =>
    "atom"=> "application/atom+xml" ,
    "xml" => "application/xml" ,
    "js"  => "application/x-javascript" ,
+   "json"=> "application/json" ,
    "csv" => "text/csv" ,
    "png" => "image/png" ,
    "ics" => "text/calendar" ,
