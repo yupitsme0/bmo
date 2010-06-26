@@ -153,6 +153,7 @@ use File::Basename;
     MAX_LOGINCOOKIE_AGE
     MAX_LOGIN_ATTEMPTS
     LOGIN_LOCKOUT_INTERVAL
+    MAX_STS_AGE
 
     SAFE_PROTOCOLS
     LEGAL_CONTENT_TYPES
@@ -386,6 +387,11 @@ use constant MAX_LOGIN_ATTEMPTS => 5;
 # If the maximum login attempts occur during this many minutes, the
 # account is locked.
 use constant LOGIN_LOCKOUT_INTERVAL => 30;
+
+# The maximum number of seconds the Strict-Transport-Security header
+# will remain valid. Default is one week.
+# BMO LOCAL HACK: Change to one month.
+use constant MAX_STS_AGE => 2629744;
 
 # Protocols which are considered as safe.
 use constant SAFE_PROTOCOLS => ('afs', 'cid', 'ftp', 'gopher', 'http', 'https',
