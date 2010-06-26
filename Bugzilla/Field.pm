@@ -721,15 +721,13 @@ sub remove_from_db {
         $bugs_query = "SELECT COUNT(*) FROM bug_$name";
     }
     else {
-        $bugs_query = "SELECT COUNT(*) FROM bugs WHERE $name IS NOT NULL
-                                AND $name != ''";
+        $bugs_query = "SELECT COUNT(*) FROM bugs WHERE $name IS NOT NULL";
+        if ($self->type != FIELD_TYPE_BUG_ID && $self->type != FIELD_TYPE_DATETIME) {
+            $bugs_query .= " AND $name != ''";
+        }
         # Ignore the default single select value
         if ($self->type == FIELD_TYPE_SINGLE_SELECT) {
             $bugs_query .= " AND $name != '---'";
-        }
-        # Ignore blank dates.
-        if ($self->type == FIELD_TYPE_DATETIME) {
-            $bugs_query .= " AND $name != '00-00-00 00:00:00'";
         }
     }
 
