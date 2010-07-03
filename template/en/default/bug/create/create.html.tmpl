@@ -653,7 +653,13 @@ TUI_hide_default('expert_fields');
       [% ELSE %]
         [% sec_bit = 2 %]   [%# core-security %]
       [% END %]
-      <input type="checkbox" name="bit-[% sec_bit %]" value="1">
+      <input type="checkbox" name="bit-[% sec_bit %]" value="1"
+        [% FOREACH g = group %]
+          [% IF g.bit == sec_bit %]
+            [% " checked=\"checked\"" IF g.checked %]
+          [% END %]
+        [% END %]
+      >
       This is a security problem that should be kept confidential until addressed
       (<a href="http://www.mozilla.org/projects/security/security-bugs-policy.html">security policy</a>).
       <br><br>
