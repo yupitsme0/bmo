@@ -457,10 +457,15 @@ function PutDescription() {
         [% ELSE %]
           [% sec_bit = 2 %]   [%# core-security %]
         [% END %]
-        <input type="checkbox" name="bit-[% sec_bit %]" value="1">
-        This is a security problem that should be kept confidential until addressed
-        (see the mozilla.org <a href="http://www.mozilla.org/projects/security/security-bugs-policy.html">security policy</a> 
-        for more details).
+        <input type="checkbox" name="bit-[% sec_bit %]" value="1"
+          [% FOREACH g = group %]
+            [% IF g.bit == sec_bit %]
+              [% " checked=\"checked\"" IF g.checked %]
+            [% END %]
+          [% END %]
+        >
+        Many users could be harmed by this security problem: it should be kept
+        hidden from the public until it is resolved.
       </p>
     </td>
   </tr>
