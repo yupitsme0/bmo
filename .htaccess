@@ -11,3 +11,8 @@ Redirect permanent /duplicates.rdf https://bugzilla.mozilla.org/data/duplicates.
 Redirect permanent /bugwritinghelp.html https://bugzilla.mozilla.org/page.cgi?id=bug-writing.html
 Redirect permanent /etiquette.html https://bugzilla.mozilla.org/page.cgi?id=etiquette.html
 Redirect permanent /duplicates.html https://bugzilla.mozilla.org/duplicates.cgi
+
+RewriteEngine On
+# yes I know the . after form. could be any character... that's probably okay. :)
+RewriteRule ^form.(itrequest|brownbag|legal|mktgevent|newhire|poweredby|presentation|swag|trademark)$ /data/www/bugzilla.mozilla.org/enter_bug.cgi?product=mozilla.org&format=$1
+RewriteRule ^form.(mozpr)$ /data/www/bugzilla.mozilla.org/enter_bug.cgi?product=Mozilla+PR&format=$1
