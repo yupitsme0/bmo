@@ -93,8 +93,6 @@ if ($single) {
 
 $vars->{'bugs'} = \@bugs;
 $vars->{'marks'} = \%marks;
-$vars->{'valid_keywords'} = [map($_->name, Bugzilla::Keyword->get_all)];
-$vars->{'valid_keywords_descriptions'} = [map($_->description, Bugzilla::Keyword->get_all)];
 
 my @bugids = map {$_->bug_id} grep {!$_->error} @bugs;
 $vars->{'bugids'} = join(", ", @bugids);

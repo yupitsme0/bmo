@@ -253,7 +253,6 @@ Bugzilla::Hook::process('post_bug_after_creation', { vars => $vars });
 
 ThrowCodeError("bug_error", { bug => $bug }) if $bug->error;
 
-$vars->{'valid_keywords'} = [map($_->name, Bugzilla::Keyword->get_all)];
 if ($token) {
     trick_taint($token);
     $dbh->do('UPDATE tokens SET eventdata = ? WHERE token = ?', undef, 
