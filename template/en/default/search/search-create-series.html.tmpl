@@ -33,9 +33,9 @@
 [% PROCESS global/header.html.tmpl 
   title = "Create New Data Set"
   onload = "doOnSelectProduct(0);"
-  yui = [ 'calendar' ]
+  yui = [ 'autocomplete', 'calendar' ]
   javascript = js_data 
-  javascript_urls = [ "js/productform.js" ]
+  javascript_urls = [ "js/productform.js", "js/field.js" ]
   doc_section = "reporting.html#charts-new-series"
 %]
 
