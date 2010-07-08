@@ -3188,6 +3188,11 @@ sub _populate_bugs_fulltext {
             print "Populating bugs_fulltext...";
             print " (this can take a long time.)\n";
         }
+
+        # As recommended by Monty Widenius for GNOME's upgrade.
+        # mkanat and justdave concur it'll be helpful for bmo, too.
+        $dbh->do('SET SESSION myisam_sort_buffer_size = 3221225472');
+
         my $newline = $dbh->quote("\n");
         $dbh->do(
             q{INSERT INTO bugs_fulltext (bug_id, short_desc, comments, 
