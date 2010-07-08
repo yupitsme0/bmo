@@ -801,6 +801,9 @@ sub create {
             # Whether or not keywords are enabled, in this Bugzilla.
             'use_keywords' => sub { return Bugzilla::Keyword->any_exist; },
 
+            # All the keywords.
+            'all_keywords' => sub { return Bugzilla::Keyword->get_all(); },
+
             'last_bug_list' => sub {
                 my @bug_list;
                 my $cgi = Bugzilla->cgi;

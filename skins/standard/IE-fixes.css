@@ -40,3 +40,7 @@
 #footer .links {
     display: inline;
 }
+
+#keyword_container .yui-ac-content {
+    _height: 30em; /* ie6 */
+}
