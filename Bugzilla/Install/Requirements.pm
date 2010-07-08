@@ -237,6 +237,13 @@ sub OPTIONAL_MODULES {
         feature => ['jsonrpc'],
     },
     {
+        package => 'JSON-XS',
+        module  => 'JSON::XS',
+        # 2.0 is the first version that will work with JSON::RPC.
+        version => '2.0',
+        feature => ['jsonrpc_faster'],
+    },
+    {
         package => 'Test-Taint',
         module  => 'Test::Taint',
         version => 0,
