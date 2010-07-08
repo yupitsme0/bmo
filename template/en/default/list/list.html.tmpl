@@ -52,10 +52,9 @@
   title = title
   style = style
   atomlink = "buglist.cgi?$urlquerypart&title=$title&ctype=atom" 
-  javascript_urls = [ "js/yui/bz_autocomplete_bundle.js", "js/util.js", 
-                      "js/field.js", "js/yui/calendar.js", "js/sorttable.js" ]
-  style_urls = [ "skins/standard/yui/autocomplete.css", 
-                  "skins/standard/buglist.css", "skins/standard/yui/calendar.css" ]
+  yui = [ 'autocomplete', 'calendar' ]
+  javascript_urls = [ "js/util.js", "js/field.js", "js/sorttable.js" ]
+  style_urls = [ "skins/standard/buglist.css" ]
   doc_section = "query.html#list"
   microsummary = microsummary
 %]
