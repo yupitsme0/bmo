@@ -108,7 +108,6 @@ sub COLUMNS {
         assigned_to_realname => { title => 'Assignee'   },
         reporter_realname    => { title => 'Reporter'   },
         qa_contact_realname  => { title => 'QA Contact' },
-        patches              => { title => 'Patches'    },
     );
 
     # Next we define columns that have special SQL instead of just something
@@ -125,34 +124,9 @@ sub COLUMNS {
               . " ELSE 100"
                    . " * ($actual_time / ($actual_time + bugs.remaining_time))"
               . " END)",
+
         'flagtypes.name' => $dbh->sql_group_concat('DISTINCT '
                             . $dbh->sql_string_concat('flagtypes.name', 'flags.status'), "', '"),
-        patches =>
-            "GROUP_CONCAT(CONCAT_WS(': ', attach_patches.description,
-              (SELECT GROUP_CONCAT(CONCAT(attach_patches_flagtypes.name,
-                                          attach_patches_flags.status,
-                                          (CASE
-                                           WHEN attach_patches_flags.status = '?' AND
-                                                attach_patches_requestee.login_name IS NOT NULL
-                                             THEN CONCAT(' (',
-                                                         attach_patches_requestee.login_name,
-                                                         ')')
-                                           ELSE ''
-                                           END))
-                                   ORDER BY attach_patches_flagtypes.name,
-                                            attach_patches_flags.status,
-                                            attach_patches_flags.id
-                                   SEPARATOR ', ')
-                      FROM flags AS attach_patches_flags
-                           INNER JOIN flagtypes AS attach_patches_flagtypes
-                                     ON attach_patches_flags.type_id=attach_patches_flagtypes.id AND attach_patches_flags.attach_id IS NOT NULL
-                           INNER JOIN attachments AS attach_patches_attachments
-                                     ON attach_patches_flags.attach_id = attach_patches_attachments.attach_id AND attach_patches_attachments.isobsolete=0
-                           LEFT JOIN profiles AS attach_patches_requestee
-                                     ON attach_patches_flags.requestee_id=attach_patches_requestee.userid
-                      WHERE attach_patches.bug_id=attach_patches_flags.bug_id AND attach_patches.attach_id=attach_patches_attachments.attach_id
-                    GROUP BY attach_patches.bug_id))
-            ORDER BY attach_patches.attach_id SEPARATOR ', ')",
     );
 
     # Backward-compatibility for old field names. Goes new_name => old_name.
@@ -194,7 +168,6 @@ sub COLUMNS {
         $columns{$id} = { name => $sql, title => $field->description };
     }
 
-    $columns{"patches"}->{name} = $special_sql{"patches"};
     # The short_short_desc column is identical to short_desc
     $columns{'short_short_desc'} = $columns{'short_desc'};
 
@@ -305,16 +278,6 @@ sub init {
     if (grep($_ eq 'flagtypes.name', @fields)) {
         push(@supptables, "LEFT JOIN flags ON flags.bug_id = bugs.bug_id AND attach_id IS NULL");
         push(@supptables, "LEFT JOIN flagtypes ON flagtypes.id = flags.type_id");
-    }
-    if (grep($_ eq 'patches', @fields)) {
-        my $extra = '';
-        if (!(Bugzilla->user->is_insider)) {
-            $extra = " AND attach_patches.isprivate = 0";
-        }
-        push @supptables, "LEFT JOIN attachments AS attach_patches " .
-                          "ON bugs.bug_id = attach_patches.bug_id " .
-                          "AND attach_patches.ispatch = 1 " .
-                          "AND attach_patches.isobsolete = 0$extra";
     }
 
     my $minvotes;
@@ -1008,7 +971,7 @@ sub init {
         # These fields never go into the GROUP BY (bug_id goes in
         # explicitly, below).
         next if (grep($_ eq $field, EMPTY_COLUMN, 
-                      qw(bug_id actual_time percentage_complete flagtypes.name patches)));
+                      qw(bug_id actual_time percentage_complete flagtypes.name)));
         my $col = COLUMNS->{$field}->{name};
         push(@groupby, $col) if !grep($_ eq $col, @groupby);
     }
