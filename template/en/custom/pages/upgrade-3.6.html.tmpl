@@ -19,7 +19,10 @@
   #                 Reed Loden <reed@reedloden.com>
   #%]
 
-[% INCLUDE global/header.html.tmpl title = "Bugzilla Upgrade" %]
+[% PROCESS global/variables.none.tmpl %]
+[% INCLUDE global/header.html.tmpl
+   title = "Bugzilla 3.6 Upgrade"
+%]
 [% USE date %]
 
 <p><b>Last Updated:</b> [% date.format(template.modtime, "%d-%b-%Y %H:%M %Z") %]</p>
