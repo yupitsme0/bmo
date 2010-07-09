@@ -3512,7 +3512,7 @@ sub check_can_change_field {
                 $drivers_group = 'fennec-drivers';
             }
             elsif ($field eq 'cf_blocking_20') {
-                $drivers_group = 'mozilla-trunk-drivers';
+                $drivers_group = 'mozilla-next-drivers';
             }
             elsif ($field =~ /^cf_blocking_thunderbird/) {
                 $drivers_group = 'thunderbird-drivers';
