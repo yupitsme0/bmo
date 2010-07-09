@@ -79,13 +79,24 @@ sub next_line {
 
     $this->{IN_HEADER} = 1;
 
-  # Hack for bzr
-  } elsif ($line =~ /^=== modified file '(.+)'/) {
+  ############# Start of the Bazaar section #############
+  } elsif ($line =~ /^=== added file '?(.+)'?/) {
+    $this->_maybe_end_file();
+
+    $this->{FILE_STATE}{is_add} = 1;
+
+  } elsif ($line =~ /^=== removed file '?(.+)'?/) {
+    $this->_maybe_end_file();
+
+    $this->{FILE_STATE}{is_remove} = 1;
+
+  } elsif ($line =~ /^=== modified file '?(.+)'?/) {
     $this->_maybe_end_file();
 
     $this->{FILE_STATE}{filename} = $1;
 
     $this->{IN_HEADER} = 1;
+  ############## End of the Bazaar section ##############
 
   } elsif ($line =~ /^diff\s*(-\S+\s*)*(\S+)\s*(\S*)/ && $3) {
     # Simple diff <dir> <dir>
