@@ -69,22 +69,7 @@ use constant MAPPINGS => {
     "attachmentdata" => "attach_data.thedata",
     "attachdata"     => "attach_data.thedata",
     "attachmentmimetype" => "attachments.mimetype",
-    "attachmimetype" => "attachments.mimetype",
-
-    "blocking-fennec" => "cf_blocking_fennec",
-    "blocking1.9.1" => "cf_blocking_191",
-    "blocking1.9.2" => "cf_blocking_192",
-    "blocking1.9.3" => "cf_blocking_193",
-    "status1.9.1" => "cf_status_191",
-    "status1.9.2" => "cf_status_192",
-    "blocking-thunderbird3.0" => "cf_blocking_thunderbird30",
-    "blocking-thunderbird3.1" => "cf_blocking_thunderbird31",
-    "blocking-thunderbird3.2" => "cf_blocking_thunderbird32",
-    "status-thunderbird3.0" => "cf_status_thunderbird30",
-    "status-thunderbird3.1" => "cf_status_thunderbird31",
-    "status-thunderbird3.2" => "cf_status_thunderbird32",
-    "blocking-seamonkey2.1" => "cf_blocking_seamonkey21",
-    "status-seamonkey2.1" => "cf_status_seamonkey21"
+    "attachmimetype" => "attachments.mimetype"
 };
 
 sub FIELD_MAP {
@@ -111,6 +96,30 @@ sub FIELD_MAP {
                         bug_severity bug_status
                         status_whiteboard
                         cclist_accessible reporter_accessible)};
+
+    # Generically handle generating pretty blocking/status "flags" from
+    # custom field names
+    foreach my $name (keys %full_map) {
+      if ($name =~ /^cf_(blocking|status)_([a-z]+)?(\d+)?$/) {
+          my $type = $1;
+          my $product = $2;
+          my $version = $3;
+
+          if ($version) {
+              $version = join('.', split(//, $version));
+          }
+
+          my $pretty_name = $type;
+          if ($product) {              
+              $pretty_name .= "-" . $product;
+          }
+          if ($version) {
+              $pretty_name .= $version;
+          }
+
+          $full_map{$pretty_name} = $name;
+      }
+    }
 
     $cache->{quicksearch_fields} = \%full_map;
 
