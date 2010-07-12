@@ -31,10 +31,10 @@
 
 [% IF target == "enter_bug.cgi" %]
   [% title = "Enter $terms.Bug" %]
-  [% subheader = BLOCK %]First, you must pick a product on which to enter [% terms.abug %]. [% END %]
+  [% h2 = BLOCK %]First, you must pick a product on which to enter [% terms.abug %]. [% END %]
 [% ELSIF target == "describecomponents.cgi" %]
-  [% title = "$terms.Bugzilla Component Descriptions" %]
-  [% subheader = "Please specify the product whose components you want described." %]
+  [% title = "Browse" %]
+  [% h2 = "Please specify the product whose components you want described." %]
 [% END %]
 
 [% DEFAULT title = "Choose a Product" %]
@@ -104,6 +104,8 @@
 </tr>
 </table>
 [% ELSE %]
+<h2>[% h2 FILTER html %]</h2>
+
 <table>
 
 [% FOREACH c = classifications %]
