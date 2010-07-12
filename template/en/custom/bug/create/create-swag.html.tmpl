@@ -124,8 +124,13 @@ function validateAndSubmit() {
 <tr>
   <td align="right"><strong>CC:</strong></td>
   <td colspan="3">
-    <input name="cc" id="cc" size="50"
-           value="[% cc FILTER html %]">
+    [% INCLUDE global/userselect.html.tmpl
+       id => "cc"
+       name => "cc"
+       value => cc
+       size => 50
+       multiple => 5
+    %]
   </td>
 </tr>
 

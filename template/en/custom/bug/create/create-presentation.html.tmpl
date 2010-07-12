@@ -177,8 +177,13 @@ function trySubmit() {
 <tr>
   <td align="right"><strong>CC&nbsp;(optional):</strong></td>
   <td colspan="3">
-    <input name="cc" id="cc" size="60"
-           value="[% cc FILTER html %]">
+    [% INCLUDE global/userselect.html.tmpl
+       id => "cc"
+       name => "cc"
+       value => cc
+       size => 60
+       multiple => 5
+    %]
   </td>
 </tr>
 
