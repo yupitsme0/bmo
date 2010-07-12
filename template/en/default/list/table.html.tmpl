@@ -77,6 +77,7 @@
 
 [% tableheader = BLOCK %]
   <table class="bz_buglist sortable" cellspacing="0" cellpadding="4" width="100%">
+    <thead>
     <tr class="bz_buglist_header bz_first_buglist_header">
       [% IF dotweak %]
       <th>&nbsp;</th>
@@ -123,6 +124,7 @@
       [% END %]
 
     </tr>
+    </thead>
 [% END %]
 
 [% BLOCK columnheader %]
@@ -170,6 +172,7 @@
 
 [% tableheader %]
 
+<tbody class="sorttable_body">
 [% FOREACH bug = bugs %]
   [% count = loop.count() %]
 
@@ -237,6 +240,7 @@
     [% PROCESS time_summary_line %]
   [% END %]
 [% END %]
+</tbody>
 
 </table>
 
