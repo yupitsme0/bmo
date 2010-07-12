@@ -223,10 +223,11 @@
   [% IF use_keywords %]
     <tr>
 
-      [% INCLUDE "bug/field-label.html.tmpl"
-         field = bug_fields.keywords, editable = 1
-         desc_url = "describekeywords.cgi"
-      %]
+      <th>
+        <label for="keywords">
+          <a href="describekeywords.cgi">Keywords</a>:
+        </label>
+      </th>
       <td colspan="3">
         [% INCLUDE bug/field.html.tmpl
            field = bug_fields.keywords, editable = 1, value = keywords
