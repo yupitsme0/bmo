@@ -40,7 +40,9 @@ X-Bugzilla-Target-Milestone: [% targetmilestone %]
 X-Bugzilla-Changed-Fields: [% changedfields %]
 [%+ threadingmarker %]
 
+[% UNLESS to_user.settings.product_chooser.value == 'full_product_chooser' %]
 Do not reply to this email.  You can add comments to this bug at
+[% END %]
 [%+ urlbase %]show_bug.cgi?id=[% bugid %]
 [%- IF diffs %]
 
