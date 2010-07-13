@@ -116,8 +116,8 @@ sub add_review_links_to_email {
 	$new_body = 1;
     }
 
-    if ($body =~ /Created an attachment \(id=[0-9]+\)\015\012 --> /) {
-	$body =~ s~(Created\ an\ attachment\ \(id=([0-9]+)\)\015\012)
+    if ($body =~ /Created attachment \d+\015\012 --> /) {
+	$body =~ s~(Created\ attachment\ (\d+)\015\012)
                    \ -->\ \(([^\015\012]*)\)[^\015\012]*
                   ~munge_create_attachment($bug, $1, $2, $3)
                   ~egx;
