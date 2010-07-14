@@ -334,7 +334,8 @@ sub _handle_special_first_chars {
 
     if ($firstChar eq '#') {
         addChart('short_desc', 'substring', $baseWord, $negate);
-        addChart('content', 'matches', $baseWord, $negate);
+        # BMO LOCAL HACK: Encapsulate the search word in quotes until bug 578494 is fixed.
+        addChart('content', 'matches', "\"$baseWord\"", $negate);
         return 1;
     }
     if ($firstChar eq ':') {
@@ -512,7 +513,8 @@ sub _default_quicksearch_word {
     addChart('alias', 'substring', $word, $negate);
     addChart('short_desc', 'substring', $word, $negate);
     addChart('status_whiteboard', 'substring', $word, $negate);
-    addChart('content', 'matches', $word, $negate);
+    # BMO LOCAL HACK: Encapsulate the search word in quotes until bug 578494 is fixed.
+    addChart('content', 'matches', "\"$word\"", $negate);
 }
 
 sub _handle_urls {
