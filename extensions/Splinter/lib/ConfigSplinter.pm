@@ -26,7 +26,7 @@ use warnings;
 
 use Bugzilla::Config::Common;
 
-$extensions::splinter::lib::ConfigSplinter::sortkey = 30;
+$Bugzilla::Extension::Splinter::ConfigSplinter::sortkey = 30;
 
 sub get_param_list {
     my ($class) = @_;

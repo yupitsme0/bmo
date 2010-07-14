@@ -25,7 +25,7 @@ use Bugzilla;
 use Bugzilla::Util;
 
 use base qw(Exporter);
-@extensions::splinter::lib::SplinterUtil::EXPORT = qw(attachment_is_visible attachment_id_is_patch
+@Bugzilla::Extension::Splinter::SplinterUtil::EXPORT = qw(attachment_is_visible attachment_id_is_patch
                                                       get_review_url get_review_link
                                                       add_review_links_to_email);
 
