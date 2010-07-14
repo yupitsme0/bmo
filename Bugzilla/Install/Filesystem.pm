@@ -216,6 +216,9 @@ sub FILESYSTEM {
                                      dirs => $owner_dir_readable },
          'contrib'             => { files => $owner_executable,
                                      dirs => $owner_dir_readable, },
+         # BMO LOCAL HACK: Make .bzr readable by webserver
+         '.bzr'                => { files => $ws_readable,
+                                     dirs => $ws_dir_readable },
     );
 
     # --- FILES TO CREATE --- #
