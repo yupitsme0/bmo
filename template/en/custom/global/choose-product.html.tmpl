@@ -117,6 +117,9 @@
   [% END %]
 
   [% FOREACH p = c.products %]
+    [% IF p.name == "Mozilla PR" AND target == "enter_bug.cgi" AND NOT format AND NOT cgi.param("debug") %]
+      [% format = "mozpr" %]
+    [% END %]
     <tr>
       <th align="right" valign="top">
         <a href="[% target FILTER url_quote %]?product=[% p.name FILTER url_quote -%]
