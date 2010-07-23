@@ -244,7 +244,6 @@ push (@cc, 'webtools-security@mozilla.org') if (grep {$_ == 12} @selected_groups
 push (@cc, 'amo-admins@mozilla.org') if (grep {$_ == 23} @selected_groups); # client-services-security
 push (@cc, 'website-drivers@mozilla.org') if (grep {$_ == 52} @selected_groups); # websites-security
 push (@cc, 'security@bugzilla.org') if (grep {$_ == 53} @selected_groups); # bugzilla-security
-$vars->{'mailrecipients'} = {'changer' => $user->login, 'cc' => \@cc};
 
 $vars->{'id'} = $id;
 $vars->{'bug'} = $bug;
@@ -259,7 +258,7 @@ if ($token) {
              ("createbug:$id", $token));
 }
 
-my $recipients = { changer => $user->login };
+my $recipients = { changer => $user->login, 'cc' => \@cc };
 my $bug_sent = Bugzilla::BugMail::Send($id, $recipients);
 $bug_sent->{type} = 'created';
 $bug_sent->{id}   = $id;
