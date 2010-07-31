@@ -640,7 +640,10 @@ Bugzilla::Hook::process('enter_bug_entrydefaultvars', { vars => $vars });
 
 # hack to allow the bug entry templates to use check_can_change_field to see if
 # various field values should be available to the current user
-$default{'check_can_change_field'} = sub { return Bugzilla::Bug::check_can_change_field(\%default, @_) };
+$Bugzilla::FakeBug::check_can_change_field = sub { return Bugzilla::Bug::check_can_change_field(\%default, @_) };
+$Bugzilla::FakeBug::_changes_everconfirmed = sub { return Bugzilla::Bug::_changes_everconfirmed(\%default, @_) };
+$Bugzilla::FakeBug::everconfirmed = sub { return ($default{'status'} == 'UNCONFIRMED') ? 0 : 1 };
+bless \%default, 'Bugzilla::FakeBug';
 
 $vars->{'default'} = \%default;
 
