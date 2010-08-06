@@ -1073,7 +1073,10 @@
             <emphasis>&lt;groupname&gt;</emphasis>: 
             If you have created some groups, e.g. "securitysensitive", then
             checkboxes will appear here to allow you to add users to, or
-            remove them from, these groups.
+            remove them from, these groups. The first checkbox gives the
+            user the ability to add and remove other users as members of
+            this group. The second checkbox adds the user himself as a member
+            of the group.
             </para>
           </listitem>
 
@@ -2455,10 +2458,13 @@ ReadOnly: ENTRY, NA/NA, CANEDIT
       <title>Deleting Custom Fields</title>
 
       <para>
-        It is only possible to delete obsolete Custom Fields 
-        if the field has never been used in the database.
-        To remove a field which already has content,
-        mark it as obsolete.
+        Only custom fields which are marked as obsolete, and which never
+        have been used, can be deleted completely (else the integrity
+        of the bug history would be compromised). For custom fields marked
+        as obsolete, a "Delete" link will appear in the <quote>Action</quote>
+        column. If the custom field has been used in the past, the deletion
+        will be rejected. But marking the field as obsolete is sufficient
+        to hide it from the user interface entirely.
       </para>
     </section>
   </section>

@@ -112,8 +112,6 @@ use File::Basename;
     GLOBAL_EVENTS
     EVT_FLAG_REQUESTED EVT_REQUESTED_FLAG
 
-    FULLTEXT_BUGLIST_LIMIT
-
     ADMIN_GROUP_NAME
     PER_PRODUCT_PRIVILEGES
 
@@ -152,6 +150,7 @@ use File::Basename;
 
     MAX_TOKEN_AGE
     MAX_LOGINCOOKIE_AGE
+    MAX_SUDO_TOKEN_AGE
     MAX_LOGIN_ATTEMPTS
     LOGIN_LOCKOUT_INTERVAL
     MAX_STS_AGE
@@ -161,6 +160,7 @@ use File::Basename;
 
     MIN_SMALLINT
     MAX_SMALLINT
+    MAX_INT_32
 
     MAX_LEN_QUERY_NAME
     MAX_CLASSIFICATION_SIZE
@@ -182,7 +182,7 @@ use File::Basename;
 # CONSTANTS
 #
 # Bugzilla version
-use constant BUGZILLA_VERSION => "3.6.1+";
+use constant BUGZILLA_VERSION => "3.6.2+";
 
 # These are unique values that are unlikely to match a string or a number,
 # to be used in criteria for match() functions and other things. They start
@@ -341,10 +341,6 @@ use constant EVT_REQUESTED_FLAG     => 101; # I have requested a flag
 
 use constant GLOBAL_EVENTS => EVT_FLAG_REQUESTED, EVT_REQUESTED_FLAG;
 
-#  Number of bugs to return in a buglist when performing
-#  a fulltext search.
-use constant FULLTEXT_BUGLIST_LIMIT => 200;
-
 # Default administration group name.
 use constant ADMIN_GROUP_NAME => 'admin';
 
@@ -383,6 +379,8 @@ use constant TIMETRACKING_FIELDS =>
 use constant MAX_TOKEN_AGE => 3;
 # How many days a logincookie will remain valid if not used.
 use constant MAX_LOGINCOOKIE_AGE => 30;
+# How many seconds (default is 6 hours) a sudo cookie remains valid.
+use constant MAX_SUDO_TOKEN_AGE => 21600;
 
 # Maximum failed logins to lock account for this IP
 use constant MAX_LOGIN_ATTEMPTS => 5;
@@ -472,6 +470,7 @@ use constant ROOT_USER => ON_WINDOWS ? 'Administrator' : 'root';
 
 use constant MIN_SMALLINT => -32768;
 use constant MAX_SMALLINT => 32767;
+use constant MAX_INT_32 => 2147483647;
 
 # The longest that a saved search name can be.
 use constant MAX_LEN_QUERY_NAME => 64;
