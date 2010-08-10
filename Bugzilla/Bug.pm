@@ -3535,8 +3535,8 @@ sub check_can_change_field {
     if ($field =~ /^cf_status_/) {
         # Only drivers can set wanted.
         my $drivers_group;
-        if ($field eq 'cf_status_193') {
-            $drivers_group = 'mozilla-1.9-drivers';
+        if ($field eq 'cf_status_20') {
+            $drivers_group = 'mozilla-next-drivers';
         }
         elsif ($field =~ /^cf_status_thunderbird/) {
             $drivers_group = 'thunderbird-drivers';
