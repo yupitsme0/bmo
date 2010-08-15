@@ -25,8 +25,8 @@
 [% bugidsummary = bug.bug_id _ ': ' _ bug.short_desc %]
 [% attidsummary = attachment.id _ ': ' _ attachment.description %]
 [% flagtype_name = flag ? flag.type.name : old_flag.type.name %]
-[% statuses = { '+' => "granted" , '-' => 'denied' , 'X' => "canceled" ,
-                '?' => "asked" } %]
+[% statuses = { '+' => "granted" , '-' => "not granted" ,
+                'X' => "canceled" , '?' => "asked" } %]
 
 [% to_identity = "" %]
 [% on_behalf_of = 0 %]
