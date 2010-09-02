@@ -22,36 +22,36 @@
 [% PROCESS global/variables.none.tmpl %]
 
 [% PROCESS global/header.html.tmpl
-   title = "Marketing Event Request Form"
+   title = "Event Request Form"
    style_urls = [ 'skins/custom/calendar.css' ]
    javascript_urls = [ 'js/calendar.js', 'js/swag.js', 'js/form_validate.js' ]
 %]
 
 [% USE Bugzilla %]
 
-<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Marketing Event Request Form</div>
+<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Event Request Form</div>
 
-<p><strong>Marketing Event Request:</strong> Please use this form to file a request for an event.</p>
+<p><strong>Event Request:</strong> Please use this form to file a request for an event. <b>This form is not a request for swag.</b></p>
 
 <p>Process:</p>
 
 <ol>
   <li>Complete and submit request below.</li>
-  <li>Your request will be reviewed by the appropriate person in marketing.</li>
+  <li>Your request will be reviewed by the appropriate person in the Engagement team.</li>
 </ol>
  
 <p>These requests will only be visible to the person who submitted the request,
 any persons designated in the CC line, and authorized members of the Mozilla
-Marketing team.</p>
+Engagement team.</p>
 
 <script language="javascript" type="text/javascript">
 function trySubmit() {
 
   var date = document.getElementById('date').value;
   var eventname = document.getElementById('eventname').value;
-  var shortdesc = 'Marketing Event Request (' + date + ') - ' + eventname; 
+  var shortdesc = 'Event Request (' + date + ') - ' + eventname; 
   document.getElementById('short_desc').value = shortdesc;
-
+  if(!isChecked('doing-other')) document.getElementById('doing-other-what').value = '';
   return true;
 }
 
@@ -62,8 +62,18 @@ function validateAndSubmit() {
   if(!isFilledOut('lastname')) alert_text += "Please enter your last name\n";
   if(!isValidEmail(document.getElementById('email').value)) alert_text += "Please enter a valid email address\n";
   if(!isFilledOut('eventname')) alert_text += "Please enter an event name.\n";
+  if(!isFilledOut('website')) alert_text += "Please enter an event website.\n";
+  if(!isFilledOut('goals')) alert_text += "Please enter the Description and Objectives.\n";
   if(!isFilledOut('date')) alert_text += "Please enter an event date.\n";
   if(!isFilledOut('goals')) alert_text += "Please enter the event goals.\n";
+  if(!isFilledOut('successmeasure')) alert_text += "Please enter how you will measure the success of the event.\n";
+
+  if(!isChecked('doing-booth') &&
+     !isChecked('doing-speaking') &&
+     !isChecked('doing-outreach') &&
+     !isChecked('doing-other')
+    ) alert_text += "Please indicate what you'll be doing at the event.\n";
+  if(isChecked('doing-other') && !isFilledOut('doing-other-what')) alert_text += "Please describe what 'other' thing you'll be doing at the event.\n";
   
   //Everything required is filled out..try to submit the form!
   if(alert_text == '') {
@@ -156,16 +166,27 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Event Website:</strong></td>
+  <td align="right"><strong>Event Website: <span style="color: red;">*</span></strong></td>
   <td>
     <input type="text" name="website" id="website" value="" size="50" maxlength="120" />
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Event Description and Overall Goals:</strong></td>
+  <td align="right"><strong>Event Description and Key Objectives: <span style="color: red;">*</span></strong></td>
   <td>
     <textarea id="goals" name="goals" rows="5" cols="50"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <td align="right"><strong>What will you be doing at the event? <span style="color: red;">*</span></strong></td>
+  <td>
+    <input type="checkbox" id="doing-booth" name="doing" value="Booth or Table"><label for="doing-booth">Booth/Table</label><br />
+    <input type="checkbox" id="doing-speaking" name="doing" value="Speaking Opportunity"><label for="doing-speaking">Speaking Opportunity</label><br />
+    <input type="checkbox" id="doing-outreach" name="doing" value="PR or Media Outreach"><label for="doing-outreach">PR or Media Outreach</label><br />
+    <input type="checkbox" id="doing-other" name="doing" value="Other"><label for="doing-other">Other, please explain:</label>
+          <input type="text" name="doing-other-what" id="doing-other-what" value="" size="50" maxlength="120"><br />
   </td>
 </tr>
 
@@ -178,14 +199,10 @@ function validateAndSubmit() {
   <td>
     <select name="attendees" id="attendees">
       <option value="--Please Select--" selected>--Please Select--</option>
-      <option value="1-4">1-4</option>
-      <option value="5-9">5-9</option>
-      <option value="10-19">10-19</option>
-      <option value="20-99">20-99</option>
+      <option value="1-99">1-99</option>
       <option value="100-499">100-499</option>
-      <option value="500-9,999">500-9,999</option>
-      <option value="10,000+">10,000+</option>
-      <option value="N/A">N/A</option>
+      <option value="500-999">500-999</option>
+      <option value="1000+">1000+</option>
       </select>
   </td>
 </tr>
@@ -203,26 +220,12 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Estimated cost of Mozilla's<br />participation - cost<br />breakdown (excluding swag):</strong></td>
+  <td align="right"><strong>How will you measure the<br />success of your event? <span style="color: red;">*</span></strong></td>
   <td>
-    <textarea id="additional" name="cost" id="cost" rows="5" cols="50"></textarea>
+    <textarea id="successmeasure" name="successmeasure" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
-<tr>
-  <td align="right"><strong>Can you follow up with us<br />with photos and a summary<br />of the events success?</strong></td>
-  <td>
-    <label for="followup-yes"><input name="followup" id="followup-yes" type="radio" value="Yes">Yes</label>
-    <label for="followup-no"><input name="followup" id="followup-no" type="radio" value="No">No</label>
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><label for="comment"><strong>Any additional comments?</strong></label></td>
-  <td>
-    <textarea id="comment" name="comment" rows="5" cols="50"></textarea>
-  </td>
-</tr>
 
   </table>
   <br>
@@ -231,7 +234,6 @@ function validateAndSubmit() {
 <p>
   <strong><span style="color: red;">*</span></strong> - Required field<br />
   Thanks for contacting us.
-   You will be notified by email of any progress made in resolving your request.
 
 </p>
 

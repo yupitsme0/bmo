@@ -15,3 +15,7 @@ function isFilledOut(elem_id)  {
     var str = document.getElementById(elem_id).value;
     return str.length>0 && str!="noneselected";
 }
+
+function isChecked(elem_id) {
+    return document.getElementById(elem_id).checked;
+}

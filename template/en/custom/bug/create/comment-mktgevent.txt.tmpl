@@ -33,18 +33,16 @@ Event Name: [% cgi.param('eventname') %]
 Event Date: [% cgi.param("date") %]
 Event Location: [% cgi.param("locations") %]
 Event Website: [% cgi.param("website") %]
-Event Description and Goals:
+Event Description and Objectives:
 [%+ cgi.param("goals") %]
 
 Attendees: [% IF cgi.param('attendees') != "--Please Select--" %][% cgi.param('attendees') %][% END %]
 Target Audience: [% IF cgi.param('audience') != "--Please Select--" %][% cgi.param('audience') %][% END %]
 
-Cost Estimate:
-[%+ cgi.param("cost") %]
+We'll be doing: [% cgi.param("doing").join(", ") %][% IF cgi.param('doing-other-what') %]: [% cgi.param('doing-other-what') %][% END %]
 
-Will Follow Up? [% cgi.param('followup') %]
-
-Additional comments:
+Success will be measured by:
+[%+ cgi.param('successmeasure') %]
 
 [%+ cgi.param("comment") IF cgi.param("comment") %]
 
