@@ -185,7 +185,8 @@
                           bug.product == "Toolkit" OR bug.product == "NSPR" %]
         [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cf_status_thunderbird") %]
            [% NEXT UNLESS bug.product == "Thunderbird" OR bug.product == "MailNews Core" OR
-                          bug.product == "Mozilla Messaging" %]
+                          bug.product == "Mozilla Messaging" OR
+                          (bug.product == "Websites" AND bug.component == "www.mozillamessaging.com") %]
         [% ELSIF field.name.match("^cf_blocking_seamonkey") OR field.name.match("^cf_status_seamonkey") %]
            [% NEXT UNLESS bug.product == "Composer" OR bug.product == "MailNews Core" OR
                           bug.product == "Mozilla Localizations" OR bug.product == "Other Applications" OR
