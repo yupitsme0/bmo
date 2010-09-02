@@ -137,7 +137,9 @@
     [% END %]
     [% IF field == "cf_blocking_fennec" %]
        [% NEXT UNLESS bug.product == "Fennec" OR bug.product == "Core" OR
-                      bug.product == "Toolkit" OR bug.product == "NSPR" %]
+                      bug.product == "Toolkit" OR bug.product == "NSPR" OR
+                      bug.product == "addons.mozilla.org" OR bug.product == "support.mozilla.com" OR
+                      (bug.product == "mozilla.org" AND bug.component == "Release Engineering") %]
     [% ELSIF field.match("^cf_blocking_thunderbird") OR field.match("^cf_status_thunderbird") %]
        [% NEXT UNLESS bug.product == "Thunderbird" OR bug.product == "MailNews Core" OR
                       bug.product == "Mozilla Messaging" OR
