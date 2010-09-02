@@ -483,7 +483,8 @@ TUI_hide_default('expert_fields');
                       product.name == "Toolkit" OR product.name == "NSPR" %]
     [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cf_status_thunderbird") %]
        [% NEXT UNLESS product.name == "Thunderbird" OR product.name == "MailNews Core" OR
-                      product.name == "Mozilla Messaging" %]
+                      product.name == "Mozilla Messaging" OR
+                      (product.name == "Websites" AND component.name == "www.mozillamessaging.com") %]
     [% ELSIF field.name.match("^cf_blocking_seamonkey") OR field.name.match("^cf_status_seamonkey") %]
        [% NEXT UNLESS product.name == "Composer" OR product.name == "MailNews Core" OR
                       product.name == "Mozilla Localizations" OR product.name == "Other Applications" OR
