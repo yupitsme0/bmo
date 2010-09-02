@@ -485,7 +485,7 @@ TUI_hide_default('expert_fields');
                       (product.name == "mozilla.org" AND component.name == "Release Engineering") %]
     [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cf_status_thunderbird") %]
        [% NEXT UNLESS product.name == "Thunderbird" OR product.name == "MailNews Core" OR
-                      product.name == "Mozilla Messaging" OR
+                      product.name == "Mozilla Messaging" OR product.name == "support.mozillamessaging.com" OR
                       (product.name == "Websites" AND component.name == "www.mozillamessaging.com") %]
     [% ELSIF field.name.match("^cf_blocking_seamonkey") OR field.name.match("^cf_status_seamonkey") %]
        [% NEXT UNLESS product.name == "Composer" OR product.name == "MailNews Core" OR
@@ -500,6 +500,7 @@ TUI_hide_default('expert_fields');
                       product.name == "Other Applications" OR product.name == "SeaMonkey" OR
                       product.name == "Toolkit" OR product.name == "addons.mozilla.org" OR
                       product.name == "Mozilla Services" OR product.name == "Testing" OR
+                      product.name == "support.mozilla.com" OR
                       (product.name == "mozilla.org" AND component.name == "Release Engineering") OR
                       (product.name == "Websites" AND component.name == "getpersonas.com") %]
     [% END %]

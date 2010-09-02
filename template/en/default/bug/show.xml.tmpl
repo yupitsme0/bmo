@@ -142,7 +142,7 @@
                       (bug.product == "mozilla.org" AND bug.component == "Release Engineering") %]
     [% ELSIF field.match("^cf_blocking_thunderbird") OR field.match("^cf_status_thunderbird") %]
        [% NEXT UNLESS bug.product == "Thunderbird" OR bug.product == "MailNews Core" OR
-                      bug.product == "Mozilla Messaging" OR
+                      bug.product == "Mozilla Messaging" OR bug.product == "support.mozillamessaging.com" OR
                       (bug.product == "Websites" AND bug.component == "www.mozillamessaging.com") %]
     [% ELSIF field.match("^cf_blocking_seamonkey") OR field.match("^cf_status_seamonkey") %]
        [% NEXT UNLESS bug.product == "Composer" OR bug.product == "MailNews Core" OR
@@ -157,6 +157,7 @@
                       bug.product == "Other Applications" OR bug.product == "SeaMonkey" OR
                       bug.product == "Toolkit" OR bug.product == "addons.mozilla.org" OR
                       bug.product == "Mozilla Services" OR bug.product == "Testing" OR
+                      bug.product == "support.mozilla.com" OR
                       (bug.product == "mozilla.org" AND bug.component == "Release Engineering") OR
                       (bug.product == "Websites" AND bug.component == "getpersonas.com") %]
     [% END %]
