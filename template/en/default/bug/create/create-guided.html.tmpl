@@ -440,7 +440,8 @@ function PutDescription() {
           [% sec_bit = 12 %] [%# webtools-security %]
         [% ELSIF product.name == "Marketing" %]
           [% sec_bit = 14 %] [%# marketing-private %]
-        [% ELSIF product.name == "addons.mozilla.org" OR product.name == "AUS" OR product.name == "Weave" %]
+        [% ELSIF product.name == "addons.mozilla.org" OR product.name == "AUS"
+                 OR product.name == "Mozilla Services" %]
           [% sec_bit = 23 %] [%# client-services-security %]
         [% ELSIF product.name == "Mozilla Corporation" %]
           [% sec_bit = 26 %] [%# mozilla-corporation-confidential %]
