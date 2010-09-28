@@ -34,6 +34,8 @@ use base qw(Exporter);
 sub attachment_is_visible {
     my $attachment = shift;
 
+   defined $params->{attachment_id} || return 0;
+
     return (Bugzilla->user->can_see_bug($attachment->bug->id) &&
             (!$attachment->isprivate ||
              Bugzilla->user->id == $attachment->attacher->id ||
@@ -42,7 +44,6 @@ sub attachment_is_visible {
 
 sub attachment_id_is_patch {
     my $attach_id = shift;
-
     my $attachment = new Bugzilla::Attachment($attach_id);
 
     # The check on attachment_is_visible here is to prevent a tiny
@@ -57,6 +58,7 @@ sub attachment_id_is_patch {
 sub get_review_url {
     my ($bug, $attach_id, $absolute) = @_;
     my $base = Bugzilla->params->{'splinter_base'};
+
     my $bug_id = $bug->id;
 
     if (defined $absolute && $absolute) {
@@ -96,8 +98,8 @@ sub munge_create_attachment {
 # (\015 and \012 are used because Perl \n is platform-dependent)
 sub add_review_links_to_email {
     my $email = shift;
-
     my $body = $email->body;
+
     my $new_body = 0;
 
     my $bug;

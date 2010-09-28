@@ -10,7 +10,7 @@ our $VERSION = '1';
 sub bug_format_comment {
     my ($self, $args) = @_;
     
-    
+    return;    
     
     my $bug = $args->{'bug'};
     my $regexes = $args->{'regexes'};

@@ -24,8 +24,9 @@ use Bugzilla;
 use Bugzilla::Attachment;
 use Bugzilla::BugMail;
 use Bugzilla::Constants;
+use Bugzilla::Error;
 use Bugzilla::Field;
-use Bugzilla::Util qw(trim);
+use Bugzilla::Util qw(trim detaint_natural);
 
 use Bugzilla::Extension::Splinter::SplinterUtil;
 
@@ -54,12 +55,43 @@ sub info {
 sub check_can_access {
     my $attachment = shift;
 
-    if (!attachment_is_visible ($attachment))
+    if (!Bugzilla::Extension::Splinter::SplinterUtil::attachment_is_visible ($attachment))
     {
         ThrowUserError('auth_failure', {action => 'access',
                                         object => 'attachment'});
     }
     return 1;
+}
+
+sub get_attachment {
+    my ($self, $params) = @_;
+
+    # The user must login in order to publish a review
+    Bugzilla->login(LOGIN_REQUIRED);
+
+    # Check parameters
+    defined $params->{attachment_id} || return "";
+
+     my $attachment = new Bugzilla::Attachment($params->{attachment_id});
+     defined $attachment || return "";
+
+     check_can_access($attachment);
+
+     # if https://bugzilla.mozilla.org/show_bug.cgi?id=579514 lands we can just do
+     # return $attachment->data; instad of all the stuff below;
+
+     my $dbh = Bugzilla->dbh;
+     my $attachid = $params->{attachment_id};
+     detaint_natural($attachid);
+
+     my ($data) = 
+        $dbh->selectrow_array('SELECT attach_data.thedata
+                                 FROM attach_data
+                            LEFT JOIN attachments
+                                   ON attachments.attach_id = attach_data.id
+                                WHERE attachments.attach_id = ?',
+                                undef, $attachid );
+    return $data;
 }
 
 # The idea of this method is to be able to

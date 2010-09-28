@@ -448,6 +448,8 @@ Patch._cleanIntro = function(intro) {
 
     return intro;
 };
+
+
 Patch.FILE_START_RE = /^(?:(?:Index|index|===|RCS|diff).*\n)*---[ \t]*(\S+).*\n\+\+\+[ \t]*(\S+).*\n(?=@@)/mg;
 Patch.HUNK_RE = /^@@[ \t]+-(\d+),(\d+)[ \t]+\+(\d+),(\d+)[ \t]+@@(.*)\n((?:[ +\\-].*\n)*)/mg;
 Patch.Patch = function(text) {
@@ -1396,6 +1398,43 @@ function addComment(bug, comment, success, failure) {
                url: "/process_bug.cgi"
            });
 }
+
+function getAttachment(id, successful) {
+    if (configHaveExtension) {
+        var params = {
+            attachment_id: id,
+        };
+
+        XmlRpc.call({
+                        url: '/xmlrpc.cgi',
+                        name: 'Splinter.get_attachment',
+                        params: params,
+                        error: function(message) {
+                            displayError("Failed to retrieve attachment: " + message);
+                        },
+                        fault: function(faultCode, faultString) {
+                            displayError("Failed to retrieve attachment: " + faultString);
+                        },
+                        success: function(text) {
+                          try {
+                            successful(text);
+                          } catch (ex) {
+                            if (ex == "Not a patch") {
+                              displayError("Splinter is unable to display this attachment.");
+                              $("<p></p>")
+                                .html("Please use another <a href=\"attachment.cgi?id="+id+"&action=edit\">review tool</a>.")
+                                .appendTo("#error");
+                            } else {
+                              throw ex;
+                            }
+                          }
+                        }
+                    });
+    } else {
+        //consider options for non extension case
+    }
+}
+
 function publishReview() {
     saveComment();
     theReview.setIntro($("#myComment").val());
@@ -2225,6 +2264,7 @@ function gotBug(xml) {
 }
 function gotAttachment(text) {
     thePatch = new Patch.Patch(text);
+
     if (theAttachment != null)
         start();
 }
@@ -2419,17 +2459,6 @@ function init() {
             attachmentId = undefined;
         }
     } else {
-        $.ajax({
-                   type: 'GET',
-                   dataType: 'text',
-                   url: '/attachment.cgi',
-                   data: {
-                       id: attachmentId
-                   },
-                   success: gotAttachment,
-                   error: function(a, b, c) {
-                       displayError("Failed to retrieve attachment " + attachmentId);
-                   }
-               });
+        getAttachment(attachmentId, gotAttachment);
     }
 }
