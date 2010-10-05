@@ -130,6 +130,10 @@ table#flags {
     float: right;
 }
 
+.bz_bug .bz_alias_short_desc_container {
+    width: inherit;
+}
+
 .last_comment_link {
     margin-left: 1em;
 }
