@@ -605,6 +605,10 @@ YAHOO.bugzilla.userAutocomplete = {
         this.dataSource.responseSchema = {
             resultsList : "result.users",
             metaFields : { error: "error", jsonRpcId: "id"},
+            fields : [
+                { key : "email" },
+                { key : "real_name"}
+            ]
         };    
     },
     init : function( field, container, multiple ) {
