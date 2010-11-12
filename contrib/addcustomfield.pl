@@ -32,15 +32,11 @@ Bugzilla::Field->create({
     name        => $name,
     description => 'Please give me a description!',
     type        => $type,
-    sortkey     => 0,
     mailhead    => 0,
     enter_bug   => 1,
     obsolete    => 1,
     custom      => 1,
     buglist     => ($type == FIELD_TYPE_MULTI_SELECT) ? 0 : 1,
-    visibility_field_id => '',
-    visibility_value_id => '',
-    value_field_id => '',
 });
 
 print "Done!\n";
