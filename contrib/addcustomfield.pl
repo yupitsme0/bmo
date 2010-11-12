@@ -21,17 +21,14 @@ use lib qw(. lib);
 
 use Bugzilla;
 use Bugzilla::Constants;
-use Bugzilla::Error;
-use Bugzilla::Util;
 use Bugzilla::Field;
-use Bugzilla::Token;
 
 die "Please provide a field name.\n" if !defined $::ARGV[0];
 
 my $name = $::ARGV[0];
-my $type = FIELD_TYPE_MULTI_SELECT;
+my $type = FIELD_TYPE_SINGLE_SELECT;
 
-$vars->{'field'} = Bugzilla::Field->create({
+Bugzilla::Field->create({
     name        => $name,
     description => 'Please give me a description!',
     type        => $type,
