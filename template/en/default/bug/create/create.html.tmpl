@@ -495,9 +495,11 @@ TUI_hide_default('expert_fields');
 
 <tbody>
   [% USE Bugzilla %]
-
+  
   [% FOREACH field = Bugzilla.active_custom_fields %]
     [% NEXT UNLESS field.enter_bug %]
+    [% NEXT IF cf_hidden_in_product(field.name, product.name, component.name) %]
+    
     [% SET value = ${field.name}.defined ? ${field.name} : "" %]
     <tr [% 'class="expert_fields"' IF !field.is_mandatory %]>
       [% INCLUDE bug/field.html.tmpl 
@@ -646,6 +648,13 @@ TUI_hide_default('expert_fields');
     [% END %]
 
     <tr>
+      <th>Status Whiteboard:</th>
+      <td colspan="3">
+        <input id="status_whiteboard" name="status_whiteboard" size="70"
+               value="[% status_whiteboard %]">
+      </td>
+    </tr>
+    <tr>
       [% INCLUDE "bug/field-label.html.tmpl"
         field = bug_fields.dependson editable = 1
       %]
@@ -662,6 +671,27 @@ TUI_hide_default('expert_fields');
       </td>
     </tr>
   [% END %]
+</tbody>
+
+<tbody>
+  <tr>
+    <th>&nbsp;</th>
+    <td colspan="3">
+      [% PROCESS "bug/create/sec-bits.html.tmpl" %]
+      [% sec_bit = sec_bits.${product.name} || sec_bits._default %]
+      
+      <input type="checkbox" name="bit-[% sec_bit %]" value="1"
+        [% FOREACH g = group %]
+          [% IF g.bit == sec_bit %]
+            [% " checked=\"checked\"" IF g.checked %]
+          [% END %]
+        [% END %]
+      >
+      Many users could be harmed by this security problem: it should be kept  
+      hidden from the public until it is resolved.
+      <br><br>
+    </td>
+  </tr>
 </tbody>
 
 <tbody class="expert_fields">

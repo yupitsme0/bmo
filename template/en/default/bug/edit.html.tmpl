@@ -151,7 +151,7 @@
   <table class="edit_form">
     <tr>
       [%# 1st Column %]
-      <td id="bz_show_bug_column_1" class="bz_show_bug_column">     
+      <td id="bz_show_bug_column_1" class="bz_show_bug_column_table">     
         <table>
           [%# *** ID, product, component, status, resolution, Hardware, and  OS *** %]
           [% PROCESS section_status %]
@@ -176,14 +176,21 @@
           
           [%# *** Dependencies *** %]
           [% PROCESS section_dependson_blocks %]
-          
+
+          [% IF user.id %]          
+            <tr>
+              <td colspan="2">
+                [% PROCESS commit_button id="_top"%]
+              </td>
+            </tr>
+          [% END %]
         </table>
       </td>
       <td>
         <div class="bz_column_spacer">&nbsp;</div>
       </td>
       [%# 2nd Column %]
-      <td id="bz_show_bug_column_2" class="bz_show_bug_column">
+      <td id="bz_show_bug_column_2" class="bz_show_bug_column_table">
         <table cellpadding="3" cellspacing="1">
         [%# *** Reported and modified dates *** %]
          [% PROCESS section_dates %]
@@ -191,16 +198,16 @@
          [% PROCESS section_cclist %]
          
          [% PROCESS section_spacer %]
-
-         [% PROCESS section_see_also %] 
+                
+         [% PROCESS section_flags %]
          
-         [% PROCESS section_customfields %]
+         [% PROCESS section_see_also %] 
          
          [% PROCESS section_spacer %]
          
+         [% PROCESS section_customfields %]
+         
          [% Hook.process("after_custom_fields") %]
-                
-         [% PROCESS section_flags %]
 
         </table>
       </td>
@@ -258,7 +265,10 @@
 [% BLOCK section_title %]
   [%# That's the main table, which contains all editable fields. %]
   <div class="bz_alias_short_desc_container edit_form">
-      [% PROCESS commit_button id="_top"%]
+     <span class="last_comment_link">
+       <a href="#c[% bug.comments.size - 1 %]" 
+          accesskey="l"><b>L</b>ast Comment</a>
+     </span>      
      <a href="show_bug.cgi?id=[% bug.bug_id %]">
         [%-# %]<b>[% terms.Bug %]&nbsp;[% bug.bug_id FILTER html %]</b>
      [%-# %]</a> -<span id="summary_alias_container" class="bz_default_hidden"> 
@@ -417,6 +427,30 @@
       </span>
     </td>
   </tr>
+  [% IF Param('usestatuswhiteboard') %]
+    <tr>
+      <td class="field_label">
+        <label for="status_whiteboard" accesskey="w"><b><u>W</u>hiteboard</b></label>:
+      </td>
+      [% PROCESS input inputname => "status_whiteboard" size => "40" colspan => 2 %]
+    </tr>
+  [% END %]
+  
+  [% IF use_keywords %]
+    <tr>
+      <td class="field_label">
+        <label for="keywords" accesskey="k">
+          <b><a href="describekeywords.cgi"><u>K</u>eywords</a></b></label>:
+      </td>
+      <td class="field_value" colspan="2">
+        [% INCLUDE bug/field.html.tmpl
+           bug = bug, field = bug_fields.keywords, value = bug.keywords
+           editable = bug.check_can_change_field("keywords", 0, 1),
+           no_tds = 1
+        %]
+      </td>
+    </tr>
+  [% END %]
 [% END %]
 
 [%############################################################################%]
@@ -569,14 +603,17 @@
     <td>
       [% IF bug.check_can_change_field("bug_file_loc", 0, 1) %]
         <span id="bz_url_edit_container" class="bz_default_hidden"> 
-        [% IF bug.bug_file_loc 
-           AND NOT bug.bug_file_loc.match("^(javascript|data)") %]
-           <a href="[% bug.bug_file_loc FILTER html %]" target="_blank"
-              title="[% bug.bug_file_loc FILTER html %]">
-             [% bug.bug_file_loc FILTER truncate(40) FILTER html %]</a>
-        [% ELSE %]
-          [% bug.bug_file_loc FILTER html %]
-        [% END %]
+        <a href="[% bug.bug_file_loc FILTER html %]" target="_blank"
+           title="[% bug.bug_file_loc FILTER html %]"
+           [% IF bug.bug_file_loc 
+                 AND bug.bug_file_loc.match("^(javascript|data)") 
+           %]
+             onclick="return confirm(
+                 'This is a &quot;data&quot; or &quot;javascript&quot; URL,'
+                 + ' which can possibly be harmful. The full URL is:\n\n'
+                 + '[% bug.bug_file_loc FILTER js FILTER html %]\n\nContinue?')"
+           [% END %]>
+          [% bug.bug_file_loc FILTER truncate(40) FILTER html %]</a>        
         (<a href="#" id="bz_url_edit_action">edit</a>)</span>
       [% END %]
       <span id="bz_url_input_area">
@@ -598,31 +635,6 @@
       [% END %]
     </td>
   </tr>
-  
-  [% IF Param('usestatuswhiteboard') %]
-    <tr>
-      <td class="field_label">
-        <label for="status_whiteboard" accesskey="w"><b><u>W</u>hiteboard</b></label>:
-      </td>
-      [% PROCESS input inputname => "status_whiteboard" size => "40" colspan => 2 %]
-    </tr>
-  [% END %]
-  
-  [% IF use_keywords %]
-    <tr>
-      <td class="field_label">
-        <label for="keywords" accesskey="k">
-          <b><a href="describekeywords.cgi"><u>K</u>eywords</a></b></label>:
-      </td>
-      <td class="field_value" colspan="2">
-        [% INCLUDE bug/field.html.tmpl
-           bug = bug, field = bug_fields.keywords, value = bug.keywords
-           editable = bug.check_can_change_field("keywords", 0, 1),
-           no_tds = 1
-        %]
-      </td>
-    </tr>
-  [% END %]
 [% END %]
 
 [%############################################################################%]
@@ -813,10 +825,18 @@
         [% IF user.id || bug.cc.size %]
           <span id="cc_edit_area_showhide_container" class="bz_default_hidden">
             (<a href="#" id="cc_edit_area_showhide">[% IF user.id %]edit[% ELSE %]show[% END %]</a>)
-          </span>
+          [% IF user.id %]
+            <div id="cc_list_num_users">
+              <ul class="cc_list_display"> 
+                [% FOREACH c = bug.cc %]
+                  <li>[% c FILTER email FILTER html %]</li>
+                [% END %]
+              </ul>
+            </div>
+          [% END %]
+        </span>
         [% END %]
         <div id="cc_edit_area">
-          <br>
           [% IF user.id %]
             <div>
               <div><label for="cc"><b>Add</b></label></div>
@@ -913,6 +933,8 @@
 [%# *** Custom Fields *** %]
   [% USE Bugzilla %]
   [% FOREACH field = Bugzilla.active_custom_fields %]
+    [% NEXT IF NOT user.id AND field.value == "---" %]
+    [% NEXT IF cf_hidden_in_product(field.name, bug.product, bug.component) %]
     <tr>
       [% PROCESS bug/field.html.tmpl value = bug.${field.name}
                                      editable = bug.check_can_change_field(field.name, 0, 1)

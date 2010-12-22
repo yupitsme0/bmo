@@ -115,3 +115,31 @@ td.bz_total {
 .bz_query_explain {
     text-align: left;
 }
+
+/* For the JS-sorting buglist. */
+
+th.sorttable_sorted,
+th.sorttable_sorted_reverse,
+th.sorted_0 {
+    background-color: #aaa;
+}
+
+th.sorted_1 {
+    background-color: #bbb;
+}
+
+th.sorted_2 {
+    background-color: #ccc;
+}
+
+th.sorted_3 {
+    background-color: #ddd;
+}
+
+th.sorted_4 {
+    background-color: #eee;
+}
+
+th.sorted_5 {
+    background-color: #fff;
+}

@@ -1119,6 +1119,10 @@ elsif (my @product_input = $cgi->param('product')) {
         $one_product = new Bugzilla::Product({ name => $cgi->param('product') });
     }
 }
+
+# See BMO/Extension.pm, "template_before_process" hook, for why this is here
+$vars->{'one_product_unconditional'} = $one_product if $one_product;
+
 # We only want the template to use it if the user can actually 
 # enter bugs against it.
 if ($one_product && Bugzilla->user->can_enter_product($one_product)) {

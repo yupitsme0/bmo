@@ -47,6 +47,7 @@
       <td><input id="sortkey" size="20" maxlength="20" name="sortkey" value="
       [%- milestone.sortkey FILTER html %]"></td>
     </tr>
+    [% Hook.process("edit_milestone") %]
 
   </table>
 

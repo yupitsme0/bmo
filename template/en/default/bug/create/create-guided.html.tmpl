@@ -34,17 +34,7 @@
    style = "#somebugs { width: 100%; height: 500px }"
  %]
 
-<p>
-  <font color="red">
-    This is a template used on mozilla.org.  This template, and the
-    comment-guided.txt.tmpl template that formats the data submitted via 
-    the form in this template, are included as a demo of what it's
-    possible to do with custom templates in general, and custom [% terms.bug %]
-    entry templates in particular. As much of the text will not apply, 
-    you should alter it 
-    if you want to use this form on your [% terms.Bugzilla %] installation.
-  </font>
-</p>
+[% INCLUDE 'bug/create/user-message.html.tmpl' %]
 
 [% tablecolour = "#FFFFCC" %]
 
@@ -78,9 +68,9 @@ function PutDescription() {
 
 [%# Include other products if sensible %]
 [% IF product.name == "Firefox" %]
-  [% productstring = "product=Mozilla%20Application%20Suite&amp;product=Firefox" %]
+  [% productstring = "product=Toolkit&amp;product=Core&amp;product=Firefox" %]
 [% ELSIF product.name == "Thunderbird" %]
-  [% productstring = "product=Mozilla%20Application%20Suite&amp;product=Thunderbird" %]
+  [% productstring = "product=MailNews%20Core&amp;product=Thunderbird" %]
 [% ELSE %]
   [% productstring = BLOCK %]product=[% product.name FILTER url_quote %][% END %]
 [% END %]
@@ -110,7 +100,7 @@ function PutDescription() {
     <input type="hidden" name="product" value="[% product.name FILTER html %]">
     [% IF product.name == "Firefox" OR 
           product.name == "Thunderbird" OR 
-          product.name == "Mozilla Application Suite" OR
+          product.name == "SeaMonkey" OR
           product.name == "Camino" %]
       <input type="hidden" name="product" value="Core">
       <input type="hidden" name="product" value="Toolkit">
@@ -213,7 +203,7 @@ function PutDescription() {
 
   [%# We override rep_platform and op_sys for simplicity. The values chosen
       are based on which are most common in the b.m.o database %]
-  [% rep_platform = [ "PC", "Macintosh", "All", "Other" ] %]
+  [% rep_platform = [ "x86", "x86_64", "PowerPC", "All", "Other" ] %]
 
   <tr bgcolor="[% tablecolour %]">
     <td align="right" valign="top">
@@ -236,7 +226,7 @@ function PutDescription() {
     </td>
   </tr>
 
-  [% IF product.name.match("Firefox|Camino|Mozilla Application Suite") %]
+  [% IF product.name.match("Firefox|Camino|SeaMonkey") %]
     [% matches = cgi.user_agent('Gecko/(\d+)') %]
     [% buildid = cgi.user_agent() IF matches %]
   [% END %]
@@ -435,8 +425,31 @@ function PutDescription() {
       </p>
     </td>
   </tr>
-
+  
   <tr>
+    <td valign="middle" align="right">
+      <b>Security</b>
+    </td>
+    <td valign="top">
+      <p>
+
+[% PROCESS "bug/create/sec-bits.html.tmpl" %]
+[% sec_bit = sec_bits.${product.name} || sec_bits._default %]
+
+        <input type="checkbox" name="bit-[% sec_bit %]" value="1"
+          [% FOREACH g = group %]
+            [% IF g.bit == sec_bit %]
+              [% " checked=\"checked\"" IF g.checked %]
+            [% END %]
+          [% END %]
+        >
+        Many users could be harmed by this security problem: it should be kept
+        hidden from the public until it is resolved.
+      </p>
+    </td>
+  </tr>
+
+  <tr bgcolor="[% tablecolour %]">
     <td valign="top" align="right">
       <b>Severity</b>
     </td>

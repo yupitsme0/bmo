@@ -135,6 +135,7 @@
     [% ELSIF field == 'creation_ts' OR field == 'delta_ts' %]
       [% val = val FILTER time("%Y-%m-%d %T %z") %]
     [% END %]
+    [% NEXT IF cf_hidden_in_product(field.name, bug.product, bug.component) %]
     <[% field %][% IF name != '' %] name="[% name FILTER xml %]"[% END -%]>
       [%- val FILTER xml %]</[% field %]>
   [% END %]

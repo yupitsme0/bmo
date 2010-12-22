@@ -950,10 +950,26 @@ sub create {
     # the parameter isn't sent to create().
     $params->{sortkey} = undef if !exists $params->{sortkey};
     $params->{type} ||= 0;
-    my $field = $class->SUPER::create(@_);
+    
+    # Purpose: if the field is active in the fields list before all of the 
+    # data structures are created, anything accessing Bug.pm will crash. So
+    # stash a copy of the intended obsolete value for later and force it
+    # to be obsolete on initial creation. Being upstreamed in bug 531243.
+    my $fieldvalues = shift;
+    my $original_obsolete;
+
+    if ($fieldvalues->{'custom'}) {
+        $original_obsolete = $fieldvalues->{'obsolete'};
+        $fieldvalues->{'obsolete'} = 1;
+    }
+    
+    my $field = $class->SUPER::create($fieldvalues);
 
     my $dbh = Bugzilla->dbh;
     if ($field->custom) {
+        # Restore the obsolete value that got stashed earlier (in memory)
+        $field->set_obsolete($original_obsolete);
+        
         my $name = $field->name;
         my $type = $field->type;
         if (SQL_DEFINITIONS->{$type}) {
@@ -970,6 +986,9 @@ sub create {
             # Insert a default value of "---" into the legal values table.
             $dbh->do("INSERT INTO $name (value) VALUES ('---')");
         }
+        
+        # Safe to write the original 'obsolete' value to the database now
+        $field->update;
     }
 
     return $field;

@@ -1620,6 +1620,12 @@ sub _check_groups {
     # Now enforce mandatory groups.
     $add_groups{$_->id} = $_ foreach @{ $product->groups_mandatory };
 
+    Bugzilla::Hook::process('bug_check_groups', {
+        product => $product,
+        group_names => $group_names, 
+        add_groups => \%add_groups 
+    });
+    
     my @add_groups = values %add_groups;
     return \@add_groups;
 }
@@ -3474,13 +3480,18 @@ sub choices {
     my $classifications = 
         Bugzilla::Classification->new_from_list([keys %class_ids]);
 
+    # Purpose: implement active-ness for milestones.
+    my @milestones = grep($_->is_active || 
+                          $_->name eq $self->target_milestone,
+                                           @{$self->product_obj->milestones});
+                          
     my %choices = (
         bug_status => $self->statuses_available,
         classification => $classifications,
         product    => \@products,
         component  => $self->product_obj->components,
         version    => $self->product_obj->versions,
-        target_milestone => $self->product_obj->milestones,
+        target_milestone => \@milestones,
     );
 
     my $resolution_field = new Bugzilla::Field({ name => 'resolution' });

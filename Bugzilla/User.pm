@@ -624,8 +624,8 @@ sub bless_groups {
     return $self->{'bless_groups'} if defined $self->{'bless_groups'};
     return [] unless $self->id;
 
-    if ($self->in_group('editusers')) {
-        # Users having editusers permissions may bless all groups.
+    if ($self->in_group('admin')) {
+        # Users having admin permissions may bless all groups.
         $self->{'bless_groups'} = [Bugzilla::Group->get_all];
         return $self->{'bless_groups'};
     }
@@ -2135,7 +2135,7 @@ Determines whether or not a user is in the given group by id.
 Returns an arrayref of L<Bugzilla::Group> objects.
 
 The arrayref consists of the groups the user can bless, taking into account
-that having editusers permissions means that you can bless all groups, and
+that having admin permissions means that you can bless all groups, and
 that you need to be able to see a group in order to bless it.
 
 =item C<get_products_by_permission($group)>

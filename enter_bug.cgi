@@ -65,6 +65,13 @@ my $vars = {};
 # All pages point to the same part of the documentation.
 $vars->{'doc_section'} = 'bugreports.html';
 
+# Purpose: force guided format for newbies
+$cgi->param(-name=>'format', -value=>'guided') 
+    if !$cgi->param('format') && !$user->in_group('canconfirm');
+
+$cgi->delete('format') 
+    if ($cgi->param('format') && ($cgi->param('format') eq "__default__"));
+
 my $product_name = trim($cgi->param('product') || '');
 # Will contain the product object the bug is created in.
 my $product;
@@ -74,8 +81,10 @@ if ($product_name eq '') {
     my @enterable_products = @{$user->get_enterable_products};
     ThrowUserError('no_products') unless scalar(@enterable_products);
 
+    # Purpose: bug fix related to displaying products on full product chooser
+    # grouped by classification.
     my $classification = Bugzilla->params->{'useclassification'} ?
-        scalar($cgi->param('classification')) : '__all';
+        scalar($cgi->param('classification' || '__all')) : '__all';
 
     # Unless a real classification name is given, we sort products
     # by classification.
@@ -521,7 +530,8 @@ if ( ($cloned_bug_id) &&
 
 # Get list of milestones.
 if ( Bugzilla->params->{'usetargetmilestone'} ) {
-    $vars->{'target_milestone'} = [map($_->name, @{$product->milestones})];
+    $vars->{'target_milestone'} = [map {$_->name}
+                                 grep {$_->is_active} @{$product->milestones}];
     if (formvalue('target_milestone')) {
        $default{'target_milestone'} = formvalue('target_milestone');
     } else {
