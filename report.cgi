@@ -29,6 +29,7 @@ use Bugzilla::Constants;
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::Field;
+use List::MoreUtils qw(uniq);
 
 my $cgi = Bugzilla->cgi;
 my $template = Bugzilla->template;
@@ -160,12 +161,6 @@ foreach my $result (@$results) {
     $row = "" if ($row eq EMPTY_COLUMN);
     $col = "" if ($col eq EMPTY_COLUMN);
     $tbl = "" if ($tbl eq EMPTY_COLUMN);
-    
-    # account for the fact that names may start with '_' or '.'.  Change this 
-    # so the template doesn't hide hash elements with those keys
-    $row =~ s/^([._])/ $1/;
-    $col =~ s/^([._])/ $1/;
-    $tbl =~ s/^([._])/ $1/;
 
     $data{$tbl}{$col}{$row}++;
     $names{"col"}{$col}++;
@@ -323,7 +318,7 @@ sub get_names {
     foreach my $field (@select_fields) {
         my @names =  map($_->name, @{$field->legal_values});
         unshift @names, ' ' if $field->name eq 'resolution'; 
-        $fields{$field->name} = \@names;
+        $fields{$field->name} = [ uniq @names ];
     } 
     my $field_list = $fields{$field};
     my @sorted;

@@ -19,6 +19,13 @@ package Bugzilla::ModPerl;
 
 use strict;
 
+# This sets up our libpath without having to specify it in the mod_perl
+# configuration.
+use File::Basename;
+use lib dirname(__FILE__);
+use Bugzilla::Constants ();
+use lib Bugzilla::Constants::bz_locations()->{'ext_libpath'};
+
 # If you have an Apache2::Status handler in your Apache configuration,
 # you need to load Apache2::Status *here*, so that any later-loaded modules
 # can report information to Apache2::Status.
@@ -38,7 +45,6 @@ use Template::Config ();
 Template::Config->preload();
 
 use Bugzilla ();
-use Bugzilla::Constants ();
 use Bugzilla::CGI ();
 use Bugzilla::Extension ();
 use Bugzilla::Install::Requirements ();
@@ -46,32 +52,23 @@ use Bugzilla::Mailer ();
 use Bugzilla::Template ();
 use Bugzilla::Util ();
 
-my ($sizelimit, $maxrequests) = ('', '');
-if (Bugzilla::Constants::ON_WINDOWS) {
-    $maxrequests = "MaxRequestsPerChild 25";
-} 
-else {
-    require Apache2::SizeLimit;
-    # This means that every httpd child will die after processing
-    # a CGI if it is taking up more than 70MB of RAM all by itself.
-    $Apache2::SizeLimit::MAX_UNSHARED_SIZE = 70000;
-    $sizelimit = "PerlCleanupHandler Apache2::SizeLimit";
-}
+use Apache2::SizeLimit;
+# This means that every httpd child will die after processing
+# a CGI if it is taking up more than 70MB of RAM all by itself.
+Apache2::SizeLimit->set_max_unshared_size(70_000);
 
 my $cgi_path = Bugzilla::Constants::bz_locations()->{'cgi_path'};
 
 # Set up the configuration for the web server
 my $server = Apache2::ServerUtil->server;
 my $conf = <<EOT;
-$maxrequests
 # Make sure each httpd child receives a different random seed (bug 476622)
 PerlChildInitHandler "sub { srand(); }"
 <Directory "$cgi_path">
     AddHandler perl-script .cgi
     # No need to PerlModule these because they're already defined in mod_perl.pl
     PerlResponseHandler Bugzilla::ModPerl::ResponseHandler
-    PerlCleanupHandler  Bugzilla::ModPerl::CleanupHandler
-    $sizelimit
+    PerlCleanupHandler  Apache2::SizeLimit Bugzilla::ModPerl::CleanupHandler
     PerlOptions +ParseHeaders
     Options +ExecCGI +FollowSymLinks
     AllowOverride Limit FileInfo Indexes
