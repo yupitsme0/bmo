@@ -1,0 +1,31 @@
+To Do
+-----
+
+- Use 'is_active' patch from bug 77193 instead of our own (as that's the one
+  which went upstream) - but removes support for is_searchable, so emailed 
+  bmo-admins to ask. (Remember to clean up is_searchable column)
+  
+- Fix additional bugs as filed in b.m.o.
+
+- Make tests pass
+
+- Write and execute test plan
+
+After Release
+-------------
+
+There are several additional extensions people want:
+
+- Update Splinter (code review extension) to work with 4.0 and turn it on
+  https://bugzilla.mozilla.org/show_bug.cgi?id=570786
+  Security review: https://bugzilla.mozilla.org/show_bug.cgi?id=578573
+  Upstream Splinter hasn't changed for a year; will need to submit patches 
+  back
+  
+- Update Securemail to work with 4.0
+  Note: it has its own repo
+  May also need security review...
+  
+- Pulse integration
+  https://bugzilla.mozilla.org/show_bug.cgi?id=589322
+

@@ -236,6 +236,8 @@
 
     [% IF user.settings.comment_box_position.value == 'before_comments' %]
       [% PROCESS comment_box %]
+    [% ELSE %]
+      [% PROCESS summon_comment_box %]
     [% END %]
   </td>
   <td>
@@ -254,7 +256,10 @@
   [% IF user.settings.comment_box_position.value == 'after_comments' %]
     <hr>
     [% PROCESS comment_box %]
-  [% END %]        
+  [% ELSE %]
+    [% PROCESS summon_comment_box %]
+  [% END %]
+  
 
 </form>
 
@@ -1134,6 +1139,21 @@
       </fieldset></table><tr></td>
     [% END %]
   </div>
+[% END %]
+
+[% BLOCK summon_comment_box %]
+<div id="comment_top_hat">
+  <script type="application/javascript">
+    function summonCommentBox() {
+        var commentbox = document.getElementById('add_comment');
+        document.getElementById('comment_top_hat').appendChild(commentbox);
+        document.getElementById('wave_wand').style.display = 'none';
+    }
+  </script>
+  <p id="wave_wand">
+    <a href="javascript:summonCommentBox()"><i>Summon comment box</i></a>
+  </p>
+</div>
 [% END %]
 
 [%############################################################################%]

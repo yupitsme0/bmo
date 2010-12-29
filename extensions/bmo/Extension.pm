@@ -28,7 +28,8 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       $blocking_trusted_setters
                                       $blocking_trusted_requesters
                                       $status_trusted_wanters
-                                      %always_fileable_group);
+                                      %always_fileable_group
+                                      %product_sec_bits);
 
 use Bugzilla::Field;
 use Bugzilla::Constants;
@@ -97,7 +98,7 @@ sub template_before_process {
             $vars->{'targetmilestones'} = [map($_->name, @milestones )];
         }
     }
-    elsif ($file =~ /^create\/create/) {
+    elsif ($file =~ /^bug\/create\/create/) {
         if (!$vars->{'cloned_bug_id'}) {
             # Allow status whiteboard values to be bookmarked
             $vars->{'status_whiteboard'} = 
@@ -124,7 +125,10 @@ sub template_before_process {
         $vars->{'default'} = \%default;
         
         # Purpose: for pretty-product-chooser
-        $vars->{'format'} = Bugzilla->cgi->param('format');      
+        $vars->{'format'} = Bugzilla->cgi->param('format');
+
+        # Data needed for "this is a security bug" checkbox
+        $vars->{'sec_bits'} = \%product_sec_bits;
     }
     elsif ($file =~ /^pages\//) {
         $vars->{'bzr_history'} = sub { 
@@ -210,11 +214,6 @@ sub object_end_of_create {
             $object->set_disable_mail(1);
         }
     }
-    # XXX remove now?
-    elsif ($class->isa('Bugzilla::Milestone')) {
-        $object->{'is_active'} = sub { return $_[0]->{'is_active'} };
-        $object->{'is_searchable'} = sub { return $_[0]->{'is_searchable'} };
-    }
 }
 
 sub check_trusted {
@@ -296,23 +295,15 @@ sub bug_check_can_change_field {
 
 # Purpose: make milestones have an "active" and a "searchable" flag.
 BEGIN { 
-    *Bugzilla::Milestone::is_active     = \&_milestone_is_active; 
-    *Bugzilla::Milestone::is_searchable = \&_milestone_is_searchable; 
-}
-
-sub _milestone_is_active {
-    return $_[0]->{'is_active'};
-}
-
-sub _milestone_is_searchable {
-    return $_[0]->{'is_searchable'};
+    *Bugzilla::Milestone::is_active     = sub { return $_[0]->{'is_active'}; };
+    *Bugzilla::Milestone::is_searchable = 
+                                      sub { return $_[0]->{'is_searchable'}; };
 }
 
 sub install_update_db {
     my ($self, $args) = @_;
     my $dbh = Bugzilla->dbh;
     
-    # 2008-02-11 rmaia@everythingsolved.com - Bug 274
     $dbh->bz_add_column('milestones', 'is_active',
                         {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
 
@@ -343,6 +334,7 @@ sub object_update_columns {
 sub _check_is {
     my ($self, $value, $field) = @_;
     $value = $self->check_boolean($value);
+    # Make sure default milestone is always active and searchable.
     # XXX If you change the name and isactive at the same time,
     # you might be able to bypass this check.
     if (!$value && $self->product->default_milestone eq $self->name) {
@@ -373,7 +365,7 @@ sub _link_uuid {
     my $args = shift;
     my $match = html_quote($args->{matches}->[1]);
     
-    return qq{<a href="http://crash-stats.mozilla.com/report/index/$match">bp-$match</a>};
+    return qq{<a href="https://crash-stats.mozilla.com/report/index/$match">bp-$match</a>};
 }
 
 sub _link_cve {
@@ -409,22 +401,6 @@ sub bug_format_comment {
         match => qr/\br(\d{4,})\b/,
         replace => \&_link_svn
     });
-}
-
-# Purpose: add JSON filter for JSON templates
-sub template_before_create {
-    my ($self, $args) = @_;
-    my $config = $args->{'config'};
-    
-    $config->{'FILTERS'}->{'json'} = sub {
-        my ($var) = @_;
-        $var =~ s/([\\\"\/])/\\$1/g;
-        $var =~ s/\n/\\n/g;
-        $var =~ s/\r/\\r/g;
-        $var =~ s/\f/\\f/g;
-        $var =~ s/\t/\\t/g;
-        return $var;
-    };
 }
 
 # Purpose: make it always possible to file bugs in certain groups.
@@ -470,13 +446,13 @@ sub quicksearch_map {
     }
 }
 
-# 2006-12-14 justdave@mozilla.com -- Bug 322327
-# Add a setting for the product chooser
+# Add product chooser setting (although it was added long ago, so add_setting
+# will just return every time).
 sub install_before_final_checks {
     my ($self, $args) = @_;
     
     add_setting('product_chooser', 
-                ['pretty_product_chooser', 'full_product_chooser'].
+                ['pretty_product_chooser', 'full_product_chooser'],
                 'pretty_product_chooser');
 }
 

@@ -1,3 +1,24 @@
+# -*- Mode: perl; indent-tabs-mode: nil -*-
+#
+# The contents of this file are subject to the Mozilla Public
+# License Version 1.1 (the "License"); you may not use this file
+# except in compliance with the License. You may obtain a copy of
+# the License at http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS
+# IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+# implied. See the License for the specific language governing
+# rights and limitations under the License.
+#
+# The Original Code is the BMO Bugzilla Extension.
+#
+# The Initial Developer of the Original Code is Gervase Markham.
+# Portions created by the Initial Developer are Copyright (C) 2010 the
+# Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#   Gervase Markham <gerv@gerv.net>
+
 package Bugzilla::Extension::BMO::Data;
 use strict;
 
@@ -9,15 +30,17 @@ our @EXPORT_OK = qw($cf_visible_in_products
                     $blocking_trusted_setters
                     $blocking_trusted_requesters
                     $status_trusted_wanters
-                    %always_fileable_group);
+                    %always_fileable_group
+                    %product_sec_bits);
 
-# Which custom fields are visible in which products and components. "[]" means
-# all components.
+# Which custom fields are visible in which products and components.
+#
+# By default, custom fields are visible in all products. However, if the name
+# of the field matches any of these regexps, it is only visible if the 
+# product (and component if necessary) is a member of the attached hash. []
+# for component means "all".
 #
 # IxHash keeps them in insertion order, and so we get regexp priorities right.
-# A custom field is visible in a product if it's _not_ listed here, or if it
-# is listed here but the product (and component if necessary) is part of its
-# hash. 
 my $cf_visible_in_products;
 tie(%$cf_visible_in_products, "Tie::IxHash", 
     qr/^cf_blocking_fennec/ => {
@@ -92,10 +115,9 @@ my $blocking_trusted_setters = {
   };
 
 # Who can request "cf_blocking_*"?
-#
-# Note no default here - if a custom field isn't listed, anyone can do this
 my $blocking_trusted_requesters = {
     qr/^cf_blocking_thunderbird/  => 'thunderbird-trusted-requesters',
+    # Note no default here - if a custom field isn't matched, anyone can do it
 };
 
 # Who can set "cf_status_*" to "wanted"?
@@ -122,3 +144,29 @@ my %always_fileable_group = (
     'webtools-security'                 => 1,
 );
 
+# Mapping of products to their security bits
+my %product_sec_bits = (
+    "mozilla.org"                  =>  6, # mozilla-confidential
+    "Webtools"                     => 12, # webtools-security
+    "Marketing"                    => 14, # marketing-private
+    "addons.mozilla.org"           => 23, # client-services-security
+    "AUS"                          => 23,
+    "Mozilla Services"             => 23,
+    "Mozilla Corporation"          => 26, # mozilla-corporation-confidential
+    "Mozilla Metrics"              => 32, # metrics-private
+    "Legal"                        => 40, # legal 
+    "Mozilla Messaging"            => 45, # mozilla-messaging-confidential 
+    "Websites"                     => 52, # websites-security
+    "Mozilla Developer Network"    => 52,
+    "support.mozilla.com"          => 52,
+    "quality.mozilla.org"          => 52,
+    "Skywriter"                    => 52,
+    "support.mozillamessaging.com" => 52,
+    "Bugzilla"                     => 53, # bugzilla-security
+    "Testopia"                     => 53,
+    "Tamarin"                      => 65, # tamarin-security
+    "Mozilla PR"                   => 73, # pr-private
+    "_default"                     => 2   # core-security
+);
+
+1;

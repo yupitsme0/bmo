@@ -1,3 +1,5 @@
+Upstreaming attempt: https://bugzilla.mozilla.org/show_bug.cgi?id=616499
+
 Included in this directory is a group of tools we've used for moving components
 around in a Bugzilla 3.2 install on bugzilla.mozilla.org.
 

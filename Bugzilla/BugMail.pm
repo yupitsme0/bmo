@@ -342,6 +342,7 @@ sub Send {
         }
     }
 
+    # Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=616422
     Bugzilla::Hook::process('bugmail_recipients',
                             { bug => $bug, recipients => \%recipients,
                               diffs => $diffs });

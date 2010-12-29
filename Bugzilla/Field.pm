@@ -954,7 +954,8 @@ sub create {
     # Purpose: if the field is active in the fields list before all of the 
     # data structures are created, anything accessing Bug.pm will crash. So
     # stash a copy of the intended obsolete value for later and force it
-    # to be obsolete on initial creation. Being upstreamed in bug 531243.
+    # to be obsolete on initial creation.
+    # Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=531243
     my $fieldvalues = shift;
     my $original_obsolete;
 

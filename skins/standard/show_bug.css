@@ -102,24 +102,6 @@ table#flags {
     vertical-align:top;
 }
 
-.cc_list_display {
-    list-style: none;
-    margin:0px;
-    padding:5px;
-    padding-right:20px;
-    height:100px;
-    overflow:auto;
-    float:left;
-    max-width:465px;
-    border:1px solid #CCC;
-}
-
-.cc_list_display li {
-    margin:0px;
-    padding:0px;
-    white-space:nowrap;
-}
-
 #status { 
     margin-bottom: 3ex;
 }
@@ -133,8 +115,4 @@ table#flags {
 }
 .bz_bug .bz_alias_short_desc_container {
     width: inherit;
-}
-
-.last_comment_link {
-    margin-left: 1em;
 }

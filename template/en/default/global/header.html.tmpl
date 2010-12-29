@@ -232,7 +232,7 @@
 
     [%# Required for the 'Autodiscovery' feature in Firefox 2 and IE 7. %]
     <link rel="search" type="application/opensearchdescription+xml"
-                       title="[% terms.Bugzilla %]@Mozilla" href="./search_plugin.cgi">
+                       title="[% terms.BugzillaTitle %]" href="./search_plugin.cgi">
     [% Hook.process("additional_header") %]
   </head>
 
@@ -257,7 +257,7 @@
 <table border="0" cellspacing="0" cellpadding="0" id="titles">
 <tr>
     <td id="title">
-      <p>[% terms.Bugzilla %]@Mozilla
+      <p>[% terms.BugzillaTitle %]
       [% " &ndash; $header" IF header %]</p>
     </td>
 

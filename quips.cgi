@@ -75,6 +75,7 @@ if ($action eq "add") {
       ThrowUserError("no_new_quips");
 
     # Add the quip 
+    # Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=621879
     my $approved = (Bugzilla->params->{'quip_list_entry_control'} eq "open")
                    || Bugzilla->user->in_group('quips-moderators') || 0;
     my $comment = $cgi->param("quip");
