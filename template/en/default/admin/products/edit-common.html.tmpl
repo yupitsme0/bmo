@@ -50,7 +50,6 @@
       [% IF product.milestones.size %]
         <select name="defaultmilestone">
           [% FOREACH m = product.milestones %]
-            [% NEXT UNLESS m.is_active %]
             <option value="[% m.name FILTER html %]"
                     [% " selected=\"selected\"" IF m.name == product.defaultmilestone %]>
               [%- m.name FILTER html -%]</option>

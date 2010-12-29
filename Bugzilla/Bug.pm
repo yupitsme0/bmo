@@ -3501,18 +3501,13 @@ sub choices {
     my $classifications = 
         Bugzilla::Classification->new_from_list([keys %class_ids]);
 
-    # Purpose: implement active-ness for milestones.
-    my @milestones = grep($_->is_active || 
-                          $_->name eq $self->target_milestone,
-                                           @{$self->product_obj->milestones});
-                          
     my %choices = (
         bug_status => $self->statuses_available,
         classification => $classifications,
         product    => \@products,
         component  => $self->product_obj->components,
         version    => $self->product_obj->versions,
-        target_milestone => \@milestones,
+        target_milestone => $self->product_obj->milestones,
     );
 
     my $resolution_field = new Bugzilla::Field({ name => 'resolution' });

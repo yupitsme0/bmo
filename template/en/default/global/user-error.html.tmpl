@@ -1075,7 +1075,7 @@
                          'milestones.html' => 'About Milestones'} %]
     Sorry, but [% milestone.name FILTER html %] is the default milestone
     for the '[% milestone.product.name FILTER html %]' product, and so
-    it cannot be deleted or made inactive.
+    it cannot be deleted.
 
   [% ELSIF error == "milestone_name_too_long" %]
     [% title = "Milestone Name Is Too Long" %]

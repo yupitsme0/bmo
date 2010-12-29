@@ -84,19 +84,6 @@ sub template_before_process {
         }
 
         $vars->{'columns_sortkey'} = \%columns_sortkey;
-
-        # Purpose: Use only enabled milestones on mass change page.
-        #
-        # This requires a special var because $vars->{'one_product'}, for 
-        # some reason, is only there if the user can enter bugs in the product.
-        # I'm not convinced that this is the same thing as being able to change
-        # the TM using mass change, so I've had to put it in the vars hash
-        # unconditionally in a new var for this check.
-        my $one_product = $vars->{'one_product_unconditional'};
-        if ($one_product && Bugzilla->params->{'usetargetmilestone'}) {
-            my @milestones = grep($_->is_active, @{$one_product->milestones});
-            $vars->{'targetmilestones'} = [map($_->name, @milestones )];
-        }
     }
     elsif ($file =~ /^bug\/create\/create/) {
         if (!$vars->{'cloned_bug_id'}) {
@@ -289,73 +276,6 @@ sub bug_check_can_change_field {
                 $new_value eq 'INCOMPLETE'))
         {
             push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
-        }
-    }
-}
-
-# Purpose: make milestones have an "active" and a "searchable" flag.
-BEGIN { 
-    *Bugzilla::Milestone::is_active     = sub { return $_[0]->{'is_active'}; };
-    *Bugzilla::Milestone::is_searchable = 
-                                      sub { return $_[0]->{'is_searchable'}; };
-}
-
-sub install_update_db {
-    my ($self, $args) = @_;
-    my $dbh = Bugzilla->dbh;
-    
-    $dbh->bz_add_column('milestones', 'is_active',
-                        {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
-
-    $dbh->bz_add_column('milestones', 'is_searchable',
-                        {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
-}
-
-sub object_columns {
-    my ($self, $args) = @_;
-    my $class = $args->{'class'};
-    my $columns = $args->{'columns'};
-    
-    if ($class->isa('Bugzilla::Milestone')) {
-        push(@$columns, "is_active", "is_searchable");
-    }
-}
-
-sub object_update_columns {
-    my ($self, $args) = @_;
-    my $object = $args->{'object'};
-    my $columns = $args->{'columns'};
-    
-    if ($object->isa('Bugzilla::Milestone')) {
-        push(@$columns, "is_active", "is_searchable");
-    }
-}
-
-sub _check_is {
-    my ($self, $value, $field) = @_;
-    $value = $self->check_boolean($value);
-    # Make sure default milestone is always active and searchable.
-    # XXX If you change the name and isactive at the same time,
-    # you might be able to bypass this check.
-    if (!$value && $self->product->default_milestone eq $self->name) {
-        ThrowUserError('milestone_is_default', { milestone => $self });
-    }
-    
-    return $value;
-}
-
-sub object_validators {
-    my ($self, $args) = @_;
-    my $class = $args->{'class'};
-    my $validators = $args->{'validators'};
-    
-    if ($class->isa('Bugzilla::Milestone')) {
-        $validators->{'is_active'} = sub { 
-            $_[0]->_check_is($_[1], 'is_active');
-        };
-        
-        $validators->{'is_searchable'} = sub { 
-            $_[0]->_check_is($_[1], 'is_searchable');
         }
     }
 }
