@@ -1097,10 +1097,6 @@ elsif (my @product_input = $cgi->param('product')) {
         $one_product = new Bugzilla::Product({ name => $cgi->param('product') });
     }
 }
-
-# See BMO/Extension.pm, "template_before_process" hook, for why this is here
-$vars->{'one_product_unconditional'} = $one_product if $one_product;
-
 # We only want the template to use it if the user can actually 
 # enter bugs against it.
 if ($one_product && Bugzilla->user->can_enter_product($one_product)) {
@@ -1165,11 +1161,11 @@ if ($dotweak && scalar @bugs) {
     # versions for the product (if there is only one product on the list of
     # products), and a list of components for the product.
     if ($one_product) {
-        $vars->{'versions'} = [map($_->name ,@{ $one_product->versions })];
-        $vars->{'components'} = [map($_->name, @{ $one_product->components })];
+        $vars->{'versions'} = [map($_->name, grep($_->is_active, @{ $one_product->versions }))];
+        $vars->{'components'} = [map($_->name, grep($_->is_active, @{ $one_product->components }))];
         if (Bugzilla->params->{'usetargetmilestone'}) {
-            $vars->{'targetmilestones'} = [map($_->name, 
-                                               @{ $one_product->milestones })];
+            $vars->{'targetmilestones'} = [map($_->name, grep($_->is_active,  
+                                               @{ $one_product->milestones }))];
         }
     }
 }

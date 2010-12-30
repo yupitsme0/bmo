@@ -126,6 +126,7 @@
             [% legal_values = field.legal_values %]
           [% END %]
           [% FOREACH legal_value = legal_values %]
+            [% NEXT IF NOT legal_value.is_active AND NOT value.contains(legal_value.name).size %]
           
             [%# Purpose: hide fields from those who can't change them %]
             [% IF field.name.match("^cf_blocking_") OR 

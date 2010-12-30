@@ -86,6 +86,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
       "Other Applications"    => [],
       "SeaMonkey"             => [],
       "support.mozilla.com"   => [],
+      "Tech Evangelism"       => [],
       "Testing"               => [],
       "Toolkit"               => [],
       "Websites"              => ["getpersonas.com"],
@@ -117,7 +118,7 @@ my $blocking_trusted_setters = {
 # Who can request "cf_blocking_*"?
 my $blocking_trusted_requesters = {
     qr/^cf_blocking_thunderbird/  => 'thunderbird-trusted-requesters',
-    # Note no default here - if a custom field isn't matched, anyone can do it
+    '_default'                    => 'canconfirm', # Bug 471582
 };
 
 # Who can set "cf_status_*" to "wanted"?

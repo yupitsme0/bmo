@@ -168,11 +168,12 @@
         <dt>
           [% display_value("resolution", "WORKSFORME") FILTER html %]
         </dt>
-        <dd>
-          All attempts at reproducing this [% terms.bug %] were futile, 
+        <dd>Either:<br>
+          a) all attempts at reproducing this [% terms.bug %] were futile, 
           and reading the code produces no clues as to why the described
-          behavior would occur. If more information appears later,
-          the [% terms.bug %] can be reopened.
+          behavior would occur;<br>or<br>
+          b) the bug was present once, but is now not reproducible (and so was
+          probably fixed in another bug).
         </dd>
 
         <!-- Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=616453 -->

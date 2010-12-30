@@ -138,7 +138,7 @@ function PutDescription() {
   <input type="hidden" name="priority"
          value="[% default.priority FILTER html %]">
   <input type="hidden" name="version"
-         value="[% default.version FILTER html %]">
+         value="[% default.version.name FILTER html %]">
   <input type="hidden" name="token" value="[% token FILTER html %]">
 
 <table valign="top" cellpadding="5" cellspacing="5" border="0">
@@ -406,10 +406,7 @@ function PutDescription() {
       %]
       <p>
         Add any additional information you feel may be
-        relevant to this [% terms.bug %], such as the <b>theme</b> you were
-        using (does the [% terms.bug %] still occur
-        with the default theme?), a 
-        <b><a href="http://kb.mozillazine.org/Quality_Feedback_Agent">Talkback crash ID</a></b>, or special
+        relevant to this [% terms.bug %], such as special
         information about <b>your computer's configuration</b>. Any information
         longer than a few lines, such as a <b>stack trace</b> or <b>HTML
         testcase</b>, should be added
@@ -419,9 +416,8 @@ function PutDescription() {
         into your URL bar.
         <br>
         <br>
-        If you are reporting a crash, note the module in
-        which the software crashed (e.g., <tt>Application Violation in
-        gkhtml.dll</tt>).
+        If you are reporting a crash, please <a href="https://developer.mozilla.org/En/How_to_get_a_stacktrace_for_a_bug_report
+">try and get a stack trace</a>, which tells us exactly where things went wrong.
       </p>
     </td>
   </tr>

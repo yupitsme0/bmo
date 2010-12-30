@@ -633,6 +633,9 @@ sub update_table_definitions {
     # 2010-10-09 LpSolit@gmail.com - Bug 505165
     $dbh->bz_alter_column('flags', 'setter_id', {TYPE => 'INT3', NOTNULL => 1});
 
+    # 2009-05-07 ghendricks@novell.com - Bug 77193
+    _add_isactive_to_product_fields();
+
     ################################################################
     # New --TABLE-- changes should go *** A B O V E *** this point #
     ################################################################
@@ -3409,6 +3412,26 @@ sub _fix_series_creator_fk {
     # automatically at the end of all DB changes.)
     if ($fk and $fk->{DELETE} eq 'SET NULL') {
         $dbh->bz_drop_fk('series', 'creator');
+    }
+}
+
+sub _add_isactive_to_product_fields {
+    my $dbh = Bugzilla->dbh;
+
+    # If we add the isactive column all values should start off as active
+    if (!$dbh->bz_column_info('components', 'isactive')) {
+        $dbh->bz_add_column('components', 'isactive', 
+            {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
+    }
+    
+    if (!$dbh->bz_column_info('versions', 'isactive')) {
+        $dbh->bz_add_column('versions', 'isactive', 
+            {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
+    }
+
+    if (!$dbh->bz_column_info('milestones', 'isactive')) {
+        $dbh->bz_add_column('milestones', 'isactive', 
+            {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
     }
 }
 

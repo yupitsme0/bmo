@@ -1,17 +1,22 @@
 To Do
 -----
 
-- Use 'is_active' patch from bug 77193 instead of our own (as that's the one
-  which went upstream) - but removes support for is_searchable, so emailed 
-  bmo-admins to ask. (Remember to clean up is_searchable column)
-  
+- Upstream hook in template/en/default/index.html.tmpl
+
 - Fix additional bugs as filed in b.m.o.
 
-- Make tests pass
+- Fix template/en/default/global/choose-product.html.tmpl to work better (and be a patch on top of the original)
+
+- Fix Bugzilla Helper to suck a bit less
 
 - Write and execute test plan
 
 - make sure sanitizeme.pl still works
+
+Bugs Fixed
+----------
+
+
 
 After Release
 -------------
@@ -26,8 +31,16 @@ There are several additional extensions people want:
   
 - Update Securemail to work with 4.0
   Note: it has its own repo
+  I've put in some (all?) of the hooks it will need; code which ties into some 
+  of the custom hooks it uses in 3.6 can perhaps be rewritten to use new hooks
+  in core.
   May also need security review...
+  https://bugzilla.mozilla.org/show_bug.cgi?id=190945
   
 - Pulse integration
   https://bugzilla.mozilla.org/show_bug.cgi?id=589322
 
+Notes
+-----
+
+Patch has been applied from bug 77193 to make it possible to make versions, milestones and components inactive. This code is in 4.2 and so won't be needed for the next version upgrade. Also, the migration code in the install_update_db hook can go.

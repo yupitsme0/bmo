@@ -35,8 +35,8 @@ use Bugzilla::Field;
 use Bugzilla::Constants;
 use Bugzilla::Status;
 use Bugzilla::User::Setting;
-use Tie::IxHash;
 use List::MoreUtils qw(first_index);
+use Bugzilla::Util qw(html_quote);
 
 our $VERSION = '0.1';
 
@@ -66,7 +66,7 @@ sub template_before_process {
         foreach my $o (@orderstrings) {
             $o =~ s/bugs.//;
             $o = $db_order_column_name_map{$o} if 
-                                grep($_ eq $o, keys(%db_order_column_name_map));
+                               grep($_ eq $o, keys(%db_order_column_name_map));
             next if (grep($_ eq $o, @order_columns));
             push(@order_columns, $o);
         }
@@ -85,7 +85,7 @@ sub template_before_process {
 
         $vars->{'columns_sortkey'} = \%columns_sortkey;
     }
-    elsif ($file =~ /^bug\/create\/create/) {
+    elsif ($file =~ /^bug\/create\/create\.html/) {
         if (!$vars->{'cloned_bug_id'}) {
             # Allow status whiteboard values to be bookmarked
             $vars->{'status_whiteboard'} = 
@@ -108,7 +108,6 @@ sub template_before_process {
         };
         bless \%default, 'Bugzilla::FakeBug';
         
-        # XXX necessary?
         $vars->{'default'} = \%default;
         
         # Purpose: for pretty-product-chooser
@@ -302,6 +301,15 @@ sub _link_svn {
     return qq{<a href="http://viewvc.svn.mozilla.org/vc?view=rev&amp;revision=$match">r$match</a>};
 }
 
+sub _link_hg {
+    my $args = shift;
+    my $text = html_quote($args->{matches}->[0]);
+    my $repo = html_quote($args->{matches}->[1]);
+    my $id   = html_quote($args->{matches}->[6]);
+    
+    return qq{<a href="https://hg.mozilla.org/$repo/rev/$id">$text</a>};
+}
+
 sub bug_format_comment {
     my ($self, $args) = @_;
     my $regexes = $args->{'regexes'};
@@ -320,6 +328,20 @@ sub bug_format_comment {
     push (@$regexes, {
         match => qr/\br(\d{4,})\b/,
         replace => \&_link_svn
+    });
+
+    # Note: if you add more brackets here, the match indexes in _link_hg() will
+    # need to change.
+    my $hgrepos = join('|', qw!(releases/)?comm-[\w.]+ 
+                               (releases/)?mozilla-[\w.]+
+                               (releases/)?mobile-[\w.]+
+                               tracemonkey
+                               tamarin-[\w.]+
+                               camino!);
+
+    push (@$regexes, {
+        match => qr/\b(($hgrepos)\s+changeset:?\s+(\d+:)?([0-9a-fA-F]{12}))\b/,
+        replace => \&_link_hg
     });
 }
 
@@ -374,6 +396,18 @@ sub install_before_final_checks {
     add_setting('product_chooser', 
                 ['pretty_product_chooser', 'full_product_chooser'],
                 'pretty_product_chooser');
+}
+
+# Migrate old is_active stuff to new patch (is in core in 4.2), The old column
+# name was 'is_active', the new one is 'isactive' (no underscore).
+sub install_update_db {
+    my $dbh = Bugzilla->dbh;
+    
+    if ($dbh->bz_column_info('milestones', 'is_active')) {
+        $dbh->do("UPDATE milestones SET isactive = 0 WHERE is_active = 0;");
+        $dbh->bz_drop_column('milestones', 'is_active');
+        $dbh->bz_drop_column('milestones', 'is_searchable');
+    }
 }
 
 __PACKAGE__->NAME;

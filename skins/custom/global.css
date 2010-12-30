@@ -5,8 +5,8 @@
 
 body {
 	margin: 0;
-	padding: 30px 15px 2px 15px;
-	background: #fff url("https://www.mozilla.org/images/subsite_back.gif") repeat-x;
+	padding: 15px 15px 2px 15px;
+	background: none;
 }
 
 #header {
