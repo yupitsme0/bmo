@@ -1,16 +1,17 @@
 package Bugzilla::Extension::Splinter;
+
 use strict;
+
 use base qw(Bugzilla::Extension);
 
-use Bugzilla::Extension::Splinter::SplinterUtil;
+use Bugzilla::Extension::Splinter::Util;
+
 use Bugzilla::Template;
 
-our $VERSION = '1';
+our $VERSION = '0.1';
 
 sub bug_format_comment {
     my ($self, $args) = @_;
-    
-    return;    
     
     my $bug = $args->{'bug'};
     my $regexes = $args->{'regexes'};
@@ -46,15 +47,13 @@ sub bug_format_comment {
 
 sub config_add_panels {
     my ($self, $args) = @_;
-    
+
     my $modules = $args->{panel_modules};
-    $modules->{Splinter} = "Bugzilla::Extension::Splinter::ConfigSplinter";
+    $modules->{Splinter} = "Bugzilla::Extension::Splinter::Config";
 }
 
 sub mailer_before_send {
     my ($self, $args) = @_;
-    
-    
     
     # Post-process bug mail to add review links to bug mail.
     # It would be nice to be able to hook in earlier in the
@@ -66,7 +65,6 @@ sub mailer_before_send {
 
 sub page_before_template {
     my ($self, $args) = @_;
-    
     
     my $REVIEW_RE = qr/Review\s+of\s+attachment\s+(\d+)\s*:/;
     
@@ -92,8 +90,7 @@ sub webservice {
     my ($self, $args) = @_;
     
     my $dispatch = $args->{dispatch};
-    $dispatch->{Splinter} = "Bugzilla::Extension::Splinter::WSSplinter";
+    $dispatch->{Splinter} = "Bugzilla::Extension::Splinter::WebService";
 }
-
 
 __PACKAGE__->NAME;

@@ -21,9 +21,9 @@
 [% PROCESS global/header.html.tmpl
   title = "Patch Review"
   header = "Patch Review"
-  style_urls = [ "/extensions/Splinter/web/splinter.css" ]
-  javascript_urls = [ "/extensions/Splinter/web/jquery.min.js",
-                      "/extensions/Splinter/web/splinter.flat.js" ]
+  style_urls = [ "extensions/Splinter/web/splinter.css" ]
+  javascript_urls = [ "extensions/Splinter/web/jquery.min.js",
+                      "extensions/Splinter/web/splinter.flat.js" ]
   subheader = "&nbsp;"
   header_addl_info = "&nbsp;"
 %]
@@ -34,11 +34,11 @@
   [% END %]
   ];
 
-  configBase = '[% Param('splinter_base') FILTER js %]';
+  configBase = '[% urlbase FILTER none %][% Param('splinter_base') FILTER js %]';
   $(function() { init(); });
-  configBugzillaUrl = '/';
+  configBugzillaUrl = '[% urlbase FILTER none %]';
   configHaveExtension = true;
-  configHelp = "/extensions/Splinter/web/help.html";
+  configHelp = '[% urlbase FILTER none %]page.cgi?id=splinter/help.html';
   configNote = '';
 </script>
 

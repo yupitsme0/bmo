@@ -16,9 +16,12 @@
 #                  Max Kanat-Alexander <mkanat@bugzilla.org>
 #                  Owen Taylor <otaylor@fishsoup.net>
 
-package Bugzilla::Extension::Splinter::WSSplinter;
+package Bugzilla::Extension::Splinter::WebService;
+
 use strict;
 use warnings;
+
+use base qw(Bugzilla::WebService);
 
 use Bugzilla;
 use Bugzilla::Attachment;
@@ -28,23 +31,20 @@ use Bugzilla::Error;
 use Bugzilla::Field;
 use Bugzilla::Util qw(trim detaint_natural);
 
-use Bugzilla::Extension::Splinter::SplinterUtil;
-
-use base qw(Bugzilla::WebService);
+use Bugzilla::Extension::Splinter::Util;
 
 sub info {
     my $user = Bugzilla->login;
 
-    my $results = {
-	version => 1
-    };
+    my $results = {	version => 1 };
 
     if ($user->login ne '') {
-	$results->{'logged_in'} = 1;
-	$results->{'login'} = $user->login;
-	$results->{'name'} = $user->name;
-    } else {
-	$results->{'logged_in'} = 0;
+	    $results->{'logged_in'} = 1;
+	    $results->{'login'}     = $user->login;
+	    $results->{'name'}      = $user->name;
+    } 
+    else {
+	    $results->{'logged_in'} = 0;
     }
 
     return $results;
@@ -55,11 +55,11 @@ sub info {
 sub check_can_access {
     my $attachment = shift;
 
-    if (!Bugzilla::Extension::Splinter::SplinterUtil::attachment_is_visible ($attachment))
-    {
-        ThrowUserError('auth_failure', {action => 'access',
-                                        object => 'attachment'});
+    if (attachment_is_visible($attachment)) {
+        ThrowUserError('auth_failure', { action => 'access',
+                                         object => 'attachment' });
     }
+
     return 1;
 }
 
@@ -72,19 +72,19 @@ sub get_attachment {
     # Check parameters
     defined $params->{attachment_id} || return "";
 
-     my $attachment = new Bugzilla::Attachment($params->{attachment_id});
-     defined $attachment || return "";
+    my $attachment = new Bugzilla::Attachment($params->{attachment_id});
+    defined $attachment || return "";
 
-     check_can_access($attachment);
+    check_can_access($attachment);
 
-     # if https://bugzilla.mozilla.org/show_bug.cgi?id=579514 lands we can just do
-     # return $attachment->data; instad of all the stuff below;
+    # if https://bugzilla.mozilla.org/show_bug.cgi?id=579514 lands we can just do
+    # return $attachment->data; instad of all the stuff below;
 
-     my $dbh = Bugzilla->dbh;
-     my $attachid = $params->{attachment_id};
-     detaint_natural($attachid);
+    my $dbh = Bugzilla->dbh;
+    my $attachid = $params->{attachment_id};
+    detaint_natural($attachid);
 
-     my ($data) = 
+    my ($data) = 
         $dbh->selectrow_array('SELECT attach_data.thedata
                                  FROM attach_data
                             LEFT JOIN attachments
@@ -137,10 +137,10 @@ sub publish_review {
     # allow it.
     check_can_access($attachment);
 
-    my $bug = new Bugzilla::Bug($attachment->bug_id);
+    my $bug = $attachment->bug;
 
     Bugzilla->user->can_edit_product($bug->product_id)
-        || ThrowUserError("product_edit_denied", {product => $bug->product});
+        || ThrowUserError("product_edit_denied", { product => $bug->product });
 
     # This is a "magic string" used to identify review comments
     my $comment = "Review of attachment " . $attachment->id . ":\n\n" . $review;
@@ -148,7 +148,7 @@ sub publish_review {
     my $dbh = Bugzilla->dbh;
 
     # Figure out when the changes were made.
-    my ($timestamp) = $dbh->selectrow_array("SELECT NOW()");
+    my ($timestamp) = $dbh->selectrow_array("SELECT LOCALTIMESTAMP(0)");
 
     # Append review comment
     $bug->add_comment($comment);
@@ -161,10 +161,10 @@ sub publish_review {
         # for example, we wouldn't want an explicit 'use Bugzilla::AttachmentStatus'
 
         # Update the attachment record in the database.
-        $dbh->do("UPDATE  attachments
-                  SET     status      = ?,
-                          modification_time = ?
-                  WHERE   attach_id   = ?",
+        $dbh->do("UPDATE attachments
+                  SET    status      = ?,
+                         modification_time = ?
+                  WHERE  attach_id   = ?",
                   undef, ($attachment_status, $timestamp, $attachment->id));
 
         my $updated_attachment = new Bugzilla::Attachment($attachment->id);
@@ -183,12 +183,13 @@ sub publish_review {
     }
 
     # This actually adds the comment
-    $bug->update();
+    my $changes = $bug->update();
 
     $dbh->bz_commit_transaction();
 
-    # Send mail.
-    Bugzilla::BugMail::Send($bug->bug_id, { changer => Bugzilla->user->login });
+    # Send mail
+    my $vars = { title_tag => "bug_processed" };
+    $bug->send_changes($changes, $vars);
 
     # Nothing very interesting to return on success, so just return an empty structure
     return {};

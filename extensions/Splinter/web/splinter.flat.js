@@ -1091,228 +1091,7 @@ ReviewStorage.LocalReviewStorage.prototype = {
         delete localStorage[propertyName];
     }
 };
-var XmlRpc = {};
-XmlRpc._appendValue = function(doc, parent, value) {
-    var valueElement = doc.createElement('value');
-    parent.appendChild(valueElement);
 
-    var element;
-    switch (typeof(value)) {
-    case 'boolean':
-        element = doc.createElement('boolean');
-        element.appendChild(doc.createTextNode(value ? '1' : '0'));
-        break;
-    case 'object':
-        if (value instanceof Date) {
-            throw new Error("Date values not yet implemented");
-        } else if (value instanceof Array) {
-            throw new Error("Array values not yet implemented");
-        } else {
-            element = doc.createElement('struct');
-            for (var i in value) {
-                var memberElement = doc.createElement('member');
-                var nameElement = doc.createElement('name');
-                nameElement.appendChild(doc.createTextNode(i));
-                memberElement.appendChild(nameElement);
-                var vElement = doc.createElement('value');
-                XmlRpc._appendValue(doc, vElement, value[i]);
-                memberElement.appendChild(vElement);
-                element.appendChild(memberElement);
-            }
-        }
-        break;
-    case 'number':
-        if (Math.round(value) == value &&
-            value >= -0x8000000 && value <= 0x7fffffff)
-            element = doc.createElement('int');
-        else
-            element = doc.createElement('double');
-        element.appendChild(doc.createTextNode(value.toString()));
-        break;
-    case 'string':
-        element = doc.createElement('string');
-        element.appendChild(doc.createTextNode(value));
-        break;
-    default:
-        throw new Error("Don't know how to handle value of type: " + typeof(value));
-    }
-
-    valueElement.appendChild(element);
-};
-XmlRpc._appendParam = function(doc, paramsElement, param) {
-    var paramElement = doc.createElement('param');
-    XmlRpc._appendValue(doc, paramElement, param);
-    paramsElement.appendChild(paramElement);
-};
-XmlRpc.ParseError = function(message) {
-    this.message = message;
-};
-XmlRpc.ParseError.prototype = {
-    toString: function() {
-        return "XmlRpc.ParseError: " + this.message;
-    }
-};
-XmlRpc._parseValue = function(valueElement) {
-    var text;
-    var value;
-
-    if (valueElement.firstChild == null || valueElement.firstChild.nextChild != null)
-        throw new XmlRpc.ParseError("<value/> doesn't have a single child");
-
-    var element = valueElement.firstChild;
-
-    switch (element.tagName) {
-    case 'boolean':
-        text = Utils.strip(element.textContent);
-        if (text == '0')
-            value = false;
-        else if (text == '1')
-            value = true;
-        else
-            throw new XmlRpc.ParseError("<boolean/> should be 0 or 1");
-        break;
-    case 'double':
-        text = Utils.strip(element.textContent);
-        value = parseFloat(text);
-        if (isNaN(value))
-            throw new XmlRpc.ParseError("<double/> doesn't contain a floating point number");
-        break;
-    case 'int':
-    case 'i4':
-        text = Utils.strip(element.textContent);
-        value = parseInt(text);
-        if (isNaN(value))
-            throw new XmlRpc.ParseError("<i4/> doesn't contain an integer");
-        break;
-    case 'struct':
-        value = new Object();
-        var member = element.firstChild;
-        while (member){
-            if (member.tagName != 'member')
-                throw new XmlRpc.ParseError("<struct/> has childeren other than <member/>");
-
-            var nameElement = member.firstChild;
-            if (nameElement == null || nameElement.tagName != 'name')
-                throw new XmlRpc.ParseError("<member/> doesn't have <name/> as the first element");
-
-            var name = nameElement.textContent;
-
-            var valueElement = nameElement.nextSibling;
-            if (valueElement == null || valueElement.tagName != 'value')
-                throw new XmlRpc.ParseError("<member/> doesn't have <value/> as the second element");
-
-            value[name] = XmlRpc._parseValue(valueElement);
-
-            if (valueElement.nextSibling != null)
-                throw new XmlRpc.ParseError("<member/> has too many children");
-
-            member = member.nextSibling;
-        }
-        break;
-    case 'string':
-        value = Utils.strip(element.textContent);
-        break;
-    case 'array':
-    case 'base64':
-    case 'dateTime.iso8601':
-        throw new XmlRpc.ParseError("Support for <" + element.tagName + "/> not yet implemented");
-    default:
-        throw new XmlRpc.ParseError("Unknown value element <" + element.tagName + "/>");
-    }
-
-    return value;
-};
-XmlRpc._handleSuccess = function(options, xml) {
-    try {
-        var root = xml.documentElement;
-        if (root.tagName != 'methodResponse')
-            throw new XmlRpc.ParseError("Root isn't <methodResponse/>");
-
-        if (root.firstChild.tagName == 'params' &&
-            root.firstChild.nextSibling == null) {
-
-            var param = root.firstChild.firstChild;
-            if (param == null ||
-                param.tagName != 'param' ||
-                param.nextSibling != null)
-                throw new XmlRpc.ParseError("<params/> element in response should have <param/> child");
-
-            var value = param.firstChild;
-            if (value == null ||
-                value.tagName != 'value' ||
-                value.nextSibling != null)
-                throw new XmlRpc.ParseError("<param/> element in response doesn't have a single value as child");
-
-            options.success(XmlRpc._parseValue(value));
-
-        } else if (root.firstChild.tagName == 'fault' &&
-                   root.firstChild.nextSibling == null) {
-
-            var value = root.firstChild.firstChild;
-            if (value == null ||
-                value.tagName != 'value' ||
-                value.nextSibling != null)
-                throw new XmlRpc.ParseError("<fault/> element in response should have <value/> child");
-
-            var struct = value.firstChild;
-            if (struct == null ||
-                struct.tagName != 'struct')
-                throw new XmlRpc.ParseError("<value/> element in <fault/> should have <struct/> child");
-
-            var faultStruct = XmlRpc._parseValue(value);
-
-            var faultCode = faultStruct.faultCode;
-            var faultString = faultStruct.faultString;
-
-            //  XMLRPC::Lite gives faultCodes like 'Client' at times,
-            //  so we don't check for integer, though the spec says
-            //  the faultCode should always be an integer
-            if (faultCode == null || typeof(faultString) != 'string')
-                throw new XmlRpc.ParseError("fault structure should contain an [integer] faultCode and string faultString");
-
-            options.fault(faultCode, faultString);
-
-        } else {
-            throw new XmlRpc.ParseError("Bad content of <methodResponse/>");
-        }
-
-    } catch (e) {
-        if (e instanceof XmlRpc.ParseError)
-            options.error(e.message);
-        else
-            throw e;
-    }
-};
-XmlRpc.call = function(options) {
-    var doc = document.implementation.createDocument(null, "methodCall", null);
-    var methodNameElement = doc.createElement("methodName");
-    methodNameElement.appendChild(doc.createTextNode(options.name));
-    doc.documentElement.appendChild(methodNameElement);
-    var paramsElement = doc.createElement("params");
-    doc.documentElement.appendChild(paramsElement);
-
-    if (options.params instanceof Array) {
-        for (var i = 0; i < params.length; i++) {
-            XmlRpc._appendParam(doc, paramsElement, options.params[i]);
-        }
-    } else if (options.params != null) {
-        XmlRpc._appendParam(doc, paramsElement, options.params);
-    }
-
-    $.ajax({
-               type: 'POST',
-               url: options.url,
-               contentType: 'text/xml',
-               dataType: 'xml',
-               data: (new XMLSerializer()).serializeToString(doc),
-               error: function(xmlHttpRequest, textStatus, errorThrown) {
-                   options.error(textStatus);
-               },
-               success: function(xml) {
-                   XmlRpc._handleSuccess(options, xml);
-               }
-           });
-};
 var reviewStorage;
 var attachmentId;
 var theBug;
@@ -1326,7 +1105,6 @@ var saveDraftTimeoutId;
 var saveDraftNoticeTimeoutId;
 var savingDraft = false;
 var currentEditComment;
-var ADD_COMMENT_SUCCESS = /<title>\s*Bug[\S\s]*processed\s*<\/title>/;
 var UPDATE_ATTACHMENT_SUCCESS = /<title>\s*Changes\s+Submitted/;
 function doneLoading() {
     $("#loading").hide();
@@ -1369,67 +1147,68 @@ function updateAttachmentStatus(attachment, newStatus, success, failure) {
                    }
                },
                type: 'POST',
-               url: "/attachment.cgi"
+               url: "attachment.cgi"
            });
 }
 function addComment(bug, comment, success, failure) {
-    var data = {
-        id: bug.id,
-        comment: comment
+    var callData = {
+        "method": "Bug.add_comment",
+        "params": [ {"id": bug.id, "comment": comment }],
+        "id": 1
     };
 
-    if (bug.token)
-        data.token = bug.token;
+    var jsonCallData = JSON.stringify(callData);
 
     $.ajax({
-               data: data,
-               dataType: 'text',
-               error: function(xmlHttpRequest, textStatus, errorThrown) {
-                   failure();
-               },
-               success: function(data, textStatus) {
-                   if (data.search(ADD_COMMENT_SUCCESS) != -1) {
-                       success();
-                   } else {
-                       failure();
-                   }
-               },
-               type: 'POST',
-               url: "/process_bug.cgi"
-           });
+        "contentType":"application/json",
+        "data": jsonCallData,
+        "dataType": "json",
+        "url": "jsonrpc.cgi",
+        "type": "post",
+        error: function(xmlHttpRequest, textStatus, errorThrown) {
+            failure();
+        },
+        success: function(result) {
+            if (result.id) {
+                success();
+            } else {
+                failure();
+            }
+        }
+    });
 }
 
 function getAttachment(id, successful) {
     if (configHaveExtension) {
-        var params = {
-            attachment_id: id,
+        var callData = { 
+            "method": "Splinter.get_attachment", 
+            "params": [ { "attachment_id": id } ],
+            "id" : 1 
         };
 
-        XmlRpc.call({
-                        url: '/xmlrpc.cgi',
-                        name: 'Splinter.get_attachment',
-                        params: params,
-                        error: function(message) {
-                            displayError("Failed to retrieve attachment: " + message);
-                        },
-                        fault: function(faultCode, faultString) {
-                            displayError("Failed to retrieve attachment: " + faultString);
-                        },
-                        success: function(text) {
-                          try {
-                            successful(text);
-                          } catch (ex) {
-                            if (ex == "Not a patch") {
-                              displayError("Splinter is unable to display this attachment.");
-                              $("<p></p>")
-                                .html("Please use another <a href=\"attachment.cgi?id="+id+"&action=edit\">review tool</a>.")
-                                .appendTo("#error");
-                            } else {
-                              throw ex;
-                            }
-                          }
-                        }
-                    });
+        var jsonCallData = JSON.stringify(callData);
+
+        $.ajax({
+            "contentType":"application/json",
+            "data": jsonCallData, 
+            "dataType": "json", 
+            "url": "jsonrpc.cgi",
+            "type": "post",
+            success: function(result) {
+                try {
+                    successful(result.result);
+                } catch (ex) {
+                    if (ex == "Not a patch") {
+                        displayError("Splinter is unable to display this attachment.");
+                        $("<p></p>")
+                        .html("Please use another <a href=\"attachment.cgi?id="+id+"&action=edit\">review tool</a>.")
+                        .appendTo("#error");
+                    } else {
+                        throw ex;
+                    }
+                }
+            }
+        });
     } else {
         //consider options for non extension case
     }
@@ -1459,21 +1238,33 @@ function publishReview() {
         if (newStatus != null)
             params['attachment_status'] = newStatus;
 
-        XmlRpc.call({
-                        url: '/xmlrpc.cgi',
-                        name: 'Splinter.publish_review',
-                        params: params,
-                        error: function(message) {
-                            displayError("Failed to publish review: " + message);
-                        },
-                        fault: function(faultCode, faultString) {
-                            displayError("Failed to publish review: " + faultString);
-                        },
-                        success: function(result) {
-                            success();
-                        }
-                    });
-    } else {
+        var callData = {
+            "method": "Splinter.publish_review",
+            "params": [ { "attachment_id": theAttachment.id, 
+                          "review" : theReview.toString() } ],
+            "id" : 1
+        };
+        
+        var jsonCallData = JSON.stringify(callData);
+
+        $.ajax({
+            "contentType":"application/json",
+            "data": jsonCallData,
+            "dataType": "json",
+            "url": "jsonrpc.cgi",
+            "type": "post",
+            error: function(message) {
+                displayError("Failed to publish review: " + message);
+            },
+            fault: function(faultCode, faultString) {
+                displayError("Failed to publish review: " + faultString);
+            },
+            success: function(result) {
+                success();
+            }
+        });
+
+     } else {
         var comment = "Review of attachment " + attachmentId + ":\n\n" + theReview;
         addComment(theBug, comment,
                    function(detail) {
@@ -2436,7 +2227,7 @@ function init() {
         $.ajax({
                    type: 'GET',
                    dataType: 'xml',
-                   url: '/show_bug.cgi',
+                   url: 'show_bug.cgi',
                    data: {
                        id: bugId,
                        ctype: 'xml',
