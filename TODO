@@ -1,25 +1,20 @@
-To Do
------
+Before Release
+--------------
 
-- Upstream hook in template/en/default/index.html.tmpl
-
-- Fix additional bugs as filed in b.m.o.
+- Upstream the hook in template/en/default/index.html.tmpl
 
 - Fix template/en/default/global/choose-product.html.tmpl to work better (and be a patch on top of the original)
 
 - Fix Bugzilla Helper to suck a bit less
 
-- Write and execute test plan
+- Fix some additional bugs as filed in b.m.o.
+
+- Execute test plan
 
 - make sure sanitizeme.pl still works
 
-Bugs Fixed
-----------
-
-
-
-After Release
--------------
+Before or After Release
+-----------------------
 
 There are several additional extensions people want:
 
@@ -36,6 +31,7 @@ There are several additional extensions people want:
   in core.
   May also need security review...
   https://bugzilla.mozilla.org/show_bug.cgi?id=190945
+  https://bugzilla.mozilla.org/show_bug.cgi?id=484247
   
 - Pulse integration
   https://bugzilla.mozilla.org/show_bug.cgi?id=589322

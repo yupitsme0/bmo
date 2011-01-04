@@ -29,7 +29,7 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       $blocking_trusted_requesters
                                       $status_trusted_wanters
                                       %always_fileable_group
-                                      %product_sec_bits);
+                                      %product_sec_groups);
 
 use Bugzilla::Field;
 use Bugzilla::Constants;
@@ -85,7 +85,7 @@ sub template_before_process {
 
         $vars->{'columns_sortkey'} = \%columns_sortkey;
     }
-    elsif ($file =~ /^bug\/create\/create\.html/) {
+    elsif ($file =~ /^bug\/create\/create[\.-]/) {
         if (!$vars->{'cloned_bug_id'}) {
             # Allow status whiteboard values to be bookmarked
             $vars->{'status_whiteboard'} = 
@@ -96,25 +96,26 @@ sub template_before_process {
         
         # hack to allow the bug entry templates to use check_can_change_field 
         # to see if various field values should be available to the current 
-        # user
-        $Bugzilla::FakeBug::check_can_change_field = sub { 
+        # user.
+        $default{'check_can_change_field'} = sub { 
             return Bugzilla::Bug::check_can_change_field(\%default, @_);
         };
-        $Bugzilla::FakeBug::_changes_everconfirmed = sub { 
+        
+        $default{'_changes_everconfirmed'} = sub { 
             return Bugzilla::Bug::_changes_everconfirmed(\%default, @_);
         };
-        $Bugzilla::FakeBug::everconfirmed = sub { 
+        
+        $default{'everconfirmed'} = sub { 
             return ($default{'status'} == 'UNCONFIRMED') ? 0 : 1;
         };
-        bless \%default, 'Bugzilla::FakeBug';
         
         $vars->{'default'} = \%default;
         
-        # Purpose: for pretty-product-chooser
+        # Purpose: for pretty product chooser
         $vars->{'format'} = Bugzilla->cgi->param('format');
 
         # Data needed for "this is a security bug" checkbox
-        $vars->{'sec_bits'} = \%product_sec_bits;
+        $vars->{'sec_groups'} = \%product_sec_groups;
     }
     elsif ($file =~ /^pages\//) {
         $vars->{'bzr_history'} = sub { 

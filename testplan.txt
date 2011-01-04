@@ -3,25 +3,27 @@ BMO Test Plan
 
 Reading the code suggests the following operations need to be tested:
 
-- Test additional text included by templates. Just read through the diff for 
-  such occurrences and load the appropriate page.
-
 - Making versions, components and milestones inactive and active again (and
   checking this stops them showing up in various places).
+  DONE
   
 - Quicksearch for our status-related custom fields.
 
 - config.cgi JSON output.
-
+  DONE
+  
 - Custom fields being visible or not visible in the appropriate products and 
   components, as defined in Data.pm
   
 - Buglist sorting works fine, even for dates, severities etc.
-
+  DONE
+  
 - It's possible for even unprivileged users to file bugs into security groups.
+  
 
 - Bugs filed end up in the correct security group when the "secure" checkbox
   is checked.
+  DONE
   
 - Security group gets emailed when bugs are a) filed in, b) added to and c) 
   removed from the relevant group.
@@ -32,7 +34,7 @@ Reading the code suggests the following operations need to be tested:
 - Check that only members of the appropriate groups can set various fields, as
   defined in Data.pm.
 
-- UUIDs, CVEs and SVN versions are correctly auto-linked.
+- UUIDs, CVEs, SVN versions and Hg references are correctly auto-linked.
 
 - File bugs using the following specialist formats:
   - mktgevent
@@ -48,3 +50,6 @@ Reading the code suggests the following operations need to be tested:
 - Including loading them as e.g. http://site/form.itrequest
 
 - Load page.cgi?id=upgrade-3.6.html and check for bzr output at the bottom.
+
+- Test additional text included by templates. Just read through the diff for 
+  such occurrences and load the appropriate page.

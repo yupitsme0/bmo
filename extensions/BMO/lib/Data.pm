@@ -31,7 +31,7 @@ our @EXPORT_OK = qw($cf_visible_in_products
                     $blocking_trusted_requesters
                     $status_trusted_wanters
                     %always_fileable_group
-                    %product_sec_bits);
+                    %product_sec_groups);
 
 # Which custom fields are visible in which products and components.
 #
@@ -41,7 +41,7 @@ our @EXPORT_OK = qw($cf_visible_in_products
 # for component means "all".
 #
 # IxHash keeps them in insertion order, and so we get regexp priorities right.
-my $cf_visible_in_products;
+our $cf_visible_in_products;
 tie(%$cf_visible_in_products, "Tie::IxHash", 
     qr/^cf_blocking_fennec/ => {
         "addons.mozilla.org"  => [],
@@ -94,7 +94,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
 );
 
 # Who to CC when certain groups are added or removed.
-my %group_to_cc_map = (
+our %group_to_cc_map = (
   qr/bugzilla-security/         => 'security@bugzilla.org',
   qr/websites-security/         => 'website-drivers@mozilla.org',
   qr/webtools-security/         => 'webtools-security@mozilla.org',
@@ -107,7 +107,7 @@ my %group_to_cc_map = (
 # certain ways. 
 #
 # Who can set "cf_blocking_*" to +?
-my $blocking_trusted_setters = {
+our $blocking_trusted_setters = {
     'cf_blocking_fennec'          => 'fennec-drivers',
     'cf_blocking_20'              => 'mozilla-next-drivers',
     qr/^cf_blocking_thunderbird/  => 'thunderbird-drivers',
@@ -116,13 +116,13 @@ my $blocking_trusted_setters = {
   };
 
 # Who can request "cf_blocking_*"?
-my $blocking_trusted_requesters = {
+our $blocking_trusted_requesters = {
     qr/^cf_blocking_thunderbird/  => 'thunderbird-trusted-requesters',
     '_default'                    => 'canconfirm', # Bug 471582
 };
 
 # Who can set "cf_status_*" to "wanted"?
-my $status_trusted_wanters = {
+our $status_trusted_wanters = {
     'cf_status_20'                => 'mozilla-next-drivers',
     qr/^cf_status_thunderbird/    => 'thunderbird-drivers',
     qr/^cf_status_seamonkey/      => 'seamonkey-council',
@@ -130,7 +130,7 @@ my $status_trusted_wanters = {
 };
 
 # Groups in which you can always file a bug, whoever you are.
-my %always_fileable_group = (
+our %always_fileable_group = (
     'bugzilla-security'                 => 1,
     'client-services-security'          => 1,
     'consulting'                        => 1,
@@ -146,28 +146,28 @@ my %always_fileable_group = (
 );
 
 # Mapping of products to their security bits
-my %product_sec_bits = (
-    "mozilla.org"                  =>  6, # mozilla-confidential
-    "Webtools"                     => 12, # webtools-security
-    "Marketing"                    => 14, # marketing-private
-    "addons.mozilla.org"           => 23, # client-services-security
-    "AUS"                          => 23,
-    "Mozilla Services"             => 23,
-    "Mozilla Corporation"          => 26, # mozilla-corporation-confidential
-    "Mozilla Metrics"              => 32, # metrics-private
-    "Legal"                        => 40, # legal 
-    "Mozilla Messaging"            => 45, # mozilla-messaging-confidential 
-    "Websites"                     => 52, # websites-security
-    "Mozilla Developer Network"    => 52,
-    "support.mozilla.com"          => 52,
-    "quality.mozilla.org"          => 52,
-    "Skywriter"                    => 52,
-    "support.mozillamessaging.com" => 52,
-    "Bugzilla"                     => 53, # bugzilla-security
-    "Testopia"                     => 53,
-    "Tamarin"                      => 65, # tamarin-security
-    "Mozilla PR"                   => 73, # pr-private
-    "_default"                     => 2   # core-security
+our %product_sec_groups = (
+    "mozilla.org"                  => 'mozilla-confidential',
+    "Webtools"                     => 'webtools-security',
+    "Marketing"                    => 'marketing-private',
+    "addons.mozilla.org"           => 'client-services-security',
+    "AUS"                          => 'client-services-security',
+    "Mozilla Services"             => 'client-services-security',
+    "Mozilla Corporation"          => 'mozilla-corporation-confidential',
+    "Mozilla Metrics"              => 'metrics-private',
+    "Legal"                        => 'legal',
+    "Mozilla Messaging"            => 'mozilla-messaging-confidential',
+    "Websites"                     => 'websites-security',
+    "Mozilla Developer Network"    => 'websites-security',
+    "support.mozilla.com"          => 'websites-security',
+    "quality.mozilla.org"          => 'websites-security',
+    "Skywriter"                    => 'websites-security',
+    "support.mozillamessaging.com" => 'websites-security',
+    "Bugzilla"                     => 'bugzilla-security',
+    "Testopia"                     => 'bugzilla-security',
+    "Tamarin"                      => 'tamarin-security',
+    "Mozilla PR"                   => 'pr-private',
+    "_default"                     => 'secret' # XXX 'core-security'
 );
 
 1;

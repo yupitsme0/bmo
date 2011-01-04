@@ -57,4 +57,15 @@ sub template_before_create {
     };
 }
 
+sub template_before_process {
+    my ($self, $args) = @_;
+    my $vars = $args->{'vars'};
+    my $file = $args->{'file'};
+    
+    if ($file =~ /config\.json\.tmpl$/) {
+        $vars->{'initial_status'} = Bugzilla::Status->can_change_to;
+        $vars->{'status_objects'} = [Bugzilla::Status->get_all];        
+    }
+}
+
 __PACKAGE__->NAME;

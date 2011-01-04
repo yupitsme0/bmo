@@ -679,11 +679,11 @@ TUI_hide_default('expert_fields');
   <tr>
     <th>&nbsp;</th>
     <td colspan="3">
-      [% sec_bit = sec_bits.${product.name} || sec_bits._default %]
+      [% sec_group = sec_groups.${product.name} || sec_groups._default %]
       
-      <input type="checkbox" name="bit-[% sec_bit FILTER none %]" value="1"
+      <input type="checkbox" name="groups" value="[% sec_group FILTER none %]"
         [% FOREACH g = group %]
-          [% IF g.bit == sec_bit %]
+          [% IF g.name == sec_group %]
             [% " checked=\"checked\"" IF g.checked %]
           [% END %]
         [% END %]
