@@ -576,7 +576,7 @@ YAHOO.bugzilla.userAutocomplete = {
           method : "User.get",
           id : YAHOO.bugzilla.userAutocomplete.counter,
           params : [ { 
-            match : [ unescape(enteredText) ],
+            match : [ decodeURIComponent(enteredText) ],
             include_fields : [ "email", "real_name" ]
           } ]
       };
@@ -587,7 +587,7 @@ YAHOO.bugzilla.userAutocomplete = {
       return stringified;
     },
     resultListFormat : function(oResultData, enteredText, sResultMatch) {
-        return ( unescape(oResultData.real_name) + " (" +  oResultData.email + ")");
+        return ( oResultData.real_name + " (" +  oResultData.email + ")");
     },
     debug_helper : function ( ){
         /* used to help debug any errors that might happen */
