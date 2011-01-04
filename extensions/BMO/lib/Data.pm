@@ -93,14 +93,14 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
     }      
 );
 
-# Who to CC when certain groups are added or removed.
+# Who to CC on particular bugmails when certain groups are added or removed.
 our %group_to_cc_map = (
-  qr/bugzilla-security/         => 'security@bugzilla.org',
-  qr/websites-security/         => 'website-drivers@mozilla.org',
-  qr/webtools-security/         => 'webtools-security@mozilla.org',
-  qr/client-services-security/  => 'amo-admins@mozilla.org',
-  qr/tamarin-security/          => 'tamarinsecurity@adobe.com',
-  qr/core-security/             => 'security@mozilla.org'
+  'bugzilla-security'        => 'security@bugzilla.org',
+  'client-services-security' => 'amo-admins@mozilla.org',
+  'core-security'            => 'security@mozilla.org',
+  'tamarin-security'         => 'tamarinsecurity@adobe.com',
+  'websites-security'        => 'website-drivers@mozilla.org',
+  'webtools-security'        => 'webtools-security@mozilla.org',
 );
 
 # Only users in certain groups can change certain custom fields in 

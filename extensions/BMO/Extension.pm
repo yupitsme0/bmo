@@ -34,6 +34,7 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
 use Bugzilla::Field;
 use Bugzilla::Constants;
 use Bugzilla::Status;
+use Bugzilla::User;
 use Bugzilla::User::Setting;
 use List::MoreUtils qw(first_index);
 use Bugzilla::Util qw(html_quote);
@@ -80,7 +81,7 @@ sub template_before_process {
 
         my %columns_sortkey;
         foreach my $field (@sortkey_fields) {
-            $columns_sortkey{$field} = get_field_values_sort_key($field);
+            $columns_sortkey{$field} = _get_field_values_sort_key($field);
         }
 
         $vars->{'columns_sortkey'} = \%columns_sortkey;
@@ -124,7 +125,7 @@ sub template_before_process {
     }
 }
 
-sub get_field_values_sort_key {
+sub _get_field_values_sort_key {
     my ($field) = @_;
     my $dbh = Bugzilla->dbh;
     my $fields = $dbh->selectall_arrayref(
@@ -166,30 +167,46 @@ sub cf_hidden_in_product {
 
 # Purpose: CC certain email addresses on bugmail when a bug is added or 
 # removed from a particular group.
-# XXX Check this works for new bugs too...
 sub bugmail_recipients {
     my ($self, $args) = @_;
     my $bug = $args->{'bug'};
     my $recipients = $args->{'recipients'};
     my $diffs = $args->{'diffs'};
     
-    foreach my $ref (@$diffs) {
-        my ($who, $whoname, $what, $when, 
-            $old, $new, $attachid, $fieldname) = (@$ref);
-        
-        # If the security bit is being set or unset, CC the appropriate
-        # security list. This is to make sure security bugs don't get lost.
-        if ($fieldname eq "bug_group") {
-            foreach my $group (keys %group_to_cc_map) {
-                if ($old =~ $group || $new =~ $group) {
-                    my $id = login_to_id($group_to_cc_map{$group});
-                    $recipients->{$id}->{+REL_CC} = 1;
-                }
+    if (@$diffs) {
+        # Changed bug
+        foreach my $ref (@$diffs) {
+            my ($who, $whoname, $what, $when, 
+                $old, $new, $attachid, $fieldname) = (@$ref);
+            
+            if ($fieldname eq "bug_group") {
+                _cc_if_special_group($old, $recipients);
+                _cc_if_special_group($new, $recipients);
             }
+        }
+    }
+    else {
+        # New bug
+        foreach my $group (@{ $bug->groups_in }) {
+            _cc_if_special_group($group->{'name'}, $recipients);
         }
     }
 }    
 
+sub _cc_if_special_group {
+    my ($group, $recipients) = @_;
+    
+    return if !$group;
+    
+    if ($group_to_cc_map{$group}) {
+        my $id = login_to_id($group_to_cc_map{$group});
+        $recipients->{$id}->{+REL_CC} = $Bugzilla::BugMail::BIT_DIRECT;
+    }
+}
+
+# XXX This is bogus - it doesn't fire on object creation, but on user creation.
+# https://bugzilla.mozilla.org/show_bug.cgi?id=622813 is enquiring as to the
+# right way to make this change.
 sub object_end_of_create {
     my ($self, $args) = @_;
     my $class = $args->{'class'};
@@ -197,13 +214,14 @@ sub object_end_of_create {
  
     # Purpose: prevent bugmail ever being sent to known-invalid addresses 
     if ($class->isa('Bugzilla::User')) {
-        if ($object->email =~ /(bugs|\.tld)$/) {
+        warn "Creating user " . $object->login;
+        if ($object->login =~ /(bugs|\.tld)$/) {
             $object->set_disable_mail(1);
         }
     }
 }
 
-sub check_trusted {
+sub _check_trusted {
     my ($field, $trusted, $priv_results) = @_;
     
     my $needed_group = $trusted->{'_default'} || "";
@@ -233,11 +251,11 @@ sub bug_check_can_change_field {
                 $new_value eq '?' || 
                 ($new_value eq '1' && $old_value eq '0')) 
         {
-            check_trusted($field, $blocking_trusted_setters, $priv_results);
+            _check_trusted($field, $blocking_trusted_setters, $priv_results);
         }
         
         if ($new_value eq '?') {
-            check_trusted($field, $blocking_trusted_requesters, 
+            _check_trusted($field, $blocking_trusted_requesters, 
                                   $priv_results);
         }        
     }
@@ -245,7 +263,7 @@ sub bug_check_can_change_field {
     if ($field =~ /^cf_status_/) {
         # Only drivers can set wanted.
         if ($new_value eq 'wanted') {
-            check_trusted($field, $status_trusted_wanters, $priv_results);
+            _check_trusted($field, $status_trusted_wanters, $priv_results);
         }
         
         # Require 'canconfirm' to change anything else
@@ -282,22 +300,22 @@ sub bug_check_can_change_field {
 
 # Purpose: link up various Mozilla-specific strings.
 sub _link_uuid {
-    my $args = shift;
-    my $match = html_quote($args->{matches}->[1]);
+    my $args = shift;    
+    my $match = html_quote($args->{matches}->[0]);
     
     return qq{<a href="https://crash-stats.mozilla.com/report/index/$match">bp-$match</a>};
 }
 
 sub _link_cve {
     my $args = shift;
-    my $match = html_quote($args->{matches}->[1]);
+    my $match = html_quote($args->{matches}->[0]);
     
     return qq{<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=$match">$match</a>};
 }
 
 sub _link_svn {
     my $args = shift;
-    my $match = html_quote($args->{matches}->[1]);
+    my $match = html_quote($args->{matches}->[0]);
     
     return qq{<a href="http://viewvc.svn.mozilla.org/vc?view=rev&amp;revision=$match">r$match</a>};
 }
@@ -306,7 +324,7 @@ sub _link_hg {
     my $args = shift;
     my $text = html_quote($args->{matches}->[0]);
     my $repo = html_quote($args->{matches}->[1]);
-    my $id   = html_quote($args->{matches}->[6]);
+    my $id   = html_quote($args->{matches}->[2]);
     
     return qq{<a href="https://hg.mozilla.org/$repo/rev/$id">$text</a>};
 }
@@ -331,17 +349,16 @@ sub bug_format_comment {
         replace => \&_link_svn
     });
 
-    # Note: if you add more brackets here, the match indexes in _link_hg() will
-    # need to change.
-    my $hgrepos = join('|', qw!(releases/)?comm-[\w.]+ 
-                               (releases/)?mozilla-[\w.]+
-                               (releases/)?mobile-[\w.]+
+    # Note: for grouping in this regexp, always use non-capturing parentheses.
+    my $hgrepos = join('|', qw!(?:releases/)?comm-[\w.]+ 
+                               (?:releases/)?mozilla-[\w.]+
+                               (?:releases/)?mobile-[\w.]+
                                tracemonkey
                                tamarin-[\w.]+
                                camino!);
 
     push (@$regexes, {
-        match => qr/\b(($hgrepos)\s+changeset:?\s+(\d+:)?([0-9a-fA-F]{12}))\b/,
+        match => qr/\b(($hgrepos)\s+changeset:?\s+(?:\d+:)?([0-9a-fA-F]{12}))\b/,
         replace => \&_link_hg
     });
 }

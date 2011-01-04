@@ -1,13 +1,20 @@
 Before Release
 --------------
 
-- Upstream the hook in template/en/default/index.html.tmpl
+- The "PR" bug filing form is just a copy of the base form; needs turning into 
+  a proper custom template (and updating for e.g. groups URL API changes)
 
-- Fix template/en/default/global/choose-product.html.tmpl to work better (and be a patch on top of the original)
+- Fix extensions/BMO/template/en/default/global/choose-product.html.tmpl to 
+  work better (and be a patch on top of the original)
 
 - Fix Bugzilla Helper to suck a bit less
+  template/en/default/bug/create/create-guided.html.tmpl
 
-- Fix some additional bugs as filed in b.m.o.
+- The "broken website" page is out of date (use input.mozilla.org, I think)
+
+- Fix some of the additional bugs filed in b.m.o.
+  (if we are doing a big testing cycle, we might as well take along a lot of
+  other small tweaks and wanted changes)
 
 - Execute test plan
 
@@ -35,6 +42,10 @@ There are several additional extensions people want:
   
 - Pulse integration
   https://bugzilla.mozilla.org/show_bug.cgi?id=589322
+
+- We could do with a version of sanitizeme that dumped out the 
+  products/components/milestones/versions/groups etc. but none of the bug or 
+  user data - so we can more easily replicate a bmo-like setup for testing.
 
 Notes
 -----
