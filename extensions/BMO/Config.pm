@@ -25,6 +25,11 @@ use strict;
 use constant NAME => 'BMO';
 
 use constant REQUIRED_MODULES => [
+    {
+        package => 'Tie-IxHash',
+        module  => 'Tie::IxHash',
+        version => 0
+    }
 ];
 
 use constant OPTIONAL_MODULES => [
