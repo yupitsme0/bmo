@@ -55,7 +55,8 @@ Bug.TIMEZONES = {
     PST: -800
 };
 Bug.parseDate = function(d) {
-    var m = /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)(?::(\d+))?\s+(?:([A-Z]{3,})|([-+]\d{3,}))\s*$/.exec(d);
+    // FIXME var m = /^\s*(\d+)(-|\.)(\d+)(-|\.)(\d+)\s+(\d+):(\d+)(?::(\d+))?\s+(?:([A-Z]{3,})|([-+]\d{3,}))\s*$/.exec(d);
+    var m = /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)(?::(\d+))?/.exec(d);
     if (!m)
         return null;
 
@@ -137,54 +138,6 @@ Bug.Bug.prototype = {
     getReporter : function() {
         return Bug._formatWho(this.reporterName, this.reporterEmail);
     }
-};
-Bug.Bug.fromDOM = function(xml) {
-    var bug = new Bug.Bug();
-
-    $(xml).children('bugzilla').children('bug').each(function() {
-        bug.id = parseInt($(this).children('bug_id').text());
-        bug.token = $(this).children('token').text();
-        bug.shortDesc = Utils.strip($(this).children('short_desc').text());
-        bug.creationDate = Bug.parseDate($(this).children('creation_ts').text());
-
-        $(this).children('reporter').each(function() {
-            bug.reporterEmail = Utils.strip($(this).text());
-            bug.reporterName = Utils.strip($(this).attr('name'));
-        });
-        $(this).children('long_desc').each(function() {
-            var comment = new Bug.Comment(bug);
-
-            $(this).children('who').each(function() {
-                comment.whoEmail = Utils.strip($(this).text());
-                comment.whoName = Utils.strip($(this).attr('name'));
-            });
-            comment.date = Bug.parseDate($(this).children('bug_when').text());
-            comment.text = $(this).children('thetext').text();
-
-            bug.comments.push(comment);
-        });
-        $(this).children('attachment').each(function() {
-            var attachid = parseInt($(this).children('attachid').text());
-            var attachment = new Bug.Attachment(bug, attachid);
-
-            attachment.description = Utils.strip($(this).children('desc').text());
-            attachment.filename = Utils.strip($(this).children('filename').text());
-            attachment.date = Bug.parseDate($(this).children('date').text());
-            attachment.status = Utils.strip($(this).children('status').text());
-            if (attachment.status == "")
-                attachment.status = null;
-            attachment.token = Utils.strip($(this).children('token').text());
-            if (attachment.token == "")
-                attachment.token = null;
-            attachment.isPatch = $(this).attr('ispatch') == "1";
-            attachment.isObsolete = $(this).attr('isobsolete') == "1";
-            attachment.isPrivate = $(this).attr('isprivate') == "1";
-
-            bug.attachments.push(attachment);
-        });
-    });
-
-    return bug;
 };
 var Dialog = {};
 Dialog.Dialog = function() {
@@ -1177,43 +1130,6 @@ function addComment(bug, comment, success, failure) {
         }
     });
 }
-
-function getAttachment(id, successful) {
-    if (configHaveExtension) {
-        var callData = { 
-            "method": "Splinter.get_attachment", 
-            "params": [ { "attachment_id": id } ],
-            "id" : 1 
-        };
-
-        var jsonCallData = JSON.stringify(callData);
-
-        $.ajax({
-            "contentType":"application/json",
-            "data": jsonCallData, 
-            "dataType": "json", 
-            "url": "jsonrpc.cgi",
-            "type": "post",
-            success: function(result) {
-                try {
-                    successful(result.result);
-                } catch (ex) {
-                    if (ex == "Not a patch") {
-                        displayError("Splinter is unable to display this attachment.");
-                        $("<p></p>")
-                        .html("Please use another <a href=\"attachment.cgi?id="+id+"&action=edit\">review tool</a>.")
-                        .appendTo("#error");
-                    } else {
-                        throw ex;
-                    }
-                }
-            }
-        });
-    } else {
-        //consider options for non extension case
-    }
-}
-
 function publishReview() {
     saveComment();
     theReview.setIntro($("#myComment").val());
@@ -1912,7 +1828,7 @@ function addFileNavigationLink(file) {
     });
 }
 var REVIEW_RE = /^\s*review\s+of\s+attachment\s+(\d+)\s*:\s*/i;
-function start(xml) {
+function start() {
     var i;
 
     document.title = "Attachment " + theAttachment.id + " - " + theAttachment.description + " - Patch Review";
@@ -2032,32 +1948,6 @@ function start(xml) {
 
     $("#publishButton").click(publishReview);
     $("#cancelButton").click(discardReview);
-}
-function gotBug(xml) {
-    theBug = Bug.Bug.fromDOM(xml);
-
-    showNote();
-
-    if (attachmentId != null) {
-        theAttachment = theBug.getAttachment(attachmentId);
-        if (theAttachment == null)
-            displayError("Attachment " + attachmentId + " is not an attachment to bug " + theBug.id);
-        else if (!theAttachment.isPatch) {
-            displayError("Attachment " + attachmentId + " is not a patch");
-            theAttachment = null;
-        }
-    }
-
-    if (theAttachment == null)
-        showChooseAttachment();
-    else if (thePatch != null)
-        start();
-}
-function gotAttachment(text) {
-    thePatch = new Patch.Patch(text);
-
-    if (theAttachment != null)
-        start();
 }
 function isDigits(str) {
     return str.match(/^[0-9]+$/);
@@ -2209,47 +2099,25 @@ jQuery.fn.preWrapLines = function(text) {
     });
 };
 function init() {
-    var params = getQueryParams();
-    var bugId;
+    showNote();
 
     if (ReviewStorage.LocalReviewStorage.available())
         reviewStorage = new ReviewStorage.LocalReviewStorage();
 
-    if (params.bug)
-        bugId = isDigits(params.bug) ? parseInt(params.bug) : NaN;
+    theAttachment = theBug.getAttachment(attachmentId);
 
-    if (bugId === undefined || isNaN(bugId)) {
-        if (bugId !== undefined)
-            displayError("Bug ID '" + params.bug + "' is not valid");
-        showEnterBug();
-        return;
-    } else {
-        $.ajax({
-                   type: 'GET',
-                   dataType: 'xml',
-                   url: 'show_bug.cgi',
-                   data: {
-                       id: bugId,
-                       ctype: 'xml',
-                       excludefield: 'attachmentdata'
-                   },
-                   success: gotBug,
-                   error: function() {
-                       displayError("Failed to retrieve bug " + bugId);
-                       showEnterBug();
-                   }
-               });
+    if (theAttachment == null)
+        displayError("Attachment " + attachmentId + " is not an attachment to bug " + theBug.id);
+    else if (!theAttachment.isPatch) {
+        displayError("Attachment " + attachmentId + " is not a patch");
+        theAttachment = null;
     }
-
-    if (params.attachment) {
-        attachmentId = isDigits(params.attachment) ? parseInt(params.attachment) : NaN;
-    }
-    if (attachmentId === undefined || isNaN(attachmentId)) {
-        if (attachmentId !== undefined) {
-            displayError("Attachment ID '" + params.bug + "' is not valid");
-            attachmentId = undefined;
-        }
+    
+    if (theAttachment == null) {
+        showChooseAttachment(); 
     } else {
-        getAttachment(attachmentId, gotAttachment);
+        thePatch = new Patch.Patch(theAttachment.data);
+        if (thePatch != null)
+            start();
     }
 }

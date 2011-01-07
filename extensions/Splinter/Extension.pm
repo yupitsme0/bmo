@@ -7,8 +7,37 @@ use base qw(Bugzilla::Extension);
 use Bugzilla::Extension::Splinter::Util;
 
 use Bugzilla::Template;
+use Bugzilla::Bug;
 
 our $VERSION = '0.1';
+
+sub page_before_template {
+    my ($self, $args) = @_;
+
+    my ($vars, $page) = @$args{qw(vars page_id)};
+    my $input = Bugzilla->input_params;
+
+    if ($page eq 'splinter.html') {
+        if ($input->{'bug'}) {
+            $vars->{'bug_id'} = $input->{'bug'};
+            $vars->{'attach_id'} = $input->{'attachment'};
+            $vars->{'bug'} = Bugzilla::Bug->check($input->{'bug'});
+        }
+
+        # We do this in a way that is safe if the Bugzilla instance doesn't
+        # have an attachments.status field (which is a bugzilla.gnome.org
+        # addition)
+        my $field_object = new Bugzilla::Field({ name => 'attachments.status' });
+        my $statuses;
+        if ($field_object) {
+            $statuses = [map { $_->name } @{ $field_object->legal_values }];
+        } else {
+            $statuses = [];
+        }
+        $vars->{'attachment_statuses'} = $statuses;
+    }
+}
+
 
 sub bug_format_comment {
     my ($self, $args) = @_;
@@ -61,29 +90,6 @@ sub mailer_before_send {
     # style of the bug-format_comment link for HTML but this
     # is the only hook available as of Bugzilla-3.4.
     add_review_links_to_email($args->{'email'});
-}
-
-sub page_before_template {
-    my ($self, $args) = @_;
-    
-    my $REVIEW_RE = qr/Review\s+of\s+attachment\s+(\d+)\s*:/;
-    
-    my $page_id = $args->{'page_id'};
-    my $vars = $args->{'vars'};
-    
-    if ($page_id eq "splinter.html") {
-        # We do this in a way that is safe if the Bugzilla instance doesn't
-        # have an attachments.status field (which is a bugzilla.gnome.org
-        # addition)
-        my $field_object = new Bugzilla::Field({ name => 'attachments.status' });
-        my $statuses;
-        if ($field_object) {
-            $statuses = [map { $_->name } @{ $field_object->legal_values }];
-        } else {
-            $statuses = [];
-        }
-        $vars->{'attachment_statuses'} = $statuses;
-    }
 }
 
 sub webservice {

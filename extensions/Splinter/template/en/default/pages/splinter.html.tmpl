@@ -28,18 +28,75 @@
   header_addl_info = "&nbsp;"
 %]
 <script type="text/javascript">
+  configBase = '[% urlbase FILTER none %][% Param('splinter_base') FILTER js %]';
+  configBugzillaUrl = '[% urlbase FILTER none %]';
+  configHaveExtension = true;
+  configHelp = '[% urlbase FILTER none %]page.cgi?id=splinter/help.html';
+  configNote = '';
+
   configAttachmentStatuses = [
   [% FOREACH status = attachment_statuses %]
     '[% status FILTER js %]',
   [% END %]
   ];
 
-  configBase = '[% urlbase FILTER none %][% Param('splinter_base') FILTER js %]';
+  bugId = isDigits('[% bug_id FILTER js %]') ? parseInt('[% bug_id FILTER js %]') : NaN;
+  attachmentId = isDigits('[% attach_id FILTER html %]') ? parseInt('[% attach_id FILTER js %]') : NaN;
+
+  if (bugId === undefined || isNaN(bugId)) {
+      if (bugId !== undefined)
+          displayError("Bug ID '[% bug_id FILTER js %]' is not valid");
+      showEnterBug();
+  } else {
+      if (attachmentId === undefined || isNaN(attachmentId)) {
+          if (attachmentId !== undefined) {
+              displayError("Attachment ID '[% attach_id FILTER js %]' is not valid");
+              attachmentId = undefined;
+          }
+      } 
+
+      var theBug = new Bug.Bug();
+      theBug.id = parseInt('[% bug.id FILTER js %]');
+      theBug.token = '[% update_token FILTER js %]';
+      theBug.shortDesc = Utils.strip('[% bug.short_desc FILTER js %]');
+      theBug.creationDate = Bug.parseDate('[% bug.creation_ts FILTER time("%Y-%m-%d %T %z") FILTER js %]');
+      theBug.reporterEmail = Utils.strip('[% bug.reporter.email FILTER js %]');
+      theBug.reporterName = Utils.strip('[% bug.reporter.name FILTER js %]');
+
+      [% FOREACH comment = bug.comments %]
+        var comment = new Bug.Comment();
+        comment.whoName = Utils.strip('[% comment.author.name FILTER js %]');
+        comment.whoEmail = Utils.strip('[% comment.author.email FILTER js %]');
+        comment.date = Bug.parseDate('[% comment.creation_ts FILTER time("%Y-%m-%d %T %z") FILTER js %]');
+        comment.text = '[% comment.thetext FILTER js %]';
+        theBug.comments.push(comment);
+      [% END %]
+
+      [% FOREACH attachment = bug.attachments %]
+        var attachid = parseInt('[% attachment.id FILTER js %]');
+        var attachment = new Bug.Attachment('', attachid);
+        [% IF attachment.id == attach_id && attachment.ispatch %]
+          attachment.data = '[% attachment.data FILTER js %]';
+        [% END %]
+        attachment.description = Utils.strip('[% attachment.description FILTER js %]');
+        attachment.filename = Utils.strip('[% attachment.filename FILTER js %]');
+        attachment.date = Bug.parseDate('[% attachment.attached FILTER time("%Y-%m-%d %T %z") FILTER js %]');
+        attachment.whoName = Utils.strip('[% attachment.attacher.name FILTER js %]');
+        attachment.whoEmail = Utils.strip('[% attachment.attacher.email FILTER js %]');
+        //attachment.status = Utils.strip($(this).children('status').text());
+        //if (attachment.status == "")
+        //        attachment.status = null;
+        //attachment.token = Utils.strip($(this).children('token').text());
+        //if (attachment.token == "")
+        attachment.token = null;
+        attachment.isPatch = [% attachment.ispatch ? 1 : 0 %];
+        attachment.isObsolete = [% attachment.isobsolete ? 1 : 0 %];
+        attachment.isPrivate = [% attachment.isprivate ? 1 : 0 %];
+        theBug.attachments.push(attachment);
+      [% END %]
+  }
+
   $(function() { init(); });
-  configBugzillaUrl = '[% urlbase FILTER none %]';
-  configHaveExtension = true;
-  configHelp = '[% urlbase FILTER none %]page.cgi?id=splinter/help.html';
-  configNote = '';
 </script>
 
 <!--[if lt IE 7]>
