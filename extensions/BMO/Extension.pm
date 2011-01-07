@@ -204,23 +204,6 @@ sub _cc_if_special_group {
     }
 }
 
-# XXX This is bogus - it doesn't fire on object creation, but on user creation.
-# https://bugzilla.mozilla.org/show_bug.cgi?id=622813 is enquiring as to the
-# right way to make this change.
-sub object_end_of_create {
-    my ($self, $args) = @_;
-    my $class = $args->{'class'};
-    my $object = $args->{'object'};
- 
-    # Purpose: prevent bugmail ever being sent to known-invalid addresses 
-    if ($class->isa('Bugzilla::User')) {
-        warn "Creating user " . $object->login;
-        if ($object->login =~ /(bugs|\.tld)$/) {
-            $object->set_disable_mail(1);
-        }
-    }
-}
-
 sub _check_trusted {
     my ($field, $trusted, $priv_results) = @_;
     

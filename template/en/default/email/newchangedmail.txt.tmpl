@@ -42,7 +42,6 @@ X-Bugzilla-Assigned-To: [% bug.assigned_to.login %]
 X-Bugzilla-Target-Milestone: [% bug.target_milestone %]
 X-Bugzilla-Changed-Fields: [% changedfields.join(" ") %]
 [%+ threadingmarker %]
-[%+ Hook.process("extra_headers") %]
 
 [% UNLESS to_user.settings.product_chooser.value == 'full_product_chooser' %]
 Do not reply to this email.  You can add comments to this [% terms.bug %] at
