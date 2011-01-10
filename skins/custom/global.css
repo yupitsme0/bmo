@@ -71,3 +71,9 @@ pre
 .support_div > img {
   padding: 5px 20px;
 }
+
+#footer .outro {
+    text-align:left;
+    padding-left:1ex;
+    padding-bottom:1ex;
+}
