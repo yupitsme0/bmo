@@ -1339,6 +1339,23 @@
     Patches cannot be more than [% Param('maxattachmentsize') %] KB in size.
     Try splitting your patch into several pieces.
 
+  [% ELSIF error == "password_not_complex" %]
+     [% title = "Password Fails Requirements" %]
+     [% passregex = Param('password_complexity') %]
+     Password must contain at least one:
+     <ul>
+       [% IF passregex.search('letters') %]
+         <li>UPPERCASE letter</li>
+         <li>lowercase letter</li>
+       [% END %]
+       [% IF passregex.search('numbers') %]
+         <li>digit</li>
+       [% END %]
+       [% IF passregex.search('specialchars') %]
+         <li>special character</li>
+       [% END %]
+     </ul>
+
   [% ELSIF error == "product_access_denied" %]
     Either the product 
     [%+ IF id.defined %]

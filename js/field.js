@@ -205,11 +205,11 @@ function updateCalendarFromField(date_field) {
 
 
 /* Hide input fields and show the text with (edit) next to it */  
-function hideEditableField( container, input, action, field_id, original_value ) {
+function hideEditableField( container, input, action, field_id, original_value, new_value ) {
     YAHOO.util.Dom.removeClass(container, 'bz_default_hidden');
     YAHOO.util.Dom.addClass(input, 'bz_default_hidden');
     YAHOO.util.Event.addListener(action, 'click', showEditableField,
-                                 new Array(container, input));
+                                 new Array(container, input, new_value));
     if(field_id != ""){
         YAHOO.util.Event.addListener(window, 'load', checkForChangedFieldValues,
                         new Array(container, input, field_id, original_value));
@@ -221,9 +221,9 @@ function hideEditableField( container, input, action, field_id, original_value )
  *
  * var e: the event
  * var ContainerInputArray: An array containing the (edit) and text area and the input being displayed
- * var ContainerInputArray[0]: the conainer that will be hidden usually shows the (edit) text
+ * var ContainerInputArray[0]: the container that will be hidden usually shows the (edit) or (take) text
  * var ContainerInputArray[1]: the input area and label that will be displayed
- *
+ * var ContainerInputArray[2]: the new value to set the input field to when (take) is clicked
  */
 function showEditableField (e, ContainerInputArray) {
     var inputs = new Array();
@@ -240,6 +240,11 @@ function showEditableField (e, ContainerInputArray) {
         inputs = inputArea.getElementsByTagName('input');
     }
     if ( inputs.length > 0 ) {
+        // Change the first field's value to ContainerInputArray[2]
+        // if present before focusing.
+        if (ContainerInputArray[2]) {
+            inputs[0].value = ContainerInputArray[2];
+        }
         // focus on the first field, this makes it easier to edit
         inputs[0].focus();
         inputs[0].select();
@@ -254,7 +259,7 @@ function showEditableField (e, ContainerInputArray) {
  *
  * var e: the event
  * var ContainerInputArray: An array containing the (edit) and text area and the input being displayed
- * var ContainerInputArray[0]: the conainer that will be hidden usually shows the (edit) text
+ * var ContainerInputArray[0]: the container that will be hidden usually shows the (edit) text
  * var ContainerInputArray[1]: the input area and label that will be displayed
  * var ContainerInputArray[2]: the field that is on the page, might get changed by browser autocomplete 
  * var ContainerInputArray[3]: the original value from the page loading.
