@@ -464,15 +464,17 @@ function PutDescription() {
         [% ELSE %]
           [% sec_bit = 2 %]   [%# core-security %]
         [% END %]
-        <input type="checkbox" name="bit-[% sec_bit %]" value="1"
+        <input type="checkbox" name="bit-[% sec_bit %]" 
+               id="bit-[% sec_bit FILTER html %]" value="1"
           [% FOREACH g = group %]
             [% IF g.bit == sec_bit %]
               [% " checked=\"checked\"" IF g.checked %]
             [% END %]
           [% END %]
         >
+        <label for="bit-[% sec_bit FILTER html %]">
         Many users could be harmed by this security problem: it should be kept
-        hidden from the public until it is resolved.
+        hidden from the public until it is resolved.</label>
       </p>
     </td>
   </tr>
