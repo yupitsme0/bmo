@@ -288,7 +288,8 @@
     Vote cache has been rebuilt.
 
   [% ELSIF san_tag == "vote_cache_rebuild_fix" %]
-    <a href="sanitycheck.cgi?rebuildvotecache=1">Click here to
+    <a href="sanitycheck.cgi?rebuildvotecache=1&amp;token=
+       [%- issue_hash_token(['sanitycheck']) FILTER url_quote %]">Click here to
     rebuild the vote cache</a>
 
   [% ELSIF san_tag == "vote_cache_alert" %]
