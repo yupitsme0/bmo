@@ -670,14 +670,14 @@ TUI_hide_default('expert_fields');
         [% sec_bit = 2 %]   [%# core-security %]
       [% END %]
       <input type="checkbox" name="bit-[% sec_bit FILTER html %]" 
-             id="bit-[% sec_bit FILTER html %]" value="1"
+             id="security-checkbox" value="1"
         [% FOREACH g = group %]
           [% IF g.bit == sec_bit %]
             [% " checked=\"checked\"" IF g.checked %]
           [% END %]
         [% END %]
       >
-      <label for="bit-[% sec_bit FILTER html %]">
+      <label for="security-checkbox">
       Many users could be harmed by this security problem: it should be kept  
       hidden from the public until it is resolved.</label>
       <br><br>
