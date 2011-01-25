@@ -94,9 +94,9 @@ sub REQUIRED_MODULES {
     {
         package => 'CGI.pm',
         module  => 'CGI',
-        # 3.50 fixes a security problem that affects Bugzilla.
+        # 3.51 fixes a security problem that affects Bugzilla.
         # (bug 591165)
-        version => '3.50',
+        version => '3.51',
     },
     {
         package => 'Digest-SHA',
@@ -326,6 +326,13 @@ sub OPTIONAL_MODULES {
         # syntax used by SizeLimit.
         version => '0.93',
         feature => ['mod_perl'],
+    },
+    {
+        package => 'Math-Random-Secure',
+        module  => 'Math::Random::Secure',
+        # This is the first version that installs properly on Windows.
+        version => '0.05',
+        feature => ['rand_security'],
     },
     );
 
