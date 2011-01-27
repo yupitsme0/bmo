@@ -34,6 +34,9 @@
    style = "#somebugs { width: 100%; height: 500px }"
  %]
 
+[%# Reset style variable to avoid interference with later calls. %]
+[% style = '' %]
+
 [% INCLUDE 'bug/create/user-message.html.tmpl' %]
 
 [% tablecolour = "#FFFFCC" %]
