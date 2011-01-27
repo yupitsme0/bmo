@@ -101,8 +101,8 @@ sub FIELD_MAP {
                         status_whiteboard
                         cclist_accessible reporter_accessible)};
 
-    # Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=621878
-    Bugzilla::Hook::process('quicksearch_map', {'full_map' => \%full_map} );
+    # Upstreaming: done (bug 621878).
+    Bugzilla::Hook::process('quicksearch_map', {'map' => \%full_map} );
     
     $cache->{quicksearch_fields} = \%full_map;
 
