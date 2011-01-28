@@ -186,9 +186,8 @@ sub get {
     if ($params->{'maxusermatches'}) {
         $limit = $params->{'maxusermatches'} + 1;
     }
-    my $exclude_disabled = $params->{'include_disabled'} ? 0 : 1;
     foreach my $match_string (@{ $params->{'match'} || [] }) {
-        my $matched = Bugzilla::User::match($match_string, $limit, $exclude_disabled);
+        my $matched = Bugzilla::User::match($match_string, $limit);
         foreach my $user (@$matched) {
             if (!$unique_users{$user->id}) {
                 push(@user_objects, $user);
@@ -542,12 +541,6 @@ will only be returned the C<id>, C<name>, and C<real_name> items. If you are
 logged in and not in editusers group, you will only be returned the C<id>, C<name>, 
 C<real_name>, C<email>, and C<can_login> items.
 
-=item C<include_disabled> (boolean)
-
-By default, when using the C<match> parameter, disabled users are excluded
-from the returned results. Setting C<include_disabled> to C<true> will include 
-any users that are set to disabled in the returned results.
-
 =back
 
 =item B<Errors>
@@ -579,8 +572,5 @@ function.
 =back
 
 =back
-
-=item C<include_disabled> added in Bugzilla B<4.0>. Default behavior 
-for C<match> has changed to only returning enabled accounts.
 
 =back
