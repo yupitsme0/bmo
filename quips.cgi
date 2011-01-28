@@ -80,7 +80,7 @@ if ($action eq "add") {
     # Add the quip 
     # Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=621879
     my $approved = (Bugzilla->params->{'quip_list_entry_control'} eq "open")
-                   || Bugzilla->user->in_group('quips-moderators') || 0;
+                   || Bugzilla->user->in_group('bz_quip_moderators') || 0;
     my $comment = $cgi->param("quip");
     $comment || ThrowUserError("need_quip");
     trick_taint($comment); # Used in a placeholder below
@@ -92,8 +92,8 @@ if ($action eq "add") {
 }
 
 if ($action eq 'approve') {
-    $user->in_group('quips-moderators')
-      || ThrowUserError("auth_failure", {group  => "quips-moderators",
+    $user->in_group('bz_quip_moderators')
+      || ThrowUserError("auth_failure", {group  => "bz_quip_moderators",
                                          action => "approve",
                                          object => "quips"});
 
@@ -132,8 +132,8 @@ if ($action eq 'approve') {
 }
 
 if ($action eq "delete") {
-    Bugzilla->user->in_group("quips-moderators")
-      || ThrowUserError("auth_failure", {group  => "quips-moderators",
+    Bugzilla->user->in_group("bz_quip_moderators")
+      || ThrowUserError("auth_failure", {group  => "bz_quip_moderators",
                                          action => "delete",
                                          object => "quips"});
     my $quipid = $cgi->param("quipid");
