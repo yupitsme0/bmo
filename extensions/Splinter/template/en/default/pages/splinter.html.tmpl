@@ -21,9 +21,13 @@
 [% PROCESS global/header.html.tmpl
   title = "Patch Review"
   header = "Patch Review"
-  style_urls = [ "extensions/Splinter/web/splinter.css" ]
+  style_urls = [ "js/yui/assets/skins/sam/container.css",
+                 "js/yui/assets/skins/sam/button.css",
+                 "extensions/Splinter/web/splinter.css" ]
   javascript_urls = [ "js/yui/element/element-min.js",
                       "js/yui/connection/connection-min.js",
+                      "js/yui/container/container-min.js",
+                      "js/yui/button/button-min.js", 
                       "js/yui/json/json-min.js",
                       "extensions/Splinter/web/jquery.min.js",
                       "extensions/Splinter/web/splinter.flat.js" ]
@@ -180,5 +184,13 @@
   </tr>
   </table>
 </div>
+<form method="POST" id="publish" 
+      action="[% urlbase FILTER none %][% Param('splinter_base') FILTER none %]">
+  <input type="hidden" id="publish_action" name="action" value="publish">
+  <input type="hidden" id="publish_bug_id" name="bug" value=""> 
+  <input type="hidden" id="publish_attach_id" name="attachment_id" value="">
+  <input type="hidden" id="publish_attach_status" name="attachment_status" value="">
+  <input type="hidden" id="publish_review" name="review" value="">
+</form>
 
 [% PROCESS global/footer.html.tmpl %]
