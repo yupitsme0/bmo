@@ -12,12 +12,13 @@
 #
 # The Original Code is the BMO Bugzilla Extension.
 #
-# The Initial Developer of the Original Code is Gervase Markham.
+# The Initial Developer of the Original Code is the Mozilla Foundation.
 # Portions created by the Initial Developer are Copyright (C) 2010 the
 # Initial Developer. All Rights Reserved.
 #
 # Contributor(s):
 #   Gervase Markham <gerv@gerv.net>
+#   Reed Loden <reed@reedloden.com>
 
 package Bugzilla::Extension::BMO::Data;
 use strict;
@@ -119,7 +120,7 @@ our $blocking_trusted_setters = {
 # Who can request "cf_blocking_*"?
 our $blocking_trusted_requesters = {
     qr/^cf_blocking_thunderbird/  => 'thunderbird-trusted-requesters',
-    '_default'                    => 'canconfirm', # Bug 471582
+    '_default'                    => 'everyone',
 };
 
 # Who can set "cf_status_*" to "wanted"?
@@ -168,7 +169,7 @@ our %product_sec_groups = (
     "Testopia"                     => 'bugzilla-security',
     "Tamarin"                      => 'tamarin-security',
     "Mozilla PR"                   => 'pr-private',
-    "_default"                     => 'secret' # XXX 'core-security'
+    "_default"                     => 'core-security'
 );
 
 1;
