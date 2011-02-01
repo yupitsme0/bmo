@@ -1490,7 +1490,6 @@ Splinter.addCommentDisplay = function (commentArea, comment) {
     }
 
     var commentDiv = new Element(document.createElement('div'));
-    Dom.setAttribute(commentDiv, 'id', 'comment');
     Dom.addClass(commentDiv, Splinter.getTypeClass(comment.type));
     Dom.addClass(commentDiv, Splinter.getReviewerClass(review));
 
@@ -1599,7 +1598,7 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
     var typeClass = Splinter.getTypeClass(type);
     var separatorClass = Splinter.getSeparatorClass(type);
 
-    var nodes = Dom.getElementsByClassName("reviewer-0");
+    var nodes = Dom.getElementsByClassName('reviewer-0', 'div', commentArea);
     var i; 
     for (i = 0; i < nodes.length; i++) {
     	if (separatorClass && Dom.hasClass(nodes[i], separatorClass)) {
@@ -2380,7 +2379,7 @@ Splinter.init = function () {
 
     if (Splinter.theBug == null) {
         Splinter.showEnterBug();
-	return;
+	    return;
     }
  
     Dom.get("bugId").innerHTML = Splinter.theBug.id;
