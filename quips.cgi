@@ -32,6 +32,7 @@ use Bugzilla::Constants;
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::User;
+use Bugzilla::Token;
 
 my $user = Bugzilla->login(LOGIN_REQUIRED);
 
@@ -41,6 +42,7 @@ my $template = Bugzilla->template;
 my $vars = {};
 
 my $action = $cgi->param('action') || "";
+my $token = $cgi->param('token');
 
 if ($action eq "show") {
     # Read in the entire quip list
@@ -74,10 +76,11 @@ if ($action eq "add") {
     (Bugzilla->params->{'quip_list_entry_control'} eq "closed") &&
       ThrowUserError("no_new_quips");
 
+    check_hash_token($token, ['create-quips']);
     # Add the quip 
     # Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=621879
     my $approved = (Bugzilla->params->{'quip_list_entry_control'} eq "open")
-                   || Bugzilla->user->in_group('quips-moderators') || 0;
+                   || Bugzilla->user->in_group('bz_quip_moderators') || 0;
     my $comment = $cgi->param("quip");
     $comment || ThrowUserError("need_quip");
     trick_taint($comment); # Used in a placeholder below
@@ -89,11 +92,12 @@ if ($action eq "add") {
 }
 
 if ($action eq 'approve') {
-    $user->in_group('quips-moderators')
-      || ThrowUserError("auth_failure", {group  => "quips-moderators",
+    $user->in_group('bz_quip_moderators')
+      || ThrowUserError("auth_failure", {group  => "bz_quip_moderators",
                                          action => "approve",
                                          object => "quips"});
- 
+
+    check_hash_token($token, ['approve-quips']);
     # Read in the entire quip list
     my $quipsref = $dbh->selectall_arrayref("SELECT quipid, approved FROM quips");
     
@@ -128,13 +132,14 @@ if ($action eq 'approve') {
 }
 
 if ($action eq "delete") {
-    Bugzilla->user->in_group("quips-moderators")
-      || ThrowUserError("auth_failure", {group  => "quips-moderators",
+    Bugzilla->user->in_group("bz_quip_moderators")
+      || ThrowUserError("auth_failure", {group  => "bz_quip_moderators",
                                          action => "delete",
                                          object => "quips"});
     my $quipid = $cgi->param("quipid");
     ThrowCodeError("need_quipid") unless $quipid =~ /(\d+)/; 
     $quipid = $1;
+    check_hash_token($token, ['quips', $quipid]);
 
     ($vars->{'deleted_quip'}) = $dbh->selectrow_array(
                                     "SELECT quip FROM quips WHERE quipid = ?",

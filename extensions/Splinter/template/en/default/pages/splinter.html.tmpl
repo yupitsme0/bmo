@@ -23,16 +23,16 @@
   header = "Patch Review"
   style_urls = [ "js/yui/assets/skins/sam/container.css",
                  "js/yui/assets/skins/sam/button.css",
+	         "js/yui/assets/skins/sam/datatable.css",
                  "extensions/Splinter/web/splinter.css" ]
   javascript_urls = [ "js/yui/element/element-min.js",
                       "js/yui/connection/connection-min.js",
                       "js/yui/container/container-min.js",
                       "js/yui/button/button-min.js", 
                       "js/yui/json/json-min.js",
-                      "extensions/Splinter/web/jquery.min.js",
+		      "js/yui/datasource/datasource-min.js",
+                      "js/yui/datatable/datatable-min.js",
                       "extensions/Splinter/web/splinter.flat.js" ]
-  subheader = "&nbsp;"
-  header_addl_info = "&nbsp;"
 %]
 
 <script type="text/javascript">
@@ -74,18 +74,17 @@
          var attachment = new Splinter.Bug.Attachment('', attachid);
          [% IF attachment.id == attach_id && attachment.ispatch %]
            attachment.data = '[% attachment.data FILTER js %]';
+           attachment.token = '[% issue_hash_token([attachment.id, attachment.modification_time]) FILTER js %]';
          [% END %]
          attachment.description = Splinter.Utils.strip('[% attachment.description FILTER js %]');
          attachment.filename = Splinter.Utils.strip('[% attachment.filename FILTER js %]');
+         attachment.contenttypeentry = Splinter.Utils.strip('[% attachment.contenttypeentry FILTER js %]');
          attachment.date = Splinter.Bug.parseDate('[% attachment.attached FILTER time("%Y-%m-%d %T %z") FILTER js %]');
          attachment.whoName = Splinter.Utils.strip('[% attachment.attacher.name FILTER js %]');
          attachment.whoEmail = Splinter.Utils.strip('[% attachment.attacher.email FILTER js %]');
          // attachment.status = Splinter.Utils.strip($(this).children('status').text());
          // if (attachment.status == "")
          //     attachment.status = null;
-         // attachment.token = Splinter.Utils.strip($(this).children('token').text());
-         // if (attachment.token == "")
-         attachment.token = null;
          attachment.isPatch = [% attachment.ispatch ? 1 : 0 %];
          attachment.isObsolete = [% attachment.isobsolete ? 1 : 0 %];
          attachment.isPrivate = [% attachment.isprivate ? 1 : 0 %];
@@ -102,35 +101,29 @@
    <a href="http://www.firefox.com">Firefox</a>, for correct operation.
 </p>
 <![endif]-->
-<div id="error" style="display: none;"> </div>
-<div id="navigation" style="display: none;"></div>
 <div id="bugInfo" style="display: none;">
-  Bug <span id="bugId"></span> -
+  <b>Bug <span id="bugId"></span>:</b>
   <span id="bugShortDesc"></span> -
   <span id="bugReporter"></span> -
   <span id="bugCreationDate"></span>
+  <span id="helpful-links">
+    <a id="originalBugLink">Back to Bug</a> |
+    <a id="allReviewsLink">Your Reviews</a> 
+  </span>
 </div>
-<div id="loading">Loading....</div>
+<div id="error" style="display: none;"> </div>
+<div id="navigation" style="display: none;"></div>
 <div id="enterBug" style="display: none;">
   Bug to review:
   <input id="enterBugInput" />
   <input id="enterBugGo" type="button" value="Go" />
   <div id="chooseReview" style="display: none;">
-     Drafts and published reviews:
-    <table>
-      <tbody>
-      </tbody>
-    </table>
+    Drafts and published reviews:
+    <div id="chooseReviewTable"></div>
   </div>
 </div>
 <div id="chooseAttachment" style="display: none;">
-  Choose patch attachment to review:
-  <table>
-    <tbody>
-    </tbody>
-  </table>
-  <a id="originalBugLink">Go to bug</a>
-  <a id="allReviewsLink">Your reviews</a>
+  <div id="chooseAttachmentTable"></div>
 </div>
 <div id="overview" style="display: none;">
   <div id="patchIntro">
@@ -165,32 +158,23 @@
   </div>
 </div>
 <div id="files" style="display: none;"></div>
-<div id="credits" style="display: none;">
+<div id="credits">
   Powered by <a href="http://fishsoup.net/software/splinter">Splinter</a> |
-  <a id='helpLink' target='splinterHelp'>Help</a>
+  <a id='helpLink' target='splinterHelp' href="[% urlbase FILTER none %]page.cgi?id=splinter/help.html">
+   Help</a>
 </div>
 <div id="saveDraftNotice" style="display: none;"></div>
-<div id='modalContainer' style='display: none;'>
-  <div id='modalBackground' style='display: none;'></div>
-  <table>
-  <tr>  
-    <td>
-      <div id='dialog'>
-        <div id='dialogText'></div>
-        <div id='dialogButtons'></div>
-        <div class='clear'></div>
-      </div>
-    </td>
-  </tr>
-  </table>
-</div>
-<form method="POST" id="publish" 
-      action="[% urlbase FILTER none %][% Param('splinter_base') FILTER none %]">
-  <input type="hidden" id="publish_action" name="action" value="publish">
-  <input type="hidden" id="publish_bug_id" name="bug" value=""> 
-  <input type="hidden" id="publish_attach_id" name="attachment_id" value="">
-  <input type="hidden" id="publish_attach_status" name="attachment_status" value="">
-  <input type="hidden" id="publish_review" name="review" value="">
+<form id="publish" method="post" action="attachment.cgi" onsubmit="normalizeComments();">
+  <input type="hidden" id="publish_token" name="token" value="">
+  <input type="hidden" id="publish_action" name="action" value="update">
+  <input type="hidden" id="publish_review" name="comment" value="">
+  <input type="hidden" id="publish_attach_id" name="id" value="">
+  <input type="hidden" id="publish_attach_desc" name="description" value="">
+  <input type="hidden" id="publish_attach_filename" name="filename" value="">
+  <input type="hidden" id="publish_attach_contenttype" name="contenttypeentry" value="">
+  <input type="hidden" id="publish_attach_ispatch" name="ispatch" value="">
+  <input type="hidden" id="publish_attach_isobsolete" name="isobsolete" value="">
+  <input type="hidden" id="publish_attach_isprivate" name="isprivate" value="">
 </form>
 
 [% PROCESS global/footer.html.tmpl %]

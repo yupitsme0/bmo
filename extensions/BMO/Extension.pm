@@ -364,9 +364,9 @@ sub bug_check_groups {
 # custom field names.
 sub quicksearch_map {
     my ($self, $args) = @_;
-    my $full_map = $args->{'full_map'};
+    my $map = $args->{'map'};
     
-    foreach my $name (keys %$full_map) {
+    foreach my $name (keys %$map) {
         if ($name =~ /^cf_(blocking|status)_([a-z]+)?(\d+)?$/) {
             my $type = $1;
             my $product = $2;
@@ -384,7 +384,7 @@ sub quicksearch_map {
                 $pretty_name .= $version;
             }
 
-            $full_map->{$pretty_name} = $name;
+            $map->{$pretty_name} = $name;
         }
     }
 }

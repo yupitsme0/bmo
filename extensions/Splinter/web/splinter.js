@@ -23,7 +23,7 @@ Splinter.domCache = {
             Splinter.domCache.cache[cacheIndex] = {};
         }
         return Splinter.domCache.cache[cacheIndex];
-    },
+    }
 };
 
 Splinter.Utils = {
@@ -97,8 +97,8 @@ Splinter.Bug = {
     },
 
     parseDate : function(d) {
-        // FIXME var m = /^\s*(\d+)(-|\.)(\d+)(-|\.)(\d+)\s+(\d+):(\d+)(?::(\d+))?\s+(?:([A-Z]{3,})|([-+]\d{3,}))\s*$/.exec(d);
-        var m = /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)(?::(\d+))?/.exec(d);
+        var m = /^\s*(\d+)(-|\.)(\d+)(-|\.)(\d+)\s+(\d+):(\d+)(?::(\d+))?\s+(?:([A-Z]{3,})|([-+]\d{3,}))\s*$/.exec(d);
+        // var m = /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)(?::(\d+))?/.exec(d);
         if (!m) {
             return null;
         }
@@ -112,8 +112,9 @@ Splinter.Bug = {
 
         var tzoffset = 0;
         if (m[7]) {
-            if (m[7] in Splinter.Bug.TIMEZONES)
+            if (m[7] in Splinter.Bug.TIMEZONES) {
                 tzoffset = Splinter.Bug.TIMEZONES[m[7]];
+	    }
         } else {
             tzoffset = parseInt(m[8], 10);
         }   
@@ -178,7 +179,8 @@ Splinter.Bug.Bug.prototype = {
     },
 
     getAttachment : function(attachmentId) {
-        for (var i = 0; i < this.attachments.length; i++) {
+	var i;
+        for (i = 0; i < this.attachments.length; i++) {
             if (this.attachments[i].id == attachmentId) {
                 return this.attachments[i];
             }
@@ -202,57 +204,24 @@ Splinter.Dialog.prototype = {
             width: "300px",
             fixedcenter: true,
             visible: false,
+            modal: true,
             draggable: false,
-            close: true,
-            icon: YAHOO.widget.SimpleDialog.ICON_HELP,
-            constraintoviewport: true,
+            close: false,
+            hideaftersubmit: true,
+            constraintoviewport: true 
         });
-    
         this.dialog.setHeader(prompt);
-        this.dialog.render(document.body);
-
-//        var modalContainer = Dom.get("modalContainer");
-//        var modalBackground = Dom.get("modalBackground");
-//        var dialogDiv = Dom.get("dialog");
-//        var dialogText = Dom.get("dialogText");
-//        var dialogButtons = Dom.get("dialogButtons");
-//
-//        this.div = modalContainer;
-//
-//        dialogText.appendChild(document.createTextNode(prompt));
-//
-//        if (arguments.length % 2 != 1) {
-//            throw new Error("Must be an even number of label/callback pairs");
-//        }
-//
-//        for (var i = 1; i < arguments.length; i += 2) {
-//            this.addButton(arguments[i], arguments[i + 1]);
-//        }
-//
-//        var me = this;
-//        this._keypress = function(e) {
-//            if (e.keyCode == 27) {
-//                Dom.setStyle(this.div, 'display', 'none');
-//            }
-//        };
-//        Event.on(document.body, 'onkeydown', this._keypress);
     },
 
-    addButton: function (label, callback, isdefault) {
-        this.buttons.append({ text : label, handler : callback, isDefault : isdefault });
+    addButton : function (label, callback, isdefault) {
+        this.buttons.push({ text : label, 
+                            handler : function () { this.hide(); callback(); }, 
+                            isDefault : isdefault });
         this.dialog.cfg.queueProperty("buttons", this.buttons);
+    },
+
+    show : function () {
         this.dialog.render(document.body);
-    },
-
-    focus: function (label) {
-        var nodes = Dom.get('dialogButtons').getElementsByTagName('input');
-        for (var i = 0; i < nodes.length; i++) {
-            if (Dom.getAttribute(nodes[i], 'value') == label) 
-                Dom.setAttribute(nodes[i], 'focus', true);
-        } 
-    },
-
-    show: function () {
         this.dialog.show();
     }
 };
@@ -265,7 +234,7 @@ Splinter.Patch = {
     OLD_NONEWLINE : 1 << 4,
 
     FILE_START_RE : /^(?:(?:Index|index|===|RCS|diff).*\n)*---[ \t]*(\S+).*\n\+\+\+[ \t]*(\S+).*\n(?=@@)/mg,
-    HUNK_RE : /^@@[ \t]+-(\d+),(\d+)[ \t]+\+(\d+),(\d+)[ \t]+@@(.*)\n((?:[ +\\-].*\n)*)/mg,
+    HUNK_RE : /^@@[ \t]+\-(\d+),(\d+)[ \t]+\+(\d+),(\d+)[ \t]+@@(.*)\n((?:[ +\\-].*\n)*)/mg,
 
     _cleanIntro : function(intro) {
         var m;
@@ -324,9 +293,10 @@ Splinter.Patch.Hunk.prototype = {
         }
 
         function endSegment() {
+	    var i, j;
             if (currentStart >= 0) {
                 if (currentOldCount > 0 && currentNewCount > 0) {
-                    for (var j = currentStart; j < lines.length; j++) {
+                    for (j = currentStart; j < lines.length; j++) {
                         lines[j][2] &= ~(Splinter.Patch.ADDED | Splinter.Patch.REMOVED);
                         lines[j][2] |= Splinter.Patch.CHANGED;
                     }
@@ -338,7 +308,7 @@ Splinter.Patch.Hunk.prototype = {
             }
         }
 
-        for (var i = 0; i < rawlines.length; i++) {
+        for (i = 0; i < rawlines.length; i++) {
             var line = rawlines[i];
             var op = line.substr(0, 1);
             var strippedLine = line.substring(1);
@@ -367,14 +337,14 @@ Splinter.Patch.Hunk.prototype = {
                     lines[currentStart + currentNewCount][2] |= Splinter.Patch.ADDED | noNewLine;
                 }
                 currentNewCount++;
-            } else if (op == '\\') {
+            } // else if (op == '\\') {
                 // Handled with preceding line
-            } else {
+            // } else {
                 // Junk in the patch - hope the patch got line wrapped and just ignoring
                 // it produces something meaningful. (For a patch displayer, anyways.
                 // would be bad for applying the patch.)
                 // Utils.assertNotReached();
-            }
+            // }
         }   
 
         // git mail-formatted patches end with --\n<git version> like a signature
@@ -398,9 +368,10 @@ Splinter.Patch.Hunk.prototype = {
     },
 
     iterate : function(cb) {
+	var i;
         var oldLine = this.oldStart;
         var newLine = this.newStart;
-        for (var i = 0; i < this.lines.length; i++) {
+        for (i = 0; i < this.lines.length; i++) {
             var line = this.lines[i];
             cb(this.location + i, oldLine, line[0], newLine, line[1], line[2], line);
             if (line[0] != null) {
@@ -424,7 +395,8 @@ Splinter.Patch.File.prototype = {
         this.hunks = hunks;
 
         var l = 0;
-        for (var i = 0; i < this.hunks.length; i++) {
+	var i;
+        for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             hunk.location = l;
             l += hunk.lines.length;
@@ -433,7 +405,8 @@ Splinter.Patch.File.prototype = {
 
     // A "location" is just a linear index into the lines of the patch in this file
     getLocation : function(oldLine, newLine) {
-        for (var i = 0; i < this.hunks.length; i++) {
+	var i;
+        for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             if (oldLine != null && hunk.oldStart > oldLine) {
                 continue;
@@ -464,7 +437,8 @@ Splinter.Patch.File.prototype = {
     },
 
     getHunk : function(location) {
-        for (var i = 0; i < this.hunks.length; i++) {
+	var i;
+        for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             if (location >= hunk.location && location < hunk.location + hunk.lines.length) {
                 return hunk;
@@ -505,7 +479,7 @@ Splinter.Patch.Patch.prototype = {
             // or between a/foo/bar.c and /dev/null for removals and the
             // reverse for additions.
             var filename;
-            var status = undefined;
+            var status;
 
             if (/^a\//.test(m[1]) && /^b\//.test(m[2])) {
                 filename = m[1].substring(2);
@@ -530,10 +504,10 @@ Splinter.Patch.Patch.prototype = {
                 }
     
                 pos = Splinter.Patch.HUNK_RE.lastIndex;
-                var oldStart = parseInt(m2[1]);
-                var oldCount = parseInt(m2[2]);
-                var newStart = parseInt(m2[3]);
-                var newCount = parseInt(m2[4]);
+                var oldStart = parseInt(m2[1], 10);
+                var oldCount = parseInt(m2[2], 10);
+                var newStart = parseInt(m2[3], 10);
+                var newCount = parseInt(m2[4], 10);
     
                 hunks.push(new Splinter.Patch.Hunk(oldStart, oldCount, newStart, newCount, m2[5], m2[6]));
             }
@@ -559,7 +533,8 @@ Splinter.Patch.Patch.prototype = {
     },
 
     getFile : function(filename) {
-        for (var i = 0; i < this.files.length; i++) {
+	var i;
+        for (i = 0; i < this.files.length; i++) {
             if (this.files[i].filename == filename) {
                 return this.files[i];
             }
@@ -571,7 +546,8 @@ Splinter.Patch.Patch.prototype = {
 
 Splinter.Review = {
     _removeFromArray : function(a, element) {
-        for (var i = 0; i < a.length; i++) {
+	var i;
+        for (i = 0; i < a.length; i++) {
             if (a[i] === element) {
                 a.splice(i, 1);
                 return;
@@ -580,7 +556,7 @@ Splinter.Review = {
     },
 
     _noNewLine : function(flags, flag) {
-        return ((flags & flag) != 0) ? "\n\ No newline at end of file" : "";
+        return ((flags & flag) != 0) ? "\n\\ No newline at end of file" : "";
     },
 
     _lineInSegment : function(line) {
@@ -603,7 +579,7 @@ Splinter.Review = {
 
     FILE_START_RE : /^:::[ \t]+(\S+)[ \t]*\n/mg,
     HUNK_RE : /^@@[ \t]+(?:-(\d+),(\d+)[ \t]+)?(?:\+(\d+),(\d+)[ \t]+)?@@.*\n((?:(?!@@|:::).*\n?)*)/mg,
-    REVIEW_RE : /^\s*review\s+of\s+attachment\s+(\d+)\s*:\s*/i,
+    REVIEW_RE : /^\s*review\s+of\s+attachment\s+(\d+)\s*:\s*/i
 };
 
 Splinter.Review.Comment = function(file, location, type, comment) {
@@ -623,9 +599,10 @@ Splinter.Review.Comment.prototype = {
     },
 
     getInReplyTo : function() {
+	var i;
         var hunk = this.getHunk();
         var line = hunk.lines[this.location - hunk.location];
-        for (var i = 0; i < line.reviewComments.length; i++) {
+        for (i = 0; i < line.reviewComments.length; i++) {
             var comment = line.reviewComments[0];
             if (comment === this) {
                 return null;
@@ -665,7 +642,8 @@ Splinter.Review.File.prototype = {
             line.reviewComments = [];
         }
         line.reviewComments.push(comment);
-        for (var i = 0; i <= this.comments.length; i++) {
+	var i;
+        for (i = 0; i <= this.comments.length; i++) {
             if (i == this.comments.length ||
                 this.comments[i].location > location ||
                 (this.comments[i].location == location && this.comments[i].type > type)) {
@@ -681,7 +659,8 @@ Splinter.Review.File.prototype = {
     },
 
     getComment : function(location, type) {
-        for (var i = 0; i < this.comments.length; i++) {
+	var i;
+        for (i = 0; i < this.comments.length; i++) {
             if (this.comments[i].location == location &&
                 this.comments[i].type == type) 
             {
@@ -698,7 +677,8 @@ Splinter.Review.File.prototype = {
         str += '\n';
         var first = true;
 
-        for (var i = 0; i < this.comments.length; i++) {
+	var i;
+        for (i = 0; i < this.comments.length; i++) {
             if (first) {
                 first = false;
             } else {
@@ -765,7 +745,7 @@ Splinter.Review.File.prototype = {
                             addOldLine(oldLine);
                         }
                         if ((comment.type == Splinter.Patch.ADDED 
-                             || comment.type ==Splinter.Patch.CHANGED) 
+                             || comment.type == Splinter.Patch.CHANGED) 
                             && newText != null) 
                         {
                             patchLines.push('+' + newText + 
@@ -878,8 +858,9 @@ Splinter.Review.Review.prototype = {
         this.date = date;
         this.intro = null;
         this.files = [];
+	var i;
 
-        for (var i = 0; i < patch.files.length; i++) {
+        for (i = 0; i < patch.files.length; i++) {
             this.files.push(new Splinter.Review.File(this, patch.files[i]));
         }
     },
@@ -917,15 +898,15 @@ Splinter.Review.Review.prototype = {
 
                 var oldStart, oldCount, newStart, newCount;
                 if (m2[1]) {
-                    oldStart = parseInt(m2[1]);
-                    oldCount = parseInt(m2[2]);
+                    oldStart = parseInt(m2[1], 10);
+                    oldCount = parseInt(m2[2], 10);
                 } else {
                     oldStart = oldCount = null;
                 }
 
                 if (m2[3]) {
-                    newStart = parseInt(m2[3]);
-                    newCount = parseInt(m2[4]);
+                    newStart = parseInt(m2[3], 10);
+                    newCount = parseInt(m2[4], 10);
                 } else {
                     newStart = newCount = null;
                 }
@@ -953,12 +934,13 @@ Splinter.Review.Review.prototype = {
 
                 var lastSegmentOld = 0;
                 var lastSegmentNew = 0;
-                for (var i = 0; i < rawlines.length; i++) {
+		var i;
+                for (i = 0; i < rawlines.length; i++) {
                     var line = rawlines[i];
                     var count = 1;
                     if (i < rawlines.length - 1 && rawlines[i + 1].match(/^... \d+\s+/)) {
                         var m3 = /^\.\.\.\s+(\d+)\s+/.exec(rawlines[i + 1]);
-                        count += parseInt(m3[1]);
+                        count += parseInt(m3[1], 10);
                         i += 1;
                     }
                     // The check for /^$/ is because if Bugzilla is line-wrapping it also
@@ -1026,7 +1008,8 @@ Splinter.Review.Review.prototype = {
     },
 
     getFile : function (filename) {
-        for (var i = 0; i < this.files.length; i++) {
+	var i;
+        for (i = 0; i < this.files.length; i++) {
             if (this.files[i].patchFile.filename == filename) {
                 return this.files[i];
             }
@@ -1045,8 +1028,9 @@ Splinter.Review.Review.prototype = {
             str += '\n';
         }
 
-	    var first = this.intro == null;
-        for (var i = 0; i < this.files.length; i++) {
+	var first = this.intro == null;
+	var i;
+        for (i = 0; i < this.files.length; i++) {
             var file = this.files[i];
             if (file.comments.length > 0) {
 		        if (first) {
@@ -1111,7 +1095,8 @@ Splinter.ReviewStorage.LocalReviewStorage.prototype = {
     },
 
     _findReview : function(bug, attachment) {
-        for (var i = 0 ; i < this._reviewInfos.length; i++) {
+	var i;
+        for (i = 0 ; i < this._reviewInfos.length; i++) {
             if (this._reviewInfos[i].bugId == bug.id && this._reviewInfos[i].attachmentId == attachment.id) {
                 return i;
             }
@@ -1139,8 +1124,9 @@ Splinter.ReviewStorage.LocalReviewStorage.prototype = {
         }
 
         reviewInfo.modificationTime = nowTime;
-        for (var prop in props) {
-            reviewInfo[prop] = props[prop];
+	var i;
+        for (i = 0; i < props.length; i++) {
+            reviewInfo[i] = props[i];
         }
 
         this._reviewInfos.push(reviewInfo);
@@ -1182,54 +1168,48 @@ Splinter.navigationLinks = {};
 Splinter.reviewers = {};
 Splinter.savingDraft = false;
 Splinter.UPDATE_ATTACHMENT_SUCCESS = /<title>\s*Changes\s+Submitted/;
-
-Splinter.doneLoading = function () {
-    Dom.setStyle('loading', 'display', 'none');
-    Dom.get('helpLink').setAttribute('href', Splinter.configHelp);
-    Dom.setStyle('credits', 'display', 'block');
-}
+Splinter.LINE_RE = /(?!$)([^\r\n]*)(?:\r\n|\r|\n|$)/g;
 
 Splinter.displayError = function (msg) {
     var el = new Element(document.createElement('p')); 
     el.appendChild(document.createTextNode(msg));
     Dom.get('error').appendChild(Dom.get(el));
     Dom.setStyle('error', 'display', 'block');
-    Splinter.doneLoading();
-}
+};
 
-Splinter.updateAttachmentStatus = function (attachment, newStatus, success, failure) {
-    var data = {
-        action: 'update',
-        id: attachment.id,
-        description: attachment.description,
-        filename: attachment.filename,
-        ispatch: attachment.isPatch ? 1 : 0,
-        isobsolete: attachment.isObsolete ? 1 : 0,
-        isprivate: attachment.isPrivate ? 1 : 0,
-        'attachments.status': newStatus
-    };
-
-    if (attachment.token) {
-        data.token = attachment.token;
-    }
-
-    $.ajax({
-        data : data,
-        dataType : 'text',
-        error : function(xmlHttpRequest, textStatus, errorThrown) {
-            failure();
-        },
-        success : function(data, textStatus) {
-            if (data.search(Splinter.UPDATE_ATTACHMENT_SUCCESS) != -1) {
-                       success();
-            } else {
-                       failure();
-            }
-        },
-        type : 'POST',
-        url : "attachment.cgi"
-    });
-}
+//Splinter.updateAttachmentStatus = function (attachment, newStatus, success, failure) {
+//    var data = {
+//        action: 'update',
+//        id: attachment.id,
+//        description: attachment.description,
+//        filename: attachment.filename,
+//        ispatch: attachment.isPatch ? 1 : 0,
+//        isobsolete: attachment.isObsolete ? 1 : 0,
+//        isprivate: attachment.isPrivate ? 1 : 0,
+//        'attachments.status': newStatus
+//    };
+//
+//    if (attachment.token) {
+//        data.token = attachment.token;
+//    }
+//
+//    $.ajax({
+//        data : data,
+//        dataType : 'text',
+//        error : function(xmlHttpRequest, textStatus, errorThrown) {
+//            failure();
+//        },
+//        success : function(data, textStatus) {
+//            if (data.search(Splinter.UPDATE_ATTACHMENT_SUCCESS) != -1) {
+//                       success();
+//            } else {
+//                       failure();
+//            }
+//        },
+//        type : 'POST',
+//        url : "attachment.cgi"
+//    });
+//}
 
 Splinter.add_comment_counter = 0;
 Splinter.addComment = function (bug, comment, success, failure) {
@@ -1247,8 +1227,9 @@ Splinter.addComment = function (bug, comment, success, failure) {
 
     var callback = {
         success: function (o) {
+	    var json_object;
             try {
-                var json_object = YAHOO.lang.JSON.parse(o.responseText);
+                json_object = YAHOO.lang.JSON.parse(o.responseText);
             }
             catch (x) {
                 alert("JSON Parse failed!");
@@ -1268,7 +1249,7 @@ Splinter.addComment = function (bug, comment, success, failure) {
 
     var sUrl = Splinter.configBugzillaUrl + "jsonrpc.cgi";
     var request = YAHOO.util.Connect.asyncRequest('POST', sUrl, callback, stringified); 
-}
+};
 
 Splinter.publishReview = function () {
 
@@ -1281,14 +1262,30 @@ Splinter.publishReview = function () {
     }
 
     var publish_form = Dom.get('publish');
+    var publish_token = Dom.get('publish_token');
     var publish_attach_id = Dom.get('publish_attach_id');
+    var publish_attach_desc = Dom.get('publish_attach_desc');
+    var publish_attach_filename = Dom.get('publish_attach_filename');
+    var publish_attach_contenttype = Dom.get('publish_attach_contenttype');
+    var publish_attach_ispatch = Dom.get('publish_attach_ispatch');
+    var publish_attach_isobsolete = Dom.get('publish_attach_isobsolete');
+    var publish_attach_isprivate = Dom.get('publish_attach_isprivate');
     var publish_attach_status = Dom.get('publish_attach_status');
-    var publish_bug_id = Dom.get('publish_bug_id');
     var publish_review = Dom.get('publish_review');
 
-    publish_bug_id.value = Splinter.theBug.id;
+    publish_token.value = Splinter.theAttachment.token;
     publish_attach_id.value = Splinter.theAttachment.id;
-    publish_review.value = Splinter.theReview.toString();
+    publish_attach_desc.value = Splinter.theAttachment.description;
+    publish_attach_filename.value = Splinter.theAttachment.filename;
+    publish_attach_contenttype.value = Splinter.theAttachment.contenttypeentry;
+    publish_attach_ispatch.value = Splinter.theAttachment.isPatch;
+    publish_attach_isobsolete.value = Splinter.theAttachment.isObsolete;
+    publish_attach_isprivate.value = Splinter.theAttachment.isPrivate;
+
+    // This is a "magic string" used to identify review comments
+    var comment = "Review of attachment " + Splinter.theAttachment.id + "\n\n" + 
+		  Splinter.theReview.toString();
+    publish_review.value = comment;
 
     if (Splinter.theAttachment.status 
         && Dom.get('attachmentStatus').value != Splinter.theAttachment.status) 
@@ -1297,7 +1294,7 @@ Splinter.publishReview = function () {
     }
 
     publish_form.submit();
-}
+};
 
 Splinter.doDiscardReview = function () {
     if (Splinter.theAttachment.status) {
@@ -1306,8 +1303,9 @@ Splinter.doDiscardReview = function () {
 
     Dom.get('myComment').value = '';
     Dom.setStyle('emptyCommentNotice', 'display', 'block');
-
-    for (var i = 0; i  < Splinter.theReview.files.length; i++) {
+   
+    var i;
+    for (i = 0; i  < Splinter.theReview.files.length; i++) {
         while (Splinter.theReview.files[i].comments.length > 0) {
             Splinter.theReview.files[i].comments[0].remove();
         }
@@ -1316,15 +1314,14 @@ Splinter.doDiscardReview = function () {
     Splinter.updateMyPatchComments();
     Splinter.updateHaveDraft();
     Splinter.saveDraft();
-}
+};
 
 Splinter.discardReview = function () {
     var dialog = new Splinter.Dialog("Really discard your changes?");
     dialog.addButton('Continue', function() {}, true);
     dialog.addButton('Discard', Splinter.doDiscardReview, false);
     dialog.show();
-    // dialog.focus('Continue');
-}
+};
 
 Splinter.haveDraft = function () {
     if (Splinter.theAttachment.status && Dom.get('attachmentStatus').value != Splinter.theAttachment.status) {
@@ -1335,14 +1332,15 @@ Splinter.haveDraft = function () {
         return true;
     }
 
-    for (var i = 0; i  < Splinter.theReview.files.length; i++) {
+    var i;
+    for (i = 0; i  < Splinter.theReview.files.length; i++) {
         if (Splinter.theReview.files[i].comments.length > 0) {
             return true;
         }
     }
 
     return false;
-}
+};
 
 Splinter.updateHaveDraft = function () {
     clearTimeout(Splinter.updateHaveDraftTimeoutId);
@@ -1357,19 +1355,19 @@ Splinter.updateHaveDraft = function () {
         Dom.get('cancelButton').setAttribute('disabled', 'true');
         Dom.setStyle('haveDraftNotice', 'display', 'none');
     }
-}
+};
 
 Splinter.queueUpdateHaveDraft = function () {
     if (Splinter.updateHaveDraftTimeoutId == null) {
         Splinter.updateHaveDraftTimeoutId = setTimeout(Splinter.updateHaveDraft, 0);
     }
-}
+};
 
 Splinter.hideSaveDraftNotice = function () {
     clearTimeout(Splinter.saveDraftNoticeTimeoutId);
     Splinter.saveDraftNoticeTimeoutId = null;
     Dom.setStyle('saveDraftNotice', 'display', 'none');
-}
+};
 
 Splinter.saveDraft = function () {
     if (Splinter.reviewStorage == null) {
@@ -1415,26 +1413,27 @@ Splinter.saveDraft = function () {
     } else {
         Splinter.hideSaveDraftNotice();
     }
-}
+};
 
-Splinter.queueSaveDraft= function () {
+Splinter.queueSaveDraft = function () {
     if (Splinter.saveDraftTimeoutId == null) {
         Splinter.saveDraftTimeoutId = setTimeout(Splinter.saveDraft, 10000);
     }
-}
+};
 
 Splinter.flushSaveDraft = function () {
     if (Splinter.saveDraftTimeoutId != null) {
         Splinter.saveDraft();
     }
-}
+};
 
 Splinter.ensureCommentArea = function (row) {
     var file = Splinter.domCache.data(row).patchFile;
     var colSpan = file.status == Splinter.Patch.CHANGED ? 5 : 2;
+
     if (!row.nextSibling || row.nextSibling.className != "comment-area") {
         var tr = new Element(document.createElement('tr'));
-        tr.addClass('comment-area');
+        Dom.addClass(tr, 'comment-area');
         var td = new Element(document.createElement('td'));
         Dom.setAttribute(td, 'colspan', colSpan);
         td.appendTo(tr);
@@ -1442,7 +1441,7 @@ Splinter.ensureCommentArea = function (row) {
     }
 
     return row.nextSibling.firstChild;
-}
+};
 
 Splinter.getTypeClass = function (type) {
     switch (type) {
@@ -1455,7 +1454,7 @@ Splinter.getTypeClass = function (type) {
     }
 
     return null;
-}
+};
 
 Splinter.getSeparatorClass = function (type) {
     switch (type) {
@@ -1466,7 +1465,7 @@ Splinter.getSeparatorClass = function (type) {
     }
 
     return null;
-}
+};
 
 Splinter.getReviewerClass = function (review) {
     var reviewerIndex;
@@ -1477,7 +1476,7 @@ Splinter.getReviewerClass = function (review) {
     }
 
     return "reviewer-" + reviewerIndex;
-}
+};
 
 Splinter.addCommentDisplay = function (commentArea, comment) {
     var review = comment.file.review;
@@ -1485,60 +1484,60 @@ Splinter.addCommentDisplay = function (commentArea, comment) {
     var separatorClass = Splinter.getSeparatorClass(comment.type);
     if (separatorClass) {
         var div = new Element(document.createElement('div'));
-        div.addClass(separatorClass);
-        div.addClass(Splinter.getReviewerClass(review));
+        Dom.addClass(div, separatorClass);
+        Dom.addClass(div, Splinter.getReviewerClass(review));
         div.appendTo(commentArea);
     }
 
     var commentDiv = new Element(document.createElement('div'));
-    commentDiv.addClass('comment');
-    commentDiv.addClass(Splinter.getTypeClass(comment.type));
-    commentDiv.addClass(Splinter.getReviewerClass(review));
+    Dom.setAttribute(commentDiv, 'id', 'comment');
+    Dom.addClass(commentDiv, Splinter.getTypeClass(comment.type));
+    Dom.addClass(commentDiv, Splinter.getReviewerClass(review));
+
+    Event.addListener(Dom.get(commentDiv), 'dblclick', function () {
+        Splinter.saveComment();
+        Splinter.insertCommentEditor(commentArea, comment.file.patchFile,
+                                     comment.location, comment.type);
+    });
 
     var commentFrame = new Element(document.createElement('div'));
-    commentFrame.addClass('comment-frame');
+    Dom.addClass(commentFrame, 'comment-frame');
     commentFrame.appendTo(commentDiv);
 
     var reviewerBox = new Element(document.createElement('div'));
-    reviewerBox.addClass('reviewer-box');
+    Dom.addClass(reviewerBox, 'reviewer-box');
     reviewerBox.appendTo(commentFrame);
 
     var commentText = new Element(document.createElement('div'));
-    commentText.addClass('comment-text');
-    commentText.appendTo(reviewerBox);
+    Dom.addClass(commentText, 'comment-text');
     Splinter.Utils.preWrapLines(commentText, comment.comment);
-
-    Event.on(commentDiv, 'dblclick', function () {
-        Splinter.saveComment();
-        Splinter.insertCommentEditor(commentArea, comment.file.patchFile, 
-                                     comment.location, comment.type);
-    });
+    commentText.appendTo(reviewerBox);
 
     commentDiv.appendTo(commentArea);
 
     if (review != Splinter.theReview) {
         var reviewInfo = new Element(document.createElement('div'));
-        reviewInfo.addClass('review-info');
+        Dom.addClass(reviewInfo, 'review-info');
 
         var reviewer = new Element(document.createElement('div'));
-        reviewer.addClass('reviewer');
+        Dom.addClass(reviewer, 'reviewer');
         reviewer.appendChild(document.createTextNode(review.who));
         reviewer.appendTo(reviewInfo);
         
         var reviewDate = new Element(document.createElement('div'));
-        reviewDate.addClass('review-date');
+        Dom.addClass(reviewDate, 'review-date');
         reviewDate.appendChild(Splinter.Utils.formatDate(review.date));
         reviewDate.appendTo(reviewInfo);
 
         var reviewInfoBottom = new Element(document.createElement('div'));
-        reviewInfoBottom.addClass('review-info-bottom');
+        Dom.addClass(reviewInfoBottom, 'review-info-bottom');
         reviewInfoBottom.appendTo(reviewInfo);
 
         reviewInfo.appendTo(reviewerBox);
     }
 
     comment.div = commentDiv;
-}
+};
 
 Splinter.saveComment = function () {
     var comment = Splinter.currentEditComment;
@@ -1562,8 +1561,9 @@ Splinter.saveComment = function () {
     }
 
     if (line.reviewComments.length > 0) {
-        Dom.get('commentEditor').parentNode.removeChild(Dom.get('commentEditor'));
-        Dom.get('commentEditorSeparator').parentNode.removeChild(Dom.get('commentEditorSeparator'));
+	commentEditor.parentNode.removeChild(commentEditor);
+	var commentEditorSeparator = Dom.get('commentEditorSeparator');
+	commentEditorSeparator.parentNode.removeChild(commentEditorSeparator);
     } else {
         var parentToRemove = commentArea.parentNode;
         commentArea.parentNode.parentNode.removeChild(parentToRemove);
@@ -1572,17 +1572,17 @@ Splinter.saveComment = function () {
     Splinter.currentEditComment = null;
     Splinter.saveDraft();
     Splinter.queueUpdateHaveDraft();
-}
+};
 
 Splinter.cancelComment = function (previousText) {
     Dom.get("commentEditor").getElementsByTagName("textarea")[0].value = previousText;
     Splinter.saveComment();
-}
+};
 
 Splinter.deleteComment = function () {
     Dom.get('commentEditor').getElementsByTagName('textarea')[0].value = "";
     Splinter.saveComment();
-}
+};
 
 Splinter.insertCommentEditor = function (commentArea, file, location, type) {
     Splinter.saveComment();
@@ -1599,50 +1599,52 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
     var typeClass = Splinter.getTypeClass(type);
     var separatorClass = Splinter.getSeparatorClass(type);
 
-    if (separatorClass) {
-        Dom.getElementsByClassName(".reviewer-0." + separatorClass, 'div', '', function (node) {
-            node.parentNode.removeChild(node);
-        });
+    var nodes = Dom.getElementsByClassName("reviewer-0");
+    var i; 
+    for (i = 0; i < nodes.length; i++) {
+    	if (separatorClass && Dom.hasClass(nodes[i], separatorClass)) {
+	    nodes[i].parentNode.removeChild(nodes[i]);
+        }
+        if (Dom.hasClass(nodes[i], typeClass)) {
+            nodes[i].parentNode.removeChild(nodes[i]);
+	}
     }
-
-    Dom.getElementsByClassName(".reviewer-0." + typeClass, 'div', '', function (node) {
-        node.parentNode.removeChild(node);
-    });
 
     if (separatorClass) {
         var commentEditorSeparator = new Element(document.createElement('div'));
         commentEditorSeparator.set('id', 'commentEditorSeparator');
-        commentEditorSeparator.addClass(separatorClass);
+        Dom.addClass(commentEditorSeparator, separatorClass);
         commentEditorSeparator.appendTo(commentArea);
     }
 
     var commentEditor = new Element(document.createElement('div'));
-    commentEditor.set('id', 'commentEditor');
-    commentEditor.addClass(typeClass);
+    Dom.setAttribute(commentEditor, 'id', 'commentEditor');
+    Dom.addClass(commentEditor, typeClass);
     commentEditor.appendTo(commentArea);
         
     var commentEditorInner = new Element(document.createElement('div'));
-    commentEditorInner.set('id', 'commentEditorInner');
+    Dom.setAttribute(commentEditorInner, 'id', 'commentEditorInner');
     commentEditorInner.appendTo(commentEditor);
 
     var commentTextFrame = new Element(document.createElement('div'));
-    commentTextFrame.set('id', 'commentTextFrame');
+    Dom.setAttribute(commentTextFrame, 'id', 'commentTextFrame');
     commentTextFrame.appendTo(commentEditorInner);
 
-    var textarea = new Element(document.createElement('textarea'));
-    textarea.value = previousText;
-    textarea.appendTo(commentTextFrame);
-    Event.on(textarea, 'keydown', function (e) { 
+    var commentTextArea = new Element(document.createElement('textarea'));
+    Dom.setAttribute(commentTextArea, 'id', 'commentTextArea');
+    commentTextArea.appendChild(document.createTextNode(previousText));
+    commentTextArea.appendTo(commentTextFrame);
+    Event.addListener('commentTextArea', 'keydown', function (e) { 
         if (e.which == 13 && e.ctrlKey) {
             Splinter.saveComment();
         } else {
             Splinter.queueSaveDraft();
         }
     });
-    Event.on(textarea, 'focus', function () { commentEditor.addClass('focused') });
-    Event.on(textarea, 'blur', function () { commentEditor.removeClass('focused') });
-    textarea.focus = true;
-    
+    Event.addListener('commentTextArea', 'focusin', function () { Dom.addClass(commentEditor, 'focused'); });
+    Event.addListener('commentTextArea', 'focusout', function () { Dom.removeClass(commentEditor, 'focused'); });
+    Dom.get(commentTextArea).focus();
+
     var commentEditorLeftButtons = new Element(document.createElement('div'));
     commentEditorLeftButtons.set('id', 'commentEditorLeftButtons');
     commentEditorLeftButtons.appendTo(commentEditorInner);
@@ -1652,15 +1654,15 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
     commentCancel.set('type', 'button');
     commentCancel.set('value', 'Cancel');
     commentCancel.appendTo(commentEditorLeftButtons);
-    Event.on('commentCancel', 'click', function () { Splinter.cancelComment(previousText) });
+    Event.addListener('commentCancel', 'click', function () { Splinter.cancelComment(previousText); });
 
     if (previousText) {
         var commentDelete = new Element(document.createElement('input'));
-        commentDelete.set('id','commentCancel');
+        commentDelete.set('id','commentDelete');
         commentDelete.set('type', 'button');
         commentDelete.set('value', 'Delete');
         commentDelete.appendTo(commentEditorLeftButtons);
-        Event.on('commentDelete', 'click', Splinter.deleteComment);
+        Event.addListener('commentDelete', 'click', Splinter.deleteComment);
     }
 
     var commentEditorRightButtons = new Element(document.createElement('div'));
@@ -1672,14 +1674,14 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
     commentSave.set('type', 'button');
     commentSave.set('value', 'Save');
     commentSave.appendTo(commentEditorRightButtons);
-    Event.on('commentSave', 'click', Splinter.saveComment);
+    Event.addListener('commentSave', 'click', Splinter.saveComment);
 
     var clear = new Element(document.createElement('div'));
-    clear.addClass('clear');
+    Dom.addClass(clear, 'clear');
     clear.appendTo(commentEditorInner);
 
     Splinter.currentEditComment = comment;
-}
+};
 
 Splinter.insertCommentForRow = function (clickRow, clickType) {
     var file = Splinter.domCache.data(clickRow).patchFile;
@@ -1692,7 +1694,7 @@ Splinter.insertCommentForRow = function (clickRow, clickType) {
     Splinter.saveComment();
     var commentArea = Splinter.ensureCommentArea(row);
     Splinter.insertCommentEditor(commentArea, file, location, type);
-}
+};
 
 Splinter.EL = function (element, cls, text) {
     var e = document.createElement(element);
@@ -1704,7 +1706,7 @@ Splinter.EL = function (element, cls, text) {
     }
 
     return e;
-}
+};
 
 Splinter.getElementPosition = function (element) {
     var left = element.offsetLeft;
@@ -1717,7 +1719,7 @@ Splinter.getElementPosition = function (element) {
     }
 
     return [left, top];
-}
+};
 
 Splinter.scrollToElement = function (element) {
     var windowHeight;
@@ -1729,15 +1731,15 @@ Splinter.scrollToElement = function (element) {
     var pos = Splinter.getElementPosition(element);
     var yCenter = pos[1] + element.offsetHeight / 2;
     window.scrollTo(0, yCenter - windowHeight / 2);
-}
+};
 
 Splinter.onRowDblClick = function (e) {
     var file = Splinter.domCache.data(this).patchFile;
+    var type;
 
     if (file.status == Splinter.Patch.CHANGED) {
         var pos = Splinter.getElementPosition(this);
         var delta = e.pageX - (pos[0] + this.offsetWidth/2);
-        var type;
         if (delta < - 20) {
             type = Splinter.Patch.REMOVED;
         } else if (delta < 20) {
@@ -1750,56 +1752,57 @@ Splinter.onRowDblClick = function (e) {
     }
 
     Splinter.insertCommentForRow(this, type);
-}
+};
 
 Splinter.appendPatchTable = function (type, maxLine, parentDiv) {
     var fileTable = new Element(document.createElement('table'));
-    fileTable.addClass('file-table');
+    Dom.addClass(fileTable, 'file-table');
     fileTable.appendTo(parentDiv);
 
     var colQ = new Element(document.createElement('colgroup'));
     colQ.appendTo(fileTable);
 
+    var col1, col2;
     if (type != Splinter.Patch.ADDED) {
-        var col1 = new Element(document.createElement('col'));
-        col1.addClass('line-number-column');
+        col1 = new Element(document.createElement('col'));
+        Dom.addClass(col1, 'line-number-column');
         Dom.setAttribute(col1, 'span', '1');
         col1.appendTo(colQ);
-        var col2 = new Element(document.createElement('col'));
-        col2.addClass('old-column');
+        col2 = new Element(document.createElement('col'));
+        Dom.addClass(col2, 'old-column');
         Dom.setAttribute(col2, 'span', '1');
         col2.appendTo(colQ);
     }
     if (type == Splinter.Patch.CHANGED) {
-        var col1 = new Element(document.createElement('col'));
-        col1.addClass('middle-column');
+        col1 = new Element(document.createElement('col'));
+        Dom.addClass(col1, 'middle-column');
         Dom.setAttribute(col1, 'span', '1');
         col1.appendTo(colQ);
     }
     if (type != Splinter.Patch.REMOVED) {
-        var col1 = new Element(document.createElement('col'));
-        col1.addClass('line-number-column');
+        col1 = new Element(document.createElement('col'));
+        Dom.addClass(col1, 'line-number-column');
         Dom.setAttribute(col1, 'span', '1');
         col1.appendTo(colQ);
-        var col2 = new Element(document.createElement('col'));
-        col2.addClass('new-column');
+        col2 = new Element(document.createElement('col'));
+        Dom.addClass(col2, 'new-column');
         Dom.setAttribute(col2, 'span', '1');
         col2.appendTo(colQ);
     }
 
     if (type == Splinter.Patch.CHANGED) {
-        fileTable.addClass('file-table-changed');
+        Dom.addClass(fileTable, 'file-table-changed');
     }
 
     if (maxLine >= 1000) {
-        fileTable.addClass("file-table-wide-numbers");
+        Dom.addClass(fileTable, "file-table-wide-numbers");
     }
 
     var tbody = new Element(document.createElement('tbody'));
     tbody.appendTo(fileTable);
 
     return tbody;
-}
+};
 
 Splinter.appendPatchHunk = function (file, hunk, tableType, includeComments, clickable, tbody, filter) {
     hunk.iterate(function(loc, oldLine, oldText, newLine, newText, flags, line) {
@@ -1848,23 +1851,24 @@ Splinter.appendPatchHunk = function (file, hunk, tableType, includeComments, cli
         if (clickable) {
             Splinter.domCache.data(tr).patchFile = file;
             Splinter.domCache.data(tr).patchLocation = loc;
-            Event.on(tr, 'dblclick', Splinter.onRowDblClick);
+            Event.addListener(tr, 'dblclick', Splinter.onRowDblClick);
         }
 
         tbody.appendChild(tr);
 
         if (includeComments && line.reviewComments != null) {
-            for (var k = 0; k < line.reviewComments.length; k++) {
+	    var k;
+            for (k = 0; k < line.reviewComments.length; k++) {
                  var commentArea = Splinter.ensureCommentArea(tr);
                  Splinter.addCommentDisplay(commentArea, line.reviewComments[k]);
             }
         }
     });
-}
+};
 
 Splinter.addPatchFile = function (file) {
     var fileDiv = new Element(document.createElement('div'));
-    fileDiv.addClass('file');
+    Dom.addClass(fileDiv, 'file');
     fileDiv.appendTo(Dom.get('files'));
     file.div = fileDiv;
 
@@ -1882,16 +1886,16 @@ Splinter.addPatchFile = function (file) {
     }
 
     var fileLabel = new Element(document.createElement('div'));
-    fileLabel.addClass('file-label');
+    Dom.addClass(fileLabel, 'file-label');
     fileLabel.appendTo(fileDiv);
 
     var fileLabelName = new Element(document.createElement('span'));
-    fileLabelName.addClass('file-label-name');
+    Dom.addClass(fileLabelName, 'file-label-name');
     fileLabelName.appendChild(document.createTextNode(file.filename));
     fileLabelName.appendTo(fileLabel);
 
     var fileLabelStatus = new Element(document.createElement('span'));
-    fileLabelStatus.addClass('file-label-status');
+    Dom.addClass(fileLabelStatus, 'file-label-status');
     fileLabelStatus.appendChild(document.createTextNode(statusString));
     fileLabelStatus.appendTo(fileLabel);
 
@@ -1901,7 +1905,8 @@ Splinter.addPatchFile = function (file) {
 
     var tbody = Splinter.appendPatchTable(file.status, lastLine, fileDiv);
 
-    for (var i = 0; i  < file.hunks.length; i++) {
+    var i;
+    for (i = 0; i  < file.hunks.length; i++) {
         var hunk = file.hunks[i];
         if (hunk.oldStart > 1) {
             var hunkHeader = Splinter.EL("tr", "hunk-header");
@@ -1914,17 +1919,18 @@ Splinter.addPatchFile = function (file) {
 
         Splinter.appendPatchHunk(file, hunk, file.status, true, true, tbody);
     }
-}
+};
 
 Splinter.appendReviewComment = function (comment, parentDiv) {
     var commentDiv = Splinter.EL("div", "review-patch-comment");
-    Event.on(commentDiv, 'click', function() {
+    Event.addListener(commentDiv, 'click', function() {
         Splinter.showPatchFile(comment.file.patchFile);
         if (comment.file.review == Splinter.theReview) {
             // Immediately start editing the comment again
-            var commentArea = $(comment.div).parents(".comment-area").find("td").get(0);
+            var commentDivParent =  Dom.getAncestorByClassName(comment.div, 'comment-area');
+	    var commentArea = commentDivParent.getElementsByTagName('td')[0];
             Splinter.insertCommentEditor(commentArea, comment.file.patchFile, comment.location, comment.type);
-            Splinter.scrollToElement(Dom.get('commentEditor'));
+	    Splinter.scrollToElement(Dom.get('commentEditor'));
         } else {
             // Just scroll to the comment, don't start a reply yet
             Splinter.scrollToElement(comment.div);
@@ -1934,16 +1940,16 @@ Splinter.appendReviewComment = function (comment, parentDiv) {
     var inReplyTo = comment.getInReplyTo();
     if (inReplyTo) {
         var div = new Element(document.createElement('div'));
-        div.addClass(Splinter.getReviewerClass(inReplyTo.file.review));
+        Dom.addClass(div, Splinter.getReviewerClass(inReplyTo.file.review));
         div.appendTo(commentDiv);
 
         var reviewerBox = new Element(document.createElement('div'));
-        reviewerBox.addClass('reviewer-box');
+        Dom.addClass(reviewerBox, 'reviewer-box');
         Splinter.Utils.preWrapLines(reviewerBox, inReplyTo.comment);
         reviewerBox.appendTo(div);
 
         var reviewPatchCommentText = new Element(document.createElement('div'));
-        reviewPatchCommentText.addClass('review-patch-comment-text');
+        Dom.addClass(reviewPatchCommentText, 'review-patch-comment-text');
         Splinter.Utils.preWrapLines(reviewPatchCommentText, comment.comment);
         reviewPatchCommentText.appendTo(commentDiv);
 
@@ -1963,17 +1969,18 @@ Splinter.appendReviewComment = function (comment, parentDiv) {
         var td = new Element(document.createElement('td'));
         td.appendTo(tr);
         td = new Element(document.createElement('td'));
-        td.addClass('review-patch-comment-text');
+        Dom.addClass(td, 'review-patch-comment-text');
         Splinter.Utils.preWrapLines(td, comment.comment);
         td.appendTo(tr);
         tr.appendTo(tbody);
     }
 
     parentDiv.appendChild(commentDiv);
-}
+};
 
 Splinter.appendReviewComments = function (review, parentDiv) {
-    for (var i = 0; i < review.files.length; i++) {
+    var i;
+    for (i = 0; i < review.files.length; i++) {
         var file = review.files[i];
 
         if (file.comments.length == 0) {
@@ -1982,7 +1989,8 @@ Splinter.appendReviewComments = function (review, parentDiv) {
 
         parentDiv.appendChild(Splinter.EL("div", "review-patch-file", file.patchFile.filename));
         var firstComment = true;
-        for (var j = 0; j < file.comments.length; j++) {
+	var j;
+        for (j = 0; j < file.comments.length; j++) {
             if (firstComment) {
                 firstComment = false;
             } else {
@@ -1992,55 +2000,64 @@ Splinter.appendReviewComments = function (review, parentDiv) {
             Splinter.appendReviewComment(file.comments[j], parentDiv);
         }
     }
-}
+};
 
 Splinter.updateMyPatchComments = function () {
-    Splinter.appendReviewComments(Splinter.theReview, $("#myPatchComments").empty().get(0));
-    if ($("#myPatchComments").children().size() > 0) {
-        $("#myPatchComments").show();
+    var myPatchComments = Dom.get("myPatchComments");
+    myPatchComments.innerHTML = '';
+    Splinter.appendReviewComments(Splinter.theReview, myPatchComments);
+    if (Dom.getChildren(myPatchComments).length > 0) {
+        Dom.setStyle(myPatchComments, 'display', 'block');
     } else {
-        $("#myPatchComments").hide();
+        Dom.setStyle(myPatchComments, 'display', 'none');
     }
-}
+};
 
 Splinter.selectNavigationLink = function (identifier) {
-    $(".navigation-link").removeClass("navigation-link-selected");
-    $(Splinter.navigationLinks[identifier]).addClass("navigation-link-selected");
-}
+    var navigationLinks = Dom.getElementsByClassName('navigation-link');
+    var i;
+    for (i = 0; i < navigationLinks.length; i++) {
+        Dom.removeClass(navigationLinks[i], 'navigation-link-selected');
+    }
+    Dom.addClass(Splinter.navigationLinks[identifier], 'navigation-link-selected');
+};
 
 Splinter.addNavigationLink = function (identifier, title, callback, selected) {
-    if ($("#navigation").children().size() > 0) {
-        $("#navigation").append(" | ");
-    }
+    var navigationDiv = Dom.get('navigation');
+    if (Dom.getChildren(navigationDiv).length > 0) {
+        navigationDiv.appendChild(document.createTextNode(' | '));
+    }   
 
-    var q = $("<a class='navigation-link' href='javascript:void(0)'></a>")
-        .text(title)
-        .appendTo("#navigation")
-        .click(function() {
-                   if (!$(this).hasClass("navigation-link-selected")) {
-                       callback();
-                   }
-               });
+    var navigationLink = new Element(document.createElement('a'));
+    Dom.addClass(navigationLink, 'navigation-link');
+    Dom.setAttribute(navigationLink, 'href', 'javascript:void(0);');
+    Dom.setAttribute(navigationLink, 'id', 'switch-' + encodeURIComponent(title));
+    navigationLink.appendChild(document.createTextNode(title));
+    navigationLink.appendTo(navigationDiv);
 
+    // FIXME: Find out why I need to use an id here instead of just passing
+    // navigationLink to Event.addListener() 
+    Event.addListener('switch-' + encodeURIComponent(title), 'click', function () {
+        if (!Dom.hasClass(this, 'navigation-link-selected')) {
+            callback();
+        }
+    });
+   
     if (selected) {
-        q.addClass("navigation-link-selected");
+        Dom.addClass(navigationLink, 'navigation-link-selected');
     }
 
-    Splinter.navigationLinks[identifier] = q.get(0);
-}
+    Splinter.navigationLinks[identifier] = navigationLink;
+};
 
 Splinter.showOverview = function () {
     Splinter.selectNavigationLink('__OVERVIEW__');
     Dom.setStyle('overview', 'display', 'block');
     Dom.getElementsByClassName('file', 'div', '', function (node) { 
-        Dom.setStyle(node, 'display', 'none') 
+        Dom.setStyle(node, 'display', 'none');
     });
     Splinter.updateMyPatchComments();
-}
-
-Splinter.addOverviewNavigationLink = function () {
-    Splinter.addNavigationLink('__OVERVIEW__', "Overview", Splinter.showOverview, true);
-}
+};
 
 Splinter.showPatchFile = function (file) {
     Splinter.selectNavigationLink(file.filename);
@@ -2055,33 +2072,20 @@ Splinter.showPatchFile = function (file) {
     } else {
         Splinter.addPatchFile(file);
     }
-}
+};
 
 Splinter.addFileNavigationLink = function (file) {
     var basename = file.filename.replace(/.*\//, "");
     Splinter.addNavigationLink(file.filename, basename, function() {
         Splinter.showPatchFile(file);
     });
-}
+};
 
 Splinter.start = function () {
-    document.title = "Attachment " + Splinter.theAttachment.id + " - " + Splinter.theAttachment.description + " - Patch Review";
-
-    Splinter.doneLoading();
-
     Dom.setStyle('attachmentInfo', 'display', 'block');
     Dom.setStyle('navigation', 'display', 'block');
     Dom.setStyle('overview', 'display', 'block');
     Dom.setStyle('files', 'display', 'block');
-
-    Dom.get('subtitle').innerHTML = "Attachment " + Splinter.theAttachment.id + " - " + Splinter.theAttachment.description;
-
-    var bugLink = new Element(document.createElement('a'));
-    bugLink.appendChild(document.createTextNode("Bug " + Splinter.theBug.id));
-    bugLink.set('href', Splinter.newPageUrl(Splinter.theBug.id));
-    bugLink.set('title', Splinter.theBug.shortDesc);
-    Event.on(bugLink, 'click', Splinter.flushSaveDraft);
-    bugLink.appendTo(Dom.get('information'));
 
     //for (var i = 0; i < Splinter.configAttachmentStatuses.length; i++) {
     //    $("<option></option").text(Splinter.configAttachmentStatuses[i])
@@ -2095,13 +2099,14 @@ Splinter.start = function () {
     Dom.setStyle('attachmentStatusSpan', 'display', 'none');
 
     if (Splinter.thePatch.intro) {
-        Splinter.Utils.preWrapLines(Dom.get('patchIntro', Splinter.thePatch.intro));
+        Splinter.Utils.preWrapLines(Dom.get('patchIntro'), Splinter.thePatch.intro);
     } else {
         Dom.setStyle('patchIntro', 'display', 'none');
     }
 
-    Splinter.addOverviewNavigationLink();
-    for (var i = 0; i < Splinter.thePatch.files.length; i++) {
+    Splinter.addNavigationLink('__OVERVIEW__', "Overview", Splinter.showOverview, true);
+    var i;
+    for (i = 0; i < Splinter.thePatch.files.length; i++) {
         Splinter.addFileNavigationLink(Splinter.thePatch.files[i]);
     }
 
@@ -2113,15 +2118,15 @@ Splinter.start = function () {
     haveDraftNotice.appendTo(navigation);
     
     var clear = new Element(document.createElement('div'));
-    clear.addClass('clear');
+    Dom.addClass(clear, 'clear');
     clear.appendTo(navigation);
 
     var numReviewers = 0;
-    for (var i = 0; i < Splinter.theBug.comments.length; i++) {
+    for (i = 0; i < Splinter.theBug.comments.length; i++) {
         var comment = Splinter.theBug.comments[i];
         var m = Splinter.Review.REVIEW_RE.exec(comment.text);
 
-        if (m && parseInt(m[1]) == Splinter.attachmentId) {
+        if (m && parseInt(m[1], 10) == Splinter.attachmentId) {
             var review = new Splinter.Review.Review(Splinter.thePatch, comment.getWho(), comment.date);
             review.parse(comment.text.substr(m[0].length));
 
@@ -2133,31 +2138,31 @@ Splinter.start = function () {
                 Splinter.reviewers[review.who] = reviewerIndex;
             }
 
-            var review = new Element(document.createElement('div'));
-            review.addClass('review');
-            review.addClass(Splinter.getReviewerClass(review));
-            review.appendTo(Dom.get('oldReviews'));
+            reviewDiv = new Element(document.createElement('div'));
+            Dom.addClass(reviewDiv, 'review');
+            Dom.addClass(reviewDiv, Splinter.getReviewerClass(review));
+            reviewDiv.appendTo(Dom.get('oldReviews'));
 
             var reviewerBox = new Element(document.createElement('div'));
-            reviewerBox.addClass('reviewer-box');
-            reviewerBox.appendTo(review);
+            Dom.addClass(reviewerBox, 'reviewer-box');
+            reviewerBox.appendTo(reviewDiv);
 
             var reviewer = new Element(document.createElement('div'));
-            reviewer.addClass('reviewer');
+            Dom.addClass(reviewer, 'reviewer');
             reviewer.appendChild(document.createTextNode(review.who));
             reviewer.appendTo(reviewerBox);
 
             var reviewDate = new Element(document.createElement('div'));
-            reviewDate.addClass('review-date');
+            Dom.addClass(reviewDate, 'review-date');
             reviewDate.appendChild(document.createTextNode(Splinter.Utils.formatDate(review.date)));
             reviewDate.appendTo(reviewerBox);
 
             var reviewInfoBottom = new Element(document.createElement('div'));
-            reviewInfoBottom.addClass('review-info-bottom');
+            Dom.addClass(reviewInfoBottom, 'review-info-bottom');
             reviewInfoBottom.appendTo(reviewerBox);
 
             var reviewIntro = new Element(document.createElement('div'));
-            reviewIntro.addClass('review-intro');
+            Dom.addClass(reviewIntro, 'review-intro');
             Splinter.Utils.preWrapLines(reviewIntro, review.intro? review.intro : "");
             reviewIntro.appendTo(reviewerBox);
 
@@ -2175,7 +2180,7 @@ Splinter.start = function () {
         if (Splinter.theReview) {
             var storedReviews = Splinter.reviewStorage.listReviews();
             Dom.setStyle('restored', 'display', 'block');
-            for (var i = 0; i < storedReviews.length; i++) {
+            for (i = 0; i < storedReviews.length; i++) {
                 if (storedReviews[i].bugId == Splinter.theBug.id &&
                     storedReviews[i].attachmentId == Splinter.theAttachment.id) 
                 {
@@ -2195,15 +2200,15 @@ Splinter.start = function () {
 
     var myComment = Dom.get('myComment');
     myComment.value = Splinter.theReview.intro ? Splinter.theReview.intro : "";
-    Event.on(myComment, 'focus', function () {
+    Event.addListener(myComment, 'focus', function () {
         Dom.setStyle('emptyCommentNotice', 'display', 'none');
     });
-    Event.on(myComment, 'blur', function () {
-        if (myComment.value = '') {
+    Event.addListener(myComment, 'blur', function () {
+        if (myComment.value == '') {
             Dom.setStyle('emptyCommentNotice', 'display', 'block');
         }
     });
-    Event.on(myComment, 'keydown', function () {
+    Event.addListener(myComment, 'keydown', function () {
         Splinter.queueSaveDraft();
         Splinter.queueUpdateHaveDraft();
     });
@@ -2212,9 +2217,9 @@ Splinter.start = function () {
 
     Splinter.queueUpdateHaveDraft();
 
-    Event.on("publishButton", "click", Splinter.publishReview);
-    Event.on("cancelButton", "click", Splinter.discardReview);
-}
+    Event.addListener("publishButton", "click", Splinter.publishReview);
+    Event.addListener("cancelButton", "click", Splinter.discardReview);
+};
 
 Splinter.newPageUrl = function (newBugId, newAttachmentId) {
     var newUrl = Splinter.configBase;
@@ -2227,7 +2232,7 @@ Splinter.newPageUrl = function (newBugId, newAttachmentId) {
     }
 
     return newUrl;
-}
+};
 
 Splinter.showNote = function () {
     var noteDiv = Dom.get("note");
@@ -2235,18 +2240,16 @@ Splinter.showNote = function () {
         noteDiv.innerHTML = Splinter.configNote;
         Dom.setStyle(noteDiv, 'display', 'block');
     }
-}
+};
 
 Splinter.showEnterBug = function () {
     Splinter.showNote();
 
-    Event.on("enterBugGo", "click", function () {
-        var newBugId = Splinter.Utils.strip(Dom.get("enterBugInput").value());
+    Event.addListener("enterBugGo", "click", function () {
+        var newBugId = Splinter.Utils.strip(Dom.get("enterBugInput").value);
         document.location = Splinter.newPageUrl(newBugId);
     });
 
-    Splinter.doneLoading();
-    
     Dom.setStyle('enterBug', 'display', 'block');
 
     if (!Splinter.reviewStorage) {
@@ -2258,79 +2261,57 @@ Splinter.showEnterBug = function () {
         return;
     }
 
-    Dom.setStyle('chooseReview', 'display', 'block');
-
-    // FIXME: This should really be a YUI data table
-
-    var chooseReview = Dom.get('chooseReview');
-    var chooseReviewTable = chooseReview.getElementsByTagName('table')[0];
-    var chooseReviewBody = chooseReview.getElementsByTagName('tbody')[0];
-
-    for (var i = storedReviews.length - 1; i >= 0; i--) {
+    var i;
+    var reviewData = [];
+    for (i = storedReviews.length - 1; i >= 0; i--) {
         var reviewInfo = storedReviews[i];
-        var href = Splinter.newPageUrl(reviewInfo.bugId, reviewInfo.attachmentId);
         var modificationDate = Splinter.Utils.formatDate(new Date(reviewInfo.modificationTime));
-
         var extra = reviewInfo.isDraft ? "(draft)" : "";
 
-        var tr = new Element(document.createElement('tr'));
-    
-        var td = new Element(document.createElement('td'));
-        td.addClass('review-bug');
-        var span = Element(document.createElement('span'));
-        span.appendChild(document.createTextNode(reviewInfo.bugId));
-        span.appendTo(td);
-        td.appendTo(tr);
-
-        td = new Element(document.createElement('td'));
-        td.addClass('review-attachment');
-        var link = Element(document.createElement('a'));
-        link.href = href;
-        link.appendChild(document.createTextNode("Attachment " + reviewInfo.attachmentId));
-        link.appendTo(td);
-        td.appendTo(tr);
-
-        td = new Element(document.createElement('td'));
-        td.addClass('review-desc');
-        var link = Element(document.createElement('a'));
-        link.href = href;
-        link.appendChild(document.createTextNode(reviewInfo.attachmentDescription));
-        link.appendTo(td);
-        td.appendTo(tr);
-
-        td = new Element(document.createElement('td'));
-        td.addClass('review-modification');
-        td.appendChild(document.createTextNode(modificationDate));
-        link.appendTo(td);
-        td.appendTo(tr);
-
-        td = new Element(document.createElement('td'));
-        td.addClass('review-extra');
-        td.appendChild(document.createTextNode(extra));
-        link.appendTo(td);
-        td.appendTo(tr);
-
-        tr.appendTo(chooseReviewBody);
+        reviewData.push([
+	    reviewInfo.bugId, 
+	    reviewInfo.bugId + ":" + reviewInfo.attachmentId + ":" + reviewInfo.attachmentDescription, 
+	    modificationDate, 
+            extra
+	]);
     }
-}
+
+    var attachLink = function (elLiner, oRecord, oColumn, oData) {
+	var splitResult = oData.split(':', 3);
+        elLiner.innerHTML = "<a href=\"" + Splinter.newPageUrl(splitResult[0], splitResult[1]) +
+                            "\">" + splitResult[1] + " - " + splitResult[2] + "</a>";
+    };
+
+    var bugLink = function (elLiner, oRecord, oColumn, oData) {
+        elLiner.innerHTML = "<a href=\"" + Splinter.newPageUrl(oData) +
+                            "\">" + oData + "</a>";
+    };
+
+    dsConfig = {
+        responseType: YAHOO.util.DataSource.TYPE_JSARRAY,
+        responseSchema: { fields:["bug_id","attachment", "date", "extra"] }
+    };
+
+    var columnDefs = [
+        { key: "bug_id", label: "Bug", formatter: bugLink },
+        { key: "attachment", label: "Attachment", formatter: attachLink },
+        { key: "date", label: "Date" },
+        { key: "extra", label: "Extra" }
+    ];
+
+    var dataSource = new YAHOO.util.LocalDataSource(reviewData, dsConfig);
+    var dataTable = new YAHOO.widget.DataTable("chooseReviewTable", columnDefs, dataSource);
+
+    Dom.setStyle('chooseReview', 'display', 'block');
+};
 
 Splinter.showChooseAttachment = function () {
-    Dom.get("bugId").innerHTML = Splinter.theBug.id;
-    Dom.get("bugShortDesc").innerHTML = Splinter.theBug.shortDesc;
-    Dom.get("bugReporter").innerHTML = Splinter.theBug.getReporter();
-    Dom.get("bugCreationDate").innerHTML = Splinter.Utils.formatDate(Splinter.theBug.creationDate);
-
-    Dom.setStyle('bugInfo', 'display', 'block');
-
-    document.title = "Bug " + Splinter.theBug.id + " - " + Splinter.theBug.shortDesc + " - Patch Review";
-    Dom.get("originalBugLink").setAttribute('href', Splinter.configBugzillaUrl + "show_bug.cgi?id=" + Splinter.theBug.id);
-    Dom.get("allReviewsLink").setAttribute('href', Splinter.configBase);
-
     var drafts = {};
     var published = {};
     if (Splinter.reviewStorage) {
         var storedReviews = Splinter.reviewStorage.listReviews();
-        for (var j = 0; j < storedReviews.length; j++) {
+	var j;
+        for (j = 0; j < storedReviews.length; j++) {
             var reviewInfo = storedReviews[j];
             if (reviewInfo.bugId == Splinter.theBug.id) {
                 if (reviewInfo.isDraft) {
@@ -2342,10 +2323,13 @@ Splinter.showChooseAttachment = function () {
         }
     }
 
-    for (var i = 0; i < Splinter.theBug.attachments.length; i++) {
+    var attachData = [];
+
+    var i;
+    for (i = 0; i < Splinter.theBug.attachments.length; i++) {
         var attachment = Splinter.theBug.attachments[i];
 
-        if (!attachment.isPatch) {
+        if (!attachment.isPatch || attachment.isObsolete) {
             continue;
         }
 
@@ -2354,9 +2338,6 @@ Splinter.showChooseAttachment = function () {
         var date = Splinter.Utils.formatDate(attachment.date);
         var status = (attachment.status && attachment.status != 'none') ? attachment.status : '';
 
-        var obsoleteClass = attachment.isObsolete ? "attachment-obsolete" : '';
-        var draftClass = attachment.id in drafts ? "attachment-draft" : '';
-
         var extra = '';
         if (attachment.id in drafts) {
             extra = '(draft)';
@@ -2364,42 +2345,30 @@ Splinter.showChooseAttachment = function () {
             extra = '(published)';
         }
 
-        $("<tr>"
-          + "<td class='attachment-id'><a></a></td>"
-          + "<td class='attachment-desc'><a></a></td>"
-          + "<td class='attachment-date'></td>"
-          + "<td class='attachment-status'></td>"
-          + "<td class='attachment-extra'></td>"
-          + "</tr>")
-            .addClass(obsoleteClass)
-            .addClass(draftClass)
-            .find(".attachment-id a")
-                .attr("href", href)
-                .text(attachment.id).end()
-            .find(".attachment-desc a")
-                .attr("href", href)
-                .text(attachment.description).end()
-            .find(".attachment-date").text(date).end()
-            .find(".attachment-status").text(status).end()
-            .find(".attachment-extra").text(extra).end()
-            .appendTo("#chooseAttachment tbody");
+	attachData.push([ attachment.id, attachment.description, attachment.date, extra ]);
     }
 
-    Splinter.doneLoading();
+    var attachLink = function (elLiner, oRecord, oColumn, oData) { 
+	elLiner.innerHTML = "<a href=\"" + Splinter.newPageUrl(Splinter.theBug.id, oData) + 
+			    "\">" + oData + "</a>";
+    };
 
+    dsConfig = {
+	responseType: YAHOO.util.DataSource.TYPE_JSARRAY,
+	responseSchema: { fields:["id","description","date", "extra"] }
+    };
+
+    var columnDefs = [
+	{ key: "id", label: "ID", formatter: attachLink },
+	{ key: "description", label: "Description" },
+	{ key: "date", label: "Date" },
+	{ key: "extra", label: "Extra" }
+    ];
+
+    var dataSource = new YAHOO.util.LocalDataSource(attachData, dsConfig);
+    var dataTable = new YAHOO.widget.DataTable("chooseAttachmentTable", columnDefs, dataSource);
+    
     Dom.setStyle('chooseAttachment', 'display', 'block');
-}
-
-Splinter.LINE_RE = /(?!$)([^\r\n]*)(?:\r\n|\r|\n|$)/g;
-jQuery.fn.preWrapLines = function(text) {
-    return this.each(function() {
-        while ((m = Splinter.LINE_RE.exec(text)) != null) {
-            var div = document.createElement("div");
-            div.className = "pre-wrap";
-            div.appendChild(document.createTextNode(m[1].length == 0 ? " " : m[1]));
-            this.appendChild(div);
-        }
-    });
 };
 
 Splinter.init = function () {
@@ -2411,27 +2380,36 @@ Splinter.init = function () {
 
     if (Splinter.theBug == null) {
         Splinter.showEnterBug();
-    } 
-    else {
-        if (Splinter.attachmentId) {
-            Splinter.theAttachment = Splinter.theBug.getAttachment(Splinter.attachmentId);
-    
-            if (Splinter.theAttachment == null) {
-                Splinter.displayError("Attachment " + Splinter.attachmentId + " is not an attachment to bug " + Splinter.theBug.id);
-            }
-            else if (!Splinter.theAttachment.isPatch) {
-                Splinter.displayError("Attachment " + Splinter.attachmentId + " is not a patch");
-                Splinter.theAttachment = null;
-            }
-        }
+	return;
+    }
+ 
+    Dom.get("bugId").innerHTML = Splinter.theBug.id;
+    Dom.get("bugShortDesc").innerHTML = Splinter.theBug.shortDesc;
+    Dom.get("bugReporter").innerHTML = Splinter.theBug.getReporter();
+    Dom.get("bugCreationDate").innerHTML = Splinter.Utils.formatDate(Splinter.theBug.creationDate);
+    Dom.setStyle('bugInfo', 'display', 'block');
+    Dom.get("originalBugLink").setAttribute('href', Splinter.configBugzillaUrl + "show_bug.cgi?id=" + Splinter.theBug.id);
+    Dom.get("allReviewsLink").setAttribute('href', Splinter.configBase);
 
+    if (Splinter.attachmentId) {
+        Splinter.theAttachment = Splinter.theBug.getAttachment(Splinter.attachmentId);
+    
         if (Splinter.theAttachment == null) {
-            Splinter.showChooseAttachment();
-        } else {
-            Splinter.thePatch = new Splinter.Patch.Patch(Splinter.theAttachment.data);
-            if (Splinter.thePatch != null)
-                Splinter.start();
+            Splinter.displayError("Attachment " + Splinter.attachmentId + " is not an attachment to bug " + Splinter.theBug.id);
         }
+        else if (!Splinter.theAttachment.isPatch) {
+            Splinter.displayError("Attachment " + Splinter.attachmentId + " is not a patch");
+            Splinter.theAttachment = null;
+        }
+    }
+
+    if (Splinter.theAttachment == null) {
+        Splinter.showChooseAttachment();
+    } else {
+        Splinter.thePatch = new Splinter.Patch.Patch(Splinter.theAttachment.data);
+        if (Splinter.thePatch != null) {
+            Splinter.start();
+	}
     }
 };
 

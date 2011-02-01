@@ -90,6 +90,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
       "Testing"               => [],
       "Toolkit"               => [],
       "Websites"              => ["getpersonas.com"],
+      "Plugins"               => [],
     }      
 );
 
