@@ -163,11 +163,11 @@
       <tr>
         <th>[% field_descs.bug_file_loc FILTER html %]:</th>
         <td colspan="3">
-          [% IF bug.bug_file_loc.match("^(javascript|data)") %]
-            [% bug.bug_file_loc FILTER html %]
-          [% ELSE %]
+          [% IF is_safe_url(bug.bug_file_loc) %]
             <a href="[% bug.bug_file_loc FILTER html %]">
                      [% bug.bug_file_loc FILTER html %]</a>
+          [% ELSE %]
+            [% bug.bug_file_loc FILTER html %]
           [% END %]
         </td>
       </tr>
@@ -203,7 +203,7 @@
                           bug.product == "Other Applications" OR bug.product == "SeaMonkey" OR
                           bug.product == "Toolkit" OR bug.product == "addons.mozilla.org" OR
                           bug.product == "Mozilla Services" OR bug.product == "Testing" OR
-                          bug.product == "support.mozilla.com" OR
+                          bug.product == "support.mozilla.com" OR bug.product == "Plugins" OR 
                           (bug.product == "mozilla.org" AND bug.component == "Release Engineering") OR
                           (bug.product == "Websites" AND bug.component == "getpersonas.com") %]
         [% END %]

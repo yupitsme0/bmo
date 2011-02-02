@@ -66,9 +66,9 @@ sub REQUIRED_MODULES {
     {
         package => 'CGI.pm',
         module  => 'CGI',
-        # 3.50 fixes a security problem that affects Bugzilla.
+        # 3.51 fixes a security problem that affects Bugzilla.
         # (bug 591165)
-        version => '3.50',
+        version => '3.51',
     },
     {
         package => 'Digest-SHA',
@@ -294,6 +294,12 @@ sub OPTIONAL_MODULES {
         module  => 'mod_perl2',
         version => '1.999022',
         feature => ['mod_perl'],
+    },
+    {
+        package => 'Math-Random-Secure',
+        module  => 'Math::Random::Secure',
+        version => '0.05',
+        feature => ['rand_security'],
     },
     );
 

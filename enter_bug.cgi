@@ -638,14 +638,7 @@ $vars->{'group'} = \@groups;
 
 Bugzilla::Hook::process('enter_bug_entrydefaultvars', { vars => $vars });
 
-# hack to allow the bug entry templates to use check_can_change_field to see if
-# various field values should be available to the current user
-$Bugzilla::FakeBug::check_can_change_field = sub { return Bugzilla::Bug::check_can_change_field(\%default, @_) };
-$Bugzilla::FakeBug::_changes_everconfirmed = sub { return Bugzilla::Bug::_changes_everconfirmed(\%default, @_) };
-$Bugzilla::FakeBug::everconfirmed = sub { return ($default{'status'} == 'UNCONFIRMED') ? 0 : 1 };
-bless \%default, 'Bugzilla::FakeBug';
-
-$vars->{'default'} = \%default;
+$vars->{'default'} = Bugzilla::FakeBug->new(\%default);
 
 # For pretty-product-chooser
 $vars->{'format'} = $cgi->param('format');
@@ -658,3 +651,32 @@ print $cgi->header($format->{'ctype'});
 $template->process($format->{'template'}, $vars)
   || ThrowTemplateError($template->error());          
 
+# hack to allow the bug entry templates to use check_can_change_field to see if
+# various field values should be available to the current user
+package Bugzilla::FakeBug;
+
+use Bugzilla::Bug;
+
+sub new {
+    my $class = shift;
+    my $self = shift;
+    bless $self, $class;
+    return $self;
+}
+
+sub check_can_change_field {
+    my $self = shift;
+    return Bugzilla::Bug::check_can_change_field($self, @_)
+}
+
+sub _changes_everconfirmed {
+    my $self = shift;
+    return Bugzilla::Bug::_changes_everconfirmed($self, @_)
+}
+
+sub everconfirmed {
+    my $self = shift;
+    return ($self->{'status'} == 'UNCONFIRMED') ? 0 : 1;
+}
+
+1;
