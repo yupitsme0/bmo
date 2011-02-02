@@ -25,10 +25,40 @@ sub page_before_template {
     my $input = Bugzilla->input_params;
 
     if ($page eq 'splinter.html') {
+        # Login is required for performing a review
+        my $user = Bugzilla->login(LOGIN_REQUIRED);
+
+        # We can either provide just a bug id to see a list
+        # of prior reviews by the user, or just an attachment
+        # id to go directly to a review page for the attachment.
+        # If both are give they will be checked later to make
+        # sure they are connected.
+
         if ($input->{'bug'}) {
             $vars->{'bug_id'} = $input->{'bug'};
             $vars->{'attach_id'} = $input->{'attachment'};
             $vars->{'bug'} = Bugzilla::Bug->check($input->{'bug'});
+        }
+
+        if ($input->{'attachment'}) {
+            my $attachment = Bugzilla::Attachment->new($input->{'attachment'});
+
+            # Check to see if the user can see the bug this attachment is connected to.
+            Bugzilla::Bug->check($attachment->bug_id);
+            if ($attachment->isprivate && $user->id != $attachment->attacher->id
+                && !$user->is_insider)
+            {
+                ThrowUserError('auth_failure', {action => 'access',
+                                                object => 'attachment'});
+            }
+
+            # If the user provided both a bug id and an attachment id, they must
+            # be connected to each other
+            if ($input->{'bug'} && $input->{'bug'} != $attachment->bug_id) {
+                ThrowCodeError('bug_attach_id_mismatch');
+            }
+
+            $vars->{'attach_id'} = $attachment->id;
         }
 
         my $field_object = new Bugzilla::Field({ name => 'attachments.status' });

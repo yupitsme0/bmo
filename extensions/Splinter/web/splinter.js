@@ -179,7 +179,7 @@ Splinter.Bug.Bug.prototype = {
     },
 
     getAttachment : function(attachmentId) {
-	var i;
+	    var i;
         for (i = 0; i < this.attachments.length; i++) {
             if (this.attachments[i].id == attachmentId) {
                 return this.attachments[i];
@@ -293,9 +293,9 @@ Splinter.Patch.Hunk.prototype = {
         }
 
         function endSegment() {
-	    var i, j;
             if (currentStart >= 0) {
                 if (currentOldCount > 0 && currentNewCount > 0) {
+                    var j;
                     for (j = currentStart; j < lines.length; j++) {
                         lines[j][2] &= ~(Splinter.Patch.ADDED | Splinter.Patch.REMOVED);
                         lines[j][2] |= Splinter.Patch.CHANGED;
@@ -307,7 +307,8 @@ Splinter.Patch.Hunk.prototype = {
                 currentNewCount = 0;
             }
         }
-
+    
+        var i;
         for (i = 0; i < rawlines.length; i++) {
             var line = rawlines[i];
             var op = line.substr(0, 1);
@@ -368,7 +369,7 @@ Splinter.Patch.Hunk.prototype = {
     },
 
     iterate : function(cb) {
-	var i;
+	    var i;
         var oldLine = this.oldStart;
         var newLine = this.newStart;
         for (i = 0; i < this.lines.length; i++) {
@@ -395,7 +396,7 @@ Splinter.Patch.File.prototype = {
         this.hunks = hunks;
 
         var l = 0;
-	var i;
+	    var i;
         for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             hunk.location = l;
@@ -405,7 +406,7 @@ Splinter.Patch.File.prototype = {
 
     // A "location" is just a linear index into the lines of the patch in this file
     getLocation : function(oldLine, newLine) {
-	var i;
+	    var i;
         for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             if (oldLine != null && hunk.oldStart > oldLine) {
@@ -437,7 +438,7 @@ Splinter.Patch.File.prototype = {
     },
 
     getHunk : function(location) {
-	var i;
+	    var i;
         for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             if (location >= hunk.location && location < hunk.location + hunk.lines.length) {
@@ -479,7 +480,7 @@ Splinter.Patch.Patch.prototype = {
             // or between a/foo/bar.c and /dev/null for removals and the
             // reverse for additions.
             var filename;
-            var status;
+            var status = undefined;
 
             if (/^a\//.test(m[1]) && /^b\//.test(m[2])) {
                 filename = m[1].substring(2);
@@ -533,7 +534,7 @@ Splinter.Patch.Patch.prototype = {
     },
 
     getFile : function(filename) {
-	var i;
+	    var i;
         for (i = 0; i < this.files.length; i++) {
             if (this.files[i].filename == filename) {
                 return this.files[i];
@@ -546,7 +547,7 @@ Splinter.Patch.Patch.prototype = {
 
 Splinter.Review = {
     _removeFromArray : function(a, element) {
-	var i;
+	    var i;
         for (i = 0; i < a.length; i++) {
             if (a[i] === element) {
                 a.splice(i, 1);
@@ -599,7 +600,7 @@ Splinter.Review.Comment.prototype = {
     },
 
     getInReplyTo : function() {
-	var i;
+	    var i;
         var hunk = this.getHunk();
         var line = hunk.lines[this.location - hunk.location];
         for (i = 0; i < line.reviewComments.length; i++) {
@@ -642,7 +643,7 @@ Splinter.Review.File.prototype = {
             line.reviewComments = [];
         }
         line.reviewComments.push(comment);
-	var i;
+	    var i;
         for (i = 0; i <= this.comments.length; i++) {
             if (i == this.comments.length ||
                 this.comments[i].location > location ||
@@ -659,7 +660,7 @@ Splinter.Review.File.prototype = {
     },
 
     getComment : function(location, type) {
-	var i;
+	    var i;
         for (i = 0; i < this.comments.length; i++) {
             if (this.comments[i].location == location &&
                 this.comments[i].type == type) 
@@ -677,7 +678,7 @@ Splinter.Review.File.prototype = {
         str += '\n';
         var first = true;
 
-	var i;
+	    var i;
         for (i = 0; i < this.comments.length; i++) {
             if (first) {
                 first = false;
@@ -858,8 +859,8 @@ Splinter.Review.Review.prototype = {
         this.date = date;
         this.intro = null;
         this.files = [];
-	var i;
 
+	    var i;
         for (i = 0; i < patch.files.length; i++) {
             this.files.push(new Splinter.Review.File(this, patch.files[i]));
         }
@@ -934,7 +935,7 @@ Splinter.Review.Review.prototype = {
 
                 var lastSegmentOld = 0;
                 var lastSegmentNew = 0;
-		var i;
+		        var i;
                 for (i = 0; i < rawlines.length; i++) {
                     var line = rawlines[i];
                     var count = 1;
@@ -1008,7 +1009,7 @@ Splinter.Review.Review.prototype = {
     },
 
     getFile : function (filename) {
-	var i;
+	    var i;
         for (i = 0; i < this.files.length; i++) {
             if (this.files[i].patchFile.filename == filename) {
                 return this.files[i];
@@ -1028,8 +1029,8 @@ Splinter.Review.Review.prototype = {
             str += '\n';
         }
 
-	var first = this.intro == null;
-	var i;
+	    var first = this.intro == null;
+	    var i;
         for (i = 0; i < this.files.length; i++) {
             var file = this.files[i];
             if (file.comments.length > 0) {
@@ -1095,7 +1096,7 @@ Splinter.ReviewStorage.LocalReviewStorage.prototype = {
     },
 
     _findReview : function(bug, attachment) {
-	var i;
+	    var i;
         for (i = 0 ; i < this._reviewInfos.length; i++) {
             if (this._reviewInfos[i].bugId == bug.id && this._reviewInfos[i].attachmentId == attachment.id) {
                 return i;
@@ -1124,9 +1125,8 @@ Splinter.ReviewStorage.LocalReviewStorage.prototype = {
         }
 
         reviewInfo.modificationTime = nowTime;
-	var i;
-        for (i = 0; i < props.length; i++) {
-            reviewInfo[i] = props[i];
+        for (var prop in props) {
+            reviewInfo[prop] = props[prop];
         }
 
         this._reviewInfos.push(reviewInfo);
@@ -1283,7 +1283,7 @@ Splinter.publishReview = function () {
     publish_attach_isprivate.value = Splinter.theAttachment.isPrivate;
 
     // This is a "magic string" used to identify review comments
-    var comment = "Review of attachment " + Splinter.theAttachment.id + "\n\n" + 
+    var comment = "Review of attachment " + Splinter.theAttachment.id + ":\n\n" + 
 		  Splinter.theReview.toString();
     publish_review.value = comment;
 
@@ -1927,12 +1927,12 @@ Splinter.appendReviewComment = function (comment, parentDiv) {
         if (comment.file.review == Splinter.theReview) {
             // Immediately start editing the comment again
             var commentDivParent =  Dom.getAncestorByClassName(comment.div, 'comment-area');
-	    var commentArea = commentDivParent.getElementsByTagName('td')[0];
+	        var commentArea = commentDivParent.getElementsByTagName('td')[0];
             Splinter.insertCommentEditor(commentArea, comment.file.patchFile, comment.location, comment.type);
-	    Splinter.scrollToElement(Dom.get('commentEditor'));
+	        Splinter.scrollToElement(Dom.get('commentEditor'));
         } else {
             // Just scroll to the comment, don't start a reply yet
-            Splinter.scrollToElement(comment.div);
+            Splinter.scrollToElement(Dom.get(comment.div));
         }
     });
 
@@ -1988,7 +1988,7 @@ Splinter.appendReviewComments = function (review, parentDiv) {
 
         parentDiv.appendChild(Splinter.EL("div", "review-patch-file", file.patchFile.filename));
         var firstComment = true;
-	var j;
+	    var j;
         for (j = 0; j < file.comments.length; j++) {
             if (firstComment) {
                 firstComment = false;
@@ -2309,7 +2309,7 @@ Splinter.showChooseAttachment = function () {
     var published = {};
     if (Splinter.reviewStorage) {
         var storedReviews = Splinter.reviewStorage.listReviews();
-	var j;
+	    var j;
         for (j = 0; j < storedReviews.length; j++) {
             var reviewInfo = storedReviews[j];
             if (reviewInfo.bugId == Splinter.theBug.id) {
