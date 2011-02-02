@@ -139,11 +139,11 @@ function updateCalendarFromField(date_field) {
 
 
 /* Hide input fields and show the text with (edit) next to it */  
-function hideEditableField( container, input, action, field_id, original_value ) {
+function hideEditableField( container, input, action, field_id, original_value, new_value ) {
     YAHOO.util.Dom.removeClass(container, 'bz_default_hidden');
     YAHOO.util.Dom.addClass(input, 'bz_default_hidden');
     YAHOO.util.Event.addListener(action, 'click', showEditableField,
-                                 new Array(container, input));
+                                 new Array(container, input, new_value));
     if(field_id != ""){
         YAHOO.util.Event.addListener(window, 'load', checkForChangedFieldValues,
                         new Array(container, input, field_id, original_value));
@@ -155,9 +155,9 @@ function hideEditableField( container, input, action, field_id, original_value )
  *
  * var e: the event
  * var ContainerInputArray: An array containing the (edit) and text area and the input being displayed
- * var ContainerInputArray[0]: the conainer that will be hidden usually shows the (edit) text
+ * var ContainerInputArray[0]: the container that will be hidden usually shows the (edit) or (take) text
  * var ContainerInputArray[1]: the input area and label that will be displayed
- *
+ * var ContainerInputArray[2]: the new value to set the input field to when (take) is clicked
  */
 function showEditableField (e, ContainerInputArray) {
     var inputs = new Array();
@@ -174,6 +174,11 @@ function showEditableField (e, ContainerInputArray) {
         inputs = inputArea.getElementsByTagName('input');
     }
     if ( inputs.length > 0 ) {
+        // Change the first field's value to ContainerInputArray[2]
+        // if present before focusing.
+        if (ContainerInputArray[2]) {
+            inputs[0].value = ContainerInputArray[2];
+        }
         // focus on the first field, this makes it easier to edit
         inputs[0].focus();
         inputs[0].select();
@@ -366,11 +371,11 @@ function boldOnChange(e, field_id){
     }
 }
 
-function updateCommentTagControl(checkbox, form) {
+function updateCommentTagControl(checkbox, field) {
     if (checkbox.checked) {
-        form.comment.className='bz_private';
+        YAHOO.util.Dom.addClass(field, 'bz_private');
     } else {
-        form.comment.className='';
+        YAHOO.util.Dom.removeClass(field, 'bz_private');
     }
 }
 
@@ -562,6 +567,13 @@ function browserCanHideOptions(aSelect) {
 
 /* (end) option hiding code */
 
+// A convenience function to sanitize raw text for harmful HTML before outputting
+function _escapeHTML(text) {
+    return text.replace(/&/g, '&amp;').
+                replace(/</g, '&lt;').
+                replace(/>/g, '&gt;');
+}
+
 /**
  * The Autoselect
  */
@@ -587,7 +599,7 @@ YAHOO.bugzilla.userAutocomplete = {
       return stringified;
     },
     resultListFormat : function(oResultData, enteredText, sResultMatch) {
-        return ( oResultData.real_name + " (" +  oResultData.email + ")");
+        return ( _escapeHTML(oResultData.real_name) + " (" +  _escapeHTML(oResultData.email) + ")");
     },
     debug_helper : function ( ){
         /* used to help debug any errors that might happen */

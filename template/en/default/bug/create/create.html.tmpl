@@ -556,7 +556,8 @@ TUI_hide_default('expert_fields');
       <td colspan="3">
         &nbsp;&nbsp;
         <input type="checkbox" id="commentprivacy" name="commentprivacy"
-          [% " checked=\"checked\"" IF commentprivacy %]>
+          [% " checked=\"checked\"" IF commentprivacy %]
+               onClick="updateCommentTagControl(this, 'comment')">
         <label for="commentprivacy">
           Make description private (visible only to members of the 
           <strong>[% Param('insidergroup') FILTER html %]</strong> group)
@@ -668,15 +669,17 @@ TUI_hide_default('expert_fields');
       [% ELSE %]
         [% sec_bit = 2 %]   [%# core-security %]
       [% END %]
-      <input type="checkbox" name="bit-[% sec_bit %]" value="1"
+      <input type="checkbox" name="bit-[% sec_bit FILTER html %]" 
+             id="bit-[% sec_bit FILTER html %]" value="1"
         [% FOREACH g = group %]
           [% IF g.bit == sec_bit %]
             [% " checked=\"checked\"" IF g.checked %]
           [% END %]
         [% END %]
       >
+      <label for="bit-[% sec_bit FILTER html %]">
       Many users could be harmed by this security problem: it should be kept  
-      hidden from the public until it is resolved.
+      hidden from the public until it is resolved.</label>
       <br><br>
     </td>
   </tr>
