@@ -55,7 +55,7 @@ sub page_before_template {
             # If the user provided both a bug id and an attachment id, they must
             # be connected to each other
             if ($input->{'bug'} && $input->{'bug'} != $attachment->bug_id) {
-                ThrowCodeError('bug_attach_id_mismatch');
+                ThrowUserError('bug_attach_id_mismatch');
             }
 
             $vars->{'attach_id'} = $attachment->id;
