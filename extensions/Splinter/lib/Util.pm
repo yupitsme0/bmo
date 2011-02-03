@@ -19,27 +19,29 @@
 # Contributor(s):
 #   Owen Taylor <otaylor@fishsoup.net>
 
-package Bugzilla::Extension::Splinter::SplinterUtil;
+package Bugzilla::Extension::Splinter::Util;
 
 use Bugzilla;
 use Bugzilla::Util;
 
 use base qw(Exporter);
-@Bugzilla::Extension::Splinter::SplinterUtil::EXPORT = qw(attachment_is_visible attachment_id_is_patch
-                                                      get_review_url get_review_link
-                                                      add_review_links_to_email);
+
+@Bugzilla::Extension::Splinter::Util::EXPORT = qw(
+    attachment_is_visible attachment_id_is_patch
+    get_review_url get_review_link add_review_links_to_email
+);
 
 # Checks if the current user can see an attachment
 # Based on code from attachment.cgi
 sub attachment_is_visible {
     my $attachment = shift;
 
-   defined $params->{attachment_id} || return 0;
+    defined $params->{attachment_id} || return 0;
 
-    return (Bugzilla->user->can_see_bug($attachment->bug->id) &&
-            (!$attachment->isprivate ||
-             Bugzilla->user->id == $attachment->attacher->id ||
-             Bugzilla->user->is_insider));
+    return (Bugzilla->user->can_see_bug($attachment->bug->id) 
+            && (!$attachment->isprivate 
+                || Bugzilla->user->id == $attachment->attacher->id 
+                || Bugzilla->user->is_insider));
 }
 
 sub attachment_id_is_patch {
@@ -50,32 +52,33 @@ sub attachment_id_is_patch {
     # information leak where someone could check if a private
     # attachment was a patch by creating text that would get linkified
     # differently. Likely excess paranoia
-    return (defined $attachment &&
-            attachment_is_visible ($attachment) &&
-            $attachment->ispatch);
+    return (defined $attachment
+            && attachment_is_visible ($attachment) 
+            && $attachment->ispatch);
 }
 
 sub get_review_url {
     my ($bug, $attach_id, $absolute) = @_;
     my $base = Bugzilla->params->{'splinter_base'};
-
     my $bug_id = $bug->id;
 
     if (defined $absolute && $absolute) {
-	my $urlbase = correct_urlbase();
-	$urlbase =~ s!/$!! if $base =~ "^/";
-	$base = $urlbase . $base;
+    	my $urlbase = correct_urlbase();
+	    $urlbase =~ s!/$!! if $base =~ "^/";
+	    $base = $urlbase . $base;
     }
 
     if ($base =~ /\?/) {
         return "$base&bug=$bug_id&attachment=$attach_id";
-    } else {
+    } 
+    else {
         return "$base?bug=$bug_id&attachment=$attach_id";
     }
 }
 
 sub get_review_link {
     my ($bug, $attach_id, $link_text) = @_;
+
     return "<a href='" . html_quote(get_review_url($bug, $attach_id)) . "'>$link_text</a>";
 }
 
@@ -83,12 +86,12 @@ sub munge_create_attachment {
     my ($bug, $intro_text, $attach_id, $view_link) = @_;
 
     if (attachment_id_is_patch ($attach_id)) {
-	return ("$intro_text" .
+    	return ("$intro_text" .
                 " View: $view_link\015\012" .
                 " Review: " . get_review_url($bug, $attach_id, 1) . "\015\012");
-    } else {
-	return ("$intro_text" .
-                " --> ($view_link)");
+    } 
+    else {
+	    return ("$intro_text --> ($view_link)");
     }
 }
 
@@ -99,32 +102,33 @@ sub munge_create_attachment {
 sub add_review_links_to_email {
     my $email = shift;
     my $body = $email->body;
-
     my $new_body = 0;
-
     my $bug;
-    if ($email->header('Subject') =~ /^\[Bug\s+(\d+)\]/ &&
-        Bugzilla->user->can_see_bug($1))
+
+    if ($email->header('Subject') =~ /^\[Bug\s+(\d+)\]/ 
+        && Bugzilla->user->can_see_bug($1))
     {
-	$bug = new Bugzilla::Bug($1);
+	    $bug = new Bugzilla::Bug($1);
     }
 
     return unless defined $bug;
 
     if ($body =~ /Review\s+of\s+attachment\s+\d+\s*:/) {
-	$body =~ s~(Review\s+of\s+attachment\s+(\d+)\s*:)
+	    $body =~ s~(Review\s+of\s+attachment\s+(\d+)\s*:)
                   ~"$1\015\012 --> (" . get_review_url($bug, $2, 1) . ")"
                   ~egx;
-	$new_body = 1;
+	    $new_body = 1;
     }
 
     if ($body =~ /Created attachment \d+\015\012 --> /) {
-	$body =~ s~(Created\ attachment\ (\d+)\015\012)
+	    $body =~ s~(Created\ attachment\ (\d+)\015\012)
                    \ -->\ \(([^\015\012]*)\)[^\015\012]*
                   ~munge_create_attachment($bug, $1, $2, $3)
                   ~egx;
-	$new_body = 1;
+	    $new_body = 1;
     }
 
     $email->body_set($body) if $new_body;
 }
+
+1;
