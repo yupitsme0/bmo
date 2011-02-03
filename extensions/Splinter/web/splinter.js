@@ -97,8 +97,7 @@ Splinter.Bug = {
     },
 
     parseDate : function(d) {
-        var m = /^\s*(\d+)(-|\.)(\d+)(-|\.)(\d+)\s+(\d+):(\d+)(?::(\d+))?\s+(?:([A-Z]{3,})|([-+]\d{3,}))\s*$/.exec(d);
-        // var m = /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)(?::(\d+))?/.exec(d);
+        var m = /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)(?::(\d+))?\s+(?:([A-Z]{3,})|([-+]\d{3,}))\s*$/.exec(d);
         if (!m) {
             return null;
         }
