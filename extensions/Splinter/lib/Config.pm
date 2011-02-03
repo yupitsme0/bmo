@@ -20,24 +20,26 @@
 #                 Bradley Baetz <bbaetz@acm.org>
 #                 Owen Taylor <otaylor@redhat.com>
 
-package Bugzilla::Extension::Splinter::ConfigSplinter;
+package Bugzilla::Extension::Splinter::Config;
+
 use strict;
 use warnings;
 
 use Bugzilla::Config::Common;
 
-$Bugzilla::Extension::Splinter::ConfigSplinter::sortkey = 30;
+our $sortkey = 30;
 
 sub get_param_list {
     my ($class) = @_;
 
     my @param_list = (
-    {
-        name => 'splinter_base',
-        type => 't',
-        default => '/page.cgi?id=splinter.html',
-    },
+        {
+            name => 'splinter_base',
+            type => 't',
+            default => 'page.cgi?id=splinter.html',
+        },
     );
+
     return @param_list;
 }
 
