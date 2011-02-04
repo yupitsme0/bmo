@@ -525,7 +525,7 @@ if ( ($cloned_bug_id) &&
 {
     $default{'version'} = $version_cookie;
 } else {
-    $default{'version'} = $vars->{'version'}->[$#{$vars->{'version'}}];
+    $default{'version'} = $vars->{'version'}->[$#{$vars->{'version'}}]->name;
 }
 
 # Get list of milestones.
