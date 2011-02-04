@@ -38,7 +38,7 @@ sub bug_format_comment {
     # it tries to stop an arms race starting.)
     if ($comment &&
         !$comment->author->in_group('editbugs') &&
-        $comment->author->id ne Bugzilla->user->id) 
+        $comment->author->id != Bugzilla->user->id)
     {
         push (@$regexes, {
             match => RE_profanity(),
