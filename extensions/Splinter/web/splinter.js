@@ -232,8 +232,9 @@ Splinter.Patch = {
     NEW_NONEWLINE : 1 << 3,
     OLD_NONEWLINE : 1 << 4,
 
-    FILE_START_RE : /^(?:(?:Index|index|===|RCS|diff).*\n)*---[ \t]*(\S+).*\n\+\+\+[ \t]*(\S+).*\n(?=@@)/mg,
-    HUNK_RE : /^@@[ \t]+\-(\d+),(\d+)[ \t]+\+(\d+),(\d+)[ \t]+@@(.*)\n((?:[ +\\-].*\n)*)/mg,
+    FILE_START_RE : /^(?:(?:Index|index|===|RCS|diff).*\n)*\-\-\-[ \t]*(\S+).*\n\+\+\+[ \t]*(\S+).*\n(?=@@)/mg,
+    HUNK_START_RE : /^@@[ \t]+-(\d+),(\d+)[ \t]+\+(\d+),(\d+)[ \t]+@@(.*)\n/mg,
+    HUNK_RE       : /((?:[ +\\-].*\n)*)/mg,
 
     _cleanIntro : function(intro) {
         var m;
@@ -461,9 +462,9 @@ Splinter.Patch.Patch.prototype = {
     // cf. parsing in Review.Review.parse()
     _init : function(text) {
         // Canonicalize newlines to simplify the following
-        if (/\r/.test(text)) {
-            text = text.replace(/(\r\n|\r|\n)/g, "\n");
-        }
+        //if (/\r/.test(text)) {
+        //    text = text.replace(/(\r\n|\r|\n)/g, "\n");
+        //}
 
         this.files = [];
 
@@ -493,23 +494,29 @@ Splinter.Patch.Patch.prototype = {
             } else {
                 filename = m[1];
             }
-
+		
             var hunks = [];
             var pos = Splinter.Patch.FILE_START_RE.lastIndex;
             while (true) {
-                Splinter.Patch.HUNK_RE.lastIndex = pos;
-                var m2 = Splinter.Patch.HUNK_RE.exec(text);
+                Splinter.Patch.HUNK_START_RE.lastIndex = pos;
+                var m2 = Splinter.Patch.HUNK_START_RE.exec(text);
                 if (m2 == null || m2.index != pos) {
                     break;
                 }
-    
-                pos = Splinter.Patch.HUNK_RE.lastIndex;
-                var oldStart = parseInt(m2[1], 10);
+
+		var oldStart = parseInt(m2[1], 10);
                 var oldCount = parseInt(m2[2], 10);
                 var newStart = parseInt(m2[3], 10);
                 var newCount = parseInt(m2[4], 10);
-    
-                hunks.push(new Splinter.Patch.Hunk(oldStart, oldCount, newStart, newCount, m2[5], m2[6]));
+   
+                pos = Splinter.Patch.HUNK_START_RE.lastIndex;
+		Splinter.Patch.HUNK_RE.lastIndex = pos;
+		var m3 = Splinter.Patch.HUNK_RE.exec(text);
+		if (m3 == null || m3.index != pos) {
+                    break;
+                }
+
+                hunks.push(new Splinter.Patch.Hunk(oldStart, oldCount, newStart, newCount, m2[5], m3[1]));
             }
 
             if (status === undefined) {
