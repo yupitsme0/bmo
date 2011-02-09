@@ -504,18 +504,19 @@ Splinter.Patch.Patch.prototype = {
                     break;
                 }
 
-		var oldStart = parseInt(m2[1], 10);
+		        var oldStart = parseInt(m2[1], 10);
                 var oldCount = parseInt(m2[2], 10);
                 var newStart = parseInt(m2[3], 10);
                 var newCount = parseInt(m2[4], 10);
    
                 pos = Splinter.Patch.HUNK_START_RE.lastIndex;
-		Splinter.Patch.HUNK_RE.lastIndex = pos;
-		var m3 = Splinter.Patch.HUNK_RE.exec(text);
-		if (m3 == null || m3.index != pos) {
+		        Splinter.Patch.HUNK_RE.lastIndex = pos;
+		        var m3 = Splinter.Patch.HUNK_RE.exec(text);
+		        if (m3 == null || m3.index != pos) {
                     break;
                 }
-
+                
+                pos = Splinter.Patch.HUNK_RE.lastIndex;
                 hunks.push(new Splinter.Patch.Hunk(oldStart, oldCount, newStart, newCount, m2[5], m3[1]));
             }
 
@@ -585,8 +586,9 @@ Splinter.Review = {
     },
 
     FILE_START_RE : /^:::[ \t]+(\S+)[ \t]*\n/mg,
-    HUNK_RE : /^@@[ \t]+(?:-(\d+),(\d+)[ \t]+)?(?:\+(\d+),(\d+)[ \t]+)?@@.*\n((?:(?!@@|:::).*\n?)*)/mg,
-    REVIEW_RE : /^\s*review\s+of\s+attachment\s+(\d+)\s*:\s*/i
+    HUNK_START_RE : /^@@[ \t]+(?:-(\d+),(\d+)[ \t]+)?(?:\+(\d+),(\d+)[ \t]+)?@@.*\n/mg,
+    HUNK_RE       : /((?:(?!@@|:::).*\n?)*)/mg,
+    REVIEW_RE     : /^\s*review\s+of\s+attachment\s+(\d+)\s*:\s*/i
 };
 
 Splinter.Review.Comment = function(file, location, type, comment) {
@@ -895,13 +897,13 @@ Splinter.Review.Review.prototype = {
             var pos = Splinter.Review.FILE_START_RE.lastIndex;
 
             while (true) {
-                Splinter.Review.HUNK_RE.lastIndex = pos;
-                var m2 = Splinter.Review.HUNK_RE.exec(text);
+                Splinter.Review.HUNK_START_RE.lastIndex = pos;
+                var m2 = Splinter.Review.HUNK_START_RE.exec(text);
                 if (m2 == null || m2.index != pos) {
                     break;
                 }
 
-                pos = Splinter.Review.HUNK_RE.lastIndex;
+                pos = Splinter.Review.HUNK_START_RE.lastIndex;
 
                 var oldStart, oldCount, newStart, newCount;
                 if (m2[1]) {
@@ -932,7 +934,15 @@ Splinter.Review.Review.prototype = {
                 var oldLine = oldStart;
                 var newLine = newStart;
 
-                var rawlines = m2[5].split("\n");
+                Splinter.Review.HUNK_RE.lastIndex = pos;
+                var m3 = Splinter.Review.HUNK_RE.exec(text);
+                if (m3 == null || m3.index != pos) {
+                    break;
+                }
+
+                pos = Splinter.Review.HUNK_RE.lastIndex;
+
+                var rawlines = m3[1].split("\n");
                 if (rawlines.length > 0 && rawlines[rawlines.length - 1].match('^/s+$')) {
                     rawlines.pop(); // Remove trailing element from final \n
                 }
@@ -1531,14 +1541,14 @@ Splinter.addCommentDisplay = function (commentArea, comment) {
         
         var reviewDate = new Element(document.createElement('div'));
         Dom.addClass(reviewDate, 'review-date');
-        reviewDate.appendChild(Splinter.Utils.formatDate(review.date));
+        reviewDate.appendChild(document.createTextNode(Splinter.Utils.formatDate(review.date)));
         reviewDate.appendTo(reviewInfo);
 
-        var reviewInfoBottom = new Element(document.createElement('div'));
-        Dom.addClass(reviewInfoBottom, 'review-info-bottom');
-        reviewInfoBottom.appendTo(reviewInfo);
+	    var reviewInfoBottom = new Element(document.createElement('div'));
+	    Dom.addClass(reviewInfoBottom, 'review-info-bottom');
+	    reviewInfoBottom.appendTo(reviewInfo);
 
-        reviewInfo.appendTo(reviewerBox);
+	    reviewInfo.appendTo(reviewerBox);
     }
 
     comment.div = commentDiv;
@@ -2036,13 +2046,14 @@ Splinter.addNavigationLink = function (identifier, title, callback, selected) {
     var navigationLink = new Element(document.createElement('a'));
     Dom.addClass(navigationLink, 'navigation-link');
     Dom.setAttribute(navigationLink, 'href', 'javascript:void(0);');
-    Dom.setAttribute(navigationLink, 'id', 'switch-' + encodeURIComponent(title));
+    Dom.setAttribute(navigationLink, 'id', 'switch-' + encodeURIComponent(identifier));
+    Dom.setAttribute(navigationLink, 'title', identifier);
     navigationLink.appendChild(document.createTextNode(title));
     navigationLink.appendTo(navigationDiv);
 
     // FIXME: Find out why I need to use an id here instead of just passing
     // navigationLink to Event.addListener() 
-    Event.addListener('switch-' + encodeURIComponent(title), 'click', function () {
+    Event.addListener('switch-' + encodeURIComponent(identifier), 'click', function () {
         if (!Dom.hasClass(this, 'navigation-link-selected')) {
             callback();
         }
@@ -2082,6 +2093,7 @@ Splinter.showPatchFile = function (file) {
 Splinter.addFileNavigationLink = function (file) {
     var basename = file.filename.replace(/.*\//, "");
     Splinter.addNavigationLink(file.filename, basename, function() {
+    // Splinter.addNavigationLink(file.filename, file.filename, function() {
         Splinter.showPatchFile(file);
     });
 };
@@ -2387,10 +2399,10 @@ Splinter.init = function () {
         Splinter.showEnterBug();
 	    return;
     }
- 
+
     Dom.get("bugId").innerHTML = Splinter.theBug.id;
     Dom.get("bugShortDesc").innerHTML = Splinter.theBug.shortDesc;
-    Dom.get("bugReporter").innerHTML = Splinter.theBug.getReporter();
+    Dom.get("bugReporter").appendChild(document.createTextNode(Splinter.theBug.getReporter()));
     Dom.get("bugCreationDate").innerHTML = Splinter.Utils.formatDate(Splinter.theBug.creationDate);
     Dom.setStyle('bugInfo', 'display', 'block');
     Dom.get("originalBugLink").setAttribute('href', Splinter.configBugzillaUrl + "show_bug.cgi?id=" + Splinter.theBug.id);
@@ -2410,7 +2422,15 @@ Splinter.init = function () {
 
     if (Splinter.theAttachment == null) {
         Splinter.showChooseAttachment();
+
     } else {
+        Dom.get("attachId").innerHTML = Splinter.theAttachment.id;
+        Dom.get("attachDesc").innerHTML = Splinter.theAttachment.description;
+        Dom.get("attachCreator").appendChild(document.createTextNode(Splinter.Bug._formatWho(Splinter.theAttachment.whoName, 
+								                             Splinter.theAttachment.whoEmail)));
+        Dom.get("attachDate").innerHTML = Splinter.Utils.formatDate(Splinter.theAttachment.date);
+        Dom.setStyle('attachInfo', 'display', 'block');
+
         Splinter.thePatch = new Splinter.Patch.Patch(Splinter.theAttachment.data);
         if (Splinter.thePatch != null) {
             Splinter.start();

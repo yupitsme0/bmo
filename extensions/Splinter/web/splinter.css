@@ -21,11 +21,9 @@ textarea:focus {
     font-weight: bold;
 }
 
-#bugInfo {
+#bugInfo, #attachInfo {
     margin-top: 0.5em;
     margin-bottom: 1em;
-    background: #eeeeee;
-    -moz-border-radius: 0.5em;
 }
 
 #helpful-links {
