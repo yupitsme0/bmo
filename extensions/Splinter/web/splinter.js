@@ -462,9 +462,9 @@ Splinter.Patch.Patch.prototype = {
     // cf. parsing in Review.Review.parse()
     _init : function(text) {
         // Canonicalize newlines to simplify the following
-        //if (/\r/.test(text)) {
-        //    text = text.replace(/(\r\n|\r|\n)/g, "\n");
-        //}
+        if (/\r/.test(text)) {
+            text = text.replace(/(\r\n|\r|\n)/g, "\n");
+        }
 
         this.files = [];
 
