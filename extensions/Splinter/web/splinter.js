@@ -2100,7 +2100,7 @@ Splinter.addFileNavigationLink = function (file) {
 
 Splinter.start = function () {
     Dom.setStyle('attachmentInfo', 'display', 'block');
-    Dom.setStyle('navigation', 'display', 'block');
+    Dom.setStyle('navigationContainer', 'display', 'block');
     Dom.setStyle('overview', 'display', 'block');
     Dom.setStyle('files', 'display', 'block');
 
@@ -2388,6 +2388,20 @@ Splinter.showChooseAttachment = function () {
     Dom.setStyle('chooseAttachment', 'display', 'block');
 };
 
+Splinter.quickHelpToggle = function () {
+    var quickHelpDiv = Dom.get('quickHelpContent');
+    var quickHelpToggle = Dom.get('quickHelpToggle');
+    if (quickHelpDiv.style.display == 'none') {
+	quickHelpDiv.style.display = 'block';
+	quickHelpToggle.innerHTML = 'Hide Quick Help';
+	YAHOO.util.Cookie.remove('hide_splinter_quick_help');
+    } else {
+	quickHelpDiv.style.display = 'none';
+	quickHelpToggle.innerHTML = 'Show Quick Help';
+	YAHOO.util.Cookie.set('hide_splinter_quick_help', '1', { expires: new Date("January 12, 2025") });
+    }
+}; 
+
 Splinter.init = function () {
     Splinter.showNote();
 
@@ -2430,6 +2444,11 @@ Splinter.init = function () {
 								                             Splinter.theAttachment.whoEmail)));
         Dom.get("attachDate").innerHTML = Splinter.Utils.formatDate(Splinter.theAttachment.date);
         Dom.setStyle('attachInfo', 'display', 'block');
+	
+	if (YAHOO.util.Cookie.get('hide_splinter_quick_help')) {
+	    Splinter.quickHelpToggle();
+	}
+	Dom.setStyle('quickHelp', 'display', 'block');
 
         Splinter.thePatch = new Splinter.Patch.Patch(Splinter.theAttachment.data);
         if (Splinter.thePatch != null) {

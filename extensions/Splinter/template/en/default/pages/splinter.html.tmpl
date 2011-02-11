@@ -26,11 +26,12 @@
 	             "js/yui/assets/skins/sam/datatable.css",
                  "extensions/Splinter/web/splinter.css" ]
   javascript_urls = [ "js/yui/element/element-min.js",
+		      "js/yui/cookie/cookie-min.js"
                       "js/yui/connection/connection-min.js",
                       "js/yui/container/container-min.js",
                       "js/yui/button/button-min.js", 
                       "js/yui/json/json-min.js",
-		              "js/yui/datasource/datasource-min.js",
+		      "js/yui/datasource/datasource-min.js",
                       "js/yui/datatable/datatable-min.js",
                       "extensions/Splinter/web/splinter.js" ]
 %]
@@ -127,8 +128,6 @@
 
 <div id="error" style="display: none;"> </div>
 
-<div id="navigation" style="display: none;"></div>
-
 <div id="enterBug" style="display: none;">
   Bug to review:
   <input id="enterBugInput" />
@@ -143,13 +142,32 @@
   <div id="chooseAttachmentTable"></div>
 </div>
 
+<div id="quickHelp" style="display:none;">
+  <p>
+    <a href="javascript:Splinter.quickHelpToggle();" title="Show or hide the quick help section" id="quickHelpToggle">
+    Hide Quick Help</a>
+    <div id="quickHelpContent">
+      <ul id="quickhelplist">
+        <li>From the Overview page, you can add a more generic overview comment that will appear at the beginning of your review.</li>
+        <li>To comment on a specific lines in the patch, first select the filename from the file navigation links.</li>
+        <li>Then double click the line you want to review and a comment box will appear below the line.</li>
+        <li>When the review is complete and you publish it, the overview comment and all line specific comments with their context, 
+            will be combined together into a single review comment on the bug report.</li>
+        <li>For more detailed instructions, read the Splinter 
+            <a id='helpLink' target='splinterHelp' href="[% urlbase FILTER none %]page.cgi?id=splinter/help.html">help page</a>.
+        </li>
+      </ul>
+    </div>
+  </p>
+</div>
+
+<div id="navigationContainer" style="display: none;">
+  <b>Navigation:</b> <span id="navigation"></span>
+</div>
+
 <div id="overview" style="display: none;">
-  <div id="patchIntro">
-  </div>
+  <div id="patchIntro"></div>
   <div>
-    <span class="review-title">
-      Your Review
-    </span>
     <span id="restored" style="display: none;">
       (Restored from draft; last edited <span id="restoredLastModified"></span>)
     </span>

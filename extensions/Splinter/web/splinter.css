@@ -380,3 +380,7 @@ div.review-patch-comment-text {
     padding: 10px;
     text-align: center;
 }
+
+#quickHelpContent {
+    border: 1px solid #000;
+}
