@@ -197,7 +197,7 @@ use File::Basename;
 # CONSTANTS
 #
 # Bugzilla version
-use constant BUGZILLA_VERSION => "4.0rc2+";
+use constant BUGZILLA_VERSION => "4.0+";
 
 # These are unique values that are unlikely to match a string or a number,
 # to be used in criteria for match() functions and other things. They start
@@ -487,6 +487,8 @@ use constant DB_MODULE => {
                     version => '4.00',
                 },
                 name => 'MySQL'},
+    # Also see Bugzilla::DB::Pg::bz_check_server_version, which has special
+    # code to require DBD::Pg 2.17.2 for PostgreSQL 9 and above.
     'pg'    => {db => 'Bugzilla::DB::Pg', db_version => '8.00.0000',
                 dbd => {
                     package => 'DBD-Pg',

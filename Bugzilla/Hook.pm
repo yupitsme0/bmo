@@ -494,6 +494,16 @@ as though he were on the CC list:
 (We use C<+> in front of C<REL_CC> so that Perl interprets it as a constant
 instead of as a string.)
 
+=item C<diffs>
+
+This is a list of hashes, each hash representing a change to the bug. Each 
+hash has the following members: C<field_name>, C<bug_when>, C<old>, C<new> 
+and C<who> (a L<Bugzilla::User>). If appropriate, there will also be 
+C<attach_id> or C<comment_id>; if either is present, there will be 
+C<isprivate>. See C<_get_diffs> in F<Bugzilla/BugMail.pm> to see exactly how 
+it is populated. Warning: the format and existence of the "diffs" parameter 
+is subject to change in future releases of Bugzilla.
+
 =back
 
 
@@ -1090,6 +1100,21 @@ Params:
 =over
 
 =item C<product> - The new L<Bugzilla::Product> object that was just created.
+
+=back
+
+=head2 quicksearch_map
+
+This hook allows you to alter the Quicksearch syntax to include e.g. special 
+searches for custom fields you have.
+
+Params:
+
+=over
+
+=item C<map> - a hash where the key is the name you want to use in 
+Quicksearch, and the value is the name from the C<fielddefs> table that you 
+want it to map to. You can modify existing mappings or add new ones.
 
 =back
 

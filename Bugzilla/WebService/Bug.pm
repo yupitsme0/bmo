@@ -18,6 +18,7 @@
 #                 Tsahi Asher <tsahi_75@yahoo.com>
 #                 Noura Elhawary <nelhawar@redhat.com>
 #                 Frank Becker <Frank@Frank-Becker.de>
+#                 Dave Lawrence <dkl@redhat.com>
 
 package Bugzilla::WebService::Bug;
 
@@ -429,9 +430,17 @@ sub search {
         my $clause = join(' OR ', @likes);
         $params->{WHERE}->{"($clause)"} = [map { "\%$_\%" } @strings];
     }
-    
-    my $bugs = Bugzilla::Bug->match($params);
+   
+    # We want include_fields and exclude_fields to be passed to
+    # _bug_to_hash but not to Bugzilla::Bug->match so we copy the 
+    # params and delete those before passing to Bugzilla::Bug->match.
+    my %match_params = %{ $params };
+    delete $match_params{'include_fields'};
+    delete $match_params{'exclude_fields'};
+
+    my $bugs = Bugzilla::Bug->match(\%match_params);
     my $visible = Bugzilla->user->visible_bugs($bugs);
+
     my @hashes = map { $self->_bug_to_hash($_, $params) } @$visible;
     return { bugs => \@hashes };
 }
@@ -563,6 +572,10 @@ sub create {
 
 sub legal_values {
     my ($self, $params) = @_;
+
+    defined $params->{field} 
+        or ThrowCodeError('param_required', { param => 'field' });
+
     my $field = Bugzilla::Bug::FIELD_MAP->{$params->{field}} 
                 || $params->{field};
 
@@ -2402,9 +2415,8 @@ C<string> A comment to add along with this attachment.
 =item C<is_patch>
 
 C<boolean> True if Bugzilla should treat this attachment as a patch.
-If you specify this, the C<content_type> should be C<text/plain>.
-(Future versions of Bugzilla will force the C<content_type> setting
-to C<text/plain> for patches and you will not have to specify it manually.)
+If you specify this, you do not need to specify a C<content_type>.
+The C<content_type> of the attachment will be forced to C<text/plain>.
 
 Defaults to False if not specified.
 
@@ -2462,6 +2474,10 @@ You did not specify a value for the C<summary> argument.
 
 You attempted to attach a URL, setting C<is_url> to True,
 but this Bugzilla does not support attaching URLs.
+
+=item 606 (Empty Data)
+
+You set the "data" field to an empty string.
 
 =back
 
