@@ -41,7 +41,7 @@ sub page_before_template {
         }
 
         if ($input->{'attachment'}) {
-            my $attachment = Bugzilla::Attachment->new($input->{'attachment'});
+            my $attachment = Bugzilla::Attachment->check({ id => $input->{'attachment'} });
 
             # Check to see if the user can see the bug this attachment is connected to.
             Bugzilla::Bug->check($attachment->bug_id);
