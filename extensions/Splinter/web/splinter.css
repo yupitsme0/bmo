@@ -381,6 +381,14 @@ div.review-patch-comment-text {
     text-align: center;
 }
 
+#quickHelpShow a, #quickHelpContent a {
+    text-decoration: none;
+}
+
 #quickHelpContent {
     border: 1px solid #000;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    padding-left: 0.5em;
+    margin-bottom: 10px;
 }

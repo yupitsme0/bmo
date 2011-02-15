@@ -1227,48 +1227,7 @@ Splinter.displayError = function (msg) {
 //    });
 //}
 
-Splinter.add_comment_counter = 0;
-Splinter.addComment = function (bug, comment, success, failure) {
-    Splinter.add_comment_counter = Splinter.add_comment_counter + 1;
-
-    YAHOO.util.Connect.setDefaultPostHeader('application/json', true);
-
-    var json_object = {
-        "method" : "Bug.add_comment",
-        "params" : [ {"id" : bug.id, "comment" : comment }],
-        "id" : Splinter.add_comment_counter
-    };
-
-    var stringified =  YAHOO.lang.JSON.stringify(json_object);
-
-    var callback = {
-        success: function (o) {
-	    var json_object;
-            try {
-                json_object = YAHOO.lang.JSON.parse(o.responseText);
-            }
-            catch (x) {
-                alert("JSON Parse failed!");
-                return;
-            }
-            if (json_object.result.id) {
-                success();
-            } else {
-                failure();
-            }
-        },
-        failure: function (o) {
-            failure();
-        },
-        argument: { json_object : json_object }
-    };
-
-    var sUrl = Splinter.configBugzillaUrl + "jsonrpc.cgi";
-    var request = YAHOO.util.Connect.asyncRequest('POST', sUrl, callback, stringified); 
-};
-
 Splinter.publishReview = function () {
-
     Splinter.saveComment();
     Splinter.theReview.setIntro(Dom.get('myComment').value);
 
@@ -1711,13 +1670,16 @@ Splinter.insertCommentForRow = function (clickRow, clickType) {
     Splinter.insertCommentEditor(commentArea, file, location, type);
 };
 
-Splinter.EL = function (element, cls, text) {
+Splinter.EL = function (element, cls, text, title) {
     var e = document.createElement(element);
     if (text != null) {
         e.appendChild(document.createTextNode(text));
     }
     if (cls) {
         e.className = cls;
+    }
+    if (title) {
+        Dom.setAttribute(e, 'title', title);
     }
 
     return e;
@@ -1837,10 +1799,12 @@ Splinter.appendPatchHunk = function (file, hunk, tableType, includeComments, cli
             newStyle = "added-line";
         }
 
+        var title = "Double click the line to add a review comment";
+
         if (tableType != Splinter.Patch.ADDED) {
             if (oldText != null) {
-                tr.appendChild(Splinter.EL("td", "line-number", oldLine.toString()));
-                tr.appendChild(Splinter.EL("td", "old-line " + oldStyle, oldText != "" ? oldText : "\u00a0"));
+                tr.appendChild(Splinter.EL("td", "line-number", oldLine.toString(), title));
+                tr.appendChild(Splinter.EL("td", "old-line " + oldStyle, oldText != "" ? oldText : "\u00a0", title));
                 oldLine++;
             } else {
                 tr.appendChild(Splinter.EL("td", "line-number"));
@@ -1854,8 +1818,8 @@ Splinter.appendPatchHunk = function (file, hunk, tableType, includeComments, cli
 
         if (tableType != Splinter.Patch.REMOVED) {
             if (newText != null) {
-                tr.appendChild(Splinter.EL("td", "line-number", newLine.toString()));
-                tr.appendChild(Splinter.EL("td", "new-line " + newStyle, newText != "" ? newText : "\u00a0"));
+                tr.appendChild(Splinter.EL("td", "line-number", newLine.toString(), title));
+                tr.appendChild(Splinter.EL("td", "new-line " + newStyle, newText != "" ? newText : "\u00a0", title));
                 newLine++;
             } else if (tableType == Splinter.Patch.CHANGED) {
                 tr.appendChild(Splinter.EL("td", "line-number"));
@@ -2389,16 +2353,16 @@ Splinter.showChooseAttachment = function () {
 };
 
 Splinter.quickHelpToggle = function () {
-    var quickHelpDiv = Dom.get('quickHelpContent');
+    var quickHelpShow = Dom.get('quickHelpShow');
+    var quickHelpContent = Dom.get('quickHelpContent');
     var quickHelpToggle = Dom.get('quickHelpToggle');
-    if (quickHelpDiv.style.display == 'none') {
-	quickHelpDiv.style.display = 'block';
-	quickHelpToggle.innerHTML = 'Hide Quick Help';
-	YAHOO.util.Cookie.remove('hide_splinter_quick_help');
+
+    if (quickHelpContent.style.display == 'none') {
+	    quickHelpContent.style.display = 'block';
+        quickHelpShow.style.display = 'none';
     } else {
-	quickHelpDiv.style.display = 'none';
-	quickHelpToggle.innerHTML = 'Show Quick Help';
-	YAHOO.util.Cookie.set('hide_splinter_quick_help', '1', { expires: new Date("January 12, 2025") });
+	    quickHelpContent.style.display = 'none';
+        quickHelpShow.style.display = 'block';
     }
 }; 
 
@@ -2445,10 +2409,7 @@ Splinter.init = function () {
         Dom.get("attachDate").innerHTML = Splinter.Utils.formatDate(Splinter.theAttachment.date);
         Dom.setStyle('attachInfo', 'display', 'block');
 	
-	if (YAHOO.util.Cookie.get('hide_splinter_quick_help')) {
-	    Splinter.quickHelpToggle();
-	}
-	Dom.setStyle('quickHelp', 'display', 'block');
+	    Dom.setStyle('quickHelpShow', 'display', 'block');
 
         Splinter.thePatch = new Splinter.Patch.Patch(Splinter.theAttachment.data);
         if (Splinter.thePatch != null) {

@@ -26,7 +26,6 @@
 	             "js/yui/assets/skins/sam/datatable.css",
                  "extensions/Splinter/web/splinter.css" ]
   javascript_urls = [ "js/yui/element/element-min.js",
-		      "js/yui/cookie/cookie-min.js"
                       "js/yui/connection/connection-min.js",
                       "js/yui/container/container-min.js",
                       "js/yui/button/button-min.js", 
@@ -115,7 +114,10 @@
   <span id="bugCreationDate"></span>
   <span id="helpful-links">
     <a id="originalBugLink">Back to Bug</a> |
-    <a id="allReviewsLink">Your Reviews</a> 
+    <a id="allReviewsLink">Your Reviews</a> |
+    <a id='helpLink' target='splinterHelp' 
+       href="[% urlbase FILTER none %]page.cgi?id=splinter/help.html">
+    Help</a>
   </span>
 </div>
 
@@ -142,23 +144,27 @@
   <div id="chooseAttachmentTable"></div>
 </div>
 
-<div id="quickHelp" style="display:none;">
+<div id="quickHelpShow" style="display:none;">
   <p>
-    <a href="javascript:Splinter.quickHelpToggle();" title="Show or hide the quick help section" id="quickHelpToggle">
-    Hide Quick Help</a>
-    <div id="quickHelpContent">
-      <ul id="quickhelplist">
-        <li>From the Overview page, you can add a more generic overview comment that will appear at the beginning of your review.</li>
-        <li>To comment on a specific lines in the patch, first select the filename from the file navigation links.</li>
-        <li>Then double click the line you want to review and a comment box will appear below the line.</li>
-        <li>When the review is complete and you publish it, the overview comment and all line specific comments with their context, 
-            will be combined together into a single review comment on the bug report.</li>
-        <li>For more detailed instructions, read the Splinter 
-            <a id='helpLink' target='splinterHelp' href="[% urlbase FILTER none %]page.cgi?id=splinter/help.html">help page</a>.
-        </li>
-      </ul>
-    </div>
+    <a href="javascript:Splinter.quickHelpToggle();" title="Show the quick help section" id="quickHelpToggle">
+    Show Quick Help</a>
   </p>
+</div>
+
+<div id="quickHelpContent" style="display:none;">
+  <p>
+    <a href="javascript:Splinter.quickHelpToggle();" title="Hide the quick help section" id="quickHelpToggle">Close Quick Help</a>
+  </p>
+  <ul id="quickHelpList">
+    <li>From the Overview page, you can add a more generic overview comment that will appear at the beginning of your review.</li>
+    <li>To comment on a specific lines in the patch, first select the filename from the file navigation links.</li>
+    <li>Then double click the line you want to review and a comment box will appear below the line.</li>
+    <li>When the review is complete and you publish it, the overview comment and all line specific comments with their context, 
+        will be combined together into a single review comment on the bug report.</li>
+    <li>For more detailed instructions, read the Splinter 
+        <a id='helpLink' target='splinterHelp' href="[% urlbase FILTER none %]page.cgi?id=splinter/help.html">help page</a>.
+    </li>
+  </ul>
 </div>
 
 <div id="navigationContainer" style="display: none;">
@@ -224,9 +230,7 @@
 <div id="files" style="display: none;"></div>
 
 <div id="credits">
-  Powered by <a href="http://fishsoup.net/software/splinter">Splinter</a> |
-  <a id='helpLink' target='splinterHelp' href="[% urlbase FILTER none %]page.cgi?id=splinter/help.html">
-   Help</a>
+  Powered by <a href="http://fishsoup.net/software/splinter">Splinter</a> 
 </div>
 
 <div id="saveDraftNotice" style="display: none;"></div>
