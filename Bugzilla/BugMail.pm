@@ -342,7 +342,6 @@ sub Send {
         }
     }
 
-    # Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=616422
     Bugzilla::Hook::process('bugmail_recipients',
                             { bug => $bug, recipients => \%recipients,
                               diffs => $diffs });
@@ -400,6 +399,19 @@ sub Send {
                     $rels_which_want{$relationship} = 
                         $recipients{$user_id}->{$relationship};
                 }
+                # Upstreaming: TODO
+                Bugzilla::Hook::process('bugmail_user_wants', {
+                    relationship_mail => \%rels_which_want,
+                    user => $user,
+                    bug_id => $id,
+                    relationship => $relationship,
+                    field_diffs => $diffs,
+                    comments => $comments,
+                    dependency_text => $deptext,
+                    changer => $changer,
+                    bug_is_new => !$start
+                });
+
             }
         }
         
