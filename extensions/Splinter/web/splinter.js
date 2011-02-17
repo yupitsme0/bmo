@@ -708,7 +708,7 @@ Splinter.Review.File.prototype = {
             }
 
             var j;
-            for (j = 0; j < 2; j++) {
+            for (j = 0; j < 5; j++) {
                 if (contextFirst > 0 && !Splinter.Review._lineInSegment(hunk.lines[contextFirst - 1])) {
                     contextFirst--;
                 }
@@ -795,14 +795,14 @@ Splinter.Review.File.prototype = {
 
                 str += '@@ -' + patchOldStart + ',' + patchOldLines + ' +' + patchNewStart + ',' + patchNewLines + ' @@\n';
 
-                // We will use up to 8 lines more:
-                //  4 old lines or 3 old lines and a "... <N> more ... " line
-                //  4 new lines or 3 new lines and a "... <N> more ... " line
+                // We will use up to 10 lines more:
+                //  5 old lines or 4 old lines and a "... <N> more ... " line
+                //  5 new lines or 4 new lines and a "... <N> more ... " line
 
                 var patchRemovals = patchOldLines - unchangedLines;
-                var showPatchRemovals = patchRemovals > 4 ? 3 : patchRemovals;
+                var showPatchRemovals = patchRemovals > 5 ? 4 : patchRemovals;
                 var patchAdditions = patchNewLines - unchangedLines;
-                var showPatchAdditions = patchAdditions > 4 ? 3 : patchAdditions;
+                var showPatchAdditions = patchAdditions > 5 ? 4 : patchAdditions;
 
                 j = 0;
                 while (j < unchangedLines + showPatchRemovals) {
@@ -828,9 +828,9 @@ Splinter.Review.File.prototype = {
                     j += patchAdditions - showPatchAdditions;
                 }
             } else {
-                // We limit Patch.ADDED/Patch.REMOVED comments strictly to 3 lines after the header
-                if (patchOldLines + patchNewLines - unchangedLines > 3) {
-                    var toRemove =  patchOldLines + patchNewLines - unchangedLines - 3;
+                // We limit Patch.ADDED/Patch.REMOVED comments strictly to 5 lines after the header
+                if (patchOldLines + patchNewLines - unchangedLines > 5) {
+                    var toRemove =  patchOldLines + patchNewLines - unchangedLines - 5;
                     patchLines.splice(0, toRemove);
                     patchOldStart += toRemove;
                     patchNewStart += toRemove;
@@ -1465,6 +1465,7 @@ Splinter.addCommentDisplay = function (commentArea, comment) {
     }
 
     var commentDiv = new Element(document.createElement('div'));
+    Dom.addClass(commentDiv, 'comment');
     Dom.addClass(commentDiv, Splinter.getTypeClass(comment.type));
     Dom.addClass(commentDiv, Splinter.getReviewerClass(review));
 
@@ -1941,7 +1942,7 @@ Splinter.appendReviewComment = function (comment, parentDiv) {
 
         Splinter.appendPatchHunk(comment.file.patchFile, hunk, comment.type, false, false, tbody,
             function(loc) {
-                return (loc <= comment.location && comment.location - loc < 3);
+                return (loc <= comment.location && comment.location - loc < 5);
         });
 
         var tr = new Element(document.createElement('tr'));
@@ -2119,7 +2120,7 @@ Splinter.start = function () {
                 Splinter.reviewers[review.who] = reviewerIndex;
             }
 
-            reviewDiv = new Element(document.createElement('div'));
+            var reviewDiv = new Element(document.createElement('div'));
             Dom.addClass(reviewDiv, 'review');
             Dom.addClass(reviewDiv, Splinter.getReviewerClass(review));
             reviewDiv.appendTo(Dom.get('oldReviews'));
@@ -2149,7 +2150,7 @@ Splinter.start = function () {
 
             Dom.setStyle('oldReviews', 'display', 'block');
     
-            Splinter.appendReviewComments(review, Dom.getElementsByClassName('reviewer-box')[0]);
+            Splinter.appendReviewComments(review, reviewerBox);
         }
     }
 
