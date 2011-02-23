@@ -33,7 +33,7 @@ use Bugzilla::Status qw(is_open_state);
 
 our $VERSION = '1.0';
 
-use constant REL_COMPONENT_WATCHER => 500;
+use constant REL_COMPONENT_WATCHER => 15;
 
 #
 # installation
