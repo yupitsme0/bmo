@@ -49,6 +49,7 @@
 <br>
 [% USE Bugzilla %]
 [% cgi = Bugzilla.cgi %]
+[% SET classification = cgi.param('classification') %]
 [% IF NOT ((cgi.param("full")) OR (user.settings.product_chooser.value == 'full_product_chooser')) %]
 [% IF target == "enter_bug.cgi" %]
 <h2 align="center">Which product is affected by the problem you would like to report?</h2>
@@ -93,10 +94,12 @@
 <tr>
    <td><a href="[% target FILTER url_quote i%]?full=1
              [%- IF cloned_bug_id %]&amp;cloned_bug_id=[% cloned_bug_id FILTER url_quote %][% END -%]
+             [%- IF classification %]&amp;classification=[% classification FILTER url_quote %][% END -%]
              [%- IF format %]&amp;format=[% format FILTER url_quote %][% END %]">
              <img src="extensions/BMO/web/producticons/other.png" height="64" width="64" border="0"></a></td>
    <td><h2 align="left" style="margin-bottom: 0px;"><a href="[% target FILTER url_quote i%]?full=1
              [%- IF cloned_bug_id %]&amp;cloned_bug_id=[% cloned_bug_id FILTER url_quote %][% END -%]
+             [%- IF classification %]&amp;classification=[% classification FILTER url_quote %][% END -%]
              [%- IF format %]&amp;format=[% format FILTER url_quote %][% END %]">
              Other Products</a></h2>
        <p style="margin-top: 0px;">Other Mozilla products which aren't listed here</p>
