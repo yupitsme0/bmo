@@ -157,7 +157,6 @@ sub FILESYSTEM {
         'jobqueue.pl'     => { perms => OWNER_EXECUTE },
         'migrate.pl'      => { perms => OWNER_EXECUTE },
         'install-module.pl' => { perms => OWNER_EXECUTE },
-        'verify-user.pl'  => { perms => WS_EXECUTE },
 
         'Bugzilla.pm'   => { perms => CGI_READ },
         "$localconfig*" => { perms => CGI_READ },
