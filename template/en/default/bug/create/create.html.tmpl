@@ -585,22 +585,6 @@ TUI_hide_default('expert_fields');
     </td>
   </tr>
 
-  [% IF user.is_insider %]
-    <tr class="expert_fields">
-      <th>&nbsp;</th>
-      <td colspan="3">
-        &nbsp;&nbsp;
-        <input type="checkbox" id="comment_is_private" name="comment_is_private"
-          [% ' checked="checked"' IF comment_is_private %]
-               onClick="updateCommentTagControl(this, 'comment')">
-        <label for="comment_is_private">
-          Make description and any new attachment private (visible only to members 
-          of the <strong>[% Param('insidergroup') FILTER html %]</strong> group)
-        </label>
-      </td>
-    </tr>
-  [% END %]
-
   [% IF Param("maxattachmentsize") %]
   <tr>
     <th>Attachment:</th>
@@ -628,7 +612,18 @@ TUI_hide_default('expert_fields');
                        any_flags_requesteeble = 1
                        flag_table_id ="attachment_flags" %]
           </table>
+
+          [% IF user.is_insider %]
+            <input type="checkbox" id="comment_is_private" name="comment_is_private"
+                   [% ' checked="checked"' IF comment_is_private %]
+                   onClick="updateCommentTagControl(this, 'comment')">
+            <label for="comment_is_private">
+              Make this attachment and [% terms.bug %] description private (visible only 
+              to members of the <strong>[% Param('insidergroup') FILTER html %]</strong> group)
+            </label>
+          [% END %]
         </fieldset>
+
       <script type="text/javascript">
         <!--
         document.write('<\/div>');
