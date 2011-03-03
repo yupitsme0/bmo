@@ -319,8 +319,10 @@ TUI_hide_default('expert_fields');
     <th>Initial State:</th>
     <td>[% display_value("bug_status", default.bug_status) FILTER html %]</td>
 [% ELSE %]
-    [% sel = { description => 'Initial State', name => 'bug_status' } %]
-    [% INCLUDE select %]
+  [% INCLUDE bug/field.html.tmpl
+    bug = default, field = bug_fields.bug_status,
+    editable = (bug_status.size > 1), value = default.bug_status
+    override_legal_values = bug_status %]
 [% END %]
 
     <td>&nbsp;</td>
@@ -630,38 +632,6 @@ TUI_hide_default('expert_fields');
 [% END %]
 
 [% PROCESS global/footer.html.tmpl %]
-
-[%############################################################################%]
-[%# Block for SELECT fields                                                  #%]
-[%############################################################################%]
-
-[% BLOCK select %]
-  [% IF sel.description %]
-    <th>
-      <a href="page.cgi?id=fields.html#[% sel.name %]">[% sel.description %]</a>:
-    </th>
-  [% END %]
-
-  <td>
-    <select name="[% sel.name %]" id="[% sel.name %]">
-    [%- FOREACH x = ${sel.name} %]
-      <option value="[% x FILTER html %]"
-        [% " selected=\"selected\"" IF x == default.${sel.name} %]>
-        [% display_value(sel.name, x) FILTER html %]
-      </option>
-    [% END %]
-    </select>
-
-    [% IF sel.name == "bug_status" %]
-       <script type="text/javascript">
-        <!--
-          [%+ INCLUDE "bug/field-events.js.tmpl" 
-                     field = select_fields.bug_status %]
-        //-->
-        </script>
-    [% END %]
-  </td>
-[% END %]
 
 [% BLOCK build_userlist %]
   [% user_found = 0 %]
