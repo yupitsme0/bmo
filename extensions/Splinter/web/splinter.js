@@ -2411,6 +2411,9 @@ Splinter.init = function () {
         Dom.setStyle('attachInfo', 'display', 'block');
 	
 	    Dom.setStyle('quickHelpShow', 'display', 'block');
+        
+        document.title = "Patch Review of Attachment " + Splinter.theAttachment.id + 
+                         " for Bug " + Splinter.theBug.id;
 
         Splinter.thePatch = new Splinter.Patch.Patch(Splinter.theAttachment.data);
         if (Splinter.thePatch != null) {
