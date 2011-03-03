@@ -43,6 +43,7 @@ sorttable = {
    *
    */
   makeSortable: function(table) {
+
     if (table.getElementsByTagName('thead').length == 0) {
       // table doesn't have a tHead. Since it should have, create one and
       // put the first table row in it.
@@ -142,7 +143,7 @@ sorttable = {
             // If the header contains a link, clear the href.
             for (var k=0; k<headrow[i].childNodes.length; k++) {
                 if (headrow[i].childNodes[k].tagName == 'A') {
-                  headrow[i].childNodes[k].href = "javascript: return false;";
+                  headrow[i].childNodes[k].href = "javascript:void(0);";
                 }
             }
 
@@ -188,8 +189,7 @@ sorttable = {
          // reverse the table, which is quicker
          sorttable.reverse_table(cell);
 
-         mark = stIsIE ? '&nbsp<font face="webdings">5</font>' : '&nbsp;&#x25B4;';
-         sorttable._mark_column_as_sorted(cell, mark, 1);
+         sorttable._mark_column_as_sorted(cell, '&#x25B2;', 1);
          return 1;
       }
 
@@ -198,8 +198,7 @@ sorttable = {
          // re-reverse the table, which is quicker
          sorttable.reverse_table(cell);
 
-         mark = stIsIE ? '&nbsp<font face="webdings">6</font>' : '&nbsp;&#x25BE;';
-         sorttable._mark_column_as_sorted(cell, mark, 0);
+         sorttable._mark_column_as_sorted(cell, '&#x25BC;', 0);
 
          return 1;
       }
@@ -232,6 +231,7 @@ sorttable = {
 
       marker = document.createElement('span');
       marker.id = "sorttable_sort_mark";
+      marker.className = "bz_sort_order_primary";
       marker.innerHTML = text;
       cell.appendChild(marker);
   },
@@ -239,6 +239,24 @@ sorttable = {
   _remove_sorting_marker: function() {
       mark = document.getElementById('sorttable_sort_mark');
       if (mark) { mark.parentNode.removeChild(mark); }
+      els = sorttable._getElementsByClassName('bz_sort_order_primary');
+      for(var i=0,j=els.length; i<j; i++) {
+        els[i].parentNode.removeChild(els[i]);
+      }
+      els = sorttable._getElementsByClassName('bz_sort_order_secondary');
+      for(var i=0,j=els.length; i<j; i++) {
+        els[i].parentNode.removeChild(els[i]);
+      }
+  },
+
+  _getElementsByClassName: function(classname, node) {
+      if(!node) node = document.getElementsByTagName("body")[0];
+      var a = [];
+      var re = new RegExp('\\b' + classname + '\\b');
+      var els = node.getElementsByTagName("*");
+      for(var i=0,j=els.length; i<j; i++)
+        if(re.test(els[i].className))a.push(els[i]);
+      return a;
   },
 
   /*
@@ -247,6 +265,7 @@ sorttable = {
    * @param evt: the event that triggered this callback
    */
   _on_column_header_clicked: function(evt) {
+
       // The table is already sorted by this column. Just reverse it.
       if (sorttable._check_already_sorted(this))
         return;
@@ -263,9 +282,8 @@ sorttable = {
       this.className += ' sorted_0 ';
 
       // This is the text that indicates that the column is sorted.
-      mark = stIsIE ? '&nbsp<font face="webdings">6</font>' : '&nbsp;&#x25BE;';
-      sorttable._mark_column_as_sorted(this, mark, 0);
-    
+      sorttable._mark_column_as_sorted(this, '&#x25BC;', 0);
+
       sorttable.sort_table(this);
       
   },
@@ -401,11 +419,11 @@ sorttable = {
     // this is *not* a generic getInnerText function; it's special to sorttable.
     // for example, you can override the cell text with a customkey attribute.
     // it also gets .value for <input> fields.
-    
+
     hasInputs = (typeof node.getElementsByTagName == 'function') &&
                  node.getElementsByTagName('input').length;
     
-    if (node.getAttribute("sorttable_customkey") != null) {
+    if (typeof node.getAttribute != 'undefined' && node.getAttribute("sorttable_customkey") != null) {
       return node.getAttribute("sorttable_customkey");
     }
     else if (typeof node.textContent != 'undefined' && !hasInputs) {
@@ -420,7 +438,7 @@ sorttable = {
     else {
       switch (node.nodeType) {
         case 3:
-          if (node.nodeName.toLowerCase() == 'input') {Assignee
+          if (node.nodeName.toLowerCase() == 'input') {
             return node.value.replace(/^\s+|\s+$/g, '');
           }
         case 4:
@@ -535,7 +553,7 @@ if (document.addEventListener) {
 /* for Internet Explorer */
 /*@cc_on @*/
 /*@if (@_win32)
-    document.write("<script id=__ie_onload defer src=javascript:void(0)><\/script>");
+    document.write("<script id=__ie_onload defer)><\/script>");
     var script = document.getElementById("__ie_onload");
     script.onreadystatechange = function() {
         if (this.readyState == "complete") {
