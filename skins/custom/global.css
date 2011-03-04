@@ -21,28 +21,12 @@ body {
 	font-size: 100%;
 }
 
-#mozilla-org a {
-	float: right;
-	position: absolute;
-	top: 0;
-	right: 30px;
-	display: block;
-	text-indent: -5000em;
-	width: 110px;
-	height: 25px;
-	text-decoration: none;
-	background: url("https://www.mozilla.org/images/subsite_mozilla-org.gif") no-repeat;
-	margin-bottom: 1.5em;
-	outline: none;
-}
-
 #header #information {
-	color: #8f97aa;
+	color: #dddddd;
 	font-size: small;
 }
 
-pre
-{
+pre {
     font-size: medium;
 }
 
@@ -59,7 +43,11 @@ pre
 }
 
 #attachment_table {
-        width: 50em;
+    width: 50em;
+}
+
+#page-index #quicksearchForm {
+    padding-top: 20px;
 }
 
 /* createaccount styling */
