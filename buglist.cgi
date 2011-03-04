@@ -1220,6 +1220,8 @@ if ($dotweak && scalar @bugs) {
             $vars->{'targetmilestones'} = [map($_->name, @milestones )];
         }
     }
+
+    $vars->{'default'} = Bugzilla::FakeBug->new({});
 }
 
 # If we're editing a stored query, use the existing query name as default for
@@ -1288,3 +1290,31 @@ $template->process($format->{'template'}, $vars)
 ################################################################################
 
 print $cgi->multipart_final() if $serverpush;
+
+# hack to allow the bug entry templates to use check_can_change_field to see if
+# various field values should be available to the current user
+package Bugzilla::FakeBug;
+
+use Bugzilla::Bug;
+
+sub new {
+    my $class = shift;
+    my $self = shift;
+    bless $self, $class;
+    return $self;
+}
+
+sub check_can_change_field {
+    my $self = shift;
+    return Bugzilla::Bug::check_can_change_field($self, @_)
+}
+
+sub _changes_everconfirmed {
+    my $self = shift;
+    return Bugzilla::Bug::_changes_everconfirmed($self, @_)
+}
+
+sub everconfirmed {
+    my $self = shift;
+    return ($self->{'status'} == 'UNCONFIRMED') ? 0 : 1;
+}

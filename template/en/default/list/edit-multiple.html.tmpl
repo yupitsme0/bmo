@@ -286,11 +286,68 @@
   [% END %]
 
   [% USE Bugzilla %]
+  [% SET product_names = [] %]
+  [% FOREACH product = products %]
+    [% product_names.push(product.name) %]
+  [% END %] 
   [% FOREACH field = Bugzilla.active_custom_fields %]
+    
+    [% NEXT IF NOT user.id AND field.value == "---" %]
+    [% IF field.name == "cf_blocking_fennec" %]
+       [% NEXT UNLESS product_names.containsany(["Fennec", 
+                                                 "Core", 
+                                            	 "Toolkit", 
+                                            	 "NSPR",
+                                            	 "addons.mozilla.org",
+                                            	 "support.mozilla.com", 
+                                            	 "Mozilla Services",
+                                            	 "AUS"]) 
+                      OR (product.contains("mozilla.org") 
+                          AND components.contains("Release Engineering")) %]
+    [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cf_status_thunderbird") %]
+       [% NEXT UNLESS product_names.containsany(["Thunderbird", 
+                                            	 "MailNews Core", 
+                                            	 "Mozilla Messaging",
+                                            	 "support.mozillamessaging.com"])
+                      OR (products.contains("Websites")
+                          AND components.contains("www.mozillamessaging.com")) %]
+    [% ELSIF field.name.match("^cf_blocking_seamonkey") OR field.name.match("^cf_status_seamonkey") %]
+       [% NEXT UNLESS product_names.containsany(["Composer", 
+                                            	 "MailNews Core",
+                                            	 "Mozilla Localizations",
+                                            	 "Other Applications",
+                                            	 "SeaMonkey"]) %]
+    [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
+       [% NEXT UNLESS product_names.containsany(["AUS", 
+                                            	 "Camino",
+                                            	 "Core Graveyard",
+                                            	 "Core",
+                                            	 "Directory",
+                                            	 "Firefox",
+                                            	 "MailNews Core",
+                                            	 "Mozilla Localizations",
+                                            	 "NSPR",
+                                            	 "NSS", 
+                                            	 "Fennec",
+                                            	 "Other Applications",
+                                            	 "SeaMonkey",
+                                            	 "Toolkit", 
+                                            	 "addons.mozilla.org",
+                                            	 "Mozilla Services",
+                                            	 "Testing",
+                                            	 "support.mozilla.com",
+                                            	 "Plugins",
+					    	 "TestProduct"])
+                      OR (products.contains("mozilla.org") 
+                          AND components.contains("Release Engineering"))
+                      OR (products.contains("Websites") 
+                          AND components.contains("getpersonas.com")) %]
+    [% END %]
     <tr>
       [% PROCESS bug/field.html.tmpl value = dontchange
                                      editable = 1
-                                     allow_dont_change = 1 %]
+                                     allow_dont_change = 1
+                                     bug = default %]
     </tr>
   [% END %]
 
