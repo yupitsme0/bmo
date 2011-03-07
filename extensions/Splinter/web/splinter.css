@@ -241,10 +241,12 @@ div.review-patch-comment-text {
 }
 
 .old-line, .new-line {
-    white-space: pre;
     font-family: "DejaVu Sans Mono", monospace;
     font-size: 80%;
-    overflow: hidden;
+    white-space: pre-wrap;      /* CSS 3 & 2.1 */
+    white-space: -moz-pre-wrap; /* Gecko */
+    white-space: -pre-wrap;     /* Opera 4-6 */
+    white-space: -o-pre-wrap;   /* Opera 7 */
 }
 
 .removed-line {
