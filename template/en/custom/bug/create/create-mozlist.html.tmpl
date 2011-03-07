@@ -1,0 +1,215 @@
+[%# 1.0@bugzilla.org %]                                                       
+[%# The contents of this file are subject to the Mozilla Public               
+  # License Version 1.1 (the "License"); you may not use this file            
+  # except in compliance with the License. You may obtain a copy of           
+  # the License at http://www.mozilla.org/MPL/                                
+  #                                                                           
+  # Software distributed under the License is distributed on an "AS           
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or                
+  # implied. See the License for the specific language governing              
+  # rights and limitations under the License.                                 
+  #                                                                           
+  # The Original Code is the Bugzilla Bug Tracking System.                    
+  #                                                                           
+  # The Initial Developer of the Original Code is Netscape Communications     
+  # Corporation. Portions created by Netscape are                             
+  # Copyright (C) 1998 Netscape Communications Corporation. All               
+  # Rights Reserved.                                                          
+  #                                                                           
+  # Contributor(s): Gervase Markham <gerv@gerv.net>                       
+  #                 Ville Skyttä <ville.skytta@iki.fi>
+  #                 John Hoogstrate <hoogstrate@zeelandnet.nl>
+  #%]                                                                         
+                                                                              
+[% PROCESS global/variables.none.tmpl %]                                      
+                                                                              
+[% PROCESS global/header.html.tmpl                                            
+   title = "Mozilla Mailing List Requests" 
+   javascript_urls = ['js/form_validate.js']                                  
+%]
+                                                                            
+[% USE Bugzilla %]                                                            
+
+<p>
+  <strong>Please use this form for Mailing List requests only!</strong>
+</p>
+
+<p>
+  If you have a bug to file, go <a href="enter_bug.cgi">here</a>.
+</p>
+
+<form method="post" action="post_bug.cgi" id="mozListRequestForm" 
+      enctype="multipart/form-data" onSubmit="return trySubmit();">
+  <input type="hidden" id="product" name="product" value="mozilla.org">
+  <input type="hidden" name="token" value="[% token FILTER html %]">
+  <input type="hidden" id="rep_platform" name="rep_platform" value="All">
+  <input type="hidden" id="op_sys" name="op_sys" value="Other">
+  <input type="hidden" id="priority" name="priority" value="--">
+  <input type="hidden" id="version" name="version" value="other">
+  <input type="hidden" id="short_desc" name="short_desc" value="">
+  <input type="hidden" id="component" name="component" value="">
+  <input type="hidden" id="bug_severity" name="bug_severity" value="normal">
+
+  <script type="text/javascript">
+  <!--
+    var compdesc = new Array();
+    compdesc['mozilla.org'] = 
+        "<b>mozilla.org</b> contains lists that are private or do not need a newsgroup.<br><br>" + 
+        "These lists have locally-hosted archives maintained by Mailman, the list owner can<br>" +
+        "control subscribers, and users can potentially subscribe themselves, based on the<br>" +
+        "configuration (which can be controlled by the list admin).";
+    compdesc['lists.mozilla.org'] = 
+        "<b>lists.mozilla.org</b> contains lists that are gatewayed to newsgroups which always public.<br><br>" +
+        "These lists are gatewayed to newsgroups, the archives are maintained at Google Groups,<br>" +
+        "and users can subscribe themselves. The mailing list name will match the name of the<br>" +
+	"related newsgroup, with the 'mozilla.' removed from the front, and all periods changed<br>" +
+        "to dashes. See Google Groups for a browseable tree of the existing newsgroups or the<br>" +
+	"Mailman listinfo page for how the mailing list names look.";
+    compdesc['mozilla.com'] = 
+        "Distribution lists on <b>mozilla.com</b>.<br><br>" +
+        "Lists created here aren't real mailing lists, but just distribution lists (think of it like<br>" +
+	"an alias with multiple target addresses). Sysadmins still have to control membership,<br>" +
+	"and there are no archives.";
+    compdesc['invalid'] = '';
+
+    function setcompdesc(theRadio) {
+        var theValue = theRadio.value;
+        document.getElementById('compdescription').innerHTML = compdesc[theValue];
+
+        // newgroup lists should always be public
+        var group = document.getElementById('bit-35');
+        if (theValue == 'lists.mozilla.org') {
+            group.disabled = true;
+        } else {
+            group.disabled = false;
+        }
+    }
+
+    function trySubmit() {
+        var listName = document.getElementById('listName').value;
+        var listAdmin = document.getElementById('listAdmin').value;
+        var listTypeRadio = document.getElementsByName('listType');
+	var listType = "";
+
+	for (var i = 0; i < listTypeRadio.length; i++) {
+	    if (listTypeRadio[i].checked) {
+		listType = listTypeRadio[i].value;
+	    }
+	}
+
+        var alert_text = "";
+
+	if (listType) {
+            if (listType == "lists.mozilla.org") {
+                document.getElementById('component').value = "Discussion Forums";
+            } else {
+                document.getElementById('component').value = "Server Operations";
+            }
+        } else {
+            alert_text += "Please select a list type\n";
+	}
+
+        if (!isFilledOut('listName')) {
+            alert_text += "Please enter the list name\n";
+        }
+
+        if (!isValidEmail(listAdmin)) {
+            alert_text += "Please enter a valid email address for the list administrator\n";
+        }
+
+        if (alert_text) {
+            alert(alert_text);
+            return false;
+        }
+ 
+	var short_desc = "[Mailing List Request] Type: " + listType + " Name: " + listName + 
+        	         " Admin: " + listAdmin;
+       	document.getElementById('short_desc').value = short_desc;
+
+
+        return true;
+    }
+  // -->
+  </script>
+
+  <p>
+    <strong>Types of mailing lists</strong><br><br>
+    There are a few different types of lists we have available to us at Mozilla. 
+    Before you request a list, you need to know what features you need. Each domain 
+    name that we host lists on has different features.
+  </p>
+
+  <table>
+  <tr>
+    <td align="right"><strong>List Type:</strong></td>
+    <td style="white-space: nowrap;">
+      <input type="radio" name="listType" id="mozilla_org" onclick="setcompdesc(this);" value="mozilla.org">
+      <label for="mozilla_org">mozilla.org</label><br>
+      <input type="radio" name="listType" id="lists_mozilla_org" onclick="setcompdesc(this);" value="lists.mozilla.org">
+      <label for="lists_mozilla_org">lists.mozilla.org</label><br>
+      <input type="radio" name="listType" id="mozilla_com" onclick="setcompdesc(this)" value="mozilla.com">
+      <label for="mozilla_com">mozilla.com<br>
+    </td>
+    <td rowspan="5" id="compdescription" align="left" valign="top" style="color: green; padding-left: 1em"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>List Name:</strong></td>
+    <td>
+      <input name="listName" id="listName" size="60" value="[% listName FILTER html %]">
+    </td>
+  </tr>
+  <tr>
+    <td align="right"><strong>List Administrator:</strong></td>
+    <td>
+      [% INCLUDE global/userselect.html.tmpl
+         id => "listAdmin"
+         name => "listAdmin"
+         size => 60
+         multiple => 5
+       %]
+    </td>
+  </tr>
+  <tr>
+    <td align="right"><strong>CC&nbsp;(optional):</strong></td>
+    <td>
+      [% INCLUDE global/userselect.html.tmpl
+         id => "cc"
+         name => "cc"
+         value => cc
+         size => 60
+         multiple => 5
+       %]
+    </td>
+  </tr>
+  <tr>
+    <td align="right" valign="top"><strong>Additional Description:</strong></td>
+    <td colspan="3">
+       <textarea name="comment" rows="10" cols="80">
+       [% comment FILTER html %]</textarea>
+       <br>
+    </td>
+  </tr>
+  <tr>
+    <td align="right"><strong>URL&nbsp;(optional):</strong></td>
+    <td colspan="3">
+      <input name="bug_file_loc" size="60"
+             value="[% bug_file_loc FILTER html %]">
+    </td>
+  </tr>
+  </table>
+  <br>
+
+  <!-- infra bugs -->
+  <input type="checkbox" name="bit-35" id="bit-35" value="1">
+  <label for="bit-35"><strong>This is an internal issue which should not be publicly visible.</strong></label>
+  <br><br>
+
+  <input type="submit" id="commit" value="Submit Request">
+</form>
+
+<p>
+  Thanks for contacting us. You will be notified by email of any progress made 
+  in resolving your request.
+</p>
+
+[% PROCESS global/footer.html.tmpl %]                   
