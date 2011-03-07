@@ -286,62 +286,59 @@
   [% END %]
 
   [% USE Bugzilla %]
-  [% SET product_names = [] %]
-  [% FOREACH product = products %]
-    [% product_names.push(product.name) %]
-  [% END %] 
   [% FOREACH field = Bugzilla.active_custom_fields %]
-    
     [% NEXT IF NOT user.id AND field.value == "---" %]
     [% IF field.name == "cf_blocking_fennec" %]
-       [% NEXT UNLESS product_names.containsany(["Fennec", 
-                                                 "Core", 
-                                            	 "Toolkit", 
-                                            	 "NSPR",
-                                            	 "addons.mozilla.org",
-                                            	 "support.mozilla.com", 
-                                            	 "Mozilla Services",
-                                            	 "AUS"]) 
-                      OR (product.contains("mozilla.org") 
-                          AND components.contains("Release Engineering")) %]
+      [% NEXT UNLESS one_product.defined %]
+      [% NEXT UNLESS one_product.name == "Fennec"
+                     OR one_product.name == "Core"
+                     OR one_product.name == "Toolkit"
+                     OR one_product.name == "NSPR"
+                     OR one_product.name == "addons.mozilla.org"
+                     OR one_product.name == "support.mozilla.com"
+                     OR one_product.name == "Mozilla Services"
+                     OR one_product.name == "AUS"
+	             OR (one_product.name == "mozilla.org"
+			 AND components.contains("Release Engineering")) %]
     [% ELSIF field.name.match("^cf_blocking_thunderbird") OR field.name.match("^cf_status_thunderbird") %]
-       [% NEXT UNLESS product_names.containsany(["Thunderbird", 
-                                            	 "MailNews Core", 
-                                            	 "Mozilla Messaging",
-                                            	 "support.mozillamessaging.com"])
-                      OR (products.contains("Websites")
-                          AND components.contains("www.mozillamessaging.com")) %]
+      [% NEXT UNLESS one_product.defined %]
+      [% NEXT UNLESS one_product.name == "Thunderbird"
+                     OR one_product.name == "MailNews Core" 
+                     OR one_product.name == "Mozilla Messaging" 
+                     OR one_product.name == "support.mozillamessaging.com" 
+                     OR (one_product.name == "Websites" 
+			 AND component.contains("www.mozillamessaging.com")) %]
     [% ELSIF field.name.match("^cf_blocking_seamonkey") OR field.name.match("^cf_status_seamonkey") %]
-       [% NEXT UNLESS product_names.containsany(["Composer", 
-                                            	 "MailNews Core",
-                                            	 "Mozilla Localizations",
-                                            	 "Other Applications",
-                                            	 "SeaMonkey"]) %]
+      [% NEXT UNLESS one_product.name == "Composer"
+                     OR one_product.name == "MailNews Core"
+                     OR one_product.name == "Mozilla Localizations"
+                     OR one_product.name == "Other Applications"
+                     OR one_product.name == "SeaMonkey" %]
     [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
-       [% NEXT UNLESS product_names.containsany(["AUS", 
-                                            	 "Camino",
-                                            	 "Core Graveyard",
-                                            	 "Core",
-                                            	 "Directory",
-                                            	 "Firefox",
-                                            	 "MailNews Core",
-                                            	 "Mozilla Localizations",
-                                            	 "NSPR",
-                                            	 "NSS", 
-                                            	 "Fennec",
-                                            	 "Other Applications",
-                                            	 "SeaMonkey",
-                                            	 "Toolkit", 
-                                            	 "addons.mozilla.org",
-                                            	 "Mozilla Services",
-                                            	 "Testing",
-                                            	 "support.mozilla.com",
-                                            	 "Plugins",
-					    	 "TestProduct"])
-                      OR (products.contains("mozilla.org") 
-                          AND components.contains("Release Engineering"))
-                      OR (products.contains("Websites") 
-                          AND components.contains("getpersonas.com")) %]
+      [% NEXT UNLESS one_product.defined %]
+      [% NEXT UNLESS one_product.name == "AUS" 
+                     OR one_product.name == "Camino"
+                     OR one_product.name == "Core Graveyard"
+                     OR one_product.name == "Core"
+                     OR one_product.name == "Directory"
+                     OR one_product.name == "Firefox"
+                     OR one_product.name == "MailNews Core"
+                     OR one_product.name == "Mozilla Localizations"
+                     OR one_product.name == "NSPR"
+                     OR one_product.name == "NSS"
+                     OR one_product.name == "Fennec"
+                     OR one_product.name == "Other Applications"
+                     OR one_product.name == "SeaMonkey"
+                     OR one_product.name == "Toolkit"
+                     OR one_product.name == "addons.mozilla.org"
+                     OR one_product.name == "Mozilla Services"
+                     OR one_product.name == "Testing"
+                     OR one_product.name == "support.mozilla.com"
+                     OR one_product.name == "Plugins"
+                     OR (one_product.name == "mozilla.org" 
+			 AND components.contains("Release Engineering")) 
+                     OR (one_product.name == "Websites" 
+			 AND components.contains("getpersonas.com")) %]
     [% END %]
     <tr>
       [% PROCESS bug/field.html.tmpl value = dontchange
