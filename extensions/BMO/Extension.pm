@@ -36,8 +36,8 @@ use Bugzilla::Constants;
 use Bugzilla::Status;
 use Bugzilla::User;
 use Bugzilla::User::Setting;
-use List::MoreUtils qw(first_index);
 use Bugzilla::Util qw(html_quote);
+use Scalar::Util qw(blessed);
 
 our $VERSION = '0.1';
 
@@ -92,12 +92,24 @@ sub template_before_process {
             $vars->{'status_whiteboard'} = 
                                Bugzilla->cgi->param('status_whiteboard') || "";
         }
-        
-        my %default = %{ $vars->{'default'} };
-        
+       
+        # Purpose: for pretty product chooser
+        $vars->{'format'} = Bugzilla->cgi->param('format');
+
+        # Data needed for "this is a security bug" checkbox
+        $vars->{'sec_groups'} = \%product_sec_groups;
+    }
+    elsif ($file =~ /^pages\//) {
+        $vars->{'bzr_history'} = sub { 
+            return `cd /data/www/bugzilla.mozilla.org; /usr/bin/bzr log -n0 -rlast:10..`;
+        };
+    }
+
+    if ($file =~ /^list\/list/ || $file =~ /^bug\/create\/create[\.-]/) {
         # hack to allow the bug entry templates to use check_can_change_field 
-        # to see if various field values should be available to the current 
-        # user.
+        # to see if various field values should be available to the current user.
+        my %default = $vars->{'default'} ? %{ $vars->{'default'} } : ();
+
         $default{'check_can_change_field'} = sub { 
             return Bugzilla::Bug::check_can_change_field(\%default, @_);
         };
@@ -111,17 +123,6 @@ sub template_before_process {
         };
         
         $vars->{'default'} = \%default;
-        
-        # Purpose: for pretty product chooser
-        $vars->{'format'} = Bugzilla->cgi->param('format');
-
-        # Data needed for "this is a security bug" checkbox
-        $vars->{'sec_groups'} = \%product_sec_groups;
-    }
-    elsif ($file =~ /^pages\//) {
-        $vars->{'bzr_history'} = sub { 
-            return `cd /data/www/bugzilla.mozilla.org; /usr/bin/bzr log -n0 -rlast:10..`;
-        };
     }
 }
 
@@ -142,23 +143,46 @@ sub _get_field_values_sort_key {
 
 sub cf_hidden_in_product {
     my ($field_name, $product_name, $component_name) = @_;
-    
-    $component_name ||= "";
-    
+
+    # If used in buglist.cgi, we pass in one_product which is a Bugzilla::Product
+    # elsewhere, we just pass the name of the product.
+    $product_name = blessed($product_name) ? $product_name->name
+                                           : $product_name;
+   
+    # Also in buglist.cgi, we pass in a list of components instead 
+    # of a single compoent name everywhere else.
+    my $component_list = ref $component_name ? $component_name 
+                                             : [ $component_name ];
+   
     foreach my $field_re (keys %$cf_visible_in_products) {
-        my $products = $cf_visible_in_products->{$field_re};
-        
         if ($field_name =~ $field_re) {
-            my $components = $products->{$product_name};
-            if (!defined($components) ||
-                (scalar @{ $components } > 0 &&
-                 (first_index {$_ eq $component_name} @$components) == -1))
-            {
-                return 1;
+            # If no product given, for example more than one product
+            # in buglist.cgi, then hide field by default
+            return 1 if !$product_name;
+
+            my $products = $cf_visible_in_products->{$field_re};
+            foreach my $product (keys %$products) {
+                my $components = $products->{$product};
+
+                my $found_component = 0;    
+                if (@$components) {
+                    foreach my $component (@$components) {
+                        if (grep($_ eq $component, @$component_list)) {
+                            $found_component = 1;
+                            last;
+                        }
+                    }
+                }
+        
+		# If product matches and at at least one component matches
+		# from component_list (if a matching component was required), 
+		# we allow the field to be seen
+                if ($product eq $product_name && (!@$components || $found_component)) {
+                    return 0;
+                }
             }
-            else {
-                return 0;
-            }
+
+            return 1;
         }
     }
     
@@ -210,7 +234,7 @@ sub _check_trusted {
     my $needed_group = $trusted->{'_default'} || "";
     foreach my $dfield (keys %$trusted) {
         if ($field =~ $dfield) {
-            $needed_group = $trusted->{dfield};
+            $needed_group = $trusted->{$dfield};
         }
     }
     if ($needed_group && !Bugzilla->user->in_group($needed_group)) {
@@ -226,7 +250,7 @@ sub bug_check_can_change_field {
     my $old_value = $args->{'old_value'};
     my $priv_results = $args->{'priv_results'};
     my $user = Bugzilla->user;
-    
+
     # Purpose: Only users in the appropriate drivers group can change the 
     # cf_blocking_* fields.
     if ($field =~ /^cf_blocking_/) {
