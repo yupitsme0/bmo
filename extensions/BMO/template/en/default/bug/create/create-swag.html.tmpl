@@ -24,10 +24,10 @@
 [% PROCESS global/header.html.tmpl
    title = "Swag Request Form"
    javascript_urls = [ 'extensions/BMO/web/js/swag.js', 
-                       'extensions/BMO/web/js/form_validate.js' ]
+                       'extensions/BMO/web/js/form_validate.js',
+                       'js/field.js' ]
+   yui = [ 'autocomplete' ]
 %]
-
-[% USE Bugzilla %]
 
 <div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Swag Request Form</div>
 

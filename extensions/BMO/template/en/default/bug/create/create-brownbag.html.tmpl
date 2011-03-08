@@ -23,8 +23,9 @@
 
 [% PROCESS global/header.html.tmpl
    title = "Mozilla Corporation Brownbag Requests"
-   style_urls = [ 'skins/standard/attachment.css' ]
-   javascript_urls = [ 'js/attachment.js' ]
+   style_urls = [ 'skins/standard/attachment.css', 'skins/custom/calendar.css' ]
+   javascript_urls = [ 'js/attachment.js', 'js/calendar.js', 'js/field.js' ]
+   yui = [ 'autocomplete' ]
 %]
 
 [% USE Bugzilla %]

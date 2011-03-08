@@ -24,10 +24,9 @@
 [% PROCESS global/header.html.tmpl
    title = "Mozilla Corporation Legal Requests"
    style_urls = [ 'skins/standard/attachment.css' ]
-   javascript_urls = [ 'js/attachment.js' ]
+   javascript_urls = [ 'js/attachment.js', 'js/field.js' ]
+   yui = [ 'autocomplete' ]
 %]
-
-[% USE Bugzilla %]
 
 [% IF user.in_group("mozilla-corporation-confidential")
    OR user.in_group("mozilla-messaging-confidential") %]

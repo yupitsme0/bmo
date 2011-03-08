@@ -24,7 +24,9 @@
 [% PROCESS global/variables.none.tmpl %]                                      
                                                                               
 [% PROCESS global/header.html.tmpl                                            
-   title = "Mozilla Corporation/Foundation IT Requests"                                   
+   title = "Mozilla Corporation/Foundation IT Requests" 
+   javascript_urls = [ 'js/field.js' ]
+   yui = [ 'autocomplete' ]                                  
 %]
                                                                             
 [% USE Bugzilla %]                                                            

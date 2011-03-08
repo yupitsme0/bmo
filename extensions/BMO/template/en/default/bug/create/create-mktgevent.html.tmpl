@@ -23,11 +23,13 @@
 
 [% PROCESS global/header.html.tmpl
    title = "Event Request Form"
-   javascript_urls = [ 'extensions/BMO/web/js/swag.js', 
-                       'extensions/BMO/web/js/form_validate.js' ]
+   style_urls = [ 'skins/custom/calendar.css' ]
+   javascript_urls = [ 'js/calendar.js', 
+                       'extensions/BMO/web/js/swag.js', 
+                       'extensions/BMO/web/js/form_validate.js', 
+                       'js/field.js' ]
+   yui = [ 'autocomplete' ]
 %]
-
-[% USE Bugzilla %]
 
 <div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Event Request Form</div>
 
