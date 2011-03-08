@@ -24,14 +24,14 @@
 [% PROCESS global/variables.none.tmpl %]                                      
                                                                               
 [% PROCESS global/header.html.tmpl                                            
-   title = "Mozilla Mailing List Requests" 
+   title = "Mozilla Discussion Forum / Mailing List Requests" 
    javascript_urls = ['js/form_validate.js']                                  
 %]
                                                                             
 [% USE Bugzilla %]                                                            
 
 <p>
-  <strong>Please use this form for Mailing List requests only!</strong>
+  <strong>Please use this form for Discussion Forum and Mailing List requests only!</strong>
 </p>
 
 <p>
@@ -52,29 +52,8 @@
 
   <script type="text/javascript">
   <!--
-    var compdesc = new Array();
-    compdesc['mozilla.org'] = 
-        "<b>mozilla.org</b> contains lists that are private or do not need a newsgroup.<br><br>" + 
-        "These lists have locally-hosted archives maintained by Mailman, the list owner can<br>" +
-        "control subscribers, and users can potentially subscribe themselves, based on the<br>" +
-        "configuration (which can be controlled by the list admin).";
-    compdesc['lists.mozilla.org'] = 
-        "<b>lists.mozilla.org</b> contains lists that are gatewayed to newsgroups which always public.<br><br>" +
-        "These lists are gatewayed to newsgroups, the archives are maintained at Google Groups,<br>" +
-        "and users can subscribe themselves. The mailing list name will match the name of the<br>" +
-	"related newsgroup, with the 'mozilla.' removed from the front, and all periods changed<br>" +
-        "to dashes. See Google Groups for a browseable tree of the existing newsgroups or the<br>" +
-	"Mailman listinfo page for how the mailing list names look.";
-    compdesc['mozilla.com'] = 
-        "Distribution lists on <b>mozilla.com</b>.<br><br>" +
-        "Lists created here aren't real mailing lists, but just distribution lists (think of it like<br>" +
-	"an alias with multiple target addresses). Sysadmins still have to control membership,<br>" +
-	"and there are no archives.";
-    compdesc['invalid'] = '';
-
     function setcompdesc(theRadio) {
         var theValue = theRadio.value;
-        document.getElementById('compdescription').innerHTML = compdesc[theValue];
 
         // newgroup lists should always be public
         var group = document.getElementById('bit-35');
@@ -98,12 +77,15 @@
 	}
 
         var alert_text = "";
+        var short_desc = "";
 
 	if (listType) {
             if (listType == "lists.mozilla.org") {
                 document.getElementById('component').value = "Discussion Forums";
+	            short_desc = "Discussion Forum: " + listName;
             } else {
                 document.getElementById('component').value = "Server Operations";
+                short_desc = "[List Request] " + listName + "@" + listType;
             }
         } else {
             alert_text += "Please select a list type\n";
@@ -122,8 +104,6 @@
             return false;
         }
  
-	var short_desc = "[Mailing List Request] Type: " + listType + " Name: " + listName + 
-        	         " Admin: " + listAdmin;
        	document.getElementById('short_desc').value = short_desc;
 
 
@@ -143,14 +123,32 @@
   <tr>
     <td align="right"><strong>List Type:</strong></td>
     <td style="white-space: nowrap;">
-      <input type="radio" name="listType" id="mozilla_org" onclick="setcompdesc(this);" value="mozilla.org">
-      <label for="mozilla_org">mozilla.org</label><br>
-      <input type="radio" name="listType" id="lists_mozilla_org" onclick="setcompdesc(this);" value="lists.mozilla.org">
-      <label for="lists_mozilla_org">lists.mozilla.org</label><br>
-      <input type="radio" name="listType" id="mozilla_com" onclick="setcompdesc(this)" value="mozilla.com">
-      <label for="mozilla_com">mozilla.com<br>
+      <dl>
+      <dt><input type="radio" name="listType" id="lists_mozilla_org" onclick="setcompdesc(this);" value="lists.mozilla.org">
+      <label for="lists_mozilla_org">Standard <a href="https://www.mozilla.org/about/forums/">Discussion
+Forum</a></label></dt>
+      <dd><label for="lists_mozilla_org">This option gives you a Mozilla <a
+href="https://www.mozilla.org/about/forums/">Discussion Forum</a>. These are
+the normal mechanism for public discussion in the Mozilla project. They are
+made up of a mailing list, a newsgroup and a Google Group (which maintains the
+list archives), all linked together. Users can add and remove themselves. If
+you aren't sure, pick this one.</label></dd>
+      <dt><input type="radio" name="listType" id="mozilla_org" onclick="setcompdesc(this);" value="mozilla.org">
+      <label for="mozilla_org">Mailing List Only</label></dt>
+      <dd><label for="mozilla_org">
+This option gives you a mailing list without the other access mechanisms. The
+list can be private, although Mozilla is an "open by default" organization so
+you need a good reason to have a private list. The archives are maintained by
+Mailman, our mailing list software. Subscription can be open or
+moderator-controlled.
+</label></dd>
+      <dt><input type="radio" name="listType" id="mozilla_com" onclick="setcompdesc(this)" value="mozilla.com">
+      <label for="mozilla_com">Distribution List</label></dt>
+      <dd><label for="mozilla_com">
+This option gives you a distribution list - basically, a mail exploder. Send
+email to the address, and it gets remailed out to everyone on the list. There
+are no archives, and the "subscriber" list is controlled by the IT team.</label></dd>
     </td>
-    <td rowspan="5" id="compdescription" align="left" valign="top" style="color: green; padding-left: 1em"></td>
   </tr>
   <tr>
     <td align="right"><strong>List Name:</strong></td>
