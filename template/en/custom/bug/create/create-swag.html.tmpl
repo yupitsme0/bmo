@@ -24,7 +24,9 @@
 [% PROCESS global/header.html.tmpl
    title = "Swag Request Form"
    style_urls = [ 'skins/custom/calendar.css' ]
-   javascript_urls = [ 'js/calendar.js', 'js/swag.js', 'js/form_validate.js' ]
+   javascript_urls = [ 'js/calendar.js', 'js/swag.js', 
+                       'js/form_validate.js', 'js/field.js' ]
+   yui = ['autocomplete']
 %]
 
 [% USE Bugzilla %]

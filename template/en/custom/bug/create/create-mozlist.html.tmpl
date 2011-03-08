@@ -25,25 +25,12 @@
                                                                               
 [% PROCESS global/header.html.tmpl                                            
    title = "Mozilla Discussion Forum / Mailing List Requests" 
-   javascript_urls = ['js/form_validate.js']                                  
+   javascript_urls = ['js/form_validate.js','js/field.js']
+   yui = ['autocomplete']
 %]
-                                                                            
-[% USE Bugzilla %]                                                            
 
-<form method="post" action="post_bug.cgi" id="mozListRequestForm" 
-      enctype="multipart/form-data" onSubmit="return trySubmit();">
-  <input type="hidden" id="product" name="product" value="mozilla.org">
-  <input type="hidden" name="token" value="[% token FILTER html %]">
-  <input type="hidden" id="rep_platform" name="rep_platform" value="All">
-  <input type="hidden" id="op_sys" name="op_sys" value="Other">
-  <input type="hidden" id="priority" name="priority" value="--">
-  <input type="hidden" id="version" name="version" value="other">
-  <input type="hidden" id="short_desc" name="short_desc" value="">
-  <input type="hidden" id="component" name="component" value="">
-  <input type="hidden" id="bug_severity" name="bug_severity" value="normal">
-
-  <script type="text/javascript">
-  <!--
+<script type="text/javascript">
+<!--
     function toggleGroup (theRadio) {
         var radioValue = theRadio.value;
         var groupDiv = YAHOO.util.Dom.get('groups');
@@ -61,28 +48,28 @@
         var listName = document.getElementById('listName').value;
         var listAdmin = document.getElementById('listAdmin').value;
         var listTypeRadio = document.getElementsByName('listType');
-	    var listType = "";
+	var listType = "";
 
-	    for (var i = 0; i < listTypeRadio.length; i++) {
-	        if (listTypeRadio[i].checked) {
-		        listType = listTypeRadio[i].value;
-	        }
+	for (var i = 0; i < listTypeRadio.length; i++) {
+	    if (listTypeRadio[i].checked) {
+		listType = listTypeRadio[i].value;
 	    }
+	}
 
         var alert_text = "";
         var short_desc = "";
 
-	    if (listType) {
+	if (listType) {
             if (listType == "lists.mozilla.org") {
                 document.getElementById('component').value = "Discussion Forums";
-	            short_desc = "Discussion Forum: " + listName;
+	        short_desc = "Discussion Forum: " + listName;
             } else {
                 document.getElementById('component').value = "Server Operations";
                 short_desc = "[List Request] " + listName + "@" + listType;
             }
         } else {
             alert_text += "Please select a list type\n";
-	    }
+	}
 
         if (!isFilledOut('listName')) {
             alert_text += "Please enter the list name\n";
@@ -101,12 +88,24 @@
 
         return true;
     }
-  // -->
-  </script>
+// -->
+</script>
+                                                                            
+<form method="post" action="post_bug.cgi" id="mozListRequestForm" 
+      enctype="multipart/form-data" onSubmit="return trySubmit();">
+  <input type="hidden" id="product" name="product" value="mozilla.org">
+  <input type="hidden" name="token" value="[% token FILTER html %]">
+  <input type="hidden" id="rep_platform" name="rep_platform" value="All">
+  <input type="hidden" id="op_sys" name="op_sys" value="Other">
+  <input type="hidden" id="priority" name="priority" value="--">
+  <input type="hidden" id="version" name="version" value="other">
+  <input type="hidden" id="short_desc" name="short_desc" value="">
+  <input type="hidden" id="component" name="component" value="">
+  <input type="hidden" id="bug_severity" name="bug_severity" value="normal">
 
   <table>
   <tr>
-    <td align="right"><strong>List Type:</strong></td>
+    <td align="right" width="15%"><strong>List Type:</strong></td>
     <td>
       <dl>
       <dt>
@@ -166,6 +165,7 @@
       [% INCLUDE global/userselect.html.tmpl
          id => "listAdmin"
          name => "listAdmin"
+         value => ""
          size => 60
          multiple => 5
        %]
