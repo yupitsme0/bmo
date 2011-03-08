@@ -30,14 +30,6 @@
                                                                             
 [% USE Bugzilla %]                                                            
 
-<p>
-  <strong>Please use this form for Discussion Forum and Mailing List requests only!</strong>
-</p>
-
-<p>
-  If you have a bug to file, go <a href="enter_bug.cgi">here</a>.
-</p>
-
 <form method="post" action="post_bug.cgi" id="mozListRequestForm" 
       enctype="multipart/form-data" onSubmit="return trySubmit();">
   <input type="hidden" id="product" name="product" value="mozilla.org">
@@ -52,14 +44,15 @@
 
   <script type="text/javascript">
   <!--
-    function setcompdesc(theRadio) {
-        var theValue = theRadio.value;
-
-        // newgroup lists should always be public
-        var group = document.getElementById('bit-35');
-        if (theValue == 'lists.mozilla.org') {
+    function toggleGroup (theRadio) {
+        var radioValue = theRadio.value;
+        var groupDiv = YAHOO.util.Dom.get('groups');
+        var group = YAHOO.util.Dom.get('bit-35');
+        if (radioValue == 'lists.mozilla.org') {
+            YAHOO.util.Dom.setStyle('groups', 'display', 'none');
             group.disabled = true;
         } else {
+            YAHOO.util.Dom.setStyle('groups', 'display', 'block');
             group.disabled = false;
         }
     }
@@ -68,18 +61,18 @@
         var listName = document.getElementById('listName').value;
         var listAdmin = document.getElementById('listAdmin').value;
         var listTypeRadio = document.getElementsByName('listType');
-	var listType = "";
+	    var listType = "";
 
-	for (var i = 0; i < listTypeRadio.length; i++) {
-	    if (listTypeRadio[i].checked) {
-		listType = listTypeRadio[i].value;
+	    for (var i = 0; i < listTypeRadio.length; i++) {
+	        if (listTypeRadio[i].checked) {
+		        listType = listTypeRadio[i].value;
+	        }
 	    }
-	}
 
         var alert_text = "";
         var short_desc = "";
 
-	if (listType) {
+	    if (listType) {
             if (listType == "lists.mozilla.org") {
                 document.getElementById('component').value = "Discussion Forums";
 	            short_desc = "Discussion Forum: " + listName;
@@ -89,7 +82,7 @@
             }
         } else {
             alert_text += "Please select a list type\n";
-	}
+	    }
 
         if (!isFilledOut('listName')) {
             alert_text += "Please enter the list name\n";
@@ -106,50 +99,59 @@
  
        	document.getElementById('short_desc').value = short_desc;
 
-
         return true;
     }
   // -->
   </script>
-
-  <p>
-    <strong>Types of mailing lists</strong><br><br>
-    There are a few different types of lists we have available to us at Mozilla. 
-    Before you request a list, you need to know what features you need. Each domain 
-    name that we host lists on has different features.
-  </p>
 
   <table>
   <tr>
     <td align="right"><strong>List Type:</strong></td>
     <td>
       <dl>
-      <dt><input type="radio" name="listType" id="lists_mozilla_org" onclick="setcompdesc(this);" value="lists.mozilla.org">
-      <label for="lists_mozilla_org">Standard <a href="https://www.mozilla.org/about/forums/">Discussion
-Forum</a></label></dt>
-      <dd><label for="lists_mozilla_org">This option gives you a Mozilla <a
-href="https://www.mozilla.org/about/forums/">Discussion Forum</a>. These are
-the normal mechanism for public discussion in the Mozilla project. They are
-made up of a mailing list, a newsgroup and a Google Group (which maintains the
-list archives), all linked together. Users can add and remove themselves. If
-you aren't sure, pick this one.</label></dd>
-      <dt><input type="radio" name="listType" id="mozilla_org" onclick="setcompdesc(this);" value="mozilla.org">
-      <label for="mozilla_org">Mailing List Only</label></dt>
-      <dd><label for="mozilla_org">
-This option gives you a mailing list without the other access mechanisms. The
-list can be private, although Mozilla is an "open by default" organization so
-you need a good reason to have a private list. The archives are maintained by
-Mailman, our mailing list software. Subscription can be open or
-moderator-controlled. This type of list is normally hosted on the <b>mozilla.org</b> domain.
-</label></dd>
-      <dt><input type="radio" name="listType" id="mozilla_com" onclick="setcompdesc(this)" value="mozilla.com">
-      <label for="mozilla_com">Distribution List</label></dt>
-      <dd><label for="mozilla_com">
-This option gives you a distribution list - basically, a mail exploder. Send
-email to the address, and it gets remailed out to everyone on the list. There
-are no archives, and the "subscriber" list is controlled by the IT team. This
-type of list is normally hosted on the <b>mozilla.com</b> domain.
-</label></dd>
+      <dt>
+        <input type="radio" name="listType" id="lists_mozilla_org" 
+               onclick="toggleGroup(this);" value="lists.mozilla.org"
+               checked="true">
+        <label for="lists_mozilla_org">Standard Discussion Forum</label>
+      </dt>
+      <dd>
+        <label for="lists_mozilla_org">
+          This option gives you a Mozilla <a href="https://www.mozilla.org/about/forums/">Discussion Forum</a>.
+          These are the normal mechanism for public discussion in the Mozilla project. They are made up of a 
+          mailing list, a newsgroup and a Google Group (which maintains the list archives), all linked together. 
+          Users can add and remove themselves. If you aren't sure, pick this one.
+        </label>
+      </dd>
+      <dt>
+        <input type="radio" name="listType" id="mozilla_org" 
+               onclick="toggleGroup(this);" value="mozilla.org">
+        <label for="mozilla_org">Mailing List Only</label>
+      </dt>
+      <dd>
+        <label for="mozilla_org">
+          This option gives you a mailing list without the other access mechanisms. The
+          list can be private, although Mozilla is an "open by default" organization so
+          you need a good reason to have a private list. The archives are maintained by
+          Mailman, our mailing list software. Subscription can be open or
+          moderator-controlled. This type of list is normally hosted on the <b>mozilla.org</b> domain.
+        </label>
+      </dd>
+      <dt>
+        <input type="radio" name="listType" id="mozilla_com" 
+               onclick="toggleGroup(this)" value="mozilla.com">
+        <label for="mozilla_com">Distribution List</label>
+      </dt>
+      <dd>
+        <label for="mozilla_com">
+          This option gives you a distribution list - basically, a mail exploder. Send
+          email to the address, and it gets remailed out to everyone on the list. There
+          are no archives, and the "subscriber" list is controlled by the IT team. This 
+          is not as flexible as a mailing list, but is all that's available (without 
+          complex hacking) on the <b>mozilla.com</b> domain, so if you have a good reason 
+          to put your list on that domain, this is what you'll get.
+        </label>
+      </dd>
     </td>
   </tr>
   <tr>
@@ -182,7 +184,7 @@ type of list is normally hosted on the <b>mozilla.com</b> domain.
     </td>
   </tr>
   <tr>
-    <td align="right" valign="top"><strong>Additional Description:</strong></td>
+    <td align="right" valign="top"><strong>List Description:</strong></td>
     <td colspan="3">
        <textarea name="comment" rows="10" cols="80">
        [% comment FILTER html %]</textarea>
@@ -199,10 +201,12 @@ type of list is normally hosted on the <b>mozilla.com</b> domain.
   </table>
   <br>
 
-  <!-- infra bugs -->
-  <input type="checkbox" name="bit-35" id="bit-35" value="1">
-  <label for="bit-35"><strong>This is an internal issue which should not be publicly visible.</strong></label>
-  <br><br>
+  <div id="groups" style="display:none;">
+    <!-- infra bugs -->
+    <input type="checkbox" name="bit-35" id="bit-35" value="1" disabled="true">
+    <label for="bit-35"><strong>This is an internal issue which should not be publicly visible.</strong></label>
+    <br><br>
+  </div>
 
   <input type="submit" id="commit" value="Submit Request">
 </form>
