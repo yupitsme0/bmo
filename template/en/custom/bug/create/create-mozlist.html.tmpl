@@ -143,12 +143,11 @@
       </dt>
       <dd>
         <label for="mozilla_com">
-          This option gives you a distribution list - basically, a mail exploder. Send
-          email to the address, and it gets remailed out to everyone on the list. There
-          are no archives, and the "subscriber" list is controlled by the IT team. This 
-          is not as flexible as a mailing list, but is all that's available (without 
-          complex hacking) on the <b>mozilla.com</b> domain, so if you have a good reason 
-          to put your list on that domain, this is what you'll get.
+          This option gives you a distribution list - basically, a mail exploder - on
+          mozilla.com. (This option is only appropriate for things which relate
+          specifically to Mozilla Corporation, such as confidential partner projects.)
+          Send email to the address, and it gets remailed out to everyone on the list.
+          There are no archives, and the "subscriber" list is controlled by the IT team.
         </label>
       </dd>
     </td>
@@ -186,8 +185,24 @@
   <tr>
     <td align="right" valign="top"><strong>List Description:</strong></td>
     <td colspan="3">
-       <textarea name="comment" rows="10" cols="80">
-       [% comment FILTER html %]</textarea>
+      [% defaultcontent = BLOCK %]
+Short one-line description for the list:
+
+
+Longer, more detailed description of the list's purpose:
+
+
+Any additional information such as justification, notes to IT, etc.:
+        [% comment FILTER none %]
+      [%- END %]
+      [% INCLUDE global/textarea.html.tmpl
+         name           = 'comment'
+         id             = 'comment'
+         minrows        = 10
+         maxrows        = 25
+         cols           = constants.COMMENT_COLS
+         defaultcontent = defaultcontent
+       %]
        <br>
     </td>
   </tr>
