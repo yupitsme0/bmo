@@ -195,6 +195,7 @@ sub pickplatform {
     return formvalue("rep_platform") if formvalue("rep_platform");
 
     my @platform;
+    my $favor_os_over_browser = 0;
 
     if (Bugzilla->params->{'defaultplatform'}) {
         @platform = Bugzilla->params->{'defaultplatform'};
@@ -206,10 +207,11 @@ sub pickplatform {
         #PowerPC
             /\(.*PowerPC.*\)/i && do {push @platform, ("PowerPC", "Macintosh");};
         #AMD64, Intel x86_64
+            /\(.*[ix0-9]86 (?:on |\()x86_64.*\)/ && do {push @platform, $favor_os_over_browser ? ("AMD64", "x86_64", "PC") : ("IA32", "x86", "PC"); last;};
             /\(.*amd64.*\)/ && do {push @platform, ("AMD64", "x86_64", "PC");};
             /\(.*x86_64.*\)/ && do {push @platform, ("AMD64", "x86_64", "PC");};
-        #Intel Itanium
-            /\(.*IA64.*\)/ && do {push @platform, "IA64";};
+        #Intel IA64
+            /\(.*IA64.*\)/ && do {push @platform, ("IA64", "PC"); last;};
         #Intel x86
             /\(.*Intel.*\)/ && do {push @platform, ("IA32", "x86", "PC");};
             /\(.*[ix0-9]86.*\)/ && do {push @platform, ("IA32", "x86", "PC");};
@@ -242,6 +244,7 @@ sub pickplatform {
             /\(.*Windows CE.*\)/ && do {push @platform, ("ARM", "PocketPC");};
             /\(.*Macintosh.*\)/ && do {push @platform, ("68k", "Macintosh");};
             /\(.*Mac OS [89].*\)/ && do {push @platform, ("68k", "Macintosh");};
+            /\(.*WOW64.*\)/ && $favor_os_over_browser && do {push @platform, "x86_64";};
             /\(.*Win64.*\)/ && do {push @platform, "IA64";};
             /\(Win.*\)/ && do {push @platform, ("IA32", "x86", "PC");};
             /\(.*Win(?:dows[ -])NT.*\)/ && do {push @platform, ("IA32", "x86", "PC");};
