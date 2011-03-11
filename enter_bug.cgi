@@ -81,10 +81,19 @@ if ($product_name eq '') {
     my @enterable_products = @{$user->get_enterable_products};
     ThrowUserError('no_products') unless scalar(@enterable_products);
 
-    # Purpose: bug fix related to displaying products on full product chooser
-    # grouped by classification.
-    my $classification = Bugzilla->params->{'useclassification'} ?
-        scalar($cgi->param('classification' || '__all')) : '__all';
+    # MOZILLA CUSTOMIZATION
+    my $classification;
+    if (Bugzilla->params->{'useclassification'}) {
+        $classification = $cgi->param('classification');
+        if (!$classification 
+            && $user->settings->{'product_chooser'}->{'value'} eq 'pretty_product_chooser')
+        {
+            $classification = '__all';
+        }
+    }
+    else {
+        $classification = '__all';
+    }
 
     # Unless a real classification name is given, we sort products
     # by classification.
