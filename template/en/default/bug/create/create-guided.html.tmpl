@@ -31,7 +31,7 @@
 [% PROCESS global/header.html.tmpl
    title = "Enter $terms.ABug"
    onload = "PutDescription()"
-   style = "#somebugs { width: 100%; height: 500px }"
+   style_urls = [ "skins/standard/guided.css" ]
  %]
 
 [% INCLUDE 'bug/create/user-message.html.tmpl' %]
@@ -77,7 +77,7 @@ function PutDescription() {
 [% END %]
 
 <p>
-    <a href="duplicates.cgi?[% productstring %]&amp;format=simple" target="somebugs">All-time Top 100</a> (loaded initially) |
+    <a href="duplicates.cgi?[% productstring %]&amp;format=simple" target="somebugs">All-time Top 20</a> (loaded initially) |
     <a href="duplicates.cgi?[% productstring %]&amp;format=simple&amp;sortby=delta&amp;reverse=1&amp;maxrows=100&amp;changedsince=14" target="somebugs">Hot in the last two weeks</a>  
 </p>
 
