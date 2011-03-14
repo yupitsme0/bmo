@@ -31,7 +31,7 @@
 [% PROCESS global/header.html.tmpl
    title = "Enter $terms.ABug"
    onload = "PutDescription()"
-   style = "#somebugs { width: 100%; height: 500px }"
+   style_urls = [ "skins/standard/guided.css" ]
  %]
 
 [%# Reset style variable to avoid interference with later calls. %]
