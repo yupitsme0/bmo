@@ -553,13 +553,21 @@ if (document.addEventListener) {
 /* for Internet Explorer */
 /*@cc_on @*/
 /*@if (@_win32)
-    document.write("<script id=__ie_onload defer)><\/script>");
-    var script = document.getElementById("__ie_onload");
-    script.onreadystatechange = function() {
-        if (this.readyState == "complete") {
+    // IE doesn't have a way to test if the DOM is loaded
+    // doing a deferred script load with onReadyStateChange checks is
+    // problematic, so poll the document until it is scrollable
+    // http://blogs.atlassian.com/developer/2008/03/when_ie_says_dom_is_ready_but.html
+    var loadTestTimer = function() {
+        try {
+            if (document.readyState != "loaded" && document.readyState != "complete") {
+                document.documentElement.doScroll("left");
+            }
             sorttable.init(); // call the onload handler
+        } catch(error) {
+            setTimeout(loadTestTimer, 100);
         }
     };
+    loadTestTimer();
 /*@end @*/
 
 /* for Safari */
