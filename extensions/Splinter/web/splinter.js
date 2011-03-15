@@ -2040,6 +2040,18 @@ Splinter.showOverview = function () {
     Splinter.updateMyPatchComments();
 };
 
+Splinter.showAllFiles = function () {
+    Splinter.selectNavigationLink('__ALL__');
+    Dom.setStyle('overview', 'display', 'none');
+    var i;
+    for (i = 0; i < Splinter.thePatch.files.length; i++) {
+        Splinter.addPatchFile(Splinter.thePatch.files[i]);
+    }
+    Dom.getElementsByClassName('file', 'div', '', function (node) {
+        Dom.setStyle(node, 'display', 'block');
+    });
+}
+
 Splinter.showPatchFile = function (file) {
     Splinter.selectNavigationLink(file.filename);
     Dom.setStyle('overview', 'display', 'none');
@@ -2087,6 +2099,8 @@ Splinter.start = function () {
     }
 
     Splinter.addNavigationLink('__OVERVIEW__', "Overview", Splinter.showOverview, true);
+    Splinter.addNavigationLink('__ALL__', "All Files", Splinter.showAllFiles, false);
+
     var i;
     for (i = 0; i < Splinter.thePatch.files.length; i++) {
         Splinter.addFileNavigationLink(Splinter.thePatch.files[i]);
