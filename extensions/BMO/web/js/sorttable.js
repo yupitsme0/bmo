@@ -470,8 +470,8 @@ sorttable = {
   },
 
   sort_alpha: function(a,b) {
-    if (a.sort_data==b.sort_data) return 0;
-    if (a.sort_data<b.sort_data) return -1;
+    if (a.sort_data.toLowerCase()==b.sort_data.toLowerCase()) return 0;
+    if (a.sort_data.toLowerCase()<b.sort_data.toLowerCase()) return -1;
     return 1;
   },
 
