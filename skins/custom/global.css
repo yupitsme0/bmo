@@ -59,3 +59,11 @@ pre {
 .support_div > img {
   padding: 5px 20px;
 }
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

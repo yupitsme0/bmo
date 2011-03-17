@@ -25,3 +25,12 @@ th.sorted_4 {
 th.sorted_5 {
     background-color: #fff;
 }
+
+.bz_short_desc_column a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.bz_short_desc_column a:hover {
+    text-decoration: underline;
+}
