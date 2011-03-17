@@ -82,16 +82,11 @@ if ($product_name eq '') {
     ThrowUserError('no_products') unless scalar(@enterable_products);
 
     # MOZILLA CUSTOMIZATION
+    # skip the classification selection page
     my $classification;
     if (Bugzilla->params->{'useclassification'}) {
-        $classification = $cgi->param('classification');
-        if (!$classification 
-            && $user->settings->{'product_chooser'}->{'value'} eq 'pretty_product_chooser')
-        {
-            $classification = '__all';
-        }
-    }
-    else {
+        $classification = scalar($cgi->param('classification')) || '__all';
+    } else {
         $classification = '__all';
     }
 
