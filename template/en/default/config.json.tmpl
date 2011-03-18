@@ -20,83 +20,87 @@
 
 [%
   # Pinched from Bugzilla/API/Model/Utils.pm in BzAPI - need to keep in sync
-  OLD2NEW = {
-    'opendate'            => 'creation_time', # query
-    'creation_ts'         => 'creation_time',
-    'changeddate'         => 'last_change_time', # query
-    'delta_ts'            => 'last_change_time',
-    'bug_id'              => 'id',
-    'rep_platform'        => 'platform',
-    'bug_severity'        => 'severity',
-    'bug_status'          => 'status',     
-    'short_desc'          => 'summary',
-    'short_short_desc'    => 'summary',
-    'bug_file_loc'        => 'url',
-    'status_whiteboard'   => 'whiteboard',
-    'cclist_accessible'   => 'is_cc_accessible',
-    'reporter_accessible' => 'is_reporter_accessible',
-    'everconfirmed'       => 'is_everconfirmed',
-    'dependson'           => 'depends_on',
-    'blocked'             => 'blocks',
-    'attachment'          => 'attachments',
-    'flag'                => 'flags',
-    'flagtypes.name'      => 'flag',
-    'bug_group'           => 'group',
-    'group'               => 'groups',
-    'longdesc'            => 'comment',
-    'bug_file_loc_type'   => 'url_type',
-    'bugidtype'           => 'id_mode',
-    'longdesc_type'       => 'comment_type',
-    'short_desc_type'     => 'summary_type',
-    'status_whiteboard_type' => 'whiteboard_type',
-    'emailassigned_to1'   => 'email1_assigned_to',
-    'emailassigned_to2'   => 'email2_assigned_to',
-    'emailcc1'            => 'email1_cc',
-    'emailcc2'            => 'email2_cc',
-    'emailqa_contact1'    => 'email1_qa_contact',
-    'emailqa_contact2'    => 'email2_qa_contact',
-    'emailreporter1'      => 'email1_reporter',
-    'emailreporter2'      => 'email2_reporter',
-    'emaillongdesc1'      => 'email1_comment_author',
-    'emaillongdesc2'      => 'email2_comment_author',
-    'emailtype1'          => 'email1_type',
-    'emailtype2'          => 'email2_type',
-    'chfieldfrom'         => 'changed_after',
-    'chfieldto'           => 'changed_before',
-    'chfield'             => 'changed_field',
-    'chfieldvalue'        => 'changed_field_to',
-    'deadlinefrom'        => 'deadline_after',
-    'deadlineto'          => 'deadline_before',
-    'attach_data.thedata' => 'attachment.data',
-    'longdescs.isprivate' => 'comment.is_private',
-    'commenter'           => 'comment.author',
-    'flagtypes.name'        => 'flag',
-    'requestees.login_name' => 'flag.requestee',
-    'setters.login_name'    => 'flag.setter',
-    'days_elapsed'    => 'idle',
-    'owner_idle_time' => 'assignee_idle',
-    'dup_id' => 'dupe_of',
-    'isopened' => 'is_open',
-    'flag_type' => 'flag_types',
-  };
+OLD2NEW = {
+  'opendate'            => 'creation_time', # query
+  'creation_ts'         => 'creation_time',
+  'changeddate'         => 'last_change_time', # query
+  'delta_ts'            => 'last_change_time',
+  'bug_id'              => 'id',
+  'rep_platform'        => 'platform',
+  'bug_severity'        => 'severity',
+  'bug_status'          => 'status',     
+  'short_desc'          => 'summary',
+  'short_short_desc'    => 'summary',
+  'bug_file_loc'        => 'url',
+  'status_whiteboard'   => 'whiteboard',
+  'reporter'            => 'creator',
+  'reporter_realname'   => 'creator_realname',
+  'cclist_accessible'   => 'is_cc_accessible',
+  'reporter_accessible' => 'is_creator_accessible',
+  'everconfirmed'       => 'is_confirmed',
+  'dependson'           => 'depends_on',
+  'blocked'             => 'blocks',
+  'attachment'          => 'attachments',
+  'flag'                => 'flags',
+  'flagtypes.name'      => 'flag',
+  'bug_group'           => 'group',
+  'group'               => 'groups',
+  'longdesc'            => 'comment',
+  'bug_file_loc_type'   => 'url_type',
+  'bugidtype'           => 'id_mode',
+  'longdesc_type'       => 'comment_type',
+  'short_desc_type'     => 'summary_type',
+  'status_whiteboard_type' => 'whiteboard_type',
+  'emailassigned_to1'   => 'email1_assigned_to',
+  'emailassigned_to2'   => 'email2_assigned_to',
+  'emailcc1'            => 'email1_cc',
+  'emailcc2'            => 'email2_cc',
+  'emailqa_contact1'    => 'email1_qa_contact',
+  'emailqa_contact2'    => 'email2_qa_contact',
+  'emailreporter1'      => 'email1_creator',
+  'emailreporter2'      => 'email2_creator',
+  'emaillongdesc1'      => 'email1_comment_creator',
+  'emaillongdesc2'      => 'email2_comment_creator',
+  'emailtype1'          => 'email1_type',
+  'emailtype2'          => 'email2_type',
+  'chfieldfrom'         => 'changed_after',
+  'chfieldto'           => 'changed_before',
+  'chfield'             => 'changed_field',
+  'chfieldvalue'        => 'changed_field_to',
+  'deadlinefrom'        => 'deadline_after',
+  'deadlineto'          => 'deadline_before',
+  'attach_data.thedata' => 'attachment.data',
+  'longdescs.isprivate' => 'comment.is_private',
+  'commenter'           => 'comment.creator',
+  'flagtypes.name'      => 'flag',
+  'requestees.login_name' => 'flag.requestee',
+  'setters.login_name'  => 'flag.setter',
+  'days_elapsed'        => 'idle',
+  'owner_idle_time'     => 'assignee_idle',
+  'dup_id'              => 'dupe_of',
+  'isopened'            => 'is_open',
+  'flag_type'           => 'flag_types',
+  'token'               => 'update_token'
+};
 
-  OLDATTACH2NEW = {
-    'submitter'   => 'attacher',
-    'description' => 'description',
-    'filename'    => 'file_name',
-    'delta_ts'    => 'last_change_time',
-    'isurl'       => 'is_url',
-    'isobsolete'  => 'is_obsolete',
-    'ispatch'     => 'is_patch',
-    'isprivate'   => 'is_private',
-    'mimetype'    => 'content_type',
-    'contenttypeentry' => 'content_type',
-    'date'        => 'creation_time',
-    'attachid'    => 'id',
-    'desc'        => 'description',
-    'flag'        => 'flags',
-    'type'        => 'content_type'
-  };
+OLDATTACH2NEW = {
+  'submitter'   => 'attacher',
+  'description' => 'description',
+  'filename'    => 'file_name',
+  'delta_ts'    => 'last_change_time',
+  'isobsolete'  => 'is_obsolete',
+  'ispatch'     => 'is_patch',
+  'isprivate'   => 'is_private',
+  'mimetype'    => 'content_type',
+  'contenttypeentry' => 'content_type',
+  'date'        => 'creation_time',
+  'attachid'    => 'id',
+  'desc'        => 'description',
+  'flag'        => 'flags',
+  'type'        => 'content_type',
+  'token'       => 'update_token'
+};
+
 %]
 
 [%# Add attachment stuff to the main hash - but with right prefix. (This is  
@@ -124,6 +128,7 @@
     [% cl_name_for.${cl.id} = cl.name %]
     "[% cl.name FILTER json %]": {
       "id": [% cl.id %],
+      "description": "[% cl.description FILTER json %]",
       "products": [
       [% FOREACH product IN cl.products %]
         "[% product.name FILTER json %]"[% ',' UNLESS loop.last() %]
@@ -138,6 +143,9 @@
   [% FOREACH product = products %]
     "[% product.name FILTER json %]": {
       "id": [% product.id %],
+      "description": "[% product.description FILTER json %]",
+      "is_active": [% product.isactive ? "true" : "false" %],
+      "is_permitting_unconfirmed": [% product.allows_unconfirmed ? "true" : "false" %],
 [% IF Param('useclassification') %]
       "classification": "[% cl_name_for.${product.classification_id} FILTER json %]",
 [% END %]
@@ -145,6 +153,7 @@
       [% FOREACH component = product.components %]
         "[% component.name FILTER json %]": {
           "id": [% component.id %],
+[% IF show_flags %]
           "flag_type": [
           [% flag_types = 
               component.flag_types.bug.merge(component.flag_types.attachment) %]
@@ -155,7 +164,9 @@
             [% NEXT UNLESS flag_type.is_active %]
             [% all_visible_flag_types.${flag_type.id} = flag_type %]
             [% ',' UNLESS first %][% flag_type.id FILTER json %][% first = 0 %]
-          [% END %]]
+          [% END %]],
+[% END %]
+          "description": "[% component.description FILTER json %]"
         } [% ',' UNLESS loop.last() %]
       [% END %]
       },
@@ -166,6 +177,7 @@
       ],
       
 [% IF Param('usetargetmilestone') %]
+      "default_target_milestone": "[% product.defaultmilestone FILTER json %]",
       "target_milestone": [
       [% FOREACH milestone = product.milestones %]
         "[% milestone.name FILTER json %]"[% ',' UNLESS loop.last() %]
@@ -192,7 +204,8 @@
     }[% ',' UNLESS loop.last() %]
   [% END %]
   },
-  
+
+[% IF show_flags %]
   "flag_type": {
   [% FOREACH flag_type = all_visible_flag_types.values.sort('name') %]
     "[%+ flag_type.id %]": {
@@ -213,7 +226,8 @@
     }[% ',' UNLESS loop.last() %]
   [% END %]
   },
-  
+[% END %]
+
   [% PROCESS "global/field-descs.none.tmpl" %]
   
   [%# Put custom field value data where below loop expects to find it %]
@@ -252,6 +266,7 @@
     "[% newname FILTER json %]": {
       "description": "[% (field_descs.${item.name} OR 
                           item.description) FILTER json %]",
+      "is_active": [% field.obsolete ? "false" : "true" %],
       [% blacklist = ["version", "group", "product", "component"] %]
       [% IF ${newname} AND NOT blacklist.contains(newname) %]
         "values": [
@@ -261,7 +276,7 @@
         ],
       [% END %]
       [% paramname = newname.replace("_", "") %] [%# For op_sys... %]
-      [% IF Param('default' _ paramname) %]
+      [% IF paramname != "query" AND Param('default' _ paramname) %]
         "default": "[% Param('default' _ paramname) %]",
       [% END %]
       [%-# The 'status' hash has a lot of extra stuff %]
@@ -279,14 +294,14 @@
         "transitions": {
           "{Start}": [
           [% FOREACH target = initial_status %]
-            "[% target.name %]"[% ',' UNLESS loop.last() %]
+            "[% target.name FILTER json %]"[% ',' UNLESS loop.last() %]
           [% END %]
           ],
         [% FOREACH status = status_objects %]
           [% targets = status.can_change_to() %]
           "[% status.name FILTER json %]": [
           [% FOREACH target = targets %]
-            "[% target.name %]"[% ',' UNLESS loop.last() %]
+            "[% target.name FILTER json %]"[% ',' UNLESS loop.last() %]
           [% END %]
           ][% ',' UNLESS loop.last() %]
         [% END %]
