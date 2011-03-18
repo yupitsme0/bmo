@@ -2043,13 +2043,16 @@ Splinter.showOverview = function () {
 Splinter.showAllFiles = function () {
     Splinter.selectNavigationLink('__ALL__');
     Dom.setStyle('overview', 'display', 'none');
+
     var i;
     for (i = 0; i < Splinter.thePatch.files.length; i++) {
-        Splinter.addPatchFile(Splinter.thePatch.files[i]);
+        var file = Splinter.thePatch.files[i];
+        if (!file.div) {
+            Splinter.addPatchFile(file);
+        } else {
+            Dom.setStyle(file.div, 'display', 'block');
+        }
     }
-    Dom.getElementsByClassName('file', 'div', '', function (node) {
-        Dom.setStyle(node, 'display', 'block');
-    });
 }
 
 Splinter.showPatchFile = function (file) {
