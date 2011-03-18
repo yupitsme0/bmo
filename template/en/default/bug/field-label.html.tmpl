@@ -37,17 +37,21 @@
     <label for="[% field.name FILTER html %]">
   [% END %]
 
-  <a 
-    [% IF help_html.${field.name}.defined %]
-      title="[% help_html.${field.name} FILTER txt FILTER collapse FILTER html %]"
-      class="field_help_link"
-    [% END %]
-    [% IF desc_url %]
-      href="[% desc_url FILTER html %]"
-    [% ELSE %]
-      href="page.cgi?id=fields.html#[% field.name FILTER url_quote %]"
-    [% END %]
-  >[%- field_descs.${field.name} FILTER html %]:</a>
+  [% IF !field.custom %]
+    <a
+      [% IF help_html.${field.name}.defined %]
+        title="[% help_html.${field.name} FILTER txt FILTER collapse FILTER html %]"
+        class="field_help_link"
+      [% END %]
+      [% IF desc_url %]
+        href="[% desc_url FILTER html %]"
+      [% ELSE %]
+        href="page.cgi?id=fields.html#[% field.name FILTER url_quote %]"
+      [% END %]
+    >
+  [% END %]
+  [%- field_descs.${field.name} FILTER html %]:
+  [% '</a>' IF !field.custom %]
 
   [% '</label>' IF editable %]
 </[% tag_name FILTER html %]>
