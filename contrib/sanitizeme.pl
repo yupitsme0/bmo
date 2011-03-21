@@ -155,7 +155,7 @@ sub delete_sensitive_user_data {
     print "Deleting sensitive user account data...\n";
     $dbh->do("UPDATE profiles SET cryptpassword = 'deleted'") unless $keep_passwords;
     $dbh->do("DELETE FROM profiles_activity");
-    $dbh->do("DELETE FROM profiles_search");
+    $dbh->do("DELETE FROM profile_search");
     $dbh->do("DELETE FROM namedqueries");
     $dbh->do("DELETE FROM tokens");
     $dbh->do("DELETE FROM logincookies");
