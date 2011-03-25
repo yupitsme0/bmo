@@ -21,6 +21,8 @@
 
 [%# initialise product to component mapping #%]
 
+[% SET selectable_products = user.get_selectable_products %]
+
 <script>
 var Dom = YAHOO.util.Dom;
 var useclassification = false;
@@ -28,14 +30,14 @@ var first_load = true;
 var last_sel = [];
 var cpts = new Array();
 [% n = 0 %]
-[% FOREACH prod = Bugzilla.user.get_selectable_products %]
+[% FOREACH prod = selectable_products %]
   cpts['[% n %]'] = [
     [%- FOREACH comp = prod.components %]'[% comp.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
   [% n = n+1 %]
 [% END %]
 </script>
 <script type="text/javascript"
- src="[% 'js/productform.js' FILTER mtime FILTER html %]">
+  src="[% 'js/productform.js' FILTER mtime FILTER html %]">
 </script>
 
 <script>
@@ -64,7 +66,7 @@ Select the components you want to watch:
   <td align="right">Product</td>
   <td>
     <select name="add_product" id="product" onChange="onSelectProduct()">
-    [% FOREACH product IN Bugzilla.user.get_selectable_products %]
+    [% FOREACH product IN selectable_products %]
       <option>[% product.name FILTER html %]</option>
     [% END %]
     </select>
@@ -75,7 +77,7 @@ Select the components you want to watch:
   <td>
     <select name="add_component" id="component">
       <option value="">__Any__</option>
-    [% FOREACH product IN Bugzilla.user.get_selectable_products %]
+    [% FOREACH product IN selectable_products %]
       [% FOREACH component IN product.components %]
         <option>[% component.name FILTER html %]</option>
       [% END %]
@@ -85,7 +87,7 @@ Select the components you want to watch:
 </tr>
 <tr>
   <td>&nbsp;</td>
-  <td><input type="submit" name="add" value="Add"></td>
+  <td><input type="submit" id="add" name="add" value="Add"></td>
 </tr>
 </table>
 
@@ -103,19 +105,17 @@ You are currently watching:
   <td><b>Component</b></td>
 </tr>
 [% FOREACH watch IN watches %]
+  <tr>
   [% IF (watch.component) %]
-    <tr>
-      <td><input type="checkbox" name="del_[% watch.product.id %]_[% watch.component.id %]" value="1"></td>
-      <td>[% watch.component.product.name FILTER html %]</td>
-      <td>[% watch.component.name FILTER html %]</td>
-    </tr>
+    <td><input type="checkbox" name="del_[% watch.product.id %]_[% watch.component.id %]" value="1"></td>
+    <td>[% watch.component.product.name FILTER html %]</td>
+    <td>[% watch.component.name FILTER html %]</td>
   [% ELSE %]
-    <tr>
-      <td><input type="checkbox" name="del_[% watch.product.id %]" value="1"></td>
-      <td>[% watch.product.name FILTER html %]</td>
-      <td>__Any__</td>
-    </tr>
+    <td><input type="checkbox" name="del_[% watch.product.id %]" value="1"></td>
+    <td>[% watch.product.name FILTER html %]</td>
+    <td>__Any__</td>
   [% END %]
+  </tr>
 [% END %]
 </table>
 

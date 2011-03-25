@@ -28,8 +28,6 @@ use Bugzilla::Error;
 use Bugzilla::Group;
 use Bugzilla::User;
 use Bugzilla::User::Setting;
-use Bugzilla::Util qw(diff_arrays html_quote);
-use Bugzilla::Status qw(is_open_state);
 
 our $VERSION = '1.0';
 
@@ -197,12 +195,13 @@ sub bugmail_recipients {
     }
 }
 
-sub bugmail_user_wants {
+sub user_wants_mail {
     my ($self, $args) = @_;
     my $relationship = $args->{'relationship'};
+    my $rs_wants_mail = $args->{'wants_mail'};
 
     if (+$relationship == REL_COMPONENT_WATCHER) {
-        $args->{'relationship_mail'}{$relationship} = 1;
+        $$rs_wants_mail = 1;
     }
 }
 
