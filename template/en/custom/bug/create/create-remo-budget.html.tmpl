@@ -41,7 +41,7 @@ function trySubmit() {
 
   var date = document.getElementById('date').value;
   var eventname = document.getElementById('eventname').value;
-  var shortdesc = 'Event Request (' + date + ') - ' + eventname; 
+  var shortdesc = 'Budget Request (' + date + ') - ' + eventname; 
   document.getElementById('short_desc').value = shortdesc;
   if(!isChecked('doing-other')) document.getElementById('doing-other-what').value = '';
   return true;
