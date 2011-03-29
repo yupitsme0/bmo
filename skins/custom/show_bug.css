@@ -60,3 +60,15 @@ body.bz_group_core-security {
     white-space:nowrap;
 }
 
+#wave_wand {
+    margin-top: 0px;
+}
+
+.bz_comment {
+    disabled-width: 55em;
+}
+
+.bz_comment_number {
+	float: right;
+}
+

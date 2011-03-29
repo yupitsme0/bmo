@@ -30,14 +30,6 @@ pre {
     font-size: medium;
 }
 
-.bz_comment_head {
-	padding: 2px 1em;
-}
-
-.bz_comment_number {
-	float: right;
-}
-
 .field_label {
     text-align: left;
 }
