@@ -64,8 +64,13 @@ body.bz_group_core-security {
     margin-top: 0px;
 }
 
+/* put the width on the TD rather than the PRE to stop the col resizing
+   when comments are hidden */
 .bz_comment {
-    disabled-width: 55em;
+    width: 55em;
+}
+.bz_comment_text {
+    width: auto;
 }
 
 .bz_comment_number {
