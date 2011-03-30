@@ -43,7 +43,7 @@ print "Done!\n";
 print "Please visit https://bugzilla.mozilla.org/editfields.cgi?action=edit&name=$name to finish setting up this field.\n";
 ### EXTREMELY MOZILLA-SPECIFIC CODE FOLLOWS ###
 print "Note to sysadmin:\n";
-print "Please run the following on tm-bugs01-master01:\n"
+print "Please run the following on tm-bugs01-master01:\n";
 foreach my $host ("10.2.70.20_") {
   print "GRANT SELECT ON `bugs`.`$name` TO 'metrics'\@'$host';\n";
   print "GRANT SELECT ($name) ON `bugs`.`bugs` TO 'metrics'\@'$host';\n";
