@@ -44,7 +44,7 @@ print "Please visit https://bugzilla.mozilla.org/editfields.cgi?action=edit&name
 ### EXTREMELY MOZILLA-SPECIFIC CODE FOLLOWS ###
 print "Note to sysadmin:\n";
 print "Please run the following on tm-bugs01-master01:\n"
-foreach my $host ("10.2.72.22","10.2.72.28","10.2.72.34","10.2.70.20_") {
+foreach my $host ("10.2.70.20_") {
   print "GRANT SELECT ON `bugs`.`$name` TO 'metrics'\@'$host';\n";
   print "GRANT SELECT ($name) ON `bugs`.`bugs` TO 'metrics'\@'$host';\n";
 }
