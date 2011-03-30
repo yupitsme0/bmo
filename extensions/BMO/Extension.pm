@@ -18,6 +18,8 @@
 #
 # Contributor(s):
 #   Gervase Markham <gerv@gerv.net>
+#   David Lawrence <dkl@mozilla.com>
+#   Byron Jones <glob@mozilla.com>
 
 package Bugzilla::Extension::BMO;
 use strict;
