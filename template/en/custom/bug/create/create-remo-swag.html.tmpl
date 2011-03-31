@@ -57,7 +57,7 @@ function validateAndSubmit() {
   var alert_text = '';
   if(!isFilledOut('firstname')) alert_text += "Please enter your first name\n";
   if(!isFilledOut('lastname')) alert_text += "Please enter your last name\n";
-  if(!isFilledOut('dependson')) alert_text += "Please enter the bug number for your Event Request Form\n";
+  if(!isFilledOut('wikiprofile')) alert_text += "Please enter your wiki user profile\n";
   if(!isValidEmail(document.getElementById('email').value)) alert_text += "Please enter a valid email address\n";
   
   //Everything required is filled out..try to submit the form!
@@ -75,7 +75,7 @@ function validateAndSubmit() {
 <form method="post" action="post_bug.cgi" id="swagRequestForm" enctype="multipart/form-data"
       onSubmit="return validateAndSubmit();">
 
-        <input type="hidden" name="format" value="swag">
+        <input type="hidden" name="format" value="remo-swag">
         <input type="hidden" name="product" value="Mozilla Reps">
         <input type="hidden" name="component" value="Swag Requests">
         <input type="hidden" name="rep_platform" value="All">
@@ -109,6 +109,13 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
+  <td align="right"><strong>Wiki User Profile: <span style="color: red;">*</span></strong></td>
+  <td>
+    <input type="text" name="wikiprofile" id="wikiprofile" value="" size="50" maxlength="50"/>
+  </td>
+</tr>
+
+<tr>
   <td align="right"><strong>CC:</strong></td>
   <td colspan="3">
     [% INCLUDE global/userselect.html.tmpl
@@ -127,11 +134,6 @@ function validateAndSubmit() {
 
 <tr>
   <td><!-- spacer -->&nbsp;</td>
-</tr>
-
-<tr>
-  <td align="right"><strong>Bug number assigned to previously- &nbsp;&nbsp;<br>submitted <a href="/enter_bug.cgi?product=Mozilla+Reps&amp;format=remo-budget">Budget Request Form</a>: <span style="color: red;">*</span></strong></td>
-  <td colspan="3"><input name="dependson" id="dependson"></td>
 </tr>
 
 <tr>
