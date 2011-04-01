@@ -19,7 +19,7 @@
 # Contributor(s):
 #   Max Kanat-Alexander <mkanat@bugzilla.org>
 
-package Bugzilla::Extension::SiteIndex::Constants;
+package Bugzilla::Extension::SiteMapIndex::Constants;
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(

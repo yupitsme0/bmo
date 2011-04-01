@@ -20,19 +20,22 @@
 #   Max Kanat-Alexander <mkanat@bugzilla.org>
 #   Dave Lawrence <dkl@mozilla.com>
 
-package Bugzilla::Extension::SiteIndex;
+package Bugzilla::Extension::SiteMapIndex;
 use strict;
 use base qw(Bugzilla::Extension);
 
 our $VERSION = '1.0';
 
-use Bugzilla::Extension::SiteIndex::Constants;
-use Bugzilla::Extension::SiteIndex::Util;
-use Bugzilla::Constants qw(bz_locations);
+use Bugzilla::Constants qw(bz_locations ON_WINDOWS);
 use Bugzilla::Util qw(correct_urlbase get_text);
+use Bugzilla::Install::Filesystem;
+
+use Bugzilla::Extension::SiteMapIndex::Constants;
+use Bugzilla::Extension::SiteMapIndex::Util;
 
 use DateTime;
 use IO::File;
+use POSIX;
 
 #########
 # Pages #
@@ -60,15 +63,11 @@ sub page_before_template {
     my $page = $args->{page_id};
 
     if ($page =~ m{^sitemap/sitemap\.}) {
-        _page_sitemap();
+        my $map = generate_sitemap(__PACKAGE__->NAME);
+        print Bugzilla->cgi->header('text/xml');
+        print $map;
+        exit;
     }
-}
-
-sub _page_sitemap {
-    my $map = generate_sitemap();
-    print Bugzilla->cgi->header('text/xml');
-    print $map;
-    exit;
 }
 
 ################
@@ -85,7 +84,39 @@ sub install_before_final_checks {
         print STDERR get_text('sitemap_requirelogin'), "\n";
         return;
     }
+
     $self->_fix_robots_txt();
+}
+
+sub install_filesystem {
+    my ($self, $args) = @_;
+    my $create_dirs  = $args->{'create_dirs'};
+    my $recurse_dirs = $args->{'recurse_dirs'};
+    my $htaccess     = $args->{'htaccess'};
+
+    # Create the sitemap directory to store the index and sitemap files 
+    my $sitemap_path = bz_locations->{'datadir'} . "/" . __PACKAGE__->NAME;
+
+    $create_dirs->{$sitemap_path} = Bugzilla::Install::Filesystem::DIR_CGI_WRITE
+                                    | Bugzilla::Install::Filesystem::DIR_ALSO_WS_SERVE;
+
+    $recurse_dirs->{$sitemap_path} = { 
+        files => Bugzilla::Install::Filesystem::WS_SERVE,
+        dirs  => Bugzilla::Install::Filesystem::DIR_CGI_WRITE 
+                 | Bugzilla::Install::Filesystem::DIR_ALSO_WS_SERVE 
+    };
+
+    # Create a htaccess file that allows the sitemap files to be served out
+    $htaccess->{"$sitemap_path/.htaccess"} = { 
+        perms    => Bugzilla::Install::Filesystem::WS_SERVE,
+        contents => <<EOT
+# Allow access to sitemap files created by the SiteMapIndex extension
+<FilesMatch ^sitemap.*\\.xml(.gz)?\$>
+  Allow from all
+</FilesMatch>
+Deny from all
+EOT
+    };
 }
 
 sub _fix_robots_txt {

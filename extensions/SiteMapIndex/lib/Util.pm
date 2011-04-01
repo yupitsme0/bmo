@@ -20,7 +20,7 @@
 #   Max Kanat-Alexander <mkanat@bugzilla.org>
 #   Dave Lawrence <dkl@mozilla.com>
 
-package Bugzilla::Extension::SiteIndex::Util;
+package Bugzilla::Extension::SiteMapIndex::Util;
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
@@ -28,7 +28,7 @@ our @EXPORT = qw(
     bug_is_ok_to_index
 );
 
-use Bugzilla::Extension::SiteIndex::Constants;
+use Bugzilla::Extension::SiteMapIndex::Constants;
 
 use Bugzilla::Util qw(correct_urlbase datetime_from url_quote);
 use Bugzilla::Constants qw(bz_locations);
@@ -52,26 +52,28 @@ sub bug_is_ok_to_index {
 # We put two things in the Sitemap: a list of Browse links for products,
 # and links to bugs.
 sub generate_sitemap {
+    my ($extension_name) = @_;
+
     # If file is less than SITEMAP_AGE hours old, then read in and send to caller.
     # If greater, then regenerate and send the new version.
-    my  $index_path = bz_locations()->{'datadir'} . "/sitemap_index.xml";
-    if (-e $index_path) {
-        my $index_mtime = (stat($index_path))[9];
+    my  $index_file = bz_locations->{'datadir'} . "/$extension_name/sitemap_index.xml";
+    if (-e $index_file) {
+        my $index_mtime = (stat($index_file))[9];
         my $index_hours = sprintf("%d", (time() - $index_mtime) / 60 / 60); # in hours
         if ($index_hours < SITEMAP_AGE) {
-            my $index_fh = new IO::File($index_path, 'r');
+            my $index_fh = new IO::File($index_file, 'r');
             $index_fh || die "Could not open current sitemap index: $!";
-            my $index_contents;
-            { local $/; $index_contents = <$index_fh> }
+            my $index_xml;
+            { local $/; $index_xml = <$index_fh> }
             $index_fh->close() || die "Could not close current sitemap index: $!";
 
-            return $index_contents;
+            return $index_xml;
         }
     }
 
     # Set the atime and mtime of the index file to the current time
     # in case another request is made before we finish.
-    utime(undef, undef, $index_path);
+    utime(undef, undef, $index_file);
 
     # Sitemaps must never contain private data.
     Bugzilla->logout_request();
@@ -113,63 +115,63 @@ sub generate_sitemap {
 	    # We only need the product links in the first sitemap file
 	    $products = [] if $filecount > 1;
 
-        push(@$filelist, _generate_sitemap_file($filecount, $products, $bugs));
+        push(@$filelist, _generate_sitemap_file($extension_name, $filecount, $products, $bugs));
 
         $filecount++;
         $offset += $num_bugs; 
     }
 
     # Generate index file
-    return _generate_sitemap_index($filelist);
+    return _generate_sitemap_index($extension_name, $filelist);
 }
 
 sub _generate_sitemap_index {
-    my ($filelist) = @_;
-    
+    my ($extension_name, $filelist) = @_;
+   
     my $dbh = Bugzilla->dbh;
     my $timestamp = $dbh->selectrow_array(
         "SELECT " . $dbh->sql_date_format('NOW()', '%Y-%m-%d'));
 
-    my $index = <<END;
+    my $index_xml = <<END;
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 END
 
     foreach my $filename (@$filelist) {
-        $index .= "
+        $index_xml .= "
   <sitemap>
-    <loc>" . correct_urlbase() . "$filename</loc>
+    <loc>" . correct_urlbase() . "data/$extension_name/$filename</loc>
     <lastmod>$timestamp</lastmod>
   </sitemap>
 ";
     }
 
-    $index .= <<END;
+    $index_xml .= <<END;
 </sitemapindex>
 END
 
-    my  $index_path = bz_locations()->{'datadir'} . "/sitemap_index.xml";
-    my $new_index_fh = new IO::File($index_path, 'w');
-    $new_index_fh || die "Could not open new sitemap index: $!";
-    print $new_index_fh $index;
-    $new_index_fh->close() || die "Could not close new sitemap index: $!";
+    my  $index_file = bz_locations->{'datadir'} . "/$extension_name/sitemap_index.xml";
+    my $index_fh = new IO::File($index_file, 'w');
+    $index_fh || die "Could not open new sitemap index: $!";
+    print $index_fh $index_xml;
+    $index_fh->close() || die "Could not close new sitemap index: $!";
 
-    return $index;
+    return $index_xml;
 }
 
 sub _generate_sitemap_file {
-    my ($filecount, $products, $bugs) = @_;
+    my ($extension_name, $filecount, $products, $bugs) = @_;
 
     my $bug_url = correct_urlbase() . 'show_bug.cgi?id=';
     my $product_url = correct_urlbase() . 'describecomponents.cgi?product=';
 
-    my $sitemap = <<END;
+    my $sitemap_xml = <<END;
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 END
 
     foreach my $product (@$products) {
-        $sitemap .= "
+        $sitemap_xml .= "
   <url>
     <loc>" . $product_url . url_quote($product->name) . "</loc>
     <changefreq>daily</changefreq>
@@ -179,7 +181,7 @@ END
     }
 
     foreach my $bug (@$bugs) {
-        $sitemap .= "
+        $sitemap_xml .= "
   <url>
     <loc>" . $bug_url . $bug->{bug_id} . "</loc>
     <lastmod>" . datetime_from($bug->{delta_ts}, 'UTC')->iso8601 . 'Z' . "</lastmod>
@@ -187,16 +189,17 @@ END
 ";
     }
 
-    $sitemap .= <<END;
+    $sitemap_xml .= <<END;
 </urlset>
 END
 
     # Write the compressed sitemap data to a file in the cgi root so that they can
     # be accessed by the search engines.
-    gzip \$sitemap => bz_locations()->{'cgi_path'} . "/sitemap$filecount.xml.gz" 
+    my $filename = "sitemap$filecount.xml.gz";
+    gzip \$sitemap_xml => bz_locations->{'datadir'} . "/$extension_name/$filename" 
         || die "gzip failed: $GzipError\n"; 
 
-    return "sitemap$filecount.xml.gz";
+    return $filename;
 }
 
 1;

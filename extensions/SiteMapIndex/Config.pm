@@ -20,10 +20,10 @@
 #   Max Kanat-Alexander <mkanat@bugzilla.org>
 #   Dave Lawrence <dkl@mozilla.com>
 
-package Bugzilla::Extension::SiteIndex;
+package Bugzilla::Extension::SiteMapIndex;
 use strict;
 
-use constant NAME => 'SiteIndex';
+use constant NAME => 'SiteMapIndex';
 
 use constant REQUIRED_MODULES => [
     {
