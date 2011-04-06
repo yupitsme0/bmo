@@ -81,13 +81,14 @@ sub template_before_process {
         
         # fields that have a custom sortkey. (So they are correctly sorted 
         # when using js)
-        my @sortkey_fields = qw(milestones bug_status resolution bug_severity 
-                                priority rep_platform op_sys);
+        my @sortkey_fields = qw(bug_status resolution bug_severity priority
+                                rep_platform op_sys);
 
         my %columns_sortkey;
         foreach my $field (@sortkey_fields) {
             $columns_sortkey{$field} = _get_field_values_sort_key($field);
         }
+        $columns_sortkey{'target_milestone'} = _get_field_values_sort_key('milestones');
 
         $vars->{'columns_sortkey'} = \%columns_sortkey;
     }
