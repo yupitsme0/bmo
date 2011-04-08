@@ -126,11 +126,4 @@ sub mailer_before_send {
     add_review_links_to_email($args->{'email'});
 }
 
-sub webservice {
-    my ($self, $args) = @_;
-    
-    my $dispatch = $args->{dispatch};
-    $dispatch->{Splinter} = "Bugzilla::Extension::Splinter::WebService";
-}
-
 __PACKAGE__->NAME;
