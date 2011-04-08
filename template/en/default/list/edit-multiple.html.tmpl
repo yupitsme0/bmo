@@ -314,7 +314,7 @@
                      OR one_product.name == "Mozilla Localizations"
                      OR one_product.name == "Other Applications"
                      OR one_product.name == "SeaMonkey" %]
-    [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
+    [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") OR field.name.match("^cf_tracking_") %]
       [% NEXT UNLESS one_product.defined %]
       [% NEXT UNLESS one_product.name == "AUS" 
                      OR one_product.name == "Camino"

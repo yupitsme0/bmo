@@ -194,7 +194,7 @@
            [% NEXT UNLESS bug.product == "Composer" OR bug.product == "MailNews Core" OR
                           bug.product == "Mozilla Localizations" OR bug.product == "Other Applications" OR
                           bug.product == "SeaMonkey" %]
-        [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
+        [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") OR field.name.match("^cf_tracking_") %]
            [% NEXT UNLESS bug.product == "AUS" OR bug.product == "Camino" OR
                           bug.product == "Core Graveyard" OR bug.product == "Core" OR
                           bug.product == "Directory" OR bug.product == "Firefox" OR

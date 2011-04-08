@@ -3508,14 +3508,14 @@ sub check_can_change_field {
         }
     }
 
-    # Only users in the appropriate drivers group can change the cf_blocking_* fields.
-    if ($field =~ /^cf_blocking_/) {
+    # Only users in the appropriate drivers group can change the blocking/tracking fields.
+    if ($field =~ /^cf_blocking_/ || $field =~ /^cf_tracking_/) {
         unless ($newvalue eq '---' || $newvalue eq '?' || ($oldvalue eq '0' && $newvalue eq '1')) {
             my $drivers_group;
             if ($field eq 'cf_blocking_fennec') {
                 $drivers_group = 'fennec-drivers';
             }
-            elsif ($field eq 'cf_blocking_20') {
+            elsif ($field eq 'cf_blocking_20' || $field =~ /^cf_tracking_firefox/) {
                 $drivers_group = 'mozilla-next-drivers';
             }
             elsif ($field =~ /^cf_blocking_thunderbird/) {

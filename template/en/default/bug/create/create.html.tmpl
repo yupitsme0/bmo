@@ -504,7 +504,7 @@ TUI_hide_default('expert_fields');
        [% NEXT UNLESS product.name == "Composer" OR product.name == "MailNews Core" OR
                       product.name == "Mozilla Localizations" OR product.name == "Other Applications" OR
                       product.name == "SeaMonkey" %]
-    [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") %]
+    [% ELSIF field.name.match("^cf_blocking_") OR field.name.match("^cf_status_") OR field.name.match("^cf_tracking_") %]
        [% NEXT UNLESS product.name == "AUS" OR product.name == "Camino" OR
                       product.name == "Core Graveyard" OR product.name == "Core" OR
                       product.name == "Directory" OR product.name == "Firefox" OR
