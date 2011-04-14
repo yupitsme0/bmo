@@ -69,7 +69,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
       "Other Applications"    => [],
       "SeaMonkey"             => [],
     },
-   qr/^cf_blocking_|cf_status/ => {
+    qr/^cf_blocking_|cf_tracking_|cf_status/ => {
       "addons.mozilla.org"    => [],
       "AUS"                   => [],
       "Camino"                => [],
@@ -112,6 +112,7 @@ our %group_to_cc_map = (
 our $blocking_trusted_setters = {
     'cf_blocking_fennec'          => 'fennec-drivers',
     'cf_blocking_20'              => 'mozilla-next-drivers',
+    qr/^cf_tracking_firefox/      => 'mozilla-next-drivers',
     qr/^cf_blocking_thunderbird/  => 'thunderbird-drivers',
     qr/^cf_blocking_seamonkey/    => 'seamonkey-council',
     '_default'                    => 'mozilla-stable-branch-drivers',
