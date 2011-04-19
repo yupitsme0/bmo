@@ -102,6 +102,23 @@ sub install_update_db {
             $sth->execute($when, $user_id);
         }
     }
+
+    if (!$dbh->bz_column_info('profiles', 'first_patch_bug_id')) {
+        $dbh->bz_add_column('profiles', 'first_patch_bug_id', {TYPE => 'INT3'});
+        my $sth_update = $dbh->prepare('UPDATE profiles SET first_patch_bug_id=? WHERE userid=?');
+        my $sth_select = $dbh->prepare(
+            'SELECT bug_id FROM attachments WHERE submitter_id=? AND ispatch=1 ORDER BY creation_ts ' . $dbh->sql_limit(1)
+        );
+        my $ra = $dbh->selectcol_arrayref('SELECT DISTINCT submitter_id FROM attachments WHERE ispatch=1');
+        my $count = 1;
+        my $total = scalar @$ra;
+        foreach my $user_id (@$ra) {
+            indicate_progress({ current => $count++, total => $total, every => 25 });
+            $sth_select->execute($user_id);
+            my ($bug_id) = $sth_select->fetchrow_array;
+            $sth_update->execute($bug_id, $user_id);
+        }
+    }
 }
 
 #
@@ -110,13 +127,14 @@ sub install_update_db {
 
 BEGIN {
     *Bugzilla::User::update_comment_count = \&_update_comment_count;
+    *Bugzilla::User::first_patch_bug_id = \&_first_patch_bug_id;
 }
 
 sub object_columns {
     my ($self, $args) = @_;
     my ($class, $columns) = @$args{qw(class columns)};
     if ($class->isa('Bugzilla::User')) {
-        push(@$columns, qw(comment_count creation_ts));
+        push(@$columns, qw(comment_count creation_ts first_patch_bug_id));
     }
 }
 
@@ -127,6 +145,10 @@ sub object_before_create {
         my ($timestamp) = Bugzilla->dbh->selectrow_array("SELECT NOW()");
         $params->{comment_count} = 0;
         $params->{creation_ts} = $timestamp;
+    } elsif ($class->isa('Bugzilla::Attachment')) {
+        if ($params->{ispatch} && !Bugzilla->user->first_patch_bug_id) {
+            Bugzilla->user->first_patch_bug_id($params->{bug}->id);
+        }
     }
 }
 
@@ -153,6 +175,17 @@ sub _update_comment_count {
         undef, $count, $id
     );
     $self->{comment_count} = $count;
+}
+
+sub _first_patch_bug_id {
+    my ($self, $bug_id) = @_;
+    return $self->{first_patch_bug_id} unless defined $bug_id;
+
+    Bugzilla->dbh->do(
+        'UPDATE profiles SET first_patch_bug_id=? WHERE userid=?',
+        undef, $bug_id, $self->id
+    );
+    $self->{first_patch_bug_id} = $bug_id;
 }
 
 #
@@ -188,14 +221,6 @@ sub _user_is_new {
     return 
         ($user->{comment_count} <= COMMENT_COUNT)
         || ($user->{creation_age} <= PROFILE_AGE);
-}
-
-sub _creation_ts_id {
-    my $self = shift;
-    if (!$self->{_creation_ts_id}) {
-        $self->{_creation_ts_id} = get_field_id('creation_ts');
-    }
-    return $self->{_creation_ts_id};
 }
 
 __PACKAGE__->NAME;

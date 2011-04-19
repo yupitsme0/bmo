@@ -19,7 +19,7 @@
   #   Byron Jones <bjones@mozilla.com>
   #%]
 
-[% IF (comment.author.is_new) %]
+[% IF comment.author.is_new %]
 <span
   class="new_user" 
 [%#
@@ -39,4 +39,7 @@ ELSE %][% comment.author.creation_age %] day[% "s" IF comment.author.creation_ag
   >
 (New to [% terms.Bugzilla %])
 </span>
+[% END %]
+[% IF comment.is_about_attachment && comment.author.first_patch_bug_id == bug.id %]
+<span class="new_user">(First Patch)</span>
 [% END %]
