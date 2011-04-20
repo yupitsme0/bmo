@@ -70,6 +70,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
       "SeaMonkey"             => [],
     },
     qr/^cf_blocking_|cf_tracking_|cf_status/ => {
+      "Add-on SDK"            => [],
       "addons.mozilla.org"    => [],
       "AUS"                   => [],
       "Camino"                => [],
@@ -91,6 +92,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
       "Testing"               => [],
       "Toolkit"               => [],
       "Websites"              => ["getpersonas.com"],
+      "Webtools"              => [],
       "Plugins"               => [],
     }      
 );
