@@ -38,13 +38,21 @@ use Bugzilla::Constants;
 use Bugzilla::Status;
 use Bugzilla::User;
 use Bugzilla::User::Setting;
-use Bugzilla::Util qw(html_quote trick_taint trim);
+use Bugzilla::Util qw(html_quote trick_taint trim datetime_from);
 use Scalar::Util qw(blessed);
 use Bugzilla::Error;
 use Date::Parse;
 use DateTime;
 
 our $VERSION = '0.1';
+
+#
+# Monkey-patched methods
+#
+
+BEGIN {
+    *Bugzilla::Bug::last_closed_date = \&_last_closed_date;
+}
 
 sub template_before_process {
     my ($self, $args) = @_;
@@ -318,6 +326,18 @@ sub bug_check_can_change_field {
                 $new_value eq 'INCOMPLETE'))
         {
             push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
+        }
+    }
+
+    # Bug 649625 - Disallow reopening of bugs which have been resolved for > 1 year
+    if ($field eq 'bug_status') {
+        if (is_open_state($new_value) && !is_open_state($old_value)) {
+            my $days_ago = DateTime->now(time_zone => Bugzilla->local_timezone);
+            $days_ago->subtract(days => 365);
+            my $last_closed = datetime_from($bug->last_closed_date);
+            if ($last_closed lt $days_ago) {
+                push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
+            }
         }
     }
 }
@@ -704,6 +724,28 @@ sub object_before_create {
     {
         ThrowUserError("bmo_new_cf_prohibited");
     }
+}
+
+sub _last_closed_date {
+    my ($self) = @_;
+    my $dbh = Bugzilla->dbh;
+
+    return $self->{'last_closed_date'} if defined $self->{'last_closed_date'};
+
+    my $closed_statuses = "'" . join("','", map { $_->name } closed_bug_statuses()) . "'";
+    my $status_field_id = get_field_id('bug_status');
+
+    $self->{'last_closed_date'} = $dbh->selectrow_array("
+        SELECT bugs_activity.bug_when
+          FROM bugs_activity
+         WHERE bugs_activity.fieldid = ?
+               AND bugs_activity.added IN ($closed_statuses)
+               AND bugs_activity.bug_id = ?
+      ORDER BY bugs_activity.bug_when DESC " . $dbh->sql_limit(1),
+        undef, $status_field_id, $self->id
+    );
+
+    return $self->{'last_closed_date'};
 }
 
 __PACKAGE__->NAME;
