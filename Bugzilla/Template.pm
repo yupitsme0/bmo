@@ -256,7 +256,9 @@ sub quoteUrls {
               ~get_bug_link($1, $1)
               ~egmx;
 
-    # Now remove the encoding hacks
+    # Now remove the encoding hacks and apply the replacements
+    # in reverse order
+    @things = reverse @things;
     $text =~ s/\0\0(\d+)\0\0/$things[$1]/eg;
     $text =~ s/$chr1\0/\0/g;
 
