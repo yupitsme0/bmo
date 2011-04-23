@@ -1,7 +1,7 @@
 #!/bin/bash
 HOST=`hostname -s`
 TAG="current-staging"
-[ "$HOST" == "mradm02" ] && TAG="current-production"
+[ "$HOST" == "mradm02" -o "$HOST" == "ip-admin02" ] && TAG="current-production"
 echo "+ bzr pull --overwrite -rtag:$TAG"
 output=`bzr pull --overwrite -rtag:$TAG 2>&1`
 echo "$output"
