@@ -43,6 +43,7 @@ use Scalar::Util qw(blessed);
 use Bugzilla::Error;
 use Date::Parse;
 use DateTime;
+use Bugzilla::Extension::BMO::FakeBug;
 
 our $VERSION = '0.1';
 
@@ -118,21 +119,7 @@ sub template_before_process {
     if ($file =~ /^list\/list/ || $file =~ /^bug\/create\/create[\.-]/) {
         # hack to allow the bug entry templates to use check_can_change_field 
         # to see if various field values should be available to the current user.
-        my %default = $vars->{'default'} ? %{ $vars->{'default'} } : ();
-
-        $default{'check_can_change_field'} = sub { 
-            return Bugzilla::Bug::check_can_change_field(\%default, @_);
-        };
-        
-        $default{'_changes_everconfirmed'} = sub { 
-            return Bugzilla::Bug::_changes_everconfirmed(\%default, @_);
-        };
-        
-        $default{'everconfirmed'} = sub { 
-            return ($default{'status'} == 'UNCONFIRMED') ? 0 : 1;
-        };
-        
-        $vars->{'default'} = \%default;
+        $vars->{'default'} = Bugzilla::Extension::BMO::FakeBug->new($vars->{'default'} || {});
     }
 }
 
@@ -199,9 +186,9 @@ sub cf_hidden_in_product {
                     }
                 }
         
-		# If product matches and at at least one component matches
-		# from component_list (if a matching component was required), 
-		# we allow the field to be seen
+                # If product matches and at at least one component matches
+                # from component_list (if a matching component was required), 
+                # we allow the field to be seen
                 if ($product eq $product_name && (!@$components || $found_component)) {
                     return 0;
                 }
@@ -277,9 +264,9 @@ sub bug_check_can_change_field {
     my $user = Bugzilla->user;
 
     # Purpose: Only users in the appropriate drivers group can change the 
-    # cf_blocking_* fields.
-    if ($field =~ /^cf_blocking_/) {
-        unless ($new_value eq '---' || 
+    # cf_blocking_* fields or cf_tracking_* fields
+    if ($field =~ /^cf_(?:blocking|tracking)_/) {
+        unless ($new_value eq '---' ||
                 $new_value eq '?' || 
                 ($new_value eq '1' && $old_value eq '0')) 
         {
@@ -287,9 +274,8 @@ sub bug_check_can_change_field {
         }
         
         if ($new_value eq '?') {
-            _check_trusted($field, $blocking_trusted_requesters, 
-                                  $priv_results);
-        }        
+            _check_trusted($field, $blocking_trusted_requesters, $priv_results);
+        }
     }
 
     if ($field =~ /^cf_status_/) {
@@ -340,6 +326,8 @@ sub bug_check_can_change_field {
             }
         }
     }
+
+    push @$priv_results, PRIVILEGES_REQUIRED_NONE unless @$priv_results;
 }
 
 # Purpose: link up various Mozilla-specific strings.
@@ -428,7 +416,7 @@ sub quicksearch_map {
     my $map = $args->{'map'};
     
     foreach my $name (keys %$map) {
-        if ($name =~ /^cf_(blocking|status)_([a-z]+)?(\d+)?$/) {
+        if ($name =~ /^cf_(blocking|tracking|status)_([a-z]+)?(\d+)?$/) {
             my $type = $1;
             my $product = $2;
             my $version = $3;
