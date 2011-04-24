@@ -1293,8 +1293,8 @@ Splinter.doDiscardReview = function () {
 
 Splinter.discardReview = function () {
     var dialog = new Splinter.Dialog("Really discard your changes?");
-    dialog.addButton('Continue', function() {}, true);
-    dialog.addButton('Discard', Splinter.doDiscardReview, false);
+    dialog.addButton('No', function() {}, true);
+    dialog.addButton('Yes', Splinter.doDiscardReview, false);
     dialog.show();
 };
 
