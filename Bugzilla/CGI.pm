@@ -440,7 +440,7 @@ sub redirect_search_url {
 
     $self->clean_search_url();
 
-    if ($user->id) {
+    if ($user->id && $self->param) {
         # Insert a placeholder Bugzilla::Search::Recent, so that we know what
         # the id of the resulting search will be. This is then pulled out
         # of the Referer header when viewing show_bug.cgi to know what
