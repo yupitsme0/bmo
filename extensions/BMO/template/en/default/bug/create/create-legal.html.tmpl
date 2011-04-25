@@ -86,6 +86,7 @@ function trySubmit() {
   <td>
     <select name="component">
       [%- FOREACH c = product.components %]
+        [% NEXT IF NOT c.is_active %]
         <option value="[% c.name FILTER html %]"
           [% " selected=\"selected\"" IF c.name == "General" %]>
           [% c.name FILTER html -%]
