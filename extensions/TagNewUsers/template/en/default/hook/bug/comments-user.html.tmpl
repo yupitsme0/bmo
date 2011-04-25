@@ -22,20 +22,12 @@
 [% IF comment.author.is_new %]
 <span
   class="new_user" 
-[%#
-title="[% comment.author.comment_count -%]
-comment[% IF (comment.author.comment_count != 1) %]s[% END %],
-created [% IF (comment.author.creation_age == 0) %]today[% ELSE %] [%
-  comment.author.creation_age %] day[%
-  IF (comment.author.creation_age != 1) %]s[% END %] ago[% END %]."
-#%]
   title="
 [%- comment.author.comment_count %] comment[% "s" IF comment.author.comment_count != 1 -%]
 , created [%
 IF comment.author.creation_age == 0 %]today[%
 ELSIF comment.author.creation_age > 365 %]more than a year ago[%
 ELSE %][% comment.author.creation_age %] day[% "s" IF comment.author.creation_age != 1 %] ago[% END %]."
-
   >
 (New to [% terms.Bugzilla %])
 </span>
