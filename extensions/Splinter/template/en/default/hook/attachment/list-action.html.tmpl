@@ -22,9 +22,9 @@
 &#x0020; |
   [% IF Param("splinter_base").search('\?') %]
     <a href='[% urlbase FILTER none %][% Param("splinter_base") FILTER html %]&amp;bug=[% bugid %]&amp;attachment=[% attachment.id %]'>
-       Review</a> (Splinter)
+       Splinter Review</a>
   [% ELSE %]
     <a href='[% urlbase FILTER none %][% Param("splinter_base") FILTER html %]?bug=[% bugid %]&amp;attachment=[% attachment.id %]'>
-       Review</a> (Splinter)
+       Splinter Review</a>
   [% END %]
 [% END %]

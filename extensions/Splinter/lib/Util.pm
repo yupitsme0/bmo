@@ -27,8 +27,11 @@ use Bugzilla::Util;
 use base qw(Exporter);
 
 @Bugzilla::Extension::Splinter::Util::EXPORT = qw(
-    attachment_is_visible attachment_id_is_patch
-    get_review_url get_review_link add_review_links_to_email
+    attachment_is_visible 
+    attachment_id_is_patch
+    get_review_url 
+    get_review_link 
+    add_review_links_to_email
 );
 
 # Checks if the current user can see an attachment
@@ -36,7 +39,7 @@ use base qw(Exporter);
 sub attachment_is_visible {
     my $attachment = shift;
 
-    defined $params->{attachment_id} || return 0;
+    $attachment->isa('Bugzilla::Attachment') || return 0;
 
     return (Bugzilla->user->can_see_bug($attachment->bug->id) 
             && (!$attachment->isprivate 
@@ -53,7 +56,7 @@ sub attachment_id_is_patch {
     # attachment was a patch by creating text that would get linkified
     # differently. Likely excess paranoia
     return (defined $attachment
-            && attachment_is_visible ($attachment) 
+            && attachment_is_visible($attachment) 
             && $attachment->ispatch);
 }
 
@@ -108,7 +111,7 @@ sub add_review_links_to_email {
     if ($email->header('Subject') =~ /^\[Bug\s+(\d+)\]/ 
         && Bugzilla->user->can_see_bug($1))
     {
-	    $bug = new Bugzilla::Bug($1);
+	    $bug = Bugzilla::Bug->new($1);
     }
 
     return unless defined $bug;
