@@ -327,7 +327,7 @@ sub bug_check_can_change_field {
         }
     }
 
-    push @$priv_results, PRIVILEGES_REQUIRED_NONE unless @$priv_results;
+    #push @$priv_results, PRIVILEGES_REQUIRED_NONE unless @$priv_results;
 }
 
 # Purpose: link up various Mozilla-specific strings.
