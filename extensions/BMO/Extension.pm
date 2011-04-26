@@ -365,11 +365,11 @@ sub bug_format_comment {
     my ($self, $args) = @_;
     my $regexes = $args->{'regexes'};
   
-    push (@$regexes, {
-        match => qr/\b(?:UUID\s+|bp\-)([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-
-                                       [a-f0-9]{4}\-[a-f0-9]{12})\b/x,
-        replace => \&_link_uuid
-    });
+    #push (@$regexes, {
+    #    match => qr{\b(?:UUID\s+|bp\-)([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-
+    #                                   [a-f0-9]{4}\-[a-f0-9]{12})\b}x,
+    #    replace => \&_link_uuid
+    #});
 
     push (@$regexes, {
         match => qr/\b((?:CVE|CAN)-\d{4}-\d{4})\b/,
