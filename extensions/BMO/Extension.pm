@@ -365,15 +365,15 @@ sub bug_format_comment {
     my ($self, $args) = @_;
     my $regexes = $args->{'regexes'};
 
-    # Only match if not already in an URL using the negative lookbehind (?<!/)
+    # Only match if not already in an URL using the negative lookbehind (?<!\/)
     push (@$regexes, {
-        match => qr{(?<!/)\b(?:UUID\s+|bp\-)([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-
-                                       [a-f0-9]{4}\-[a-f0-9]{12})\b}x,
+        match => qr/(?<!\/)\b(?:UUID\s+|bp\-)([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-
+                                       [a-f0-9]{4}\-[a-f0-9]{12})\b/x,
         replace => \&_link_uuid
     });
 
     push (@$regexes, {
-        match => qr{(?<!/)\b((?:CVE|CAN)-\d{4}-\d{4})\b/,
+        match => qr/(?<!\/)\b((?:CVE|CAN)-\d{4}-\d{4})\b/,
         replace => \&_link_cve
     });
   
