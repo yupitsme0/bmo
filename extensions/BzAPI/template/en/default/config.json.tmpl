@@ -33,9 +33,11 @@ OLD2NEW = {
   'short_short_desc'    => 'summary',
   'bug_file_loc'        => 'url',
   'status_whiteboard'   => 'whiteboard',
+  'reporter'            => 'creator',
+  'reporter_realname'   => 'creator_realname',
   'cclist_accessible'   => 'is_cc_accessible',
-  'reporter_accessible' => 'is_reporter_accessible',
-  'everconfirmed'       => 'is_everconfirmed',
+  'reporter_accessible' => 'is_creator_accessible',
+  'everconfirmed'       => 'is_confirmed',
   'dependson'           => 'depends_on',
   'blocked'             => 'blocks',
   'attachment'          => 'attachments',
@@ -55,8 +57,8 @@ OLD2NEW = {
   'emailcc2'            => 'email2_cc',
   'emailqa_contact1'    => 'email1_qa_contact',
   'emailqa_contact2'    => 'email2_qa_contact',
-  'emailreporter1'      => 'email1_reporter',
-  'emailreporter2'      => 'email2_reporter',
+  'emailreporter1'      => 'email1_creator',
+  'emailreporter2'      => 'email2_creator',
   'emaillongdesc1'      => 'email1_comment_creator',
   'emaillongdesc2'      => 'email2_comment_creator',
   'emailtype1'          => 'email1_type',
@@ -78,6 +80,7 @@ OLD2NEW = {
   'dup_id'              => 'dupe_of',
   'isopened'            => 'is_open',
   'flag_type'           => 'flag_types',
+  'token'               => 'update_token'
 };
 
 OLDATTACH2NEW = {
@@ -94,7 +97,8 @@ OLDATTACH2NEW = {
   'attachid'    => 'id',
   'desc'        => 'description',
   'flag'        => 'flags',
-  'type'        => 'content_type'
+  'type'        => 'content_type',
+  'token'       => 'update_token'
 };
 
 %]
@@ -124,7 +128,7 @@ OLDATTACH2NEW = {
     [% cl_name_for.${cl.id} = cl.name %]
     "[% cl.name FILTER json %]": {
       "id": [% cl.id %],
-      "description": "[% cl.description %]",
+      "description": "[% cl.description FILTER json %]",
       "products": [
       [% FOREACH product IN cl.products %]
         "[% product.name FILTER json %]"[% ',' UNLESS loop.last() %]
@@ -139,7 +143,7 @@ OLDATTACH2NEW = {
   [% FOREACH product = products %]
     "[% product.name FILTER json %]": {
       "id": [% product.id %],
-      "description": "[% product.description %]",
+      "description": "[% product.description FILTER json %]",
       "is_active": [% product.isactive ? "true" : "false" %],
       "is_permitting_unconfirmed": [% product.allows_unconfirmed ? "true" : "false" %],
 [% IF Param('useclassification') %]
@@ -162,7 +166,7 @@ OLDATTACH2NEW = {
             [% ',' UNLESS first %][% flag_type.id FILTER json %][% first = 0 %]
           [% END %]],
 [% END %]
-          "description": "[% component.description %]"
+          "description": "[% component.description FILTER json %]"
         } [% ',' UNLESS loop.last() %]
       [% END %]
       },
@@ -173,7 +177,7 @@ OLDATTACH2NEW = {
       ],
       
 [% IF Param('usetargetmilestone') %]
-      "default_target_milestone": "[% product.defaultmilestone %]",
+      "default_target_milestone": "[% product.defaultmilestone FILTER json %]",
       "target_milestone": [
       [% FOREACH milestone = product.milestones %]
         "[% milestone.name FILTER json %]"[% ',' UNLESS loop.last() %]
@@ -290,14 +294,14 @@ OLDATTACH2NEW = {
         "transitions": {
           "{Start}": [
           [% FOREACH target = initial_status %]
-            "[% target.name %]"[% ',' UNLESS loop.last() %]
+            "[% target.name FILTER json %]"[% ',' UNLESS loop.last() %]
           [% END %]
           ],
         [% FOREACH status = status_objects %]
           [% targets = status.can_change_to() %]
           "[% status.name FILTER json %]": [
           [% FOREACH target = targets %]
-            "[% target.name %]"[% ',' UNLESS loop.last() %]
+            "[% target.name FILTER json %]"[% ',' UNLESS loop.last() %]
           [% END %]
           ][% ',' UNLESS loop.last() %]
         [% END %]
