@@ -276,6 +276,7 @@ sub bug_check_can_change_field {
         if ($new_value eq '?') {
             _check_trusted($field, $blocking_trusted_requesters, $priv_results);
         }
+        push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
     }
 
     if ($field =~ /^cf_status_/) {
@@ -288,6 +289,7 @@ sub bug_check_can_change_field {
         if (!$user->in_group('canconfirm', $bug->{'product_id'})) {
             push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
         }
+        push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
     }
 
     # The EXPIRED resolution should only be settable by gerv.
@@ -326,8 +328,6 @@ sub bug_check_can_change_field {
             }
         }
     }
-
-    #push @$priv_results, PRIVILEGES_REQUIRED_NONE unless @$priv_results;
 }
 
 # Purpose: link up various Mozilla-specific strings.
