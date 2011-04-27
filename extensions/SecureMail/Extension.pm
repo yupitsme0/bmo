@@ -208,7 +208,15 @@ sub mailer_before_send {
             }
         }
         elsif ($is_passwordmail) {
-            if ($user && !grep($_->{secure_mail}, @{ $user->groups })) {
+            # Mail is made unsecure only if the user does not have a public
+            # key and is not in any security groups. So specifying a public
+            # key OR being in a security group means the mail is kept secure
+            # (but, as noted above, the check is the other way around because
+            # we default to secure).
+            if ($user && 
+                !$user->{'public_key'} &&
+                !grep($_->{secure_mail}, @{ $user->groups })) 
+            {
                 $make_secure = 0;
             }      
         }
