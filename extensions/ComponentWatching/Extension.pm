@@ -103,7 +103,8 @@ sub user_preferences {
             # add watch
 
             my $productName = Bugzilla->input_params->{'add_product'};
-            my $componentName = Bugzilla->input_params->{'add_component'};
+            my $ra_componentNames = Bugzilla->input_params->{'add_component'};
+            $ra_componentNames = [$ra_componentNames] unless ref($ra_componentNames);
 
             # load product and verify access
             my $product = Bugzilla::Product->new({ name => $productName });
@@ -111,19 +112,19 @@ sub user_preferences {
                 ThrowUserError('product_access_denied', { product => $productName });
             }
 
-            my $component;
-            if ($componentName) {
-
-                # watching a specific component
-                $component = Bugzilla::Component->new({ name => $componentName, product => $product });
-                unless ($component) {
-                    ThrowUserError('product_access_denied', { product => $productName });
-                }
-                _addComponentWatch($user, $component);
-
-            } else {
+            if (grep { $_ eq '' } @$ra_componentNames) {
                 # watching a product
                 _addProductWatch($user, $product);
+
+            } else {
+                # watching specific components
+                foreach my $componentName (@$ra_componentNames) {
+                    my $component = Bugzilla::Component->new({ name => $componentName, product => $product });
+                    unless ($component) {
+                        ThrowUserError('product_access_denied', { product => $productName });
+                    }
+                    _addComponentWatch($user, $component);
+                }
             }
 
         } else {

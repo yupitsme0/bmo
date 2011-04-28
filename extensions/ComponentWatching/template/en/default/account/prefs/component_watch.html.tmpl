@@ -73,9 +73,9 @@ Select the components you want to watch:
   </td>
 </tr>
 <tr>
-  <td align="right">Component</td>
+  <td align="right" valign="top">Component</td>
   <td>
-    <select name="add_component" id="component">
+    <select name="add_component" id="component" multiple size="5">
       <option value="">__Any__</option>
     [% FOREACH product IN selectable_products %]
       [% FOREACH component IN product.components %]
