@@ -32,18 +32,29 @@ sub bugmail_recipients {
     my ($self, $args) = @_;
     foreach my $user_id (keys %{$args->{recipients}}) {
         my $user = Bugzilla::User->new($user_id);
-        my $filter = 1;
-        my $ra_filters = Bugzilla::Extension::LimitedEmail::FILTERS;
-        foreach my $re (@$ra_filters) {
-            if ($user->email =~ $re) {
-                $filter = 0;
-                last;
-            }
-        }
-        if ($filter) {
+        if (!deliver_to($user->email)) {
             delete $args->{recipients}{$user_id};
         }
     }
+}
+
+sub mailer_before_send {
+    my ($self, $args) = @_;
+    my $email = $args->{email};
+    if (!deliver_to($email->{header}->header('to'))) {
+        $email->{header}->header_set(to => Bugzilla::Extension::LimitedEmail::BLACK_HOLE);
+    }
+}
+
+sub deliver_to {
+    my $email = shift;
+    my $ra_filters = Bugzilla::Extension::LimitedEmail::FILTERS;
+    foreach my $re (@$ra_filters) {
+        if ($email =~ $re) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 __PACKAGE__->NAME;
