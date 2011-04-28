@@ -33,6 +33,6 @@ use constant FILTERS => [
     qr/^reed\@reedloden\.com/i,
 ];
 
-use constant BLACK_HOLE => 'nobody@mozilla.com';
+use constant BLACK_HOLE => 'nobody@mozilla.org';
 
 __PACKAGE__->NAME;
