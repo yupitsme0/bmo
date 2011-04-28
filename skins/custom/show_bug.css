@@ -12,9 +12,13 @@
 
 /* colorize bugs in various groups */
 body[class*=bz_group_] {
-    background-color: #ccccff;
+    background-color: #e0e0ff;
     border-left: solid red 2px;
     padding-left: 13px;
+}
+
+body[class*=bz_group_] #bugzilla-body {
+    background-color: inherit;
 }
 
 body.bz_group_webtools-security,
