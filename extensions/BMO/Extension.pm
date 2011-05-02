@@ -236,7 +236,7 @@ sub _cc_if_special_group {
     
     if ($group_to_cc_map{$group}) {
         my $id = login_to_id($group_to_cc_map{$group});
-        $recipients->{$id}->{+REL_CC} = $Bugzilla::BugMail::BIT_DIRECT;
+        $recipients->{$id}->{+REL_CC} = Bugzilla::BugMail::BIT_DIRECT();
     }
 }
 
