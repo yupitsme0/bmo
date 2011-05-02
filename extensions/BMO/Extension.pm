@@ -208,7 +208,7 @@ sub bugmail_recipients {
     my $bug = $args->{'bug'};
     my $recipients = $args->{'recipients'};
     my $diffs = $args->{'diffs'};
-    
+
     if (@$diffs) {
         # Changed bug
         foreach my $ref (@$diffs) {
@@ -220,11 +220,14 @@ sub bugmail_recipients {
                 _cc_if_special_group($new, $recipients);
             }
         }
-    }
-    else {
-        # New bug
-        foreach my $group (@{ $bug->groups_in }) {
-            _cc_if_special_group($group->{'name'}, $recipients);
+    } else {
+        # Determine if it's a new bug, or a comment without a field change
+        my $comment_count = scalar @{$bug->comments};
+        if ($comment_count == 1) {
+            # New bug
+            foreach my $group (@{ $bug->groups_in }) {
+                _cc_if_special_group($group->{'name'}, $recipients);
+            }
         }
     }
 }    
