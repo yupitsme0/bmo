@@ -1,6 +1,6 @@
 
-/* make the selects on advanced search tall enough to show 9 items */
+/* let the browser choose the select height from the "size" param */
 .search_field_grid select {
-    height: 24ex;
+    height: auto;
 }
 
