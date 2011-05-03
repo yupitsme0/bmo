@@ -30,6 +30,7 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       $blocking_trusted_setters
                                       $blocking_trusted_requesters
                                       $status_trusted_wanters
+                                      $other_setters
                                       %always_fileable_group
                                       %product_sec_groups);
 
@@ -293,6 +294,22 @@ sub bug_check_can_change_field {
             push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
         }
         push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
+    }
+
+    # "other" custom field setters restrictions
+    if ($field =~ /^cf/ && !@$priv_results && $new_value ne '---') {
+        if (exists $other_setters->{$field}) {
+            my $in_group = 0;
+            foreach my $group (@{$other_setters->{$field}}) {
+                if ($user->in_group($group, $bug->product_id)) {
+                    $in_group = 1;
+                    last;
+                }
+            }
+            if (!$in_group) {
+                push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
+            }
+        }
     }
 
     # The EXPIRED resolution should only be settable by gerv.

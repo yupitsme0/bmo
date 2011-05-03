@@ -31,6 +31,7 @@ our @EXPORT_OK = qw($cf_visible_in_products
                     $blocking_trusted_setters
                     $blocking_trusted_requesters
                     $status_trusted_wanters
+                    $other_setters
                     %always_fileable_group
                     %product_sec_groups);
 
@@ -63,38 +64,46 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "Websites"                      => ["www.mozillamessaging.com"],
     },
     qr/^cf_blocking_seamonkey|cf_status_seamonkey/ => {
-      "Composer"              => [],
-      "MailNews Core"         => [],
-      "Mozilla Localizations" => [],
-      "Other Applications"    => [],
-      "SeaMonkey"             => [],
+        "Composer"              => [],
+        "MailNews Core"         => [],
+        "Mozilla Localizations" => [],
+        "Other Applications"    => [],
+        "SeaMonkey"             => [],
     },
     qr/^cf_blocking_|cf_tracking_|cf_status/ => {
-      "Add-on SDK"            => [],
-      "addons.mozilla.org"    => [],
-      "AUS"                   => [],
-      "Camino"                => [],
-      "Core Graveyard"        => [],
-      "Core"                  => [],
-      "Directory"             => [],
-      "Fennec"                => [],
-      "Firefox"               => [],
-      "MailNews Core"         => [],
-      "mozilla.org"           => ["Release Engineering"],
-      "Mozilla Localizations" => [],
-      "Mozilla Services"      => [],
-      "NSPR"                  => [],
-      "NSS"                   => [],
-      "Other Applications"    => [],
-      "SeaMonkey"             => [],
-      "support.mozilla.com"   => [],
-      "Tech Evangelism"       => [],
-      "Testing"               => [],
-      "Toolkit"               => [],
-      "Websites"              => ["getpersonas.com"],
-      "Webtools"              => [],
-      "Plugins"               => [],
-    }      
+        "Add-on SDK"            => [],
+        "addons.mozilla.org"    => [],
+        "AUS"                   => [],
+        "Camino"                => [],
+        "Core Graveyard"        => [],
+        "Core"                  => [],
+        "Directory"             => [],
+        "Fennec"                => [],
+        "Firefox"               => [],
+        "MailNews Core"         => [],
+        "mozilla.org"           => ["Release Engineering"],
+        "Mozilla Localizations" => [],
+        "Mozilla Services"      => [],
+        "NSPR"                  => [],
+        "NSS"                   => [],
+        "Other Applications"    => [],
+        "SeaMonkey"             => [],
+        "support.mozilla.com"   => [],
+        "Tech Evangelism"       => [],
+        "Testing"               => [],
+        "Toolkit"               => [],
+        "Websites"              => ["getpersonas.com"],
+        "Webtools"              => [],
+        "Plugins"               => [],
+    },
+    qr/^cf_colo_site$/ => {
+        "mozilla.org"           => [
+            "Server Operations",
+            "Server Operations: Projects",
+            "Server Operations: RelEng",
+            "Server Operations: Security",
+        ],
+    },
 );
 
 # Who to CC on particular bugmails when certain groups are added or removed.
@@ -118,7 +127,7 @@ our $blocking_trusted_setters = {
     qr/^cf_blocking_thunderbird/  => 'thunderbird-drivers',
     qr/^cf_blocking_seamonkey/    => 'seamonkey-council',
     '_default'                    => 'mozilla-stable-branch-drivers',
-  };
+};
 
 # Who can request "cf_blocking_*"?
 our $blocking_trusted_requesters = {
@@ -132,6 +141,11 @@ our $status_trusted_wanters = {
     qr/^cf_status_thunderbird/    => 'thunderbird-drivers',
     qr/^cf_status_seamonkey/      => 'seamonkey-council',
     '_default'                    => 'mozilla-stable-branch-drivers',
+};
+
+# Who can set other custom flags (use full field names only, not regex's)
+our $other_setters = {
+    'cf_colo_site'  => ['infra'],
 };
 
 # Groups in which you can always file a bug, whoever you are.
