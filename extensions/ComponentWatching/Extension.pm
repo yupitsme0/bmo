@@ -29,7 +29,7 @@ use Bugzilla::Group;
 use Bugzilla::User;
 use Bugzilla::User::Setting;
 
-our $VERSION = '1.0';
+our $VERSION = '1.1';
 
 use constant REL_COMPONENT_WATCHER => 15;
 
@@ -191,25 +191,14 @@ sub bugmail_recipients {
     $sth->execute($oldProductId, $newProductId, $oldComponentId, $newComponentId);
     while (my ($uid) = $sth->fetchrow_array) {
         if (!exists $recipients->{$uid}) {
-            $recipients->{$uid}->{+REL_COMPONENT_WATCHER} = 1;
+            $recipients->{$uid}->{+REL_COMPONENT_WATCHER} = Bugzilla::BugMail::BIT_DIRECT();
         }
-    }
-}
-
-sub user_wants_mail {
-    my ($self, $args) = @_;
-    my $relationship = $args->{'relationship'};
-    my $rs_wants_mail = $args->{'wants_mail'};
-
-    if (+$relationship == REL_COMPONENT_WATCHER) {
-        $$rs_wants_mail = 1;
     }
 }
 
 sub bugmail_relationships {
     my ($self, $args) = @_;
     my $relationships = $args->{relationships};
-
     $relationships->{+REL_COMPONENT_WATCHER} = 'Component-Watcher';
 }
 

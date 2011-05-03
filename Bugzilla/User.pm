@@ -1625,16 +1625,7 @@ sub wants_mail {
     # Skip DB query if relationship is explicit
     return 1 if $relationship == REL_GLOBAL_WATCHER;
 
-    my $wants_mail = 0;
-    Bugzilla::Hook::process('user_wants_mail', {
-        user => $self,
-        events => $events,
-        relationship => $relationship,
-        wants_mail => \$wants_mail,
-    });
-    return 1 if $wants_mail;
-
-    $wants_mail = grep { $self->mail_settings->{$relationship}{$_} } @$events;
+    my $wants_mail = grep { $self->mail_settings->{$relationship}{$_} } @$events;
     return $wants_mail ? 1 : 0;
 }
 
