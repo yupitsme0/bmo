@@ -61,6 +61,14 @@
 
 </style>
 
+<!--[if IE]>
+<style>
+#reps-form .missing {
+  background: #FFC1C1;
+}
+</style>
+<![endif]-->
+
 [% USE Bugzilla %]
 [% mandatory = '<span class="mandatory">*</span>' %]
 
@@ -176,9 +184,9 @@ function submitForm() {
   <th>Sex:[% mandatory %]</th>
   <td>
     <select id="sex">
-      <option>Male</option>
-      <option>Female</option>
-      <option>Other</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
     </select>
   </td>
 </tr>
@@ -227,14 +235,14 @@ function submitForm() {
   <th colspan="2">What motivates you most about joining Mozilla Reps?[% mandatory %]</th>
 </tr>
 <tr class="odd">
-  <td colspan="2"><textarea id="motivation"></textarea></td>
+  <td colspan="2"><textarea id="motivation" rows="4"></textarea></td>
 </tr>
 
 <tr class="even">
   <th colspan="2">Comments:</th>
 </tr>
 <tr class="even">
-  <td colspan="2"><textarea id="comments"></textarea></td>
+  <td colspan="2"><textarea id="comments" rows="4"></textarea></td>
 </tr>
 
 <tr class="odd">
