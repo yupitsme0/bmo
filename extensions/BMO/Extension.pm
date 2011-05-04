@@ -528,7 +528,6 @@ sub _user_activity {
         if ($input->{'who'} eq '') {
             ThrowUserError('user_activity_missing_username');
         }
-        $input->{'who'} =~ s/[\s;]+/,/g;
         Bugzilla::User::match_field({ 'who' => {'type' => 'multi'} });
 
         ThrowUserError('user_activity_missing_from_date') unless $from;
