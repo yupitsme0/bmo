@@ -107,32 +107,32 @@
 </p>
 <![endif]-->
 
+<div id="helpful-links">
+  <a id="allReviewsLink" href="[% urlbase FILTER none %][% Param('splinter_base') FILTER js %]">
+    [reviews]</a>
+  <a id='helpLink' target='splinterHelp' 
+     href="[% urlbase FILTER none %]page.cgi?id=splinter/help.html">
+    [help]</a>
+</div>
+
 <div id="bugInfo" style="display: none;">
-  <b>Bug <span id="bugId"></span>:</b>
+  <b>Bug <a id="bugLink"><span id="bugId"></span></a>:</b>
   <span id="bugShortDesc"></span> -
   <span id="bugReporter"></span> -
   <span id="bugCreationDate"></span>
-  <span id="helpful-links">
-    <a id="originalBugLink">Back to Bug</a> |
-    <a id="allReviewsLink">Your Reviews</a> |
-    <a id='helpLink' target='splinterHelp' 
-       href="[% urlbase FILTER none %]page.cgi?id=splinter/help.html">
-    Help</a>
-  </span>
 </div>
 
 <div id="attachInfo" style="display:none;">
-  <b>Attachment <span id="attachId"></span>:</b>
+  <b>Attachment <a id="attachLink"><span id="attachId"></span></a>:</b>
   <span id="attachDesc"></span> -
   <span id="attachCreator"></span> -
   <span id="attachDate"></span>
-  (<a href="[% urlbase FILTER none %]attachment.cgi?id=[% attach_id FILTER url_quote %]"
-      target="_blank">View</a>
-   [% IF feature_enabled('patch_viewer') %]
-     | <a href="attachment.cgi?id=[% attach_id FILTER url_quote %]&amp;action=diff"
-          target="_blank">Diff</a>
-   [% END %]
-  )
+  [% IF feature_enabled('patch_viewer') %]
+    <a href="[% urlbase FILTER none %]attachment.cgi?id=[% attach_id FILTER url_quote %]&amp;action=diff"
+       target="_blank">[diff]</a>
+  [% END %]
+  <a href="[% urlbase FILTER none %]attachment.cgi?id=[% attach_id FILTER url_quote %]&amp;action=edit"
+     target="_blank">[details]</a>
 </div>
 
 <div id="error" style="display: none;"> </div>
