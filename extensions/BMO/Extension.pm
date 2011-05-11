@@ -137,6 +137,9 @@ sub page_before_template {
             return `cd /data/www/bugzilla.mozilla.org; /usr/bin/bzr log -n0 -rlast:10..`;
         };
     }
+    elsif ($page eq 'fields.html') {
+        $vars->{'fields_page'} = 1;
+    }
 }
 
 sub _get_field_values_sort_key {

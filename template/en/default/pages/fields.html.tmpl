@@ -58,38 +58,46 @@
     <td>
       <dl>
         <dt>
-          [% display_value("bug_status", "UNCONFIRMED") FILTER html %]
+          <b>[% display_value("bug_status", "UNCONFIRMED") FILTER html %]</b>
         </dt>
         <dd>
           This [% terms.bug %] has recently been added to the database. 
-          Nobody has confirmed that this [% terms.bug %] is valid. Users
+          Nobody has validated that this [% terms.bug %] is true. Users
           who have the "canconfirm" permission set may confirm
-          this [% terms.bug %], changing its state to 
-          <b>[% display_value("bug_status", "CONFIRMED") FILTER html %]</b>. 
-          Or, it may be directly resolved and marked
+          this [% terms.bug %], changing its state to [% display_value("bug_status", "NEW") FILTER html %]. Or, it may be
+          directly resolved and marked [% display_value("bug_status", "RESOLVED") FILTER html %].
+        </dd>
+
+        <dt>
+          <b>[% display_value("bug_status", "NEW") FILTER html %]</b>
+        </dt>
+        <dd>
+          This [% terms.bug %] has recently been added to the assignee's
+          list of [% terms.bugs %] and must be processed. [% terms.Bugs %] in
+          this state may be accepted, and become <b>[% display_value("bug_status", "ASSIGNED") FILTER html %]</b>, passed
+          on to someone else, and remain <b>[% display_value("bug_status", "NEW") FILTER html %]</b>, or resolved and marked
           <b>[% display_value("bug_status", "RESOLVED") FILTER html %]</b>.
         </dd>
 
         <dt>
-          [% display_value("bug_status", "CONFIRMED") FILTER html %]
+          <b>[% display_value("bug_status", "ASSIGNED") FILTER html %]</b>
         </dt>
         <dd>
-          This [% terms.bug %] is valid and has recently been filed.
-          [%+ terms.Bugs %] in this state become 
-          <b>[% display_value("bug_status", "IN_PROGRESS") FILTER html %]</b>
-          when somebody is working on them, or become resolved and marked
-          <b>[% display_value("bug_status", "RESOLVED") FILTER html %]</b>.
+          This [% terms.bug %] is not yet resolved, but is assigned to the 
+          proper person. From here [% terms.bugs %] can be given to another 
+          person and become <b>[% display_value("bug_status", "NEW") FILTER html %]</b>, or
+          resolved and become <b>[% display_value("bug_status", "RESOLVED") FILTER html %]</b>.
         </dd>
 
         <dt>
-          [% display_value("bug_status", "IN_PROGRESS") FILTER html %]
+          <b>[% display_value("bug_status", "REOPENED") FILTER html %]</b>
         </dt>
         <dd>
-          This [% terms.bug %] is not yet resolved, but is assigned to the
-          proper person who is working on the [% terms.bug %]. From here,
-          [%+ terms.bugs %] can be given to another person and become
-          <b>[% display_value("bug_status", "CONFIRMED") FILTER html %]</b>, or
-          resolved and become 
+          This [% terms.bug %] was once resolved, but the resolution was 
+          deemed incorrect. For example, a <b>[% display_value("resolution", "WORKSFORME") FILTER html %]</b> [% terms.bug %] is
+          <b>[% display_value("bug_status", "REOPENED") FILTER html %]</b> when more information shows up and
+          the [% terms.bug %] is now reproducible. From here [% terms.bugs %] are
+          either marked <b>[% display_value("bug_status", "ASSIGNED") FILTER html %]</b> or
           <b>[% display_value("bug_status", "RESOLVED") FILTER html %]</b>.
         </dd>
       </dl>
@@ -109,22 +117,23 @@
     <td>
       <dl>
         <dt>
-          [% display_value("bug_status", "RESOLVED") FILTER html %]
+          <b>[% display_value("bug_status", "RESOLVED") FILTER html %]</b>
         </dt>
         <dd>
-          A resolution has been performed, and it is awaiting verification by
-          QA. From here [% terms.bugs %] are either reopened and given some
-          open status, or are verified by QA and marked
+          A resolution has been taken, and it is awaiting verification by
+          QA. From here [% terms.bugs %] are either re-opened and become 
+          <b>[% display_value("bug_status", "REOPENED") FILTER html %]</b>, or are marked
           <b>[% display_value("bug_status", "VERIFIED") FILTER html %]</b>.
         </dd>
 
         <dt>
-          [% display_value("bug_status", "VERIFIED") FILTER html %]
+          <b>[% display_value("bug_status", "VERIFIED") FILTER html %]</b>
         </dt>
         <dd>
-          QA has looked at the [% terms.bug %] and the resolution and
-          agrees that the appropriate resolution has been taken. This is
-          the final status for [% terms.bugs %].
+          QA has looked at the [% terms.bug %] and the resolution and 
+          agrees that the appropriate resolution has been taken.
+          Any zombie [% terms.bugs %] who choose to walk the earth again must 
+          do so by becoming <b>[% display_value("bug_status", "REOPENED") FILTER html %]</b>.
         </dd>
       </dl>
     </td>
@@ -132,7 +141,7 @@
     <td>
       <dl>
         <dt>
-          [% display_value("resolution", "FIXED") FILTER html %]
+          <b>[% display_value("resolution", "FIXED") FILTER html %]</b>
         </dt>
         <dd>
           A fix for this [% terms.bug %] is checked into the tree and 
@@ -140,14 +149,14 @@
         </dd>
 
         <dt>
-          [% display_value("resolution", "INVALID") FILTER html %]
+          <b>[% display_value("resolution", "INVALID") FILTER html %]</b>
         </dt>
         <dd>
           The problem described is not [% terms.abug %].
         </dd>
 
         <dt>
-          [% display_value("resolution", "WONTFIX") FILTER html %]
+          <b>[% display_value("resolution", "WONTFIX") FILTER html %]</b>
         </dt>
         <dd>
           The problem described is [% terms.abug %] which will never be 
@@ -155,25 +164,37 @@
         </dd>
 
         <dt>
-         [% display_value("resolution", "DUPLICATE") FILTER html %]
+         <b>[% display_value("resolution", "DUPLICATE") FILTER html %]</b>
         </dt>
         <dd>
           The problem is a duplicate of an existing [% terms.bug %].
-          When [% terms.abug %] is marked as a
-          <b>[% display_value("resolution", "DUPLICATE") FILTER html %]</b>,
-          you will see which [% terms.bug %] it is a duplicate of,
-          next to the resolution.
+          Marking [% terms.abug %] duplicate requires the [% terms.bug %]#
+          of the duplicating [% terms.bug %] and will at least put
+          that [% terms.bug %] number in the description field.
         </dd>
 
         <dt>
-          [% display_value("resolution", "WORKSFORME") FILTER html %]
+          <b>[% display_value("resolution", "WORKSFORME") FILTER html %]</b>
         </dt>
-        <dd>Either:<br>
-          a) all attempts at reproducing this [% terms.bug %] were futile, 
+        <dd>
+          All attempts at reproducing this [% terms.bug %] were futile, 
           and reading the code produces no clues as to why the described
-          behavior would occur;<br>or<br>
-          b) the [% terms.bug %] was present once, but is now not reproducible (and so was
-          probably fixed in another [% terms.bug %]).
+          behavior would occur. If more information appears later,
+          the [% terms.bug %] can be reopened.
+        </dd>
+
+        <dt>
+          <b>[% display_value("resolution", "INCOMPLETE") FILTER html %]</b>
+        </dt>
+        <dd>
+          The problem is vaguely described with no steps to reproduce,
+          or is a support request. The reporter should be directed to the
+          product's support page for help diagnosing the issue. If there
+          are only a few comments in the bug, it may be reopened only if
+          the original reporter provides more info, or confirms someone
+          else's steps to reproduce. If the bug is long, when enough info
+          is provided a new bug should be filed and the original bug
+          marked as a duplicate of it.
         </dd>
 
         <!-- Upstreaming: https://bugzilla.mozilla.org/show_bug.cgi?id=616453 -->
