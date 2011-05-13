@@ -96,9 +96,6 @@
     [% Hook.process("start") %]
     <title>[% title %]</title>
 
-    [%# force IE9 into IE8 mode to work around YUI eventing issue %]
-    <meta http-equiv="X-UA-Compatible" content="IE=8">
-
 [%# Migration note: contents of the old Param 'headerhtml' would go here %]
 
     [% PROCESS "global/site-navigation.html.tmpl" %]

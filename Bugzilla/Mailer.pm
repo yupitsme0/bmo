@@ -169,8 +169,6 @@ sub MessageToMTA {
 
     Bugzilla::Hook::process('mailer_before_send', 
                             { email => $email, mailer_args => \@args });
-    # Allow hooks to reject email by removing the recipient
-    return if $email->header('to') eq '';
 
     if ($method eq "Test") {
         my $filename = bz_locations()->{'datadir'} . '/mailer.testfile';
