@@ -589,17 +589,17 @@ sub _user_activity {
         }
 
         my @params;
-        push @params, @who;
-        push @params, ($from_dt->ymd(), $to_dt->ymd());
-        push @params, @who;
-        push @params, ($from_dt->ymd(), $to_dt->ymd());
+        for (1..3) {
+            push @params, @who;
+            push @params, ($from_dt->ymd(), $to_dt->ymd());
+        }
 
         my $query = "
         SELECT 
                    fielddefs.name,
                    bugs_activity.bug_id,
                    bugs_activity.attach_id,
-                   ".$dbh->sql_date_format('bugs_activity.bug_when', '%Y.%m.%d %H:%i:%s').",
+                   ".$dbh->sql_date_format('bugs_activity.bug_when', '%Y.%m.%d %H:%i:%s')." AS ts,
                    bugs_activity.removed,
                    bugs_activity.added,
                    profiles.login_name,
@@ -618,10 +618,28 @@ sub _user_activity {
         UNION ALL
 
         SELECT 
+                   'bug_id' AS name,
+                   bugs.bug_id,
+                   NULL AS attach_id,
+                   ".$dbh->sql_date_format('bugs.creation_ts', '%Y.%m.%d %H:%i:%s')." AS ts,
+                   '(new bug)' AS removed,
+                   bugs.short_desc AS added,
+                   profiles.login_name,
+                   NULL AS comment_id,
+                   bugs.creation_ts AS bug_when
+              FROM bugs
+        INNER JOIN profiles
+                ON profiles.userid = bugs.reporter
+             WHERE profiles.login_name IN ($who_bits)
+                   AND bugs.creation_ts > ? AND bugs.creation_ts < ?
+
+        UNION ALL
+
+        SELECT 
                    'attachments.filename' AS name,
                    attachments.bug_id,
                    attachments.attach_id,
-                   ".$dbh->sql_date_format('attachments.creation_ts', '%Y.%m.%d %H:%i:%s').",
+                   ".$dbh->sql_date_format('attachments.creation_ts', '%Y.%m.%d %H:%i:%s')." AS ts,
                    '' AS removed,
                    attachments.description AS added,
                    profiles.login_name,

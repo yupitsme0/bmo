@@ -24,6 +24,16 @@
   javascript_urls = [ "js/util.js", "js/field.js" ]
 %]
 
+<style>
+#report tr:hover {
+  background: #dddddd;
+}
+
+#report-header {
+  background: #dddddd;
+}
+</style>
+
 [% PROCESS "global/field-descs.none.tmpl" %]
 [% PROCESS bug/time.html.tmpl %]
 
@@ -96,8 +106,8 @@
 
 [% IF operations.size > 0 %]
   <br>
-  <table border="1" cellpadding="4" cellspacing="0">
-    <tr>
+  <table border="1" cellpadding="4" cellspacing="0" id="report">
+    <tr id="report-header">
       <th>Who</th>
       <th>When</th>
       <th>Bug</th>
