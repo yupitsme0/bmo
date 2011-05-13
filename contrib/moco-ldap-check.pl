@@ -14,7 +14,7 @@
 # The Original Code is the Bugzilla Bug Tracking System.
 #
 # The Initial Developer of the Original Code is the Mozilla
-# Corporation. Portions created by Mozilla are
+# Foundation. Portions created by Mozilla are
 # Copyright (C) 2011 Mozilla Foundation. All Rights Reserved.
 #
 # Contributor(s): Byron Jones <glob@mozilla.com>
