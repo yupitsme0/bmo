@@ -55,6 +55,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "NSPR"                => [],
         "support.mozilla.com" => [],
         "Toolkit"             => [],
+        "Tech Evangelism"     => [],
     },
     qr/^cf_blocking_thunderbird|cf_status_thunderbird/ => {
         "support.mozillamessaging.com"  => [],
