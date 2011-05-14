@@ -1615,14 +1615,18 @@ sub _check_groups {
 
         # First check all the groups they chose to set.
         foreach my $name (@$group_names) {
-            my $group = Bugzilla::Group->check(
-                { name => $name, product => $product,
-                  _error => 'group_restriction_not_allowed' });
+            # XXX temp rollback, see bug 656966
+            my $group = new Bugzilla::Group({ name => $name }) or next;
+            next if !$product->group_is_settable($group);
 
-            if (!$product->group_is_settable($group)) {
-                ThrowUserError('group_restriction_not_allowed',
-                               { name => $name, product => $product });
-            }
+            #my $group = Bugzilla::Group->check(
+            #    { name => $name, product => $product,
+            #      _error => 'group_restriction_not_allowed' });
+
+            #if (!$product->group_is_settable($group)) {
+            #    ThrowUserError('group_restriction_not_allowed',
+            #                   { name => $name, product => $product });
+            #}
             $add_groups{$group->id} = $group;
         }
     }
