@@ -432,7 +432,11 @@ sub bug_check_groups {
     my ($self, $args) = @_;
     my $group_names = $args->{'group_names'};
     my $add_groups = $args->{'add_groups'};
-    
+   
+    $group_names = ref $group_names 
+                   ? $group_names 
+                   : [ map { trim($_) } split(',', $group_names) ];
+
     foreach my $name (@$group_names) {
         if ($always_fileable_group{$name}) {
             my $group = new Bugzilla::Group({ name => $name }) or next;

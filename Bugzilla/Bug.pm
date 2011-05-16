@@ -1600,6 +1600,14 @@ sub _check_groups {
                                      : $params->{product};
     my %add_groups;
 
+    # BMO: Allow extension to add groups before the
+    # real checks are done.
+    Bugzilla::Hook::process('bug_check_groups', {
+        product     => $product,
+        group_names => $group_names, 
+        add_groups  => \%add_groups 
+    });
+
     # In email or WebServices, when the "groups" item actually 
     # isn't specified, then just add the default groups.
     if (!defined $group_names) {
@@ -1615,31 +1623,26 @@ sub _check_groups {
 
         # First check all the groups they chose to set.
         foreach my $name (@$group_names) {
-            # XXX temp rollback, see bug 656966
-            my $group = new Bugzilla::Group({ name => $name }) or next;
-            next if !$product->group_is_settable($group);
+            my $group = Bugzilla::Group->check(
+                { name => $name, product => $product,
+                  _error => 'group_restriction_not_allowed' });
 
-            #my $group = Bugzilla::Group->check(
-            #    { name => $name, product => $product,
-            #      _error => 'group_restriction_not_allowed' });
-
-            #if (!$product->group_is_settable($group)) {
-            #    ThrowUserError('group_restriction_not_allowed',
-            #                   { name => $name, product => $product });
-            #}
+            # BMO: Do not check group_is_settable if the group is 
+            # already added, such as from the extension hook. group_is_settable
+            # will reject any group the user is not currently in.
+            if (!$add_groups{$group->id} 
+                && !$product->group_is_settable($group)) 
+            {
+                ThrowUserError('group_restriction_not_allowed',
+                               { name => $name, product => $product });
+            }
             $add_groups{$group->id} = $group;
         }
     }
 
     # Now enforce mandatory groups.
     $add_groups{$_->id} = $_ foreach @{ $product->groups_mandatory };
-
-    Bugzilla::Hook::process('bug_check_groups', {
-        product => $product,
-        group_names => $group_names, 
-        add_groups => \%add_groups 
-    });
-    
+   
     my @add_groups = values %add_groups;
     return \@add_groups;
 }
