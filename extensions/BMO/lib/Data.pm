@@ -64,7 +64,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "Mozilla Messaging"             => [],
         "Websites"                      => ["www.mozillamessaging.com"],
     },
-    qr/^cf_blocking_seamonkey|cf_status_seamonkey/ => {
+    qr/^(cf_(blocking|tracking)_seamonkey|cf_status_seamonkey)/ => {
         "Composer"              => [],
         "MailNews Core"         => [],
         "Mozilla Localizations" => [],
@@ -126,6 +126,7 @@ our $blocking_trusted_setters = {
     'cf_blocking_20'              => 'mozilla-next-drivers',
     qr/^cf_tracking_firefox/      => 'mozilla-next-drivers',
     qr/^cf_blocking_thunderbird/  => 'thunderbird-drivers',
+    qr/^cf_tracking_seamonkey/    => 'seamonkey-council',
     qr/^cf_blocking_seamonkey/    => 'seamonkey-council',
     '_default'                    => 'mozilla-stable-branch-drivers',
 };
