@@ -118,7 +118,7 @@ function mandatory(ids) {
 
 function submitForm() {
   if (!mandatory([ 'first_name', 'last_name', 'age', 'sex', 'city', 'country',
-                   'email', 'languages', 'learn', 'motivation', 'privacy' ])
+                   'languages', 'learn', 'motivation', 'privacy' ])
   ) {
     alert('Please enter all the required fields.');
     return false;
@@ -196,55 +196,50 @@ function submitForm() {
 </tr>
 
 <tr class="even">
-  <th>Email:[% mandatory %]</th>
-  <td><input id="email" name="email" size="40" placeholder="john.doe@example.com"></td>
-</tr>
-
-<tr class="odd">
   <th>IM (specify service):</th>
   <td><input id="im" name="im" size="40"></td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <th>Already Mozilla contributor?</th>
   <td><input id="existing" name="existing" type="checkbox" value="1" onclick="onExistingClick()"></td>
 </tr>
 
-<tr class="even hidden" id="existingProjectsTR">
+<tr class="odd hidden" id="existingProjectsTR">
   <th class="subTH">Mozilla projects involved in:</th>
   <td><input id="existingProjects" name="existingProjects" size="40" placeholder="Add-ons, l10n, SUMO, QA, ..."></td>
 </tr>
 
-<tr class="even hidden" id="existingActiveTR">
+<tr class="odd hidden" id="existingActiveTR">
   <th class="subTH">Active since:</th>
   <td><input id="existingActive" name="existingActive" size="40" placeholder="Year"></td>
 </tr>
 
-<tr class="odd">
+<tr class="even">
   <th>Languages Spoken:[% mandatory %]</th>
   <td><input id="languages" name="languages" size="40"></td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <th>How did you learn about Mozilla Reps?[% mandatory %]</th>
   <td><input id="learn" name="learn" size="40"></td>
 </tr>
 
-<tr class="odd">
+<tr class="even">
   <th colspan="2">What motivates you most about joining Mozilla Reps?[% mandatory %]</th>
 </tr>
-<tr class="odd">
+<tr class="even">
   <td colspan="2"><textarea id="motivation" name="motivation" rows="4"></textarea></td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <th colspan="2">Comments:</th>
 </tr>
-<tr class="even">
+<tr class="odd">
   <td colspan="2"><textarea id="comments" name="comments" rows="4"></textarea></td>
 </tr>
 
-<tr class="odd">
+<tr class="even">
   <th>
     I have read the
     <a href="http://www.mozilla.com/en-US/privacy-policy" target="_blank">Mozilla Privacy Policy</a>:[% mandatory %]
@@ -252,7 +247,7 @@ function submitForm() {
   <td><input id="privacy" type="checkbox"></td>
 </tr>
 
-<tr>
+<tr class="odd">
   <td>&nbsp;</td>
   <td align="right"><input type="submit" value="Submit" onclick="return submitForm()"></td>
 </tr>
