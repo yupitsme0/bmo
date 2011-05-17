@@ -78,7 +78,7 @@ dupes.setLabels(
 
 [% BLOCK page_title %]
   <div id="page_title">
-    <h2>Enter A Bug - [% title FILTER html %]</h2>
+    <h2>Enter A Bug</h2>
     <h3>Step [% step_number FILTER html %] of 3</h3>
   </div>
 [% END %]
@@ -92,7 +92,6 @@ dupes.setLabels(
 
 [% INCLUDE page_title
    step_number = "1"
-   title = "Select a Product"
 %]
 
 [% INCLUDE exits
@@ -163,7 +162,6 @@ dupes.setLabels(
 
 [% INCLUDE page_title
    step_number = "1"
-   title = "Select a Product"
 %]
 
 [% INCLUDE exits
@@ -208,24 +206,27 @@ dupes.setLabels(
 [% BLOCK exits %]
 <table class="exits">
 [% INCLUDE exit_block
-   name="Technical Support"
+   name="I need technical support"
    icon="support.png"
    href="http://www.mozilla.org/support/"
    desc="For technical support or help getting your site to work with Mozilla."
 %]
 [% INCLUDE exit_block
-   name="Feedback"
-   icon="input.png"
-   href="http://input.mozilla.org/feedback/"
-   desc="For reporting a broken web page, or providing quick feedback about Firefox."
-%]
-[% INCLUDE exit_block
-   name="Ideas"
+   name="I have an idea or suggestion"
    icon="idea.png"
    href="http://input.mozilla.org/idea/"
    desc="For offering us ideas on how to enhance Firefox."
 %]
+[% INCLUDE exit_block
+   name="I have other feedback"
+   icon="input.png"
+   href="http://input.mozilla.org/feedback/"
+   desc="For reporting a broken web page, or providing quick feedback about Firefox."
+%]
 </table>
+<p>
+None of the above; my bug is in:
+</p>
 [% END %]
 
 [% BLOCK exit_block %]
@@ -255,7 +256,6 @@ dupes.setLabels(
 
 [% INCLUDE page_title
    step_number = "2"
-   title = "Find Existing Bugs"
 %]
 
 <table border="0" cellpadding="5" cellspacing="0" id="product_support" class="hidden">
@@ -291,10 +291,7 @@ dupes.setLabels(
 
 [% INCLUDE page_title
    step_number = "3"
-   title = "Create Bug"
 %]
-
-[% mandatory_mark = '<span class="mandatory_mark" title="Required">*</span>' %]
 
 <form method="post" action="post_bug.cgi" enctype="multipart/form-data" onsubmit="return bugForm.validate()">
 <input type="hidden" name="token" value="[% token FILTER html %]">
@@ -306,21 +303,23 @@ dupes.setLabels(
 <input type="hidden" name="op_sys" value="Other">
 <input type="hidden" name="version" id="version" value="">
 <input type="hidden" name="comment" id="comment" value="">
+<input type="hidden" name="format" value="guided">
+<input type="hidden" name="user_agent" id="user_agent" value="">
+<input type="hidden" name="build_id" id="build_id" value="">
 
-
-<p>
-Please fill out this form clearly, precisely and in as much detail as you can manage.<br>
-Please report only a single problem at a time.<br>
-<a href="https://developer.mozilla.org/en/Bug_writing_guidelines" target="_blank">These guidelines</a>
-explain how to write effective bug reports.
-</p>
+<ul>
+<li>Please fill out this form clearly, precisely and in as much detail as you can manage.</li>
+<li>Please report only a single problem at a time.</li>
+<li><a href="https://developer.mozilla.org/en/Bug_writing_guidelines" target="_blank">These guidelines</a>
+explain how to write effective bug reports.</li>
+</ul>
 
 <table id="bugForm" cellspacing="0">
 
 <tr class="odd">
-  <td class="label">Summary:[% mandatory_mark %]</td>
+  <td class="label">Summary:</td>
   <td width="100%" colspan="2">
-    <input name="short_desc" id="short_desc" class="textInput mandatory" spellcheck="true">
+    <input name="short_desc" id="short_desc" class="textInput" spellcheck="true">
   </td>
   <td valign="top">
     [% PROCESS help id="summary_help" %]
@@ -337,7 +336,7 @@ explain how to write effective bug reports.
   <td class="label">Product:</td>
   <td id="productTD"><span id="product_label"></span></td>
   <td id="versionTD" class="hidden">
-    <span class="label">Version:[% mandatory_mark %]
+    <span class="label">Version:
     <select id="version_select" onchange="bugForm.onVersionChange(this.value)">
     </select>
   </td>
@@ -349,12 +348,11 @@ explain how to write effective bug reports.
 </tr>
 
 <tr class="odd">
-  <td class="label">Component:[% mandatory_mark %]</td>
-  <td valign="top">
-    <select id="component_select" size="10" onchange="bugForm.onComponentChange(this.value)" class="mandatory">
+  <td class="label">Component:</td>
+  <td valign="top" colspan="2">
+    <select id="component_select" onchange="bugForm.onComponentChange(this.value)" class="mandatory">
     </select>
-  </td>
-  <td width="100%" id="component_description" valign="top">
+    <div id="component_description"></div>
   </td>
   <td valign="top">
     [% PROCESS help id="component_help" %]
@@ -367,7 +365,7 @@ explain how to write effective bug reports.
 </tr>
 
 <tr class="even">
-  <td class="label" colspan="3">What did you do?[% mandatory_mark %]</td>
+  <td class="label" colspan="3">What did you do?</td>
   <td valign="top">
   [% PROCESS help id="steps_help" %]
   <div id="steps_help" class="hidden help">
@@ -380,12 +378,12 @@ explain how to write effective bug reports.
   </td>
 </tr>
 <tr class="even">
-  <td colspan="3"><textarea id="bug_steps" rows="5"></textarea></td>
+  <td colspan="3"><textarea id="bug_steps" name="bug_steps" rows="5"></textarea></td>
   <td>&nbsp;</td>
 </tr>
 
 <tr class="odd">
-  <td class="label" colspan="3">What happened?[% mandatory_mark %]</td>
+  <td class="label" colspan="3">What happened?</td>
   <td valign="top">
   [% PROCESS help id="actual_help" %]
   <div id="actual_help" class="hidden help">
@@ -393,12 +391,12 @@ explain how to write effective bug reports.
   </div>
 </tr>
 <tr class="odd">
-  <td colspan="3"><textarea id="actual" rows="5"></textarea></td>
+  <td colspan="3"><textarea id="actual" name="actual" rows="5"></textarea></td>
   <td>&nbsp;</td>
 </tr>
 
 <tr class="even">
-  <td class="label" colspan="3">What should have happened?[% mandatory_mark %]</td>
+  <td class="label" colspan="3">What should have happened?</td>
   <td valign="top">
   [% PROCESS help id="expected_help" %]
   <div id="expected_help" class="hidden help">
@@ -406,7 +404,7 @@ explain how to write effective bug reports.
   </div>
 </tr>
 <tr class="even">
-  <td colspan="3"><textarea id="expected" rows="5"></textarea></td>
+  <td colspan="3"><textarea id="expected" name="expected" rows="5"></textarea></td>
   <td>&nbsp;</td>
 </tr>
 
@@ -434,9 +432,17 @@ explain how to write effective bug reports.
 <tr class="even">
   <td class="label">Security:</td>
   <td colspan="2">
-    <input type="checkbox" name="groups" value="core-security" id="groups">
-    <label for="groups">Many users could be harmed by this security problem:
-    it should be kept hidden from the public until it is resolved.</label>
+    <table border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <td>
+        <input type="checkbox" name="groups" value="core-security" id="groups">
+      </td>
+      <td>
+        <label for="groups">Many users could be harmed by this security problem:
+        it should be kept hidden from the public until it is resolved.</label>
+      </td>
+    </tr>
+    </table>
   </td>
   <td>&nbsp;</td>
 </tr>

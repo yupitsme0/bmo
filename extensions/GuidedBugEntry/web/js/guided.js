@@ -106,7 +106,7 @@ var product = {
     result.push(name);
 
     if (products[name] && products[name].related) {
-      for (var i in products[name].related) {
+      for (var i = 0, n = products[name].related.length; i < n; i++) {
         result.push(products[name].related[i]);
       }
     }
@@ -135,7 +135,7 @@ var product = {
     }
 
     // grab the product information
-    this.details = true;
+    this.details = false;
     YAHOO.util.Connect.setDefaultPostHeader('text/plain; charset=UTF-8');
     YAHOO.util.Connect.asyncRequest(
       'POST',
@@ -244,7 +244,16 @@ var dupes = {
         return oFullResponse;
       };
 
-    this._dataTable = new YAHOO.widget.DataTable('dupes_list', this._dataTableColumns, dataSource, { initialLoad: false });
+    this._dataTable = new YAHOO.widget.DataTable(
+      'dupes_list', 
+      this._dataTableColumns, 
+      dataSource, 
+      { 
+        initialLoad: false,
+        MSG_EMPTY: 'No similar issues found.',
+        MSG_ERROR: 'An error occurred while searching for similar issues, please try again.'
+      }
+    );
   },
 
   _formatId: function(el, oRecord, oColumn, oData) {
@@ -281,7 +290,7 @@ var dupes = {
   _showProductSupport: function() {
     var elSupport = Dom.get('product_support_' + product.getName().replace(' ', '_').toLowerCase());
     var supportElements = Dom.getElementsByClassName('product_support');
-    for (var i in supportElements) {
+    for (var i = 0, n = supportElements.length; i < n; i++) {
       if (supportElements[i] == elSupport) {
         Dom.removeClass(elSupport, 'hidden');
       } else {
@@ -339,7 +348,8 @@ var dupes = {
       Dom.removeClass(dupes._elList, 'hidden');
 
 	    dupes._dataTable.showTableMessage(
-        "Searching for similar issues...", 
+        'Searching for similar issues...&nbsp;&nbsp;&nbsp;' +
+        '<img src="extensions/GuidedBugEntry/web/images/throbber.gif" width="16" height="11">',
         YAHOO.widget.DataTable.CLASS_LOADING
       );
       var json_object = {
@@ -393,8 +403,12 @@ var dupes = {
 
 var bugForm = {
   _visibleHelpPanel: null,
+  _mandatoryFields: [ 'short_desc', 'version_select' ],
 
-  onInit: function() { },
+  onInit: function() {
+    Dom.get('user_agent').value = navigator.userAgent;
+    Dom.get('build_id').value = navigator.buildID ? navigator.buildID : '';
+  },
 
   onShow: function() {
     // default the summary to the dupes query
@@ -404,18 +418,36 @@ var bugForm = {
     if (Dom.get('component_select').length == 0)
       this.onProductUpdated();
     this.onFileChange();
+    for (var i = 0, n = this._mandatoryFields.length; i < n; i++) {
+      Dom.removeClass(this._mandatoryFields[i], 'missing');
+    }
   },
 
   onProductUpdated: function() {
     var productName = product.getName();
 
-    // build components
-    // if there's a general component in it, make it selected by default
+    // init
     var elComponents = Dom.get('component_select');
     Dom.addClass('component_description', 'hidden');
     elComponents.options.length = 0;
+
+    var elVersions = Dom.get('version_select');
+    elVersions.length = 0;
+
+    // product not loaded yet, bail out
+    if (!product.details) {
+      Dom.addClass('versionTH', 'hidden');
+      Dom.addClass('versionTD', 'hidden');
+      Dom.get('productTD').colSpan = 2;
+      Dom.get('submit').disabled = true;
+      return;
+    }
+    Dom.get('submit').disabled = false;
+
+    // build components
+    // if there's a general component in it, make it selected by default
     var defaultComponent = false;
-    for (i in product.details.components) {
+    for (var i = 0, n = product.details.components.length; i < n; i++) {
       var component = product.details.components[i];
       if (component.is_active == '1') {
         elComponents.options[elComponents.options.length] = new Option(component.name, component.name);
@@ -435,11 +467,9 @@ var bugForm = {
     Dom.get('component_help_describe').href = 'describecomponents.cgi?product=' + escape(productName);
 
     // build versions
-    var elVersions = Dom.get('version_select');
-    elVersions.length = 0;
     var defaultVersion = '';
     var currentVersion = Dom.get('version').value;
-    for (i in product.details.versions) {
+    for (var i = 0, n = product.details.versions.length; i < n; i++) {
       var version = product.details.versions[i];
       if (version.is_active == '1') {
         elVersions.options[elVersions.options.length] = new Option(version.name, version.name);
@@ -448,61 +478,54 @@ var bugForm = {
       }
     }
 
-    if (elVersions.length == 0) {
-      // product not loaded yet, hide the version select
-      Dom.addClass('versionTH', 'hidden');
-      Dom.addClass('versionTD', 'hidden');
-      Dom.get('productTD').colSpan = 2;
-
-    } else {
-      if (!defaultVersion) {
-        // try to detect version on a per-product basis
-        if (products[productName] && products[productName].version) {
-          var detectedVersion = products[productName].version();
-          for (i in elVersions.options) {
-            if (elVersions.options[i].value == detectedVersion) {
-              defaultVersion = detectedVersion;
-              break;
-            }
+    if (!defaultVersion) {
+      // try to detect version on a per-product basis
+      if (products[productName] && products[productName].version) {
+        var detectedVersion = products[productName].version();
+        var options = elVersions.options;
+        for (var i = 0, n = options.length; i < n; i++) {
+          if (options[i].value == detectedVersion) {
+            defaultVersion = detectedVersion;
+            break;
           }
         }
       }
-      if (!defaultVersion) {
-        // load last selected version
-        defaultVersion = YAHOO.util.Cookie.get('VERSION-' + productName);
-      }
-
-      if (elVersions.length > 1) {
-        // more than one version, show select
-        Dom.get('productTD').colSpan = 1;
-        Dom.removeClass('versionTH', 'hidden');
-        Dom.removeClass('versionTD', 'hidden');
-
-      } else {
-        // if there's only one version, we don't need to ask the user
-        Dom.addClass('versionTH', 'hidden');
-        Dom.addClass('versionTD', 'hidden');
-        Dom.get('productTD').colSpan = 2;
-        defaultVersion = elVersions.options[0].value;
-      }
-
-      if (defaultVersion) {
-        elVersions.value = defaultVersion;
-
-      } else {
-        // no default version, select an empty value to force a decision
-        var opt = new Option('', '');
-        try {
-          // standards
-          elVersions.add(opt, elVersions.options[0]);
-        } catch(ex) {
-          // ie only
-          elVersions.add(opt, 0);
-        }
-        elVersions.value = '';
-      }
-      bugForm.onVersionChange(elVersions.value);
     }
+    if (!defaultVersion) {
+      // load last selected version
+      defaultVersion = YAHOO.util.Cookie.get('VERSION-' + productName);
+    }
+
+    if (elVersions.length > 1) {
+      // more than one version, show select
+      Dom.get('productTD').colSpan = 1;
+      Dom.removeClass('versionTH', 'hidden');
+      Dom.removeClass('versionTD', 'hidden');
+
+    } else {
+      // if there's only one version, we don't need to ask the user
+      Dom.addClass('versionTH', 'hidden');
+      Dom.addClass('versionTD', 'hidden');
+      Dom.get('productTD').colSpan = 2;
+      defaultVersion = elVersions.options[0].value;
+    }
+
+    if (defaultVersion) {
+      elVersions.value = defaultVersion;
+
+    } else {
+      // no default version, select an empty value to force a decision
+      var opt = new Option('', '');
+      try {
+        // standards
+        elVersions.add(opt, elVersions.options[0]);
+      } catch(ex) {
+        // ie only
+        elVersions.add(opt, 0);
+      }
+      elVersions.value = '';
+    }
+    bugForm.onVersionChange(elVersions.value);
   },
 
   onComponentChange: function(componentName) {
@@ -510,7 +533,7 @@ var bugForm = {
     Dom.get('component').value = componentName;
     var elComponentDesc = Dom.get('component_description');
     elComponentDesc.innerHTML = '';
-    for (i in product.details.components) {
+    for (var i = 0, n = product.details.components.length; i < n; i++) {
       var component = product.details.components[i];
       if (component.name == componentName) {
         elComponentDesc.innerHTML = component.description;
@@ -548,10 +571,10 @@ var bugForm = {
     return false;
   },
 
-  _mandatory: function(ids) {
+  _mandatoryCheck: function() {
     result = true;
-    for (i in ids) {
-      id = ids[i];
+    for (var i = 0, n = this._mandatoryFields.length; i < n; i++ ) {
+      id = this._mandatoryFields[i];
       el = Dom.get(id);
 
       if (el.type.toString() == "checkbox") {
@@ -575,30 +598,17 @@ var bugForm = {
     
     // check mandatory fields
 
-    if (!bugForm._mandatory([ 'short_desc', 'version_select', 'component_select',
-      'bug_steps', 'actual', 'expected' ])
-    ) {
-      alert('Please enter all the required fields.');
+    if (!bugForm._mandatoryCheck()) {
+      if (Dom.hasClass('short_desc', 'missing') && Dom.hasClass('version_select', 'missing')) {
+        alert('Please enter the summary, and select the relevant version.');
+      } else if (Dom.hasClass('short_desc', 'missing')) {
+        alert('Please enter the summary.');
+      } else {
+        alert('Please select the relevant version.\n\nIf you are unsure select "unspecified".');
+      }
+
       return false;
     }
-
-    // build comment
-
-    // XXX use a created template instead
-    var comment =
-      "User Agent: " + navigator.userAgent + "\n";
-    if (navigator.buildID)
-      comment = comment + "BuildID: " + navigator.buildID + "\n";
-    comment = comment + 
-      "\n" +
-      "What did you do?\n" +
-      YAHOO.lang.trim(Dom.get('bug_steps').value) + "\n\n" +
-      "What happened?\n" + 
-      YAHOO.lang.trim(Dom.get('actual').value) + "\n\n" +
-      "What should have happened?\n" + 
-      YAHOO.lang.trim(Dom.get('expected').value) + "\n"
-    ;
-    Dom.get('comment').value = comment;
 
     if (Dom.get('data').value && !Dom.get('data_description').value)
       Dom.get('data_description').value = Dom.get('data').value;

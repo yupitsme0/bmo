@@ -38,9 +38,9 @@ var products = {
       var re = /Firefox\/(\d+)\.(\d+)/i;
       var match = re.exec(navigator.userAgent);
       if (match) {
-        var maj = match[1] | 0;
-        var min = match[2] | 0;
-        if (maj >= 5) {
+        var maj = match[1];
+        var min = match[2];
+        if (maj|0 >= 5) {
           return maj + " Branch";
         } else {
           return maj + "." + min + " Branch";

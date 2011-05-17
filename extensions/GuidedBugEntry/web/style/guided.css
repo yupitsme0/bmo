@@ -70,11 +70,17 @@
     cursor: pointer;
 }
 
+/* remove the shaded background from data_table header
+   it looks out of place */
+.yui-skin-sam .yui-dt th {
+    background: #f0f0f0;
+}
+
 /* products and other_products step */
 
 .exits {
     width: 600px;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
 }
 
 .exits td {
@@ -191,8 +197,7 @@
 }
 
 #component_select {
-    float: left;
-    margin-right: 5px;
+    width: 450px;
 }
 
 #component_description {
