@@ -58,7 +58,15 @@ sub page_before_template {
                 ThrowUserError('bug_attach_id_mismatch');
             }
 
+            # The patch is going to be displayed in a HTML page and if the utf8
+            # param is enabled, we have to encode attachment data as utf8.
+            if (Bugzilla->params->{'utf8'}) {
+                $attachment->data;  # load data
+                utf8::decode($attachment->{data});
+            }
+
             $vars->{'attach_id'} = $attachment->id;
+            $vars->{'attach_data'} = $attachment->data;
         }
 
         my $field_object = new Bugzilla::Field({ name => 'attachments.status' });

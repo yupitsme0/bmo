@@ -78,7 +78,7 @@
          [% IF attachment.id == attach_id && attachment.ispatch %]
            [% flag_types = attachment.flag_types %]
            [% can_edit = attachment.validate_can_edit %]
-           attachment.data = '[% attachment.data FILTER js %]';
+           attachment.data = '[% attach_data FILTER js %]';
            attachment.token = '[% issue_hash_token([attachment.id, attachment.modification_time]) FILTER js %]';
          [% END %]
          attachment.description = Splinter.Utils.strip('[% attachment.description FILTER js %]');
