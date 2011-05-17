@@ -1,0 +1,465 @@
+[%# ***** BEGIN LICENSE BLOCK *****
+  # Version: MPL 1.1
+  #
+  # The contents of this file are subject to the Mozilla Public License Version
+  # 1.1 (the "License"); you may not use this file except in compliance with
+  # the License. You may obtain a copy of the License at
+  # http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS IS" basis,
+  # WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  # for the specific language governing rights and limitations under the
+  # License.
+  #
+  # The Original Code is the GuidedBugEntry Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is
+  # the Mozilla Foundation.
+  # Portions created by the Initial Developer are Copyright (C) 2011
+  # the Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Byron Jones <glob@mozilla.com>
+  #
+  # ***** END LICENSE BLOCK ***** */
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% PROCESS global/header.html.tmpl
+   title = "Enter A Bug"
+   javascript_urls = [
+                       'extensions/GuidedBugEntry/web/js/products.js',
+                       'extensions/GuidedBugEntry/web/js/guided.js',
+                       'js/field.js', 'js/TUI.js', 'js/bug.js' ]
+   style_urls = [ 'extensions/GuidedBugEntry/web/style/guided.css',
+                  'js/yui/assets/skins/sam/container.css' ]
+   yui = [ 'history', 'datatable', 'container' ]
+%]
+
+<iframe id="yui-history-iframe" src="extensions/GuidedBugEntry/web/yui-history-iframe.txt"></iframe>
+<input id="yui-history-field" type="hidden">
+
+<div id="loading">
+Please wait...
+</div>
+
+<div id="steps">
+[% INCLUDE product_step %]
+[% INCLUDE otherProducts_step %]
+[% INCLUDE dupes_step %]
+[% INCLUDE bugForm_step %]
+</div>
+
+<div id="advanced">
+  <a onclick="return guided.onAdvancedClick()" href="javascript:void(0)"><img
+  src="extensions/GuidedBugEntry/web/images/advanced.png" width="16" height="16" border="0"></a>
+  <a onclick="return guided.onAdvancedClick()" href="javascript:void(0)">Switch to the advanced bug entry form</a>
+  </a>
+</div>
+
+<script type="text/javascript">
+YAHOO.util.Dom.addClass('loading', 'hidden');
+guided.init();
+dupes.setLabels(
+  {
+    id: "[% field_descs.bug_id FILTER js %]",
+    summary: "[% field_descs.short_desc FILTER js %]",
+    status: "[% field_descs.bug_status FILTER js %]",
+    cc: "Add&nbsp;Me&nbsp;to&nbsp;the&nbsp;CC&nbsp;List"
+  }
+);
+</script>
+[% PROCESS global/footer.html.tmpl %]
+
+[%############################################################################%]
+[%# page title                                                               #%]
+[%############################################################################%]
+
+[% BLOCK page_title %]
+  <div id="page_title">
+    <h2>Enter A Bug - [% title FILTER html %]</h2>
+    <h3>Step [% step_number FILTER html %] of 3</h3>
+  </div>
+[% END %]
+
+[%############################################################################%]
+[%# product step                                                             #%]
+[%############################################################################%]
+
+[% BLOCK product_step %]
+<div id="product_step" class="step hidden">
+
+[% INCLUDE page_title
+   step_number = "1"
+   title = "Select a Product"
+%]
+
+[% INCLUDE exits
+   show = "all"
+%]
+
+<table id="products">
+[% INCLUDE 'guided/products.html.tmpl' %]
+[% INCLUDE product_block
+   name="Other Products"
+   icon="other.png"
+   desc="Other Mozilla products which aren't listed here"
+   onclick="guided.setStep('otherProducts')"
+%]
+</table>
+
+</div>
+[% END %]
+
+[% BLOCK product_block %]
+  [% IF !caption %]
+    [% caption = name %]
+  [% END %]
+  [% IF !desc %]
+    [% FOREACH c = classifications %]
+      [% FOREACH p = c.products %]
+        [% IF p.name == name %]
+          [% desc = p.description %]
+          [% LAST %]
+        [% END %]
+      [% END %]
+    [% END %]
+  [% END %]
+  <tr>
+    <td class="product_img">
+      <a href="javascript:void(0)"
+      [% IF onclick %]
+      onclick="[% onclick %]"
+      [% ELSE %]
+      onclick="product.select('[% name FILTER js %]')"
+      [% END %]
+      ><img src="extensions/GuidedBugEntry/web/images/products/[% icon FILTER url_quote %]" width="64" height="64"
+      ></a>
+    </td>
+    <td>
+      <h2>
+        <a href="javascript:void(0)"
+        [% IF onclick %]
+        onclick="[% onclick %]"
+        [% ELSE %]
+        onclick="product.select('[% name FILTER js %]')"
+        [% END %]
+        >[% caption FILTER html %]</a>
+      </h2>
+      <p>
+        [% desc FILTER html_light %]
+      </p>
+    </td>
+  </tr>
+[% END %]
+
+[%############################################################################%]
+[%# other products step                                                      #%]
+[%############################################################################%]
+
+[% BLOCK otherProducts_step %]
+<div id="otherProducts_step" class="step hidden">
+
+[% INCLUDE page_title
+   step_number = "1"
+   title = "Select a Product"
+%]
+
+[% INCLUDE exits
+   show = "all"
+%]
+
+<table id="other_products">
+[% FOREACH c = classifications %]
+  [% IF c.object %]
+    <tr class="classification">
+      <th align="right" valign="top">
+        [% c.object.name FILTER html %]:&nbsp;
+      </th>
+      <td>
+        [% c.object.description FILTER html_light %]
+      </td>
+    </tr>
+  [% END %]
+  [% FOREACH p = c.products %]
+    <tr>
+      <th align="right" valign="top">
+        <a href="javascript:void(0)" onclick="product.select('[% p.name FILTER js %]')">
+        [% p.name FILTER html FILTER no_break %]</a>:&nbsp;
+      </th>
+
+      <td valign="top">[% p.description FILTER html_light %]</td>
+    </tr>
+  [% END %]
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+[% END %]
+</table>
+
+</div>
+[% END %]
+
+[%############################################################################%]
+[%# exits (support/input)                                                    #%]
+[%############################################################################%]
+
+[% BLOCK exits %]
+<table class="exits">
+[% INCLUDE exit_block
+   name="Technical Support"
+   icon="support.png"
+   href="http://www.mozilla.org/support/"
+   desc="For technical support or help getting your site to work with Mozilla."
+%]
+[% INCLUDE exit_block
+   name="Feedback"
+   icon="input.png"
+   href="http://input.mozilla.org/feedback/"
+   desc="For reporting a broken web page, or providing quick feedback about Firefox."
+%]
+[% INCLUDE exit_block
+   name="Ideas"
+   icon="idea.png"
+   href="http://input.mozilla.org/idea/"
+   desc="For offering us ideas on how to enhance Firefox."
+%]
+</table>
+[% END %]
+
+[% BLOCK exit_block %]
+  <tr>
+    <td>
+      <div class="exit_img">
+        <a href="[% href %]"
+        ><img src="extensions/GuidedBugEntry/web/images/[% icon FILTER url_quote %]" width="32" height="32"
+        ></a>
+      </div>
+    </td>
+    <td width="100%">
+      <h2>
+        <a href="[% href %]">[% name FILTER html %]</a>
+      </h2>
+      [% desc FILTER html %]
+    </td>
+  </tr>
+[% END %]
+
+[%############################################################################%]
+[%# duplicates step                                                          #%]
+[%############################################################################%]
+
+[% BLOCK dupes_step %]
+<div id="dupes_step" class="step hidden">
+
+[% INCLUDE page_title
+   step_number = "2"
+   title = "Find Existing Bugs"
+%]
+
+<table border="0" cellpadding="5" cellspacing="0" id="product_support" class="hidden">
+<tr>
+<td>
+  <img src="extensions/GuidedBugEntry/web/images/message.png" width="24" height="24">
+</td>
+<td id="product_support_message">&nbsp;</td>
+</table>
+
+<div id="dupe_form">
+  <p>
+  Please provide a short summary of the problem you are having:
+  </p>
+  <input id="dupes_summary" value="Short summary of issue" spellcheck="true" placeholder="Short summary of issue">
+  <button id="dupes_search">Find Similar Issues</button><br>
+</div>
+
+<div id="dupes_list"></div>
+<div id="dupes_continue">
+<button id="dupes_continue_button" onclick="guided.setStep('bugForm')">My issue is not listed</button>
+</div>
+
+</div>
+[% END %]
+
+[%############################################################################%]
+[%# bug form step                                                            #%]
+[%############################################################################%]
+
+[% BLOCK bugForm_step %]
+<div id="bugForm_step" class="step hidden">
+
+[% INCLUDE page_title
+   step_number = "3"
+   title = "Create Bug"
+%]
+
+[% mandatory_mark = '<span class="mandatory_mark" title="Required">*</span>' %]
+
+<form method="post" action="post_bug.cgi" enctype="multipart/form-data" onsubmit="return bugForm.validate()">
+<input type="hidden" name="token" value="[% token FILTER html %]">
+<input type="hidden" name="product" id="product" value="">
+<input type="hidden" name="component" id="component" value="">
+<input type="hidden" name="bug_severity" value="normal">
+<input type="hidden" name="rep_platform" value="All">
+<input type="hidden" name="priority" value="--">
+<input type="hidden" name="op_sys" value="Other">
+<input type="hidden" name="version" id="version" value="">
+<input type="hidden" name="comment" id="comment" value="">
+
+
+<p>
+Please fill out this form clearly, precisely and in as much detail as you can manage.<br>
+Please report only a single problem at a time.<br>
+<a href="https://developer.mozilla.org/en/Bug_writing_guidelines" target="_blank">These guidelines</a>
+explain how to write effective bug reports.
+</p>
+
+<table id="bugForm" cellspacing="0">
+
+<tr class="odd">
+  <td class="label">Summary:[% mandatory_mark %]</td>
+  <td width="100%" colspan="2">
+    <input name="short_desc" id="short_desc" class="textInput mandatory" spellcheck="true">
+  </td>
+  <td valign="top">
+    [% PROCESS help id="summary_help" %]
+    <div id="summary_help" class="hidden help">
+    A sentence which summarises the problem. Please be descriptive and use lots of keywords.<br>
+    <br>
+    <font color="#990000">Bad example</font> : mail crashed<br>
+    <font color="#009900">Good example</font> : crash if I close the mail window while checking for new POP mail 
+    </div>
+  </td>
+</tr>
+
+<tr class="even">
+  <td class="label">Product:</td>
+  <td id="productTD"><span id="product_label"></span></td>
+  <td id="versionTD" class="hidden">
+    <span class="label">Version:[% mandatory_mark %]
+    <select id="version_select" onchange="bugForm.onVersionChange(this.value)">
+    </select>
+  </td>
+  <td valign="top">
+    [% PROCESS help id="product_help" %]
+    <div id="product_help" class="hidden help">
+    The Product and Version you are reporting the issue with.
+    </div>
+</tr>
+
+<tr class="odd">
+  <td class="label">Component:[% mandatory_mark %]</td>
+  <td valign="top">
+    <select id="component_select" size="10" onchange="bugForm.onComponentChange(this.value)" class="mandatory">
+    </select>
+  </td>
+  <td width="100%" id="component_description" valign="top">
+  </td>
+  <td valign="top">
+    [% PROCESS help id="component_help" %]
+    <div id="component_help" class="hidden help">
+    The area where the problem occurs.<br>
+    <br>To pick the right component, you could use the same one as similar bugs
+    you found in your search, or read the full list of
+    <a id="component_help_describe" target="_blank">component descriptions</a> (opens in new window) if you need more help.
+    </div>
+</tr>
+
+<tr class="even">
+  <td class="label" colspan="3">What did you do?[% mandatory_mark %]</td>
+  <td valign="top">
+  [% PROCESS help id="steps_help" %]
+  <div id="steps_help" class="hidden help">
+  Please be as specific as possible about what what you did
+  to cause the problem.  Providing step-by-step instructions
+  would be ideal.<br>
+  <br>
+  Include any relevant URLs and special setup steps.
+  </div>
+  </td>
+</tr>
+<tr class="even">
+  <td colspan="3"><textarea id="bug_steps" rows="5"></textarea></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr class="odd">
+  <td class="label" colspan="3">What happened?[% mandatory_mark %]</td>
+  <td valign="top">
+  [% PROCESS help id="actual_help" %]
+  <div id="actual_help" class="hidden help">
+  What happened after you performed the steps above?
+  </div>
+</tr>
+<tr class="odd">
+  <td colspan="3"><textarea id="actual" rows="5"></textarea></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr class="even">
+  <td class="label" colspan="3">What should have happened?[% mandatory_mark %]</td>
+  <td valign="top">
+  [% PROCESS help id="expected_help" %]
+  <div id="expected_help" class="hidden help">
+  What should the software have done instead?
+  </div>
+</tr>
+<tr class="even">
+  <td colspan="3"><textarea id="expected" rows="5"></textarea></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr class="odd">
+  <td class="label">Attach a file:</td>
+  <td colspan="2">
+    <input type="file" name="data" id="data" size="50" onchange="bugForm.onFileChange()">
+    <input type="hidden" name="contenttypemethod" value="autodetect">
+    <button id="reset_data" onclick="return bugForm.onFileClear()" disabled>Clear</button>
+  </td>
+  <td valign="top">
+  [% PROCESS help id="file_help" %]
+  <div id="file_help" class="hidden help">
+  If a file helps explain the issue better, such as a screenshot, please
+  attach one here.
+  </div>
+  </td>
+</tr>
+<tr class="odd">
+  <td class="label">File Description:</td>
+  <td colspan="2"><input type="text" name="description" id="data_description" class="textInput" disabled></td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr class="even">
+  <td class="label">Security:</td>
+  <td colspan="2">
+    <input type="checkbox" name="groups" value="core-security" id="groups">
+    <label for="groups">Many users could be harmed by this security problem:
+    it should be kept hidden from the public until it is resolved.</label>
+  </td>
+  <td>&nbsp;</td>
+</tr>
+
+<tr class="odd">
+  <td>&nbsp;</td>
+  <td colspan="2" id="submitTD">
+    <input type="submit" id="submit" value="Submit Bug">
+  </td>
+</tr>
+
+</table>
+
+</form>
+
+</div>
+[% END %]
+
+[%############################################################################%]
+[%# help block                                                               #%]
+[%############################################################################%]
+
+[% BLOCK help %]
+<img src="extensions/GuidedBugEntry/web/images/help.png" width="16" height="16" class="help_image"
+ title="Display help for this field." helpid="[% id FILTER html %]" onclick="bugForm.toggleHelp(this)">
+[% END %]

@@ -62,6 +62,9 @@ my $dbh = Bugzilla->dbh;
 my $template = Bugzilla->template;
 my $vars = {};
 
+# BMO add a hook for the guided extension
+Bugzilla::Hook::process('enter_bug_start', { vars => $vars });
+
 # All pages point to the same part of the documentation.
 $vars->{'doc_section'} = 'bugreports.html';
 
