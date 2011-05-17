@@ -329,7 +329,7 @@ var dupes = {
       alert('The summary must be at least 4 characters long.');
       return;
     }
-    dupes._elSearch.focus();
+    dupes._elSummary.blur();
 
     // initialise the datatable as late as possible
     dupes._initDataTable();
