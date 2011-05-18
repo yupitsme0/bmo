@@ -61,12 +61,18 @@ Please wait...
 <script type="text/javascript">
 YAHOO.util.Dom.addClass('loading', 'hidden');
 guided.init();
+guided.currentUser = '[% user.login FILTER js %]';
+guided.openStates = [
+[% FOREACH state = open_states %]
+  '[% state FILTER js%]'
+  [%- "," UNLESS loop.last %]
+[% END %]
+];
 dupes.setLabels(
   {
     id: "[% field_descs.bug_id FILTER js %]",
     summary: "[% field_descs.short_desc FILTER js %]",
     status: "[% field_descs.bug_status FILTER js %]",
-    cc: "Add&nbsp;Me&nbsp;to&nbsp;the&nbsp;CC&nbsp;List"
   }
 );
 </script>
@@ -268,7 +274,7 @@ None of the above; my bug is in:
 
 <div id="dupe_form">
   <p>
-  Please provide a short summary of the problem you are having:
+  Please summerize your issue or request in one sentance:
   </p>
   <input id="dupes_summary" value="Short summary of issue" spellcheck="true" placeholder="Short summary of issue">
   <button id="dupes_search">Find Similar Issues</button><br>

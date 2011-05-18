@@ -31,8 +31,10 @@ var History = YAHOO.util.History;
 
 var guided = {
   _currentStep: '',
+  currentUser: '',
+  openStates: [],
 
-  setStep: function(newStep) {
+  setStep: function(newStep, noSetHistory) {
     // initialise new step
     eval(newStep + '.onShow()');
 
@@ -46,7 +48,9 @@ var guided = {
     scroll(0,0);
 
     // update history
-    History && History.navigate('h', newStep + "|" + product.getName());
+    if (History && !noSetHistory) {
+      History.navigate('h', newStep + "|" + product.getName());
+}
   },
 
   init: function() {
@@ -55,7 +59,7 @@ var guided = {
       History.register('h', History.getBookmarkedState('h') || 'product', this._onStateChange);
       History.initialize("yui-history-field", "yui-history-iframe");
       History.onReady(function () {
-        guided._onStateChange(History.getCurrentState('h'));
+        guided._onStateChange(History.getCurrentState('h'), true);
       });
     } catch(err) {
       History = false;
@@ -67,10 +71,10 @@ var guided = {
     bugForm.onInit();
   },
 
-  _onStateChange: function(state) {
+  _onStateChange: function(state, noSetHistory) {
     state = state.split("|");
     product.setName(state[1] || '');
-    guided.setStep(state[0]);
+    guided.setStep(state[0], noSetHistory);
   },
 
   onAdvancedClick: function() {
@@ -83,10 +87,14 @@ var guided = {
 
 var product = {
   details: false,
-  _post_counter: 0,
+  _counter: 0,
+  _loaded: '',
 
   onInit: function() { },
-  onShow: function() { },
+
+  onShow: function() {
+    Dom.removeClass('advanced', 'hidden');
+  },
 
   select: function(productName) {
     // called when a product is selected
@@ -134,8 +142,12 @@ var product = {
       Dom.addClass("product_support", "hidden");
     }
 
+    if (this._loaded == productName)
+      return;
+
     // grab the product information
     this.details = false;
+    this._loaded = productName;
     YAHOO.util.Connect.setDefaultPostHeader('text/plain; charset=UTF-8');
     YAHOO.util.Connect.asyncRequest(
       'POST',
@@ -159,6 +171,7 @@ var product = {
           }
         },
         failure: function(res) {
+          this._loaded = '';
           product.details = false;
           bugForm.onProductUpdated();
           if (res.responseText) {
@@ -171,10 +184,10 @@ var product = {
       YAHOO.lang.JSON.stringify({
         version: "1.1",
         method: "Product.get",
-        id: ++this._post_counter,
+        id: ++this._counter,
         params: {
-            names: [productName],
-            exclude_fields: ['internals', 'milestones']
+          names: [productName],
+          exclude_fields: ['internals', 'milestones']
         }
       }
       )
@@ -186,7 +199,10 @@ var product = {
 
 var otherProducts = {
   onInit: function() { },
-  onShow: function() { }
+
+  onShow: function() {
+    Dom.removeClass('advanced', 'hidden');
+  }
 };
 
 // duplicates step
@@ -195,7 +211,6 @@ var dupes = {
   _counter: 0,
   _dataTable: null,
   _dataTableColumns: null,
-  _formatCcLabel: "",
   _elSummary: null,
   _elSearch: null,
   _elList: null,
@@ -218,7 +233,6 @@ var dupes = {
       { key: "status", label: labels.status, formatter: this._formatStatus },
       { key: "update_token", label: '', formatter: this._formatCc }
     ];
-    this._formatCcLabel = labels.cc;
   },
 
   _initDataTable: function() {
@@ -271,12 +285,84 @@ var dupes = {
   },
 
   _formatCc: function(el, oRecord, oColumn, oData) {
-    var url = 'process_bug.cgi?id=' + oRecord.getData('id') + '&addselfcc=1&token=' + escape(oData);
+   var cc = oRecord.getData('cc');
+    var isCCed = false;
+    for (var i = 0, n = cc.length; i < n; i++) {
+      if (cc[i] == guided.currentUser) {
+        isCCed = true;
+        break;
+      }
+    }
+    dupes._buildCcHTML(el, oRecord.getData('id'), oRecord.getData('status'), isCCed);
+  },
+
+  _buildCcHTML: function(el, id, bugStatus, isCCed) {
+    while (el.childNodes.length > 0)
+      el.removeChild(el.firstChild);
+
+    var isOpen = false;
+    for (var i = 0, n = guided.openStates.length; i < n; i++) {
+      if (guided.openStates[i] == bugStatus) {
+        isOpen = true;
+        break;
+      }
+    }
+
+    if (!isOpen && !isCCed) {
+      // you can't cc yourself to a closed bug here
+      return;
+    }
+
     var button = document.createElement('button');
     button.setAttribute('type', 'button');
-    button.innerHTML = dupes._formatCcLabel;
-    button.onclick = function() { window.location = url; return false; };
+    if (isCCed) {
+      button.innerHTML = 'Stop&nbsp;Following';
+      button.onclick = function() { dupes.updateFollowing(el, id, bugStatus, button, false); return false; };
+    } else {
+      button.innerHTML = 'Follow&nbsp;Bug';
+      button.onclick = function() { dupes.updateFollowing(el, id, bugStatus, button, true); return false; };
+    }
     el.appendChild(button);
+  },
+
+  updateFollowing: function(el, bugID, bugStatus, button, follow) {
+    button.disabled = true;
+    button.innerHTML = 'Updating...';
+
+    var ccObject;
+    if (follow) {
+      ccObject = { add: [ guided.currentUser ] };
+    } else {
+      ccObject = { remove: [ guided.currentUser ] };
+    }
+
+    YAHOO.util.Connect.setDefaultPostHeader('text/plain; charset=UTF-8');
+    YAHOO.util.Connect.asyncRequest(
+      'POST',
+      'jsonrpc.cgi',
+      {
+        success: function(res) {
+          data = YAHOO.lang.JSON.parse(res.responseText);
+          if (data.error)
+            throw(data.error.message);
+          dupes._buildCcHTML(el, bugID, bugStatus, follow);
+        },
+        failure: function(res) {
+          dupes._buildCcHTML(el, bugID, bugStatus, !follow);
+          if (res.responseText)
+            alert("Update failed:\n\n" + res.responseText);
+        }
+      },
+      YAHOO.lang.JSON.stringify({
+        version: "1.1",
+        method: "Bug.update",
+        id: ++this._counter,
+        params: {
+          ids: [ bugID ],
+          cc : ccObject
+        }
+      })
+    );
   },
 
   reset: function() {
@@ -360,7 +446,7 @@ var dupes = {
               product: product._getNameAndRelated(),
               summary: dupes.getSummary(),
               limit: 12,
-              include_fields: [ "id", "summary", "status", "resolution", "update_token" ]
+              include_fields: [ "id", "summary", "status", "resolution", "update_token", "cc" ]
           }
       };
 
@@ -411,6 +497,7 @@ var bugForm = {
   },
 
   onShow: function() {
+    Dom.addClass('advanced', 'hidden');
     // default the summary to the dupes query
     Dom.get('short_desc').value = dupes.getSummary();
     Dom.get('submit').disabled = false;

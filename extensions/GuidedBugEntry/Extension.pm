@@ -25,6 +25,8 @@ use base qw(Bugzilla::Extension);
 
 use Bugzilla::Token;
 use Bugzilla::Error;
+use Bugzilla::Status;
+use Bugzilla::Util 'url_quote';
 
 our $VERSION = '1';
 
@@ -44,6 +46,13 @@ sub enter_bug_start {
             !$user->in_group('canconfirm')
         )
     ) {
+        # skip the first step if a product is provided
+        if ($cgi->param('product')) {
+            print $cgi->redirect('enter_bug.cgi?format=guided#h=dupes|' .
+                url_quote($cgi->param('product')));
+            exit;
+        }
+
         $self->_init_vars($vars);
         print $cgi->header();
         $template->process('guided/guided.html.tmpl', $vars)
@@ -74,8 +83,10 @@ sub _init_vars {
             $a->{'object'}->sortkey <=> $b->{'object'}->sortkey
             || lc($a->{'object'}->name) cmp lc($b->{'object'}->name)
         } (values %$class);
-
     $vars->{'classifications'} = \@classifications;
+
+    my @open_states = BUG_STATE_OPEN();
+    $vars->{'open_states'} = \@open_states;
 
     $vars->{'token'} = issue_session_token('createbug:');
 }
