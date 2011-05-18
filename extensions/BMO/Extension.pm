@@ -273,9 +273,9 @@ sub bug_check_can_change_field {
     # Purpose: Only users in the appropriate drivers group can change the 
     # cf_blocking_* fields or cf_tracking_* fields
     if ($field =~ /^cf_(?:blocking|tracking)_/) {
-        unless ($new_value eq '---' ||
-                $new_value eq '?' || 
-                ($new_value eq '1' && $old_value eq '0')) 
+        if (($old_value ne '---' && $old_value ne '?')
+            || ($new_value ne '---' && $new_value ne '?' 
+                && ($new_value ne '1' && $old_value ne '0'))) 
         {
             _check_trusted($field, $blocking_trusted_setters, $priv_results);
         }
