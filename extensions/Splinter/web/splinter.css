@@ -272,6 +272,7 @@ div.review-patch-comment-text {
     text-align: right;
     padding-right: 0.25em;
     color: #888888;
+    -moz-user-select: none;
 }
 
 .line-number-column {
