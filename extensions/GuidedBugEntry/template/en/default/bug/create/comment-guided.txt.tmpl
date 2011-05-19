@@ -11,12 +11,14 @@ Steps to reproduce:
 [% END %]
 
 [% IF cgi.param('actual') %]
+
 Actual results:
 
 [%+ cgi.param('actual') %]
 [% END %]
 
 [% IF cgi.param('expected') %]
+
 Expected results:
 
 [%+ cgi.param('expected') %]

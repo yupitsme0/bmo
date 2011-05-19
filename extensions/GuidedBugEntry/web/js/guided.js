@@ -214,6 +214,7 @@ var dupes = {
   _elSummary: null,
   _elSearch: null,
   _elList: null,
+  _currentSearchQuery: '',
 
   onInit: function() {
     this._elSummary = Dom.get('dupes_summary');
@@ -425,6 +426,11 @@ var dupes = {
       return;
     }
     dupes._elSummary.blur();
+
+    // don't query if we already have the results (or they are pending)
+    if (dupes._currentSearchQuery == dupes.getSummary())
+      return;
+    dupes._currentSearchQuery = dupes.getSummary();
 
     // initialise the datatable as late as possible
     dupes._initDataTable();
@@ -639,12 +645,11 @@ var bugForm = {
     var elFile = Dom.get('data');
     var elReset = Dom.get('reset_data');
     var elDescription = Dom.get('data_description');
-    var filename = elFile.value;
+    var filename = bugForm._getFilename();
     if (filename) {
       elReset.disabled = false;
       elDescription.value = filename;
       elDescription.disabled = false;
-      Dom.get('data_description').value = filename;
     } else {
       elReset.disabled = true;
       elDescription.value = '';
@@ -656,6 +661,14 @@ var bugForm = {
     Dom.get('data').value = '';
     this.onFileChange();
     return false;
+  },
+
+  _getFilename: function() {
+    var filename = Dom.get('data').value;
+    if (!filename)
+      return '';
+    filename = filename.replace(/^.+[\\\/]/, '');
+    return filename;
   },
 
   _mandatoryCheck: function() {
@@ -698,7 +711,7 @@ var bugForm = {
     }
 
     if (Dom.get('data').value && !Dom.get('data_description').value)
-      Dom.get('data_description').value = Dom.get('data').value;
+      Dom.get('data_description').value = bugForm._getFilename();
 
     Dom.get('submit').disabled = true;
     Dom.get('submit').value = 'Submitting Bug...';
