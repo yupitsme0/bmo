@@ -277,12 +277,13 @@ None of the above; my bug is in:
   Please summarise your issue or request in one sentance:
   </p>
   <input id="dupes_summary" value="Short summary of issue" spellcheck="true" placeholder="Short summary of issue">
-  <button id="dupes_search">Find Similar Issues</button><br>
+  <button id="dupes_search">Find Similar Issues</button>
+  <button id="dupes_continue_button_top" onclick="guided.setStep('bugForm')">My issue is not listed</button>
 </div>
 
 <div id="dupes_list"></div>
 <div id="dupes_continue">
-<button id="dupes_continue_button" onclick="guided.setStep('bugForm')">My issue is not listed</button>
+<button id="dupes_continue_button_bottom" onclick="guided.setStep('bugForm')">My issue is not listed</button>
 </div>
 
 </div>

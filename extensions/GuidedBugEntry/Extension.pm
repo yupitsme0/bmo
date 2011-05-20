@@ -60,6 +60,8 @@ sub enter_bug_start {
         exit;       
     }
 
+    # we use the __default__ format to bypass the guided entry
+    # it isn't understood upstream, so remove it
     $cgi->delete('format') 
         if ($cgi->param('format') && ($cgi->param('format') eq "__default__"));
 }
@@ -75,7 +77,8 @@ sub _init_vars {
 
     my $class;
     foreach my $product (@enterable_products) {
-        $class->{$product->classification_id}->{'object'} ||= new Bugzilla::Classification($product->classification_id);
+        $class->{$product->classification_id}->{'object'} ||=
+            new Bugzilla::Classification($product->classification_id);
         push(@{$class->{$product->classification_id}->{'products'}}, $product);
     }
     @classifications =

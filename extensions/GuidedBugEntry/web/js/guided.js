@@ -56,7 +56,8 @@ var guided = {
   init: function() {
     // init history manager
     try {
-      History.register('h', History.getBookmarkedState('h') || 'product', this._onStateChange);
+      History.register('h', History.getBookmarkedState('h') || 'product',
+        this._onStateChange);
       History.initialize("yui-history-field", "yui-history-iframe");
       History.onReady(function () {
         guided._onStateChange(History.getCurrentState('h'), true);
@@ -78,7 +79,8 @@ var guided = {
   },
 
   onAdvancedClick: function() {
-    document.location.href = 'enter_bug.cgi?format=__default__&product=' + escape(product.getName());
+    document.location.href = 'enter_bug.cgi?format=__default__&product=' +
+      escape(product.getName());
     return false;
   }
 };
@@ -136,7 +138,8 @@ var product = {
 
     // show support message
     if (products[productName] && products[productName].support) {
-      Dom.get("product_support_message").innerHTML = products[productName].support;
+      Dom.get("product_support_message").innerHTML =
+        products[productName].support;
       Dom.removeClass("product_support", "hidden");
     } else {
       Dom.addClass("product_support", "hidden");
@@ -164,7 +167,8 @@ var product = {
             product.details = false;
             bugForm.onProductUpdated();
             if (err) {
-              alert('Failed to retreive components for product "' + productName + '":' + "\n\n" + err);
+              alert('Failed to retreive components for product "' +
+                productName + '":' + "\n\n" + err);
               if (console)
                 console.error(err);
             }
@@ -175,7 +179,8 @@ var product = {
           product.details = false;
           bugForm.onProductUpdated();
           if (res.responseText) {
-            alert('Failed to retreive components for product "' + productName + '":' + "\n\n" + res.responseText);
+            alert('Failed to retreive components for product "' +
+              productName + '":' + "\n\n" + res.responseText);
             if (console)
               console.error(res);
           }
@@ -266,20 +271,23 @@ var dupes = {
       { 
         initialLoad: false,
         MSG_EMPTY: 'No similar issues found.',
-        MSG_ERROR: 'An error occurred while searching for similar issues, please try again.'
+        MSG_ERROR: 'An error occurred while searching for similar issues,' +
+          ' please try again.'
       }
     );
   },
 
   _formatId: function(el, oRecord, oColumn, oData) {
-    el.innerHTML = '<a href="show_bug.cgi?id=' + oData + '" target="_blank">' + oData + '</a>';
+    el.innerHTML = '<a href="show_bug.cgi?id=' + oData +
+      '" target="_blank">' + oData + '</a>';
   },
 
   _formatStatus: function(el, oRecord, oColumn, oData) {
     var resolution = oRecord.getData('resolution');
     var bug_status = display_value('bug_status', oData);
     if (resolution) {
-      el.innerHTML = bug_status + ' ' + display_value('resolution', resolution);
+      el.innerHTML = bug_status + ' ' +
+        display_value('resolution', resolution);
     } else {
       el.innerHTML = bug_status;
     }
@@ -294,7 +302,8 @@ var dupes = {
         break;
       }
     }
-    dupes._buildCcHTML(el, oRecord.getData('id'), oRecord.getData('status'), isCCed);
+    dupes._buildCcHTML(el, oRecord.getData('id'), oRecord.getData('status'),
+      isCCed);
   },
 
   _buildCcHTML: function(el, id, bugStatus, isCCed) {
@@ -318,10 +327,14 @@ var dupes = {
     button.setAttribute('type', 'button');
     if (isCCed) {
       button.innerHTML = 'Stop&nbsp;Following';
-      button.onclick = function() { dupes.updateFollowing(el, id, bugStatus, button, false); return false; };
+      button.onclick = function() {
+        dupes.updateFollowing(el, id, bugStatus, button, false); return false;
+      };
     } else {
       button.innerHTML = 'Follow&nbsp;Bug';
-      button.onclick = function() { dupes.updateFollowing(el, id, bugStatus, button, true); return false; };
+      button.onclick = function() {
+        dupes.updateFollowing(el, id, bugStatus, button, true); return false;
+      };
     }
     el.appendChild(button);
   },
@@ -375,7 +388,8 @@ var dupes = {
   },
 
   _showProductSupport: function() {
-    var elSupport = Dom.get('product_support_' + product.getName().replace(' ', '_').toLowerCase());
+    var elSupport = Dom.get('product_support_' +
+      product.getName().replace(' ', '_').toLowerCase());
     var supportElements = Dom.getElementsByClassName('product_support');
     for (var i = 0, n = supportElements.length; i < n; i++) {
       if (supportElements[i] == elSupport) {
@@ -390,8 +404,10 @@ var dupes = {
     this._showProductSupport();
     this._onSummaryBlur();
 
-    // hide the advanced form entry until a search has happened
+    // hide the advanced form and top continue button entry until
+    // a search has happened
     Dom.addClass('advanced', 'hidden');
+    Dom.addClass('dupes_continue_button_top', 'hidden');
 
     if (!this._elSearch.disabled && this.getSummary().length >= 4) {
       // do an immediate search after a page refresh if there's a query
@@ -441,7 +457,8 @@ var dupes = {
 
 	    dupes._dataTable.showTableMessage(
         'Searching for similar issues...&nbsp;&nbsp;&nbsp;' +
-        '<img src="extensions/GuidedBugEntry/web/images/throbber.gif" width="16" height="11">',
+        '<img src="extensions/GuidedBugEntry/web/images/throbber.gif"' + 
+        ' width="16" height="11">',
         YAHOO.widget.DataTable.CLASS_LOADING
       );
       var json_object = {
@@ -452,7 +469,8 @@ var dupes = {
               product: product._getNameAndRelated(),
               summary: dupes.getSummary(),
               limit: 12,
-              include_fields: [ "id", "summary", "status", "resolution", "update_token", "cc" ]
+              include_fields: [ "id", "summary", "status", "resolution",
+                "update_token", "cc" ]
           }
       };
 
@@ -466,7 +484,8 @@ var dupes = {
         }
       );
 
-      Dom.get('dupes_continue_button').disabled = true;
+      Dom.get('dupes_continue_button_top').disabled = true;
+      Dom.get('dupes_continue_button_bottom').disabled = true;
       Dom.removeClass('dupes_continue', 'hidden');
     } catch(err) {
       if (console)
@@ -476,8 +495,11 @@ var dupes = {
 
   _onDupeResults: function(sRequest, oResponse, oPayload) {
     Dom.removeClass('advanced', 'hidden');
-    Dom.get('dupes_continue_button').disabled = false;
-    dupes._dataTable.onDataReturnInitializeTable(sRequest, oResponse, oPayload);
+    Dom.removeClass('dupes_continue_button_top', 'hidden');
+    Dom.get('dupes_continue_button_top').disabled = false;
+    Dom.get('dupes_continue_button_bottom').disabled = false;
+    dupes._dataTable.onDataReturnInitializeTable(sRequest, oResponse,
+      oPayload);
   },
 
   getSummary: function() {
@@ -543,7 +565,8 @@ var bugForm = {
     for (var i = 0, n = product.details.components.length; i < n; i++) {
       var component = product.details.components[i];
       if (component.is_active == '1') {
-        elComponents.options[elComponents.options.length] = new Option(component.name, component.name);
+        elComponents.options[elComponents.options.length] =
+          new Option(component.name, component.name);
         if (!defaultComponent && component.name.match(/general/i)) {
           defaultComponent = component.name;
         }
@@ -557,7 +580,8 @@ var bugForm = {
       elComponents.value = elComponent.value;
       this.onComponentChange(elComponent.value);
     }
-    Dom.get('component_help_describe').href = 'describecomponents.cgi?product=' + escape(productName);
+    Dom.get('component_help_describe').href =
+      'describecomponents.cgi?product=' + escape(productName);
 
     // build versions
     var defaultVersion = '';
@@ -565,7 +589,8 @@ var bugForm = {
     for (var i = 0, n = product.details.versions.length; i < n; i++) {
       var version = product.details.versions[i];
       if (version.is_active == '1') {
-        elVersions.options[elVersions.options.length] = new Option(version.name, version.name);
+        elVersions.options[elVersions.options.length] =
+          new Option(version.name, version.name);
         if (currentVersion == version.name)
           defaultVersion = version.name;
       }
@@ -699,12 +724,14 @@ var bugForm = {
     // check mandatory fields
 
     if (!bugForm._mandatoryCheck()) {
-      if (Dom.hasClass('short_desc', 'missing') && Dom.hasClass('version_select', 'missing')) {
+      if (Dom.hasClass('short_desc', 'missing')
+        && Dom.hasClass('version_select', 'missing')) {
         alert('Please enter the summary, and select the relevant version.');
       } else if (Dom.hasClass('short_desc', 'missing')) {
         alert('Please enter the summary.');
       } else {
-        alert('Please select the relevant version.\n\nIf you are unsure select "unspecified".');
+        alert('Please select the relevant version.\n\n' +
+          'If you are unsure select "unspecified".');
       }
 
       return false;
