@@ -147,7 +147,7 @@ our $status_trusted_wanters = {
 
 # Who can set other custom flags (use full field names only, not regex's)
 our $other_setters = {
-    'cf_colo_site'  => ['infra'],
+    'cf_colo_site'  => ['infra', 'build'],
 };
 
 # Groups in which you can always file a bug, whoever you are.
