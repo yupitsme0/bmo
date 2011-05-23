@@ -48,6 +48,10 @@ use constant DEFAULT_VOTES_PER_BUG => 1;
 use constant CMT_POPULAR_VOTES => 3;
 use constant REL_VOTER => 4;
 
+BEGIN {
+    *Bugzilla::Bug::user_votes = \&_bug_user_votes;
+}
+
 ################
 # Installation #
 ################
@@ -107,6 +111,15 @@ sub install_update_db {
 ###########
 # Objects #
 ###########
+
+sub _bug_user_votes {
+    my ($self) = @_;
+    return $self->{'user_votes'} if exists $self->{'user_votes'};
+    $self->{'user_votes'} = Bugzilla->dbh->selectrow_array(
+        "SELECT vote_count FROM votes WHERE bug_id = ? AND who = ?", 
+        undef, $self->id, Bugzilla->user->id);
+    return $self->{'user_votes'};
+}
 
 sub object_columns {
     my ($self, $args) = @_;
