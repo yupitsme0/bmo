@@ -23,13 +23,10 @@
 
 [% PROCESS global/header.html.tmpl
    title = "Mozilla Reps Budget Request Form"
-   style_urls = [ 'skins/custom/calendar.css' ]
-   javascript_urls = [ 'extensions/BMO/web/js/swag.js',
-                       'extensions/BMO/web/js/form_validate.js',
-		       'js/util.js',
-                       'js/field.js',
-                       'js/attachment.js' ]
-   yui = ['autocomplete', 'calendar']
+   style_urls = [ 'extensions/BMO/web/styles/moz_reps.css' ]
+   javascript_urls = [ 'extensions/BMO/web/js/form_validate.js',
+		               'js/util.js',
+                       'js/field.js' ]
 %]
 
 <p>These requests will only be visible to the person who submitted the request,
@@ -38,36 +35,25 @@ Rep team.</p>
 
 <script language="javascript" type="text/javascript">
 function trySubmit() {
-
-  var date = document.getElementById('date').value;
-  var eventname = document.getElementById('eventname').value;
-  var shortdesc = 'Budget Request (' + date + ') - ' + eventname; 
+  var firstname = document.getElementById('firstname').value;
+  var lastname = document.getElementById('lastname').value;
+  var wikipage = document.getElementById('wikipage').value;
+  var shortdesc = 'Budget Request - ' + firstname + ' ' + lastname + ' - ' + wikipage; 
   document.getElementById('short_desc').value = shortdesc;
-  if(!isChecked('doing-other')) document.getElementById('doing-other-what').value = '';
   return true;
 }
 
 function validateAndSubmit() {
-
   var alert_text = '';
   if(!isFilledOut('firstname')) alert_text += "Please enter your first name\n";
   if(!isFilledOut('lastname')) alert_text += "Please enter your last name\n";
-  if(!isValidEmail(document.getElementById('email').value)) alert_text += "Please enter a valid email address\n";
   if(!isFilledOut('wikiprofile')) alert_text += "Please enter a wiki user profile.\n";
-  if(!isFilledOut('eventname')) alert_text += "Please enter an event name.\n";
-  if(!isFilledOut('website')) alert_text += "Please enter an event website.\n";
-  if(!isFilledOut('goals')) alert_text += "Please enter the Description and Objectives.\n";
-  if(!isFilledOut('date')) alert_text += "Please enter an event date.\n";
-  if(!isFilledOut('goals')) alert_text += "Please enter the event goals.\n";
+  if(!isFilledOut('wikipage')) alert_text += "Please enter a wiki page address.\n";
   if(!isFilledOut('successmeasure')) alert_text += "Please enter how you will measure the success of the event.\n";
+  if(!isFilledOut('budgettotal')) alert_text += "Please enter the total budget for the event.\n";
+  if(!isFilledOut('service1') || !isFilledOut('cost1')) alert_text += "Please enter at least one service and cost value.\n";
+  if(!isFilledOut('metric1') || !isFilledOut('success1')) alert_text += "Please enter at least one metric and success scenario.\n";
 
-  if(!isChecked('doing-booth') &&
-     !isChecked('doing-speaking') &&
-     !isChecked('doing-outreach') &&
-     !isChecked('doing-other')
-    ) alert_text += "Please indicate what you'll be doing at the event.\n";
-  if(isChecked('doing-other') && !isFilledOut('doing-other-what')) alert_text += "Please describe what 'other' thing you'll be doing at the event.\n";
-  
   //Everything required is filled out..try to submit the form!
   if(alert_text == '') {
     return trySubmit();
@@ -78,7 +64,19 @@ function validateAndSubmit() {
   return false;
 }
 
+function togglePaymentInfo (e) {
+  var div = document.getElementById('paymentinfo');
+  if (e.checked == true) {
+    div.style.display = 'block';
+  }
+  else {
+    div.style.display = 'none';
+  }
+}
+
 </script>
+
+<h1>Mozilla Reps - Budget Request Form</h1>
 
 <form method="post" action="post_bug.cgi" id="swagRequestForm" enctype="multipart/form-data"
       onSubmit="return validateAndSubmit();">
@@ -94,177 +92,140 @@ function validateAndSubmit() {
   <input type="hidden" name="short_desc" id="short_desc" value="">
   <input type="hidden" name="groups" value="mozilla-reps">
 
-<table>
-<tr>
-  <td align="right"><strong>First Name: <span style="color: red;">*</span></strong></td>
+<table id="reps-form">
+
+<tr class="odd">
+  <td align="right" width="25%"><strong>First Name: <span style="color: red;">*</span></strong></td>
   <td align="left">
-    <input type="text" name="firstname" id="firstname" value="" size="20" maxlength="20" />
+    <input type="text" name="firstname" id="firstname" value="" size="40" placeholder="John">
   </td>
 </tr>
-<tr>
-  <td align="right"><strong>Last Name: <span style="color: red;">*</span></strong></td>
+
+<tr class="even">
+  <td align="right" width="25%"><strong>Last Name: <span style="color: red;">*</span></strong></td>
   <td align="left">
-    <input type="text" name="lastname" id="lastname" value="" size="20" maxlength="20"/>
+    <input type="text" name="lastname" id="lastname" value="" size="40" placeholder="Doe">
   </td>
 </tr>
 
-<tr>
-  <td align="right"><strong>Email Address: <span style="color: red;">*</span></strong></td>
+<tr class="odd">
+  <td align="right" width="25%"><strong>Wiki user profile:<span style="color: red;">*</span></strong></td>
   <td>
-    <input type="text" name="email" id="email" value="" size="50" maxlength="50"/>
+    <input type="text" name="wikiprofile" id="wikiprofile" value="" size="40" placeholder="JohnDoe">
   </td>
 </tr>
 
-<tr>
-  <td align="right"><strong>Wiki User Profile:<span style="color: red;">*</span></strong></td>
+<tr class="even">
+  <td align="right" width="25%"><strong>Event wiki page: <span style="color: red;">*</span></strong></td>
   <td>
-    <input type="text" name="wikiprofile" id="wikiprofile" value="" size="50" maxlength="50"/>
+    <input type="text" name="wikipage" id="wikipage" value="" size="40" placeholder="http://wiki.mozilla.org/JohnDoe">
   </td>
 </tr>
 
-<tr>
-  <td align="right"><strong>CC&nbsp;(optional):</strong></td>
-  <td colspan="3">
-    [% INCLUDE global/userselect.html.tmpl
-       id => "cc"
-       name => "cc"
-       value => cc
-       size => 50
-       multiple => 5
-    %]
+<tr class="odd">
+  <td colspan="2">
+    <strong>Is advance payment needed?</strong>
+    <input type="checkbox" name="advancepayment" id="advancepayment" value="1"
+           onchange="togglePaymentInfo(this);">
+    <div id="paymentinfo" style="display:none;">
+      Please send an email to William at mozilla.com with all the information below:<br>
+      <br>
+      Payment information:<br>
+      Bank name:<br>
+      Bank address: <br> 
+      IBAN:<br>
+      Swift code/BIC:<br>
+      Additional bank details (if necessary):
+    </div>
   </td>
 </tr>
 
-<tr>
-  <td><!-- spacer -->&nbsp;</td>
-</tr>
-
-<tr>
-  <td><!-- spacer -->&nbsp;</td>
-</tr>
-
-<tr>
-  <td align="right"><strong>Event Name: <span style="color: red;">*</span></strong></td>
-  <td>
-    <input type="text" name="eventname" id="eventname" value="" size="50" maxlength="50"/>
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><strong>Event Date: <span style="color: red;">*</span></strong></td>
-  <td>
-    <input type="text" name="date" size="10" id="date"
-      	   align="right" value="" maxlength="10"
-           onchange="updateCalendarFromField(this)">
-    <button type="button" class="calendar_button" id="button_calendar_date"
-            onclick="showCalendar('date')"><span>Calendar</span>
-    </button>
-    <div id="con_calendar_date"></div>
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><strong>Event Location: <span style="color: red;">*</span></strong><br /><small>(City, Country; or City, State)</small></td>
-  <td>
-    <input type="text" name="location" id="location" value="" size="50" maxlength="80" />
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><strong>Event Website: <span style="color: red;">*</span></strong></td>
-  <td>
-    <input type="text" name="website" id="website" value="" size="50" maxlength="120" />
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><strong>Event Description and Key Objectives: <span style="color: red;">*</span></strong></td>
-  <td>
-    <textarea id="goals" name="goals" rows="5" cols="50"></textarea>
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><strong>What will you be doing at the event? <span style="color: red;">*</span></strong></td>
-  <td>
-    <input type="checkbox" id="doing-booth" name="doing" value="Booth or Table"><label for="doing-booth">Booth/Table</label><br />
-    <input type="checkbox" id="doing-speaking" name="doing" value="Speaking Opportunity"><label for="doing-speaking">Speaking Opportunity</label><br />
-    <input type="checkbox" id="doing-outreach" name="doing" value="PR or Media Outreach"><label for="doing-outreach">PR or Media Outreach</label><br />
-    <input type="checkbox" id="doing-other" name="doing" value="Other"><label for="doing-other">Other, please explain:</label>
-          <input type="text" name="doing-other-what" id="doing-other-what" value="" size="50" maxlength="120"><br />
-  </td>
-</tr>
-
-<tr>
-  <td><!-- spacer -->&nbsp;</td>
-</tr>
-
-<tr>
-  <td align="right"><strong>How many attendees will be at the event?</strong></td>
-  <td>
-    <select name="attendees" id="attendees">
-      <option value="--Please Select--" selected>--Please Select--</option>
-      <option value="1-99">1-99</option>
-      <option value="100-499">100-499</option>
-      <option value="500-999">500-999</option>
-      <option value="1000+">1000+</option>
-      </select>
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><strong>Targeted Audience:</strong></td>
-  <td>
-    <select name="audience" id="audience">
-      <option value="--Please Select--" selected>--Please Select--</option>
-      <option value="Contributors">Contributors (Developers, Education, Security, Designers, Localization, Support & Marketing)</option>
-      <option value="Potential New Users">Potential New Users</option>
-      <option value="User Community">User Community (Recent adopters, fans, Mozilla product evangelizers)</option>
-    </select>
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><strong>How will you measure the<br />success of your event? <span style="color: red;">*</span></strong></td>
-  <td>
-    <textarea id="successmeasure" name="successmeasure" rows="5" cols="50"></textarea>
-  </td>
-</tr>
-
-<tr>
-  <td align="right"><strong>Attachment (this is optional):</strong></td>
-  <td>
+<tr class="even">
+  <td colspan="2">
+    <strong>Budget breakdown:</strong><br>
+    Total amount requested in $USD:  <span style="color: red;">*</span>
+    <input type="text" name="budgettotal" id="budgettotal" value="" size="40"><br>
+    Costs per service:
     <table>
-      <tr>
-        <td align="right"><strong><label for="data">File</label>:</strong></td>
-        <td>
-          <em>Enter the path to the file on your computer.</em><br>
-          <input type="file" id="data" name="data" size="50">
-          <input type="hidden" name="contenttypemethod" value="autodetect">
-        </td>
-      </tr>
-      <tr>
-        <td align="right"><strong><label for="description">Description</label>:</strong></td>
-        <td>
-          <em>Describe the attachment briefly.</em><br>
-          <input type="text" id="description" name="description" size="60" maxlength="200">
-        </td>
-      </tr>
+    <tr>
+      <td>Service 1:  <span style="color: red;">*</span></td>
+      <td><input type="text" id="service1" name="service1" size="30"></td>
+      <td>Cost 1: <span style="color: red;">*</span></td>
+      <td><input type="text" id="cost1" name="cost1" size="30"></td>
+    </tr>
+    <tr>
+      <td>Service 2:</td>                        
+      <td><input type="text" id="service2" name="service2" size="30"></td>                        
+      <td>Cost 2:</td>                  
+      <td><input type="text" id="cost2" name="cost2" size="30"></td>
+    </tr>
+    <tr>
+      <td>Service 3:</td>                        
+      <td><input type="text" id="service3" name="service3" size="30"></td>                        
+      <td>Cost 3:</td>                  
+      <td><input type="text" id="cost3" name="cost3" size="30"></td>
+    </tr>
+    <tr>
+      <td>Service 4:</td>                        
+      <td><input type="text" id="service4" name="service4" size="30"></td>                        
+      <td>Cost 4:</td>                  
+      <td><input type="text" id="cost4" name="cost4" size="30"></td>
+    </tr>
+    <tr>
+      <td>Service 5:</td>                        
+      <td><input type="text" id="service5" name="service5" size="30"></td>                        
+      <td>Cost 5:</td>                  
+      <td><input type="text" id="cost5" name="cost5" size="30"></td>
+    </tr>
     </table>
+    Additional costs:<br>
+    <textarea id="costadditional" name="costadditional" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
-  </table>
-  <br>
-  <input type="submit" id="commit" value="Submit Request">
+<tr class="odd">
+  <td colspan="2">
+    <strong>Success measurement:</strong><br>
+    How will the event help push the Mozilla project forward? 
+    <span style="color: red;">*</span><br>
+    <textarea id="successmeasure" name="successmeasure" rows="5" cols="50"></textarea>
+    <table>
+    <tr>
+      <td>Metric 1: <span style="color: red;">*</span></td>
+      <td><input type="text" id="metric1" name="metric1" size="30">
+      <td>Success scenario: <span style="color: red;">*</span></td>
+      <td><input type="text" id="success1" name="success1" size="30">
+    </tr>
+    <tr>
+      <td>Metric 2:</td>                         
+      <td><input type="text" id="metric2" name="metric2" size="30">
+      <td>Success scenario:</td> 
+      <td><input type="text" id="success2" name="success2" size="30">
+    </tr>
+    <tr>
+      <td>Metric 3:</td>                         
+      <td><input type="text" id="metric3" name="metric3" size="30">
+      <td>Success scenario:</td> 
+      <td><input type="text" id="success3" name="success3" size="30">
+    </tr>
+    </table>
+    Additional information:<br>
+    <textarea id="successadditional" name="successadditional" rows="5" cols="50"></textarea>
+  </td>
+</tr>
+
+<tr class="even">
+  <td>&nbsp;</td>
+  <td align="right">
+    <input type="submit" id="commit" value="Submit Request">
+  </td>
+</tr>
+
+</table>
 
 <p>
   <strong><span style="color: red;">*</span></strong> - Required field<br />
   Thanks for contacting us.
 </p>
-
-<script type="text/javascript">
-  createCalendar('date');
-</script>
 
 [% PROCESS global/footer.html.tmpl %]

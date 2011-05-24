@@ -27,23 +27,38 @@
   #%]  
 [% USE Bugzilla %]
 [% cgi = Bugzilla.cgi %]
+
+Requester info:
+
 Requester: [% cgi.param('firstname') %] [%+ cgi.param('lastname') %] 
-Email: [% cgi.param('email') %]
-Wiki Profile: [% cgi.param('wikiprofile') %]
-Event Name: [% cgi.param('eventname') %]
-Event Date: [% cgi.param("date") %]
-Event Location: [% cgi.param("locations") %]
-Event Website: [% cgi.param("website") %]
-Event Description and Objectives:
-[%+ cgi.param("goals") %]
+Wiki user profile: [% cgi.param('wikiprofile') %]
+Event wiki page: [% cgi.param('wikipage') %]
+Advance payment needed: [% IF cgi.param('advancepayment') %]Yes[% ELSE %]No[% END %]
 
-Attendees: [% IF cgi.param('attendees') != "--Please Select--" %][% cgi.param('attendees') %][% END %]
-Target Audience: [% IF cgi.param('audience') != "--Please Select--" %][% cgi.param('audience') %][% END %]
+Budget breakdown: 
 
-We'll be doing: [% cgi.param("doing").join(", ") %][% IF cgi.param('doing-other-what') %]: [% cgi.param('doing-other-what') %][% END %]
+Total amount requested in $USD: [% cgi.param('budgettotal') %]
+Costs per service:
+Service 1: [% cgi.param('service1') %]  Cost: [% cgi.param('cost1') %]
+Service 2: [% cgi.param('service2') %]  Cost: [% cgi.param('cost2') %]
+Service 3: [% cgi.param('service3') %]  Cost: [% cgi.param('cost3') %]
+Service 4: [% cgi.param('service4') %]  Cost: [% cgi.param('cost4') %]
+Service 5: [% cgi.param('service5') %]  Cost: [% cgi.param('cost5') %]
 
-Success will be measured by:
+Additional costs: (add comment box)
+[% cgi.param('costadditional') %]
+
+Success measurement: 
+
+How will the event help push the Mozilla project forward?
 [%+ cgi.param('successmeasure') %]
+
+Metric 1: [% cgi.param('metric1') %]  Success scenario: [% cgi.param('success1') %]
+Metric 2: [% cgi.param('metric2') %]  Success scenario: [% cgi.param('success2') %]
+Metric 3: [% cgi.param('metric3') %]  Success scenario: [% cgi.param('success3') %]
+
+Additional information:
+[%+ cgi.param('successadditional') %]
 
 [%+ cgi.param("comment") IF cgi.param("comment") %]
 

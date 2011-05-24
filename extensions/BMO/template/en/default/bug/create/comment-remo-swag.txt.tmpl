@@ -27,23 +27,41 @@
   #%]  
 [% USE Bugzilla %]
 [% cgi = Bugzilla.cgi %]
-Requester: [% cgi.param('firstname') %] [% cgi.param('lastname') %] 
-Email: [% cgi.param('email') %]
-Wiki Profile: [% cgi.param('wikiprofile') %]
 
-Additional Swag: [% cgi.param("additional") %]
+Requester info: 
 
-Ship to:
+Requester name: [% cgi.param('firstname') %][% " " %][% cgi.param('lastname') %]
+Wiki user profile: [% cgi.param('wikiprofile') %]
+Event wiki page: [% cgi.param('wikipage') %]
+
+Shipping details:
+
+Ship swag before: [% cgi.param('shipdate') %]
+
 [%+ cgi.param("shiptofirstname") +%] [%+ cgi.param("shiptolastname") +%]
 [%+ cgi.param("shiptoaddress") +%]
 [%+ cgi.param("shiptoaddress2") +%]
 [%+ cgi.param("shiptocity") +%] [%+ cgi.param("shiptostate") +%] [%+ cgi.param("shiptopcode") +%]
 [%+ cgi.param("shiptocountry") %]
 
-Phone: [% cgi.param("shiptophone") %]
+Phone:  [% cgi.param("shiptophone") %]
 [%+ IF cgi.param("shiptoidrut") %]Personal ID/RUT: [% cgi.param("shiptoidrut") %][% END %]
 
-Additional comments:
+Addition information for delivery person:
+[%+ cgi.param('shipadditional') %] 
+
+Swag requested: 
+
+Stickers: [% IF cgi.param('stickers') %]Yes[% ELSE %]No[% END %]
+Buttons: [% IF cgi.param('buttons') %]Yes[% ELSE %]No[% END %]
+Posters: [% IF cgi.param('posters') %]Yes[% ELSE %]No[% END %]
+Lanyards: [% IF cgi.param('lanyards') %]Yes[% ELSE %]No[% END %]
+T-shirts: [% IF cgi.param('tshirts') %]Yes[% ELSE %]No[% END %]
+Roll-up banners: [% IF cgi.param('rollupbanners') %]Yes[% ELSE %]No[% END %]
+Horizontal banners: [% IF cgi.param('horizontalbanners') %]Yes[% ELSE %]No[% END %]
+Booth cloth: [% IF cgi.param('boothcloth') %]Yes[% ELSE %]No[% END %]
+Pens: [% IF cgi.param('pens') %]Yes[% ELSE %]No[% END %]
+Other: [% IF cgi.param('otherswag') %][% cgi.param('otherswag') %][% ELSE %]No[% END %]
 
 [%+ cgi.param("comment") IF cgi.param("comment") %]
 
