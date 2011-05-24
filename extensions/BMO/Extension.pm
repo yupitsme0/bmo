@@ -765,7 +765,8 @@ sub object_before_create {
 
     # Block the creation of custom fields via the web UI
     if ($class->isa('Bugzilla::Field') 
-        && Bugzilla->usage_mode == USAGE_MODE_BROWSER) 
+        && Bugzilla->usage_mode == USAGE_MODE_BROWSER
+        && Bugzilla->params->{'urlbase'} eq 'https://bugzilla.mozilla.org/')
     {
         ThrowUserError("bmo_new_cf_prohibited");
     }
