@@ -261,6 +261,11 @@ sub _check_trusted {
     }              
 }
 
+sub _is_field_set {
+    my $value = shift;
+    return $value ne '---' && $value ne '?';
+}
+
 sub bug_check_can_change_field {
     my ($self, $args) = @_;
     my $bug = $args->{'bug'};
@@ -274,13 +279,17 @@ sub bug_check_can_change_field {
     # cf_blocking_* fields or cf_tracking_* fields
     if ($field =~ /^cf_(?:blocking|tracking)_/) {
         # 0 -> 1 is used by show_bug, always allow so we skip this whole part
-        if (!($new_value eq '1' && $old_value eq '0')) {
-            # require privileged access to clear a set flag
-            if (($new_value ne '---' && $new_value ne '?')
-                # require privileged access to set a flag
-                || ($old_value ne '---' && $old_value ne '?'))
-            {
+        if (!($old_value eq '0' && $new_value eq '1')) {
+            # require privileged access to set a flag
+            if (_is_field_set($new_value)) {
                 _check_trusted($field, $blocking_trusted_setters, $priv_results);
+            }
+
+            # require editbugs to clear or re-nominate a set flag
+            elsif (_is_field_set($old_value) 
+                && !$user->in_group('editbugs', $bug->{'product_id'}))
+            {
+                push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
             }
         }
         
