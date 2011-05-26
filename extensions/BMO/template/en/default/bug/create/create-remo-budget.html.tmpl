@@ -95,34 +95,39 @@ function togglePaymentInfo (e) {
 <table id="reps-form">
 
 <tr class="odd">
-  <td align="right" width="25%"><strong>First Name: <span style="color: red;">*</span></strong></td>
-  <td align="left">
+  <td><strong>First Name: <span style="color: red;">*</span></strong></td>
+  <td>
     <input type="text" name="firstname" id="firstname" value="" size="40" placeholder="John">
   </td>
 </tr>
 
 <tr class="even">
-  <td align="right" width="25%"><strong>Last Name: <span style="color: red;">*</span></strong></td>
-  <td align="left">
+  <td><strong>Last Name: <span style="color: red;">*</span></strong></td>
+  <td>
     <input type="text" name="lastname" id="lastname" value="" size="40" placeholder="Doe">
   </td>
 </tr>
 
 <tr class="odd">
-  <td align="right" width="25%"><strong>Wiki user profile:<span style="color: red;">*</span></strong></td>
+  <td><strong>Wiki user profile:<span style="color: red;">*</span></strong></td>
   <td>
     <input type="text" name="wikiprofile" id="wikiprofile" value="" size="40" placeholder="JohnDoe">
   </td>
 </tr>
 
 <tr class="even">
-  <td align="right" width="25%"><strong>Event wiki page: <span style="color: red;">*</span></strong></td>
+  <td><strong>Event wiki page: <span style="color: red;">*</span></strong></td>
   <td>
     <input type="text" name="wikipage" id="wikipage" value="" size="40" placeholder="http://wiki.mozilla.org/JohnDoe">
   </td>
 </tr>
 
 <tr class="odd">
+  <td><!--spacer-->&nbsp;</td>
+  <td><!--spacer-->&nbsp;</td>
+</tr>
+
+<tr class="even">
   <td colspan="2">
     <strong>Is advance payment needed?</strong>
     <input type="checkbox" name="advancepayment" id="advancepayment" value="1"
@@ -138,6 +143,11 @@ function togglePaymentInfo (e) {
       Additional bank details (if necessary):
     </div>
   </td>
+</tr>
+
+<tr class="odd">
+  <td><!--spacer-->&nbsp;</td>
+  <td><!--spacer-->&nbsp;</td>
 </tr>
 
 <tr class="even">
@@ -184,13 +194,18 @@ function togglePaymentInfo (e) {
 </tr>
 
 <tr class="odd">
+  <td><!--spacer-->&nbsp;</td>
+  <td><!--spacer-->&nbsp;</td>
+</tr>
+
+<tr class="even">
   <td colspan="2">
     <strong>Success measurement:</strong><br>
     How will the event help push the Mozilla project forward? 
     <span style="color: red;">*</span><br>
     <textarea id="successmeasure" name="successmeasure" rows="5" cols="50"></textarea>
     <table>
-    <tr>
+    </tr>
       <td>Metric 1: <span style="color: red;">*</span></td>
       <td><input type="text" id="metric1" name="metric1" size="30">
       <td>Success scenario: <span style="color: red;">*</span></td>
@@ -214,7 +229,7 @@ function togglePaymentInfo (e) {
   </td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <td>&nbsp;</td>
   <td align="right">
     <input type="submit" id="commit" value="Submit Request">
@@ -222,6 +237,8 @@ function togglePaymentInfo (e) {
 </tr>
 
 </table>
+
+</form>
 
 <p>
   <strong><span style="color: red;">*</span></strong> - Required field<br />
