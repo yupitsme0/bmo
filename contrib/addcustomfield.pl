@@ -23,29 +23,22 @@ use Bugzilla;
 use Bugzilla::Constants;
 use Bugzilla::Field;
 
-die "Please provide a field name.\n" if !defined $::ARGV[0];
+Bugzilla->usage_mode(USAGE_MODE_CMDLINE);
 
-my $name = $::ARGV[0];
-my $type = FIELD_TYPE_SINGLE_SELECT;
+my $name = shift
+    or die "Please provide a field name.\n";
 
 Bugzilla::Field->create({
     name        => $name,
     description => 'Please give me a description!',
-    type        => $type,
+    type        => FIELD_TYPE_SINGLE_SELECT,
     mailhead    => 0,
     enter_bug   => 1,
     obsolete    => 1,
     custom      => 1,
-    buglist     => ($type == FIELD_TYPE_MULTI_SELECT) ? 0 : 1,
+    buglist     => 0,
 });
-
 print "Done!\n";
-print "Please visit https://bugzilla.mozilla.org/editfields.cgi?action=edit&name=$name to finish setting up this field.\n";
-### EXTREMELY MOZILLA-SPECIFIC CODE FOLLOWS ###
-print "Note to sysadmin:\n";
-print "Please run the following on tm-bugs01-master01:\n";
-foreach my $host ("10.2.72.22","10.2.72.28","10.2.72.34","10.2.70.20_") {
-  print "GRANT SELECT ON `bugs`.`$name` TO 'metrics'\@'$host';\n";
-  print "GRANT SELECT ($name) ON `bugs`.`bugs` TO 'metrics'\@'$host';\n";
-}
 
+my $urlbase = Bugzilla->params->{urlbase};
+print "Please visit ${urlbase}editfields.cgi?action=edit&name=$name to finish setting up this field.\n";

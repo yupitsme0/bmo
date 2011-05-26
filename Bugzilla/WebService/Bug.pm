@@ -472,6 +472,12 @@ sub possible_duplicates {
 sub update {
     my ($self, $params) = validate(@_, 'ids');
 
+    # BMO: Don't allow updating of bugs if disabled
+    if (Bugzilla->params->{disable_bug_updates}) {
+        ThrowErrorPage('bug/process/updates-disabled.html.tmpl',
+            'Bug updates are currently disabled.');
+    }
+
     my $user = Bugzilla->login(LOGIN_REQUIRED);
     my $dbh = Bugzilla->dbh;
 
@@ -566,6 +572,13 @@ sub update {
 
 sub create {
     my ($self, $params) = @_;
+
+    # BMO: Don't allow updating of bugs if disabled
+    if (Bugzilla->params->{disable_bug_updates}) {
+        ThrowErrorPage('bug/process/updates-disabled.html.tmpl',
+            'Bug updates are currently disabled.');
+    }
+
     Bugzilla->login(LOGIN_REQUIRED);
     $params = Bugzilla::Bug::map_fields($params);
     my $bug = Bugzilla::Bug->create($params);
@@ -628,6 +641,12 @@ sub add_attachment {
     my ($self, $params) = validate(@_, 'ids');
     my $dbh = Bugzilla->dbh;
 
+    # BMO: Don't allow updating of bugs if disabled
+    if (Bugzilla->params->{disable_bug_updates}) {
+        ThrowErrorPage('bug/process/updates-disabled.html.tmpl',
+            'Bug updates are currently disabled.');
+    }
+
     Bugzilla->login(LOGIN_REQUIRED);
     defined $params->{ids}
         || ThrowCodeError('param_required', { param => 'ids' });
@@ -674,6 +693,12 @@ sub add_attachment {
 sub add_comment {
     my ($self, $params) = @_;
     
+    # BMO: Don't allow updating of bugs if disabled
+    if (Bugzilla->params->{disable_bug_updates}) {
+        ThrowErrorPage('bug/process/updates-disabled.html.tmpl',
+            'Bug updates are currently disabled.');
+    }
+
     #The user must login in order add a comment
     Bugzilla->login(LOGIN_REQUIRED);
     
@@ -717,6 +742,12 @@ sub add_comment {
 
 sub update_see_also {
     my ($self, $params) = @_;
+
+    # BMO: Don't allow updating of bugs if disabled
+    if (Bugzilla->params->{disable_bug_updates}) {
+        ThrowErrorPage('bug/process/updates-disabled.html.tmpl',
+            'Bug updates are currently disabled.');
+    }
 
     my $user = Bugzilla->login(LOGIN_REQUIRED);
 

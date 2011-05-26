@@ -45,6 +45,7 @@ use Bugzilla::Error;
 use Date::Parse;
 use DateTime;
 use Bugzilla::Extension::BMO::FakeBug;
+use Bugzilla::Mailer;
 
 our $VERSION = '0.1';
 
@@ -774,8 +775,7 @@ sub object_before_create {
 
     # Block the creation of custom fields via the web UI
     if ($class->isa('Bugzilla::Field') 
-        && Bugzilla->usage_mode == USAGE_MODE_BROWSER
-        && Bugzilla->params->{'urlbase'} eq 'https://bugzilla.mozilla.org/')
+        && Bugzilla->usage_mode == USAGE_MODE_BROWSER)
     {
         ThrowUserError("bmo_new_cf_prohibited");
     }
@@ -801,6 +801,35 @@ sub _last_closed_date {
     );
 
     return $self->{'last_closed_date'};
+}
+
+sub field_end_of_create {
+    my $field = shift;
+    # email mozilla's DBAs so they can update the grants for metrics
+    # this really should create a bug in mozilla.org/Server Operations: Database
+
+    if (Bugzilla->params->{'urlbase'} ne 'https://bugzilla.mozilla.org/') {
+        return;
+    }
+
+    if (Bugzilla->usage_mode == USAGE_MODE_CMDLINE) {
+        print "Emailing notification to infra-dbnotices\@mozilla.com\n";
+    }
+
+    my $name = $field->name;
+    my @message;
+    push @message, 'To: infra-dbnotices@mozilla.com';
+    push @message, "Subject: custom field '$name' added to bugzilla.mozilla.org";
+    push @message, 'From: ' . Bugzilla->params->{mailfrom};
+    push @message, '';
+    push @message, "The custom field '$name' has been added to the BMO database.";
+    push @message, '';
+    push @message, 'Please run the following on tm-bugs01-master01:';
+    foreach my $host ("10.2.72.22","10.2.72.28","10.2.72.34","10.2.70.20_") {
+        push @message, "  GRANT SELECT ON `bugs`.`$name` TO 'metrics'\@'$host';";
+        push @message, "  GRANT SELECT ($name) ON `bugs`.`bugs` TO 'metrics'\@'$host';";
+    }
+    MessageToMTA(join("\n", @message));
 }
 
 __PACKAGE__->NAME;

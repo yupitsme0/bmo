@@ -75,6 +75,12 @@ local our $vars = {};
 # Determine whether to use the action specified by the user or the default.
 my $action = $cgi->param('action') || 'view';
 
+# BMO: Don't allow updating of bugs if disabled
+if (Bugzilla->params->{disable_bug_updates} && $cgi->request_method eq 'POST') {
+    ThrowErrorPage('bug/process/updates-disabled.html.tmpl',
+        'Bug updates are currently disabled.');
+}
+
 # You must use the appropriate urlbase/sslbase param when doing anything
 # but viewing an attachment.
 if ($action ne 'view') {

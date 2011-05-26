@@ -57,6 +57,12 @@ my $vars = {};
 # redirect to enter_bug if no field is passed.
 print $cgi->redirect(correct_urlbase() . 'enter_bug.cgi') unless $cgi->param();
 
+# BMO: Don't allow updating of bugs if disabled
+if (Bugzilla->params->{disable_bug_updates}) {
+    ThrowErrorPage('bug/process/updates-disabled.html.tmpl',
+        'Bug updates are currently disabled.');
+}
+
 # Detect if the user already used the same form to submit a bug
 my $token = trim($cgi->param('token'));
 if ($token) {
