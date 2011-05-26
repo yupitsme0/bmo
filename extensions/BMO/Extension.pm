@@ -25,6 +25,21 @@ package Bugzilla::Extension::BMO;
 use strict;
 use base qw(Bugzilla::Extension);
 
+use Bugzilla::Field;
+use Bugzilla::Constants;
+use Bugzilla::Status;
+use Bugzilla::User;
+use Bugzilla::User::Setting;
+use Bugzilla::Util qw(html_quote trick_taint trim datetime_from detaint_natural);
+use Bugzilla::Token;
+use Bugzilla::Error;
+use Bugzilla::Mailer;
+
+use Scalar::Util qw(blessed);
+use Date::Parse;
+use DateTime;
+
+use Bugzilla::Extension::BMO::FakeBug;
 use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       %group_to_cc_map
                                       $blocking_trusted_setters
@@ -33,19 +48,6 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       $other_setters
                                       %always_fileable_group
                                       %product_sec_groups);
-
-use Bugzilla::Field;
-use Bugzilla::Constants;
-use Bugzilla::Status;
-use Bugzilla::User;
-use Bugzilla::User::Setting;
-use Bugzilla::Util qw(html_quote trick_taint trim datetime_from);
-use Scalar::Util qw(blessed);
-use Bugzilla::Error;
-use Date::Parse;
-use DateTime;
-use Bugzilla::Extension::BMO::FakeBug;
-use Bugzilla::Mailer;
 
 our $VERSION = '0.1';
 
@@ -140,6 +142,9 @@ sub page_before_template {
     }
     elsif ($page eq 'fields.html') {
         $vars->{'fields_page'} = 1;
+    }
+    elsif ($page eq 'remo-form-payment.html') {
+        _remo_form_payment($vars);
     }
 }
 
@@ -785,6 +790,119 @@ sub _user_activity {
     $vars->{'who'} = join(',', @who);
     $vars->{'from'} = $from;
     $vars->{'to'} = $to;
+}
+
+sub _remo_form_payment {
+    my ($vars) = @_;
+    my $input = Bugzilla->input_params;
+
+    if ($input->{'action'} eq 'commit') {
+        my $template = Bugzilla->template;
+        my $user     = Bugzilla->user;
+        my $cgi      = Bugzilla->cgi;
+        my $dbh      = Bugzilla->dbh;
+
+        my $bug_id = $input->{'bug_id'};
+        my $token  = $input->{'token'};
+
+        check_token_data($token, 'remo_form_payment');
+
+	    detaint_natural($bug_id);
+        my $bug = Bugzilla::Bug->check($bug_id);
+
+        # Make sure the user can attach to this bug
+        if (!$user->can_edit_product($bug->product_obj->id)) {
+            ThrowUserError("product_edit_denied", 
+                           { product => $bug->product });
+        }
+
+        my ($timestamp) = $dbh->selectrow_array("SELECT NOW()");
+
+        $dbh->bz_start_transaction;
+    
+        # Create the comment to be added based on the form fields from rep-payment-form
+        my $comment;
+        $template->process("pages/comment-remo-form-payment.txt.tmpl", $vars, \$comment)
+            || ThrowTemplateError($template->error());
+        $bug->add_comment($comment, { isprivate => 0 });
+
+        # Attach expense report
+        # FIXME: Would be nice to be able to have the above prefilled comment and
+        # the following attachments all show up under a single comment. But the longdescs
+        # table can only handle one attach_id per comment currently. At least only one
+        # email is sent the way it is done below.
+        my $attachment;
+        if (defined $cgi->upload('expenseform')) {
+            # Determine content-type
+            my $content_type = $cgi->uploadInfo($cgi->param('expenseform'))->{'Content-Type'};
+ 
+            $attachment = Bugzilla::Attachment->create(
+                { bug           => $bug, 
+                  creation_ts   => $timestamp, 
+                  data          => $cgi->upload('expenseform'), 
+                  description   => 'Expense Form', 
+                  filename      => scalar $cgi->upload('expenseform'), 
+                  ispatch       => 0, 
+                  isprivate     => 0, 
+                  isurl         => 0, 
+                  mimetype      => $content_type, 
+                  store_in_file => 0, 
+            });
+
+            # Insert comment for attachment
+            $bug->add_comment('', { isprivate  => 0, 
+                                    type       => CMT_ATTACHMENT_CREATED, 
+                                    extra_data => $attachment->id });
+        }
+
+        # Attach receipts file
+        if (defined $cgi->upload("receipts")) {
+            # Determine content-type
+            my $content_type = $cgi->uploadInfo($cgi->param("receipts"))->{'Content-Type'};
+
+            $attachment = Bugzilla::Attachment->create(
+                { bug           => $bug, 
+                  creation_ts   => $timestamp, 
+                  data          => $cgi->upload('receipts'), 
+                  description   => "Receipts", 
+                  filename      => scalar $cgi->upload("receipts"), 
+                  ispatch       => 0, 
+                  isprivate     => 0, 
+                  isurl         => 0, 
+                  mimetype      => $content_type, 
+                  store_in_file => 0, 
+            });
+
+            # Insert comment for attachment
+            $bug->add_comment('', { isprivate  => 0, 
+                                    type       => CMT_ATTACHMENT_CREATED, 
+                                    extra_data => $attachment->id });
+        }
+
+        $bug->update($timestamp);
+
+        $dbh->bz_commit_transaction;
+
+        delete_token($token);
+    
+        # Define the variables and functions that will be passed to the UI template.
+        $vars->{'attachment'} = $attachment;
+        $vars->{'bugs'} = [ new Bugzilla::Bug($bug_id) ];
+        $vars->{'header_done'} = 1;
+        $vars->{'contenttypemethod'} = 'autodetect';
+ 
+        my $recipients = { 'changer' => $user };
+        $vars->{'sent_bugmail'} = Bugzilla::BugMail::Send($bug_id, $recipients);
+        
+        print $cgi->header();
+        # Generate and return the UI (HTML page) from the appropriate template.
+        $template->process("attachment/created.html.tmpl", $vars)
+            || ThrowTemplateError($template->error()); 
+        exit;
+    }
+    else {
+        $vars->{'token'} = issue_session_token('remo_form_payment');
+    }
 }
 
 sub object_before_create {
