@@ -607,7 +607,7 @@ sub _user_activity {
         }
 
         my @params;
-        for (1..3) {
+        for (1..4) {
             push @params, @who;
             push @params, ($from_dt->ymd(), $to_dt->ymd());
         }
@@ -650,6 +650,24 @@ sub _user_activity {
                 ON profiles.userid = bugs.reporter
              WHERE profiles.login_name IN ($who_bits)
                    AND bugs.creation_ts > ? AND bugs.creation_ts < ?
+
+        UNION ALL
+
+        SELECT 
+                   'longdesc' AS name,
+                   longdescs.bug_id,
+                   NULL AS attach_id,
+                   DATE_FORMAT(longdescs.bug_when, '%Y.%m.%d %H:%i:%s') AS ts,
+                   '' AS removed,
+                   '' AS added,
+                   profiles.login_name,
+                   longdescs.comment_id AS comment_id,
+                   longdescs.bug_when
+              FROM longdescs
+        INNER JOIN profiles
+                ON profiles.userid = longdescs.who
+             WHERE profiles.login_name IN ($who_bits)
+                   AND longdescs.bug_when > ? AND longdescs.bug_when < ?
 
         UNION ALL
 

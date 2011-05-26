@@ -133,9 +133,7 @@
               [% IF change.attachid %]
                 <a href="attachment.cgi?id=[% change.attachid %]">Attachment #[% change.attachid %]</a>
               [% ELSIF change.comment.defined %]
-                 [% comment_desc = field_descs.${change.fieldname} %]
-                 [% comment_num = "Comment $change.comment.count" FILTER bug_link(bug.bug_id, comment_num => change.comment.count) %]
-                 [% comment_desc.replace('^(Comment )?', "$comment_num ") FILTER none %]
+                 [% "Comment $change.comment.count" FILTER bug_link(operation.bug, comment_num => change.comment.count) %]
               [% ELSE %]
                 [%+ field_descs.${change.fieldname} FILTER html %]
               [% END %]
