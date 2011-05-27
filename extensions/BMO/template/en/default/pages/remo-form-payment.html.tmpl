@@ -85,15 +85,15 @@ function getBugInfo (e, div) {
         data = YAHOO.lang.JSON.parse(res.responseText);
         if (data.error) {
           div.innerHTML = "Get bug failed: " + data.error.message;
-	}
+	    }
         div.innerHTML = e.value + " - " + data.result.bugs[0].status + 
-			" - " + data.result.bugs[0].summary;
-	e.disabled = false;
+			            " - " + data.result.bugs[0].summary;
+	    e.disabled = false;
       },
       failure: function(res) {
         if (res.responseText) {
           div.innerHTML = "Get bug failed: " + res.responseText;
-	}
+	    }
       }
     },
     YAHOO.lang.JSON.stringify({
