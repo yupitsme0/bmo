@@ -41,6 +41,7 @@ X-Bugzilla-Priority: [% bug.priority %]
 X-Bugzilla-Assigned-To: [% bug.assigned_to.login %]
 X-Bugzilla-Target-Milestone: [% bug.target_milestone %]
 X-Bugzilla-Changed-Fields: [% changedfields.join(" ") %]
+[%+ Hook.process('header') %]
 [%+ threadingmarker %]
 
 [% UNLESS to_user.settings.product_chooser.value == 'full_product_chooser' %]
