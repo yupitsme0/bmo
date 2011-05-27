@@ -8,23 +8,16 @@
   # implied. See the License for the specific language governing
   # rights and limitations under the License.
   #
-  # The Original Code is the Bugzilla Bug Tracking System.
+  # The Original Code is the BMO Extension
   #
-  # The Initial Developer of the Original Code is Netscape Communications
-  # Corporation. Portions created by Netscape are
-  # Copyright (C) 1998 Netscape Communications Corporation. All
-  # Rights Reserved.
+  # The Initial Developer of the Original Code is the Mozilla Foundation
+  # Portions created by the Initial Developers are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
   #
-  # Contributor(s): Gervase Markham <gerv@gerv.net>
+  # Contributor(s):
+  #   Dave Lawrence <dkl@mozilla.com>
   #%]
-[%# INTERFACE:
-  # This template has no interface.
-  #
-  # Form variables from a bug submission (i.e. the fields on a template from
-  # enter_bug.cgi) can be access via Bugzilla.cgi.param. It can be used to
-  # pull out various custom fields and format an initial Description entry
-  # from them.
-  #%]  
+
 [% USE Bugzilla %]
 [% cgi = Bugzilla.cgi %]
 

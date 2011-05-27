@@ -807,13 +807,20 @@ sub _remo_form_payment {
 
         check_token_data($token, 'remo_form_payment');
 
-	    detaint_natural($bug_id);
+        detaint_natural($bug_id);
         my $bug = Bugzilla::Bug->check($bug_id);
 
         # Make sure the user can attach to this bug
-        if (!$user->can_edit_product($bug->product_obj->id)) {
-            ThrowUserError("product_edit_denied", 
-                           { product => $bug->product });
+        if (!$bug->user->{'canedit'}) {
+            ThrowUserError("remo_payment_bug_edit_denied", 
+                           { bug_id => $bug->id });
+        }
+
+        # Make sure the bug is under the correct product/component
+        if ($bug->product ne 'Mozilla Reps' 
+            || $bug->component ne 'Budget Requests') 
+        {
+            ThrowUserError('remo_payment_invalid_product');    
         }
 
         my ($timestamp) = $dbh->selectrow_array("SELECT NOW()");
