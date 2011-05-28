@@ -796,9 +796,10 @@ sub _remo_form_payment {
     my ($vars) = @_;
     my $input = Bugzilla->input_params;
 
+    my $user = Bugzilla->login(LOGIN_REQUIRED);
+
     if ($input->{'action'} eq 'commit') {
         my $template = Bugzilla->template;
-        my $user     = Bugzilla->user;
         my $cgi      = Bugzilla->cgi;
         my $dbh      = Bugzilla->dbh;
 
