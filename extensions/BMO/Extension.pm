@@ -341,6 +341,13 @@ sub bug_check_can_change_field {
         }
     }
 
+    # You need at least canconfirm to mark a bug as FIXED
+    if ($field eq 'resolution' && $new_value eq 'FIXED') {
+        if (!$user->in_group('canconfirm', $bug->{'product_id'})) {
+            push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
+        }
+    }
+
     # Canconfirm is really "cantriage"; users with canconfirm can also mark 
     # bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
     if ($user->in_group('canconfirm', $bug->{'product_id'})) {

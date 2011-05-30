@@ -129,10 +129,12 @@
             [% NEXT IF NOT legal_value.is_active AND NOT value.contains(legal_value.name).size %]
           
             [%# Purpose: hide field values from those who can't change them %]
-            [% IF field.name.match("^cf_blocking_") OR 
+            [% IF field.name.match("^cf_blocking_") OR
                   field.name.match("^cf_status_") OR
-                  field.name.match("^cf_tracking_") %]
-              [% NEXT UNLESS bug.check_can_change_field(field.name, '---', legal_value.name) OR value.contains(legal_value.name).size %]
+                  field.name.match("^cf_tracking_") OR
+                  field.name == "resolution" %]
+              [% NEXT UNLESS bug.check_can_change_field(field.name, '---', legal_value.name) OR
+                             value.contains(legal_value.name).size %]
             [% END %]
             
             [% IF field.name == "resolution" &&
