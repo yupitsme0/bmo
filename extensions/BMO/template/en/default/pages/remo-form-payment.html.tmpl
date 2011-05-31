@@ -110,12 +110,12 @@ function getBugInfo (e, div) {
         }
         div.innerHTML = bug_message;
         bug_cache[bug_id] = bug_message;
-	    e.disabled = false;
+        e.disabled = false;
       },
       failure: function(res) {
         if (res.responseText) {
           div.innerHTML = "Get bug failed: " + res.responseText;
-	    }
+        }
       }
     },
     YAHOO.lang.JSON.stringify({
