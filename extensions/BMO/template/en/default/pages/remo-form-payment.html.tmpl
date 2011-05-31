@@ -30,14 +30,8 @@
 %]
 
 <script language="javascript" type="text/javascript">
-function trySubmit() {
-  var firstname = document.getElementById('firstname').value;
-  var lastname = document.getElementById('lastname').value;
-  var wikipage = document.getElementById('wikipage').value;
-  var shortdesc = 'Budget Request - ' + firstname + ' ' + lastname + ' - ' + wikipage; 
-  document.getElementById('short_desc').value = shortdesc;
-  return true;
-}
+
+var bug_cache = {};
 
 function validateAndSubmit() {
   var alert_text = '';
@@ -49,14 +43,12 @@ function validateAndSubmit() {
   if(!isFilledOut('expenseform')) alert_text += "Please enter an expense form to upload.\n";
   if(!isFilledOut('receipts')) alert_text += "Please enter a receipts file to upload.\n";
 
-  //Everything required is filled out..try to submit the form!
-  if(alert_text == '') {
-    return trySubmit();
+  if (alert_text) {
+    alert(alert_text);
+    return false;
   }
 
-  //alert text, stay here on the pagee
-  alert(alert_text);
-  return false;
+  return true;
 }
 
 function togglePaymentInfo (e) {
@@ -70,24 +62,54 @@ function togglePaymentInfo (e) {
 }
 
 function getBugInfo (e, div) {
-  e.disabled = true;
-
+  var bug_id = e.value;
   div = document.getElementById(div);
-  div.innerHTML = 'Getting bug info...';
+
+  if (!bug_id) {
+    div.innerHTML = "";
+    return true;
+  }
+
   div.style.display = 'block';
- 
+
+  if (bug_cache[bug_id]) {
+    div.innerHTML = bug_cache[bug_id];
+    e.disabled = false;
+    return true;    
+  }
+
+  e.disabled = true;
+  div.innerHTML = 'Getting bug info...';
+
   YAHOO.util.Connect.setDefaultPostHeader('application/json', true); 
   YAHOO.util.Connect.asyncRequest(
     'POST',
     'jsonrpc.cgi',
     {
       success: function(res) {
+        var bug_message = "";
         data = YAHOO.lang.JSON.parse(res.responseText);
         if (data.error) {
-          div.innerHTML = "Get bug failed: " + data.error.message;
-	    }
-        div.innerHTML = e.value + " - " + data.result.bugs[0].status + 
-			            " - " + data.result.bugs[0].summary;
+          bug_message = "Get bug failed: " + data.error.message;
+        }
+        else if (data.result) {
+          if (data.result.bugs[0].product !== 'Mozilla Reps'
+              || data.result.bugs[0].component !== 'Budget Requests') 
+          {
+            bug_message = "You can only attach budget payment " +
+                          "information to bugs under the product " + 
+                          "'Mozilla Reps' and component 'Budget Requests'.";
+          }
+          else {
+            bug_message = "Bug " + bug_id + " - " + data.result.bugs[0].status +
+                          " - " + data.result.bugs[0].summary;
+          }
+        }
+        else {
+          bug_message = "Get bug failed: " + res.responseText; 
+        }
+        div.innerHTML = bug_message;
+        bug_cache[bug_id] = bug_message;
 	    e.disabled = false;
       },
       failure: function(res) {
@@ -99,10 +121,10 @@ function getBugInfo (e, div) {
     YAHOO.lang.JSON.stringify({
       version: "1.1",
       method: "Bug.get",
-      id: e.value,
+      id: bug_id,
       params: {
-        ids: [ e.value ], 
-        include_fields: [ 'status',  'summary' ]
+        ids: [ bug_id ], 
+        include_fields: [ 'product', 'component', 'status',  'summary' ]
       }
     })
   );    
