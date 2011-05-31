@@ -811,12 +811,27 @@ sub _remo_form_payment {
         my $dbh      = Bugzilla->dbh;
 
         my $bug_id = $input->{'bug_id'};
-        my $token  = $input->{'token'};
-
-        check_token_data($token, 'remo_form_payment');
-
         detaint_natural($bug_id);
         my $bug = Bugzilla::Bug->check($bug_id);
+
+        # Detect if the user already used the same form to submit again
+        my $token = trim($input->{'token'});
+        if ($token) {
+            my ($creator_id, $date, $old_attach_id) = Bugzilla::Token::GetTokenData($token);
+            if (!$creator_id 
+                || $creator_id != $user->id 
+                || $old_attach_id !~ "^remo_form_payment:")
+            {
+                # The token is invalid.
+                ThrowUserError('token_does_not_exist');
+            }
+
+            $old_attach_id =~ s/^remo_form_payment://;
+            if ($old_attach_id) {
+                ThrowUserError('remo_payment_cancel_dupe', 
+                               { bugid => $bug_id, attachid => $old_attach_id });
+            }
+        }
 
         # Make sure the user can attach to this bug
         if (!$bug->user->{'canedit'}) {
@@ -896,9 +911,13 @@ sub _remo_form_payment {
 
         $bug->update($timestamp);
 
-        $dbh->bz_commit_transaction;
+        if ($token) {
+            trick_taint($token);
+            $dbh->do('UPDATE tokens SET eventdata = ? WHERE token = ?', undef,
+                     ("remo_form_payment:" . $attachment->id, $token));
+        }
 
-        delete_token($token);
+        $dbh->bz_commit_transaction;
     
         # Define the variables and functions that will be passed to the UI template.
         $vars->{'attachment'} = $attachment;
@@ -916,7 +935,7 @@ sub _remo_form_payment {
         exit;
     }
     else {
-        $vars->{'token'} = issue_session_token('remo_form_payment');
+        $vars->{'token'} = issue_session_token('remo_form_payment:');
     }
 }
 
