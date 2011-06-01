@@ -25,7 +25,6 @@ From: [% Param('mailfrom') %]
 To: [% emailaddress %]
 Subject: [% PROCESS subject %]
 X-Bugzilla-Type: admin
-[%+ Hook.process('header') %]
 
 A request was canceled from [% remoteaddress %].
 

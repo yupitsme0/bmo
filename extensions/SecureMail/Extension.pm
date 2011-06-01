@@ -181,10 +181,12 @@ sub mailer_before_send {
     my $email = $args->{'email'};
     
     # Decide whether to make secure.
-    my $encrypt_mail = $email->header('X-Bugzilla-Encrypt');
-    my $is_bugmail   = $email->header('X-Bugzilla-Status');
+    # This is a bit of a hack; it would be nice if it were more clear 
+    # what sort a particular email is.
+    my $is_bugmail      = $email->header('X-Bugzilla-Status');
+    my $is_passwordmail = !$is_bugmail && ($email->body =~ /cfmpw.*cxlpw/s);
     
-    if ($encrypt_mail) {
+    if ($is_bugmail || $is_passwordmail) {
         # Convert the email's To address into a User object
         my $login = $email->header('To');        
         my $emailsuffix = Bugzilla->params->{'emailsuffix'};
@@ -205,7 +207,7 @@ sub mailer_before_send {
                 $make_secure = 0;
             }
         }
-        else {
+        elsif ($is_passwordmail) {
             # Mail is made unsecure only if the user does not have a public
             # key and is not in any security groups. So specifying a public
             # key OR being in a security group means the mail is kept secure
