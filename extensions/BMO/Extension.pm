@@ -942,18 +942,6 @@ sub _remo_form_payment {
     }
 }
 
-sub object_before_create {
-    my ($self, $args) = @_;
-    my $class = $args->{'class'};
-
-    # Block the creation of custom fields via the web UI
-    if ($class->isa('Bugzilla::Field') 
-        && Bugzilla->usage_mode == USAGE_MODE_BROWSER)
-    {
-        ThrowUserError("bmo_new_cf_prohibited");
-    }
-}
-
 sub _last_closed_date {
     my ($self) = @_;
     my $dbh = Bugzilla->dbh;
