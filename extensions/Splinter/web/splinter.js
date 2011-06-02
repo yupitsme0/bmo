@@ -113,7 +113,7 @@ Splinter.Bug = {
         if (m[7]) {
             if (m[7] in Splinter.Bug.TIMEZONES) {
                 tzoffset = Splinter.Bug.TIMEZONES[m[7]];
-	    }
+            }
         } else {
             tzoffset = parseInt(m[8], 10);
         }   
@@ -178,7 +178,7 @@ Splinter.Bug.Bug.prototype = {
     },
 
     getAttachment : function(attachmentId) {
-	    var i;
+        var i;
         for (i = 0; i < this.attachments.length; i++) {
             if (this.attachments[i].id == attachmentId) {
                 return this.attachments[i];
@@ -369,7 +369,7 @@ Splinter.Patch.Hunk.prototype = {
     },
 
     iterate : function(cb) {
-	    var i;
+        var i;
         var oldLine = this.oldStart;
         var newLine = this.newStart;
         for (i = 0; i < this.lines.length; i++) {
@@ -396,7 +396,7 @@ Splinter.Patch.File.prototype = {
         this.hunks = hunks;
 
         var l = 0;
-	    var i;
+        var i;
         for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             hunk.location = l;
@@ -406,7 +406,7 @@ Splinter.Patch.File.prototype = {
 
     // A "location" is just a linear index into the lines of the patch in this file
     getLocation : function(oldLine, newLine) {
-	    var i;
+        var i;
         for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             if (oldLine != null && hunk.oldStart > oldLine) {
@@ -438,7 +438,7 @@ Splinter.Patch.File.prototype = {
     },
 
     getHunk : function(location) {
-	    var i;
+        var i;
         for (i = 0; i < this.hunks.length; i++) {
             var hunk = this.hunks[i];
             if (location >= hunk.location && location < hunk.location + hunk.lines.length) {
@@ -494,7 +494,7 @@ Splinter.Patch.Patch.prototype = {
             } else {
                 filename = m[1];
             }
-		
+
             var hunks = [];
             var pos = Splinter.Patch.FILE_START_RE.lastIndex;
             while (true) {
@@ -504,15 +504,15 @@ Splinter.Patch.Patch.prototype = {
                     break;
                 }
 
-		        var oldStart = parseInt(m2[1], 10);
+                var oldStart = parseInt(m2[1], 10);
                 var oldCount = parseInt(m2[2], 10);
                 var newStart = parseInt(m2[3], 10);
                 var newCount = parseInt(m2[4], 10);
    
                 pos = Splinter.Patch.HUNK_START_RE.lastIndex;
-		        Splinter.Patch.HUNK_RE.lastIndex = pos;
-		        var m3 = Splinter.Patch.HUNK_RE.exec(text);
-		        if (m3 == null || m3.index != pos) {
+                Splinter.Patch.HUNK_RE.lastIndex = pos;
+                var m3 = Splinter.Patch.HUNK_RE.exec(text);
+                if (m3 == null || m3.index != pos) {
                     break;
                 }
                 
@@ -541,7 +541,7 @@ Splinter.Patch.Patch.prototype = {
     },
 
     getFile : function(filename) {
-	    var i;
+        var i;
         for (i = 0; i < this.files.length; i++) {
             if (this.files[i].filename == filename) {
                 return this.files[i];
@@ -554,7 +554,7 @@ Splinter.Patch.Patch.prototype = {
 
 Splinter.Review = {
     _removeFromArray : function(a, element) {
-	    var i;
+        var i;
         for (i = 0; i < a.length; i++) {
             if (a[i] === element) {
                 a.splice(i, 1);
@@ -608,7 +608,7 @@ Splinter.Review.Comment.prototype = {
     },
 
     getInReplyTo : function() {
-	    var i;
+        var i;
         var hunk = this.getHunk();
         var line = hunk.lines[this.location - hunk.location];
         for (i = 0; i < line.reviewComments.length; i++) {
@@ -651,7 +651,7 @@ Splinter.Review.File.prototype = {
             line.reviewComments = [];
         }
         line.reviewComments.push(comment);
-	    var i;
+        var i;
         for (i = 0; i <= this.comments.length; i++) {
             if (i == this.comments.length ||
                 this.comments[i].location > location ||
@@ -668,7 +668,7 @@ Splinter.Review.File.prototype = {
     },
 
     getComment : function(location, type) {
-	    var i;
+        var i;
         for (i = 0; i < this.comments.length; i++) {
             if (this.comments[i].location == location &&
                 this.comments[i].type == type) 
@@ -684,7 +684,7 @@ Splinter.Review.File.prototype = {
         var str = "::: " + this.patchFile.filename + "\n";
         var first = true;
 
-	    var i;
+        var i;
         for (i = 0; i < this.comments.length; i++) {
             if (first) {
                 first = false;
@@ -857,7 +857,7 @@ Splinter.Review.Review.prototype = {
         this.intro = null;
         this.files = [];
 
-	    var i;
+        var i;
         for (i = 0; i < patch.files.length; i++) {
             this.files.push(new Splinter.Review.File(this, patch.files[i]));
         }
@@ -865,7 +865,7 @@ Splinter.Review.Review.prototype = {
 
     // cf. parsing in Patch.Patch._init()
     parse : function(text) {
-	Splinter.Review.FILE_START_RE.lastIndex = 0;
+        Splinter.Review.FILE_START_RE.lastIndex = 0;
         var m = Splinter.Review.FILE_START_RE.exec(text);
 
         var intro;
@@ -940,7 +940,7 @@ Splinter.Review.Review.prototype = {
 
                 var lastSegmentOld = 0;
                 var lastSegmentNew = 0;
-		        var i;
+                var i;
                 for (i = 0; i < rawlines.length; i++) {
                     var line = rawlines[i];
                     var count = 1;
@@ -1014,7 +1014,7 @@ Splinter.Review.Review.prototype = {
     },
 
     getFile : function (filename) {
-	    var i;
+        var i;
         for (i = 0; i < this.files.length; i++) {
             if (this.files[i].patchFile.filename == filename) {
                 return this.files[i];
@@ -1034,14 +1034,14 @@ Splinter.Review.Review.prototype = {
             str += '\n';
         }
 
-	    var first = this.intro == null;
-	    var i;
+        var first = this.intro == null;
+        var i;
         for (i = 0; i < this.files.length; i++) {
             var file = this.files[i];
             if (file.comments.length > 0) {
-		        if (first) {
+                if (first) {
                     first = false;
-		        } else {
+                } else {
                     str += '\n';
                 }
                 str += file.toString();
@@ -1101,7 +1101,7 @@ Splinter.ReviewStorage.LocalReviewStorage.prototype = {
     },
 
     _findReview : function(bug, attachment) {
-	    var i;
+        var i;
         for (i = 0 ; i < this._reviewInfos.length; i++) {
             if (this._reviewInfos[i].bugId == bug.id && this._reviewInfos[i].attachmentId == attachment.id) {
                 return i;
@@ -1249,7 +1249,7 @@ Splinter.publishReview = function () {
     // This is a "magic string" used to identify review comments
     var comment = "Review of attachment " + Splinter.theAttachment.id + ":\n" +
                   "-----------------------------------------------------------------\n\n" + 
-		          Splinter.theReview.toString();
+                  Splinter.theReview.toString();
     publish_review.value = comment;
 
     if (Splinter.theAttachment.status 
@@ -1498,11 +1498,11 @@ Splinter.addCommentDisplay = function (commentArea, comment) {
         reviewDate.appendChild(document.createTextNode(Splinter.Utils.formatDate(review.date)));
         reviewDate.appendTo(reviewInfo);
 
-	    var reviewInfoBottom = new Element(document.createElement('div'));
-	    Dom.addClass(reviewInfoBottom, 'review-info-bottom');
-	    reviewInfoBottom.appendTo(reviewInfo);
+        var reviewInfoBottom = new Element(document.createElement('div'));
+        Dom.addClass(reviewInfoBottom, 'review-info-bottom');
+        reviewInfoBottom.appendTo(reviewInfo);
 
-	    reviewInfo.appendTo(reviewerBox);
+        reviewInfo.appendTo(reviewerBox);
     }
 
     comment.div = commentDiv;
@@ -1530,9 +1530,11 @@ Splinter.saveComment = function () {
     }
 
     if (line.reviewComments.length > 0) {
-	commentEditor.parentNode.removeChild(commentEditor);
-	var commentEditorSeparator = Dom.get('commentEditorSeparator');
-	commentEditorSeparator.parentNode.removeChild(commentEditorSeparator);
+        commentEditor.parentNode.removeChild(commentEditor);
+        var commentEditorSeparator = Dom.get('commentEditorSeparator');
+        if (commentEditorSeparator) {
+            commentEditorSeparator.parentNode.removeChild(commentEditorSeparator);
+        }
     } else {
         var parentToRemove = commentArea.parentNode;
         commentArea.parentNode.parentNode.removeChild(parentToRemove);
@@ -1571,12 +1573,12 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
     var nodes = Dom.getElementsByClassName('reviewer-0', 'div', commentArea);
     var i; 
     for (i = 0; i < nodes.length; i++) {
-    	if (separatorClass && Dom.hasClass(nodes[i], separatorClass)) {
-	    nodes[i].parentNode.removeChild(nodes[i]);
+        if (separatorClass && Dom.hasClass(nodes[i], separatorClass)) {
+            nodes[i].parentNode.removeChild(nodes[i]);
         }
         if (Dom.hasClass(nodes[i], typeClass)) {
             nodes[i].parentNode.removeChild(nodes[i]);
-	}
+        }
     }
 
     if (separatorClass) {
@@ -1831,7 +1833,7 @@ Splinter.appendPatchHunk = function (file, hunk, tableType, includeComments, cli
         tbody.appendChild(tr);
 
         if (includeComments && line.reviewComments != null) {
-	    var k;
+            var k;
             for (k = 0; k < line.reviewComments.length; k++) {
                  var commentArea = Splinter.ensureCommentArea(tr);
                  Splinter.addCommentDisplay(commentArea, line.reviewComments[k]);
@@ -1850,13 +1852,13 @@ Splinter.addPatchFile = function (file) {
     switch (file.status) {
     case Splinter.Patch.ADDED:
         statusString = " (new file)";
-	break;
+        break;
     case Splinter.Patch.REMOVED:
         statusString = " (removed)";
-	break;
+        break;
     case Splinter.Patch.CHANGED:
         statusString = "";
-	break;
+        break;
     }
 
     var fileLabel = new Element(document.createElement('div'));
@@ -1902,9 +1904,9 @@ Splinter.appendReviewComment = function (comment, parentDiv) {
         if (comment.file.review == Splinter.theReview) {
             // Immediately start editing the comment again
             var commentDivParent =  Dom.getAncestorByClassName(comment.div, 'comment-area');
-	        var commentArea = commentDivParent.getElementsByTagName('td')[0];
+            var commentArea = commentDivParent.getElementsByTagName('td')[0];
             Splinter.insertCommentEditor(commentArea, comment.file.patchFile, comment.location, comment.type);
-	        Splinter.scrollToElement(Dom.get('commentEditor'));
+            Splinter.scrollToElement(Dom.get('commentEditor'));
         } else {
             // Just scroll to the comment, don't start a reply yet
             Splinter.scrollToElement(Dom.get(comment.div));
@@ -1963,7 +1965,7 @@ Splinter.appendReviewComments = function (review, parentDiv) {
 
         parentDiv.appendChild(Splinter.EL("div", "review-patch-file", file.patchFile.filename));
         var firstComment = true;
-	    var j;
+        var j;
         for (j = 0; j < file.comments.length; j++) {
             if (firstComment) {
                 firstComment = false;
@@ -2262,15 +2264,15 @@ Splinter.showEnterBug = function () {
         var extra = reviewInfo.isDraft ? "(draft)" : "";
 
         reviewData.push([
-	    reviewInfo.bugId, 
-	    reviewInfo.bugId + ":" + reviewInfo.attachmentId + ":" + reviewInfo.attachmentDescription, 
-	    modificationDate, 
+            reviewInfo.bugId, 
+            reviewInfo.bugId + ":" + reviewInfo.attachmentId + ":" + reviewInfo.attachmentDescription, 
+            modificationDate, 
             extra
-	]);
+        ]);
     }
 
     var attachLink = function (elLiner, oRecord, oColumn, oData) {
-	var splitResult = oData.split(':', 3);
+    var splitResult = oData.split(':', 3);
         elLiner.innerHTML = "<a href=\"" + Splinter.newPageUrl(splitResult[0], splitResult[1]) +
                             "\">" + splitResult[1] + " - " + splitResult[2] + "</a>";
     };
@@ -2303,7 +2305,7 @@ Splinter.showChooseAttachment = function () {
     var published = {};
     if (Splinter.reviewStorage) {
         var storedReviews = Splinter.reviewStorage.listReviews();
-	    var j;
+        var j;
         for (j = 0; j < storedReviews.length; j++) {
             var reviewInfo = storedReviews[j];
             if (reviewInfo.bugId == Splinter.theBug.id) {
@@ -2338,24 +2340,24 @@ Splinter.showChooseAttachment = function () {
             extra = '(published)';
         }
 
-	attachData.push([ attachment.id, attachment.description, attachment.date, extra ]);
+        attachData.push([ attachment.id, attachment.description, attachment.date, extra ]);
     }
 
     var attachLink = function (elLiner, oRecord, oColumn, oData) { 
-	elLiner.innerHTML = "<a href=\"" + Splinter.newPageUrl(Splinter.theBug.id, oData) + 
-			    "\">" + oData + "</a>";
+    elLiner.innerHTML = "<a href=\"" + Splinter.newPageUrl(Splinter.theBug.id, oData) + 
+        "\">" + oData + "</a>";
     };
 
     dsConfig = {
-	responseType: YAHOO.util.DataSource.TYPE_JSARRAY,
-	responseSchema: { fields:["id","description","date", "extra"] }
+        responseType: YAHOO.util.DataSource.TYPE_JSARRAY,
+        responseSchema: { fields:["id","description","date", "extra"] }
     };
 
     var columnDefs = [
-	{ key: "id", label: "ID", formatter: attachLink },
-	{ key: "description", label: "Description" },
-	{ key: "date", label: "Date" },
-	{ key: "extra", label: "Extra" }
+        { key: "id", label: "ID", formatter: attachLink },
+        { key: "description", label: "Description" },
+        { key: "date", label: "Date" },
+        { key: "extra", label: "Extra" }
     ];
 
     var dataSource = new YAHOO.util.LocalDataSource(attachData, dsConfig);
@@ -2370,10 +2372,10 @@ Splinter.quickHelpToggle = function () {
     var quickHelpToggle = Dom.get('quickHelpToggle');
 
     if (quickHelpContent.style.display == 'none') {
-	    quickHelpContent.style.display = 'block';
+        quickHelpContent.style.display = 'block';
         quickHelpShow.style.display = 'none';
     } else {
-	    quickHelpContent.style.display = 'none';
+        quickHelpContent.style.display = 'none';
         quickHelpShow.style.display = 'block';
     }
 }; 
@@ -2387,7 +2389,7 @@ Splinter.init = function () {
 
     if (Splinter.theBug == null) {
         Splinter.showEnterBug();
-	    return;
+        return;
     }
 
     Dom.get("bugId").innerHTML = Splinter.theBug.id;
@@ -2417,11 +2419,11 @@ Splinter.init = function () {
         Dom.get("attachLink").setAttribute('href', Splinter.configBugzillaUrl + "attachment.cgi?id=" + Splinter.theAttachment.id);
         Dom.get("attachDesc").innerHTML = Splinter.theAttachment.description;
         Dom.get("attachCreator").appendChild(document.createTextNode(Splinter.Bug._formatWho(Splinter.theAttachment.whoName, 
-								                             Splinter.theAttachment.whoEmail)));
+                                                                                             Splinter.theAttachment.whoEmail)));
         Dom.get("attachDate").innerHTML = Splinter.Utils.formatDate(Splinter.theAttachment.date);
         Dom.setStyle('attachInfo', 'display', 'block');
-	
-	    Dom.setStyle('quickHelpShow', 'display', 'block');
+
+        Dom.setStyle('quickHelpShow', 'display', 'block');
         
         document.title = "Patch Review of Attachment " + Splinter.theAttachment.id + 
                          " for Bug " + Splinter.theBug.id;
@@ -2429,7 +2431,7 @@ Splinter.init = function () {
         Splinter.thePatch = new Splinter.Patch.Patch(Splinter.theAttachment.data);
         if (Splinter.thePatch != null) {
             Splinter.start();
-	}
+        }
     }
 };
 
