@@ -127,6 +127,8 @@ sub user_preferences {
                 }
             }
 
+            _addDefaultSettings($user);
+
         } else {
             # remove watch(s)
 
@@ -304,6 +306,38 @@ sub _deleteComponentWatch {
               WHERE user_id = ? AND product_id = ? AND component_id = ?
     ");
     $sth->execute($user->id, $productId, $componentId);
+}
+
+sub _addDefaultSettings {
+    my ($user) = @_;
+    my $dbh = Bugzilla->dbh;
+
+    my $sth = $dbh->prepare("
+        SELECT 1 
+          FROM email_setting
+         WHERE user_id = ? AND relationship = ?
+    ");
+    $sth->execute($user->id, REL_COMPONENT_WATCHER);
+    return if $sth->fetchrow_array;
+    
+    my @defaultEvents = (
+        EVT_OTHER,
+        EVT_COMMENT,
+        EVT_ATTACHMENT,
+        EVT_ATTACHMENT_DATA,
+        EVT_PROJ_MANAGEMENT,
+        EVT_OPENED_CLOSED,
+        EVT_KEYWORD,
+        EVT_DEPEND_BLOCK,
+        EVT_BUG_CREATED,
+    );
+    foreach my $event (@defaultEvents) {
+        $dbh->do(
+            "INSERT INTO email_setting(user_id,relationship,event) VALUES (?,?,?)",
+            undef,
+            $user->id, REL_COMPONENT_WATCHER, $event
+        );
+    }
 }
 
 __PACKAGE__->NAME;
