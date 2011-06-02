@@ -497,6 +497,9 @@ sub quicksearch_map {
 
             $map->{$pretty_name} = $name;
         }
+        elsif ($name =~ /cf_crash_signature$/) {
+            $map->{'sig'} = $name;
+        }
     }
 }
 
@@ -936,18 +939,6 @@ sub _remo_form_payment {
     }
     else {
         $vars->{'token'} = issue_session_token('remo_form_payment:');
-    }
-}
-
-sub object_before_create {
-    my ($self, $args) = @_;
-    my $class = $args->{'class'};
-
-    # Block the creation of custom fields via the web UI
-    if ($class->isa('Bugzilla::Field') 
-        && Bugzilla->usage_mode == USAGE_MODE_BROWSER)
-    {
-        ThrowUserError("bmo_new_cf_prohibited");
     }
 }
 
