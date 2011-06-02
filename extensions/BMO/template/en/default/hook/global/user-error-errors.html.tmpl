@@ -34,28 +34,4 @@
     [% title = "Invalid Date" %]
     The date '[% date FILTER html %]' is invalid.
 
-[% ELSIF error == "bmo_new_cf_prohibited" %]
-    [% title = "Create New Custom Field Prohibited" %]
-    Creation of new custom fields using the web UI is prohibited and must
-    be performed by a [% terms.Bugzilla %] admin. Please file a bug report
-    under 'bugzilla.mozilla.org:Administration' requesting the new field.
-
-[% ELSIF error == "remo_payment_invalid_product" %]
-   [% title = "Mozilla Reps Payment Invalid Bug" %]
-   You can only attach budget payment information to [% terms.bugs %] under
-   the product 'Mozilla Reps' and component 'Budget Requests'.
-
-[% ELSIF error == "remo_payment_bug_edit_denied" %] 
-   [% title = "Mozilla Reps Payment Bug Edit Denied" %]
-   You do not have permission to edit [% terms.bug %] '[% bug_id FILTER html %]'.
-
-[% ELSIF error == "remo_payment_cancel_dupe" %]
-   [% title = "Already filed payment request" %]
-   You already used the form to file
-   <a href="[% urlbase FILTER html %]attachment.cgi?id=[% attachid FILTER url_quote %]&action=edit">
-   attachment [% attachid FILTER url_quote %]</a>.<br>
-   <br>
-   You can either <a href="[% urlbase FILTER html %]page.cgi?id=remo-form-payment.html">
-   create a new payment request</a> or [% "go back to $terms.bug $bugid" FILTER bug_link(bugid) FILTER none %].
-
 [% END %]
