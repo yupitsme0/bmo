@@ -497,6 +497,9 @@ sub quicksearch_map {
 
             $map->{$pretty_name} = $name;
         }
+        elsif ($name =~ /cf_crash_signature$/) {
+            $map->{'sig'} = $name;
+        }
     }
 }
 
