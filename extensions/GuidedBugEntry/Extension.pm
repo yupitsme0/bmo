@@ -37,12 +37,14 @@ sub enter_bug_start {
     my $cgi = Bugzilla->cgi;
     my $user = Bugzilla->user;
 
+    # hack for skipping old guided code when enabled
+    $vars->{'disable_guided'} = 1;
+
     # force guided format for new users
     if (
         $cgi->param('format') eq 'guided' ||
         (
             $cgi->param('format') eq '' &&
-            $cgi->param('product') eq '' &&
             !$user->in_group('canconfirm')
         )
     ) {
@@ -61,9 +63,12 @@ sub enter_bug_start {
     }
 
     # we use the __default__ format to bypass the guided entry
-    # it isn't understood upstream, so remove it
+    # it isn't understood upstream, so remove it once a product
+    # has been selected.
     $cgi->delete('format') 
-        if ($cgi->param('format') && ($cgi->param('format') eq "__default__"));
+        if $cgi->param('format')
+           && $cgi->param('format') eq "__default__"
+           && $cgi->param('product') ne '';
 }
 
 sub _init_vars {

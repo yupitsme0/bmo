@@ -222,7 +222,10 @@
     cursor: default;
 }
 
-.help_image {
-    cursor: pointer;
+.help-bad {
+    color: #990000;
 }
 
+.help-good {
+    color: #009900;
+}
