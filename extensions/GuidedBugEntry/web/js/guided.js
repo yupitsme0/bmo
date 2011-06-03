@@ -130,6 +130,11 @@ var product = {
 
     Dom.get('product').value = productName;
     Dom.get('product_label').innerHTML = productName;
+    Dom.get('dupes_product_name').innerHTML = productName;
+    Dom.get('list_comp').href = 'describecomponents.cgi?product=' + escape(productName);
+    Dom.get('advanced').href = 'enter_bug.cgi?format=__default__&product=' + escape(productName);
+    Dom.get('advanced_img').href = 'enter_bug.cgi?format=__default__&product=' + escape(productName);
+    Dom.get('advanced_link').href = 'enter_bug.cgi?format=__default__&product=' + escape(productName);
 
     if (productName == '') {
       Dom.addClass("product_support", "hidden");
@@ -243,7 +248,7 @@ var dupes = {
 
   _initDataTable: function() {
     var dataSource = new YAHOO.util.XHRDataSource("jsonrpc.cgi");
-    dataSource.connTimeout = 30000;
+    dataSource.connTimeout = 15000;
     dataSource.connMethodPost = true;
     dataSource.connXhrMode = "cancelStaleRequests";
     dataSource.maxCacheEntries = 3;
@@ -263,6 +268,11 @@ var dupes = {
         }
         return oFullResponse;
       };
+    dataSource.subscribe('dataErrorEvent', 
+      function() {
+        dupes._currentSearchQuery = '';
+      }
+    );
 
     this._dataTable = new YAHOO.widget.DataTable(
       'dupes_list', 
@@ -385,6 +395,7 @@ var dupes = {
     Dom.addClass('dupes_continue', 'hidden');
     this._elList.innerHTML = '';
     this._showProductSupport();
+    this._currentSearchQuery = '';
   },
 
   _showProductSupport: function() {
@@ -525,7 +536,7 @@ var bugForm = {
   },
 
   onShow: function() {
-    Dom.addClass('advanced', 'hidden');
+    Dom.removeClass('advanced', 'hidden');
     // default the summary to the dupes query
     Dom.get('short_desc').value = dupes.getSummary();
     Dom.get('submit').disabled = false;
@@ -580,8 +591,6 @@ var bugForm = {
       elComponents.value = elComponent.value;
       this.onComponentChange(elComponent.value);
     }
-    Dom.get('component_help_describe').href =
-      'describecomponents.cgi?product=' + escape(productName);
 
     // build versions
     var defaultVersion = '';
@@ -746,7 +755,7 @@ var bugForm = {
     return true;
   },
 
-  toggleHelp: function(el) {
+  _initHelp: function(el) {
     var help_id = el.getAttribute('helpid');
     if (!el.panel) {
       if (!el.id)
@@ -763,17 +772,23 @@ var bugForm = {
       el.panel.render();
       Dom.removeClass(help_id, 'hidden');
     }
-    if (Dom.getStyle(Dom.get(help_id).parentNode, 'visibility') == 'visible') {
-      if (this._visibleHelpPanel)
-        this._visibleHelpPanel.hide();
-      el.panel.hide();
-      this._visibleHelpPanel = null;
-    } else {
-      if (this._visibleHelpPanel)
-        this._visibleHelpPanel.hide();
-      el.panel.show();
-      this._visibleHelpPanel = el.panel;
-    }
+  },
+
+  showHelp: function(el) {
+    this._initHelp(el);
+    if (this._visibleHelpPanel)
+      this._visibleHelpPanel.hide();
+    el.panel.show();
+    this._visibleHelpPanel = el.panel;
+  },
+
+  hideHelp: function(el) {
+    if (!el.panel)
+      return;
+    if (this._visibleHelpPanel)
+      this._visibleHelpPanel.hide();
+    el.panel.hide();
+    this._visibleHelpPanel = null;
   }
 }
 
