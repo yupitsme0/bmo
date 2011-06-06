@@ -24,8 +24,8 @@ First Name:
 Last Name:
 [%+ cgi.param('last_name') %]
 
-Age:
-[%+ cgi.param('age') %]
+Under 18 years old:
+[%+ IF cgi.param('underage') %]Yes[% ELSE %]No[% END %]
 
 Sex:
 [%+ cgi.param('sex') %]
