@@ -23,11 +23,9 @@
 
 [% PROCESS global/header.html.tmpl
    title = "Mozilla Corporation Mountain View Presentation Request"
-   style_urls = [ 'skins/standard/attachment.css' ]
-   javascript_urls = [ 'js/attachment.js' ]
-   style_urls = [ 'skins/standard/attachment.css', 'skins/custom/calendar.css' ]
-   javascript_urls = [ 'js/attachment.js', 'js/calendar.js', 'js/field.js' ]
-   yui = [ 'autocomplete' ]
+   javascript_urls = [ 'js/field.js', 'js/util.js' ]
+   style = ".yui-skin-sam .yui-calcontainer { z-index: 1; }"
+   yui = [ 'autocomplete', 'calendar' ]
 %]
 
 <div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Mountain View Presentation Request</div>
@@ -108,9 +106,13 @@ function trySubmit() {
 
 <tr>
   <td align="right"><strong>Date:</strong></td>
-
   <td>
-    <input type="text" name="date" id="date" value="" size="10" maxlength="10" readonly onfocus="cal.showCal(this);"/>
+    <input type="text" id="date" name="date" size="10"
+           onchange="updateCalendarFromField(this)">
+    <button type="button" class="calendar_button" id="button_calendar_date"
+            onclick="showCalendar('date')"><span>Calendar</span>
+    </button>
+    <div id="con_calendar_date"></div>
   </td>
 </tr>
 
@@ -207,5 +209,9 @@ function trySubmit() {
    You will be notified by email of any progress made in resolving your request.
 
 </p>
+
+<script type="text/javascript">
+  createCalendar('date');
+</script>
 
 [% PROCESS global/footer.html.tmpl %]
