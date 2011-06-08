@@ -45,6 +45,7 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       $blocking_trusted_setters
                                       $blocking_trusted_requesters
                                       $status_trusted_wanters
+                                      $status_trusted_setters
                                       $other_setters
                                       %always_fileable_group
                                       %product_sec_groups);
@@ -309,6 +310,8 @@ sub bug_check_can_change_field {
         # Only drivers can set wanted.
         if ($new_value eq 'wanted') {
             _check_trusted($field, $status_trusted_wanters, $priv_results);
+        } else {
+            _check_trusted($field, $status_trusted_setters, $priv_results);
         }
         
         # Require 'canconfirm' to change anything else
