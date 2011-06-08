@@ -1,0 +1,101 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Roadmap Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is Mozilla Foundation
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Dave Lawrence <dkl@mozilla.com>
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% PROCESS global/header.html.tmpl
+   title = "Roadmaps"
+   style_urls = [ "extensions/Roadmap/web/roadmap.css" ]
+%]
+
+[% IF roadmap %]
+  <h2>[% roadmap.name FILTER html %]</h2>
+  <div class="description">[% roadmap.description FILTER html_light %]</div>
+  [% FOREACH milestone = roadmap.milestones %]
+    <h3>[% milestone.name FILTER html %]</h3>
+    [% INCLUDE bar_graph 
+       total        = milestone.stats.total
+       open         = milestone.stats.open
+       closed       = milestone.stats.closed
+       total_query  = milestone.query 
+       open_query   = milestone.query _ "&amp;bug_status=__open__"
+       closed_query = milestone.query _ "&amp;bug_status=__closed__"
+    %]
+  [% END %]
+
+[% ELSE %]
+  <p style="smaller">Click on Roadmap name to see individual milestones.</p>
+
+  [% FOREACH roadmap = roadmap_list %]
+    <h2><a href="[% urlbase FILTER none %]page.cgi?id=roadmap.html&amp;name=[% roadmap.name FILTER html %]">
+        [% roadmap.name FILTER html %]</a></h2>
+    <div class="description">[% roadmap.description FILTER html_light %]</div>
+    [% INCLUDE bar_graph
+       total  = roadmap.stats.total
+       open   = roadmap.stats.open
+       closed = roadmap.stats.closed
+    %]  
+  [% END %]
+[% END %]
+
+[% PROCESS global/footer.html.tmpl %]
+
+[% BLOCK bar_graph %]
+  [% IF total > 0 %][%# No divide by zero %]
+    [% percentage_closed = (closed / total) * 100 FILTER format('%02.2f') %]
+  [% ELSE %]
+    [% percentage_closed = 0 %]
+  [% END %]
+  <div class="bar_graph">
+    <table cellpadding="0" cellspacing="0" width="500px">
+    <tr>
+      <td width="[% percentage_closed FILTER html %]%">
+        <table cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td bgcolor="#3c78b5">
+            <a title="[% percentage_closed FILTER html %]%">
+              <img src="extensions/Roadmap/web/spacer.gif" height=10 width="100%" title="[% percentage_closed FILTER html %]%">
+            </a>
+          </td>
+        </tr>
+        </table>
+      </td>
+      <td width="[% 100 - percentage_closed FILTER html %]%">&nbsp;&nbsp;&nbsp;[% percentage_closed FILTER html %]%</td>
+    </tr>
+    </table>
+  </div
+  <p>
+    <span class="interval">
+      [% IF total_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% total_query FILTER none %]">[% END %]
+      Total number of [% terms.bugs %]: [% total FILTER html %]
+      [% IF total_query %]</a>[% END %]
+    </span> -
+    <span class="interval">
+      [% IF closed_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% closed_query FILTER none %]">[% END %]
+      Closed: [% closed FILTER html %]
+      [% IF closed_query %]</a>[% END %]  
+    </span> -
+    <span class="interval">
+      [% IF open_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% open_query FILTER none %]">[% END %]
+      Active: [% open FILTER html %]
+      [% IF open_query %]</a>[% END %]
+    </span>
+  </p>
+[% END %]

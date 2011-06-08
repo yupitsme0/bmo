@@ -1,0 +1,61 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Roadmap Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is Mozilla Foundation
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Dave Lawrence <dkl@mozilla.com>
+  #%]
+
+[% IF error == "roadmap_already_exists" %]
+  [% title = "Roadmap Already Exists" %]
+  The roadmap '[% name FILTER html %]' already exists.
+
+[% ELSIF error == "roadmap_need_name" %]
+  [% title = "Blank Roadmap Name Not Allowed" %]
+  You must enter a name for this roadmap.
+
+[% ELSIF error == "roadmap_need_description" %]
+  [% title = "Blank Roadmap Description Not Allowed" %]
+  You must enter a description for this roadmap.
+
+[% ELSIF error == "roadmap_need_owner" %]
+  [% title = "Blank Roadmap Owner Not Allowed" %]
+  You must enter an owner for this roadmap.
+
+[% ELSIF error == "roadmap_sortkey_invalid" %]
+  [% title = "Invalid Roadmap Sortkey" %]
+  The sortkey '[% sortkey FILTER html %]' is not in the range
+  [%+ constants.MIN_SMALLINT FILTER html %] &le; sortkey &le;
+  [%+ constants.MAX_SMALLINT FILTER html %].
+
+[% ELSIF error == "roadmap_milestone_already_exists" %]
+  [% title = "Milestone Already Exists" %]
+  The milestone '[% name FILTER html %]' already exists.
+
+[% ELSIF error == "roadmap_milestone_need_name" %]
+  [% title = "Blank Milestone Name Not Allowed" %]
+  You must enter a name for this milestone. 
+
+[% ELSIF error == "roadmap_milestone_need_query" %]
+  [% title = "Blank Milestone Query Not Allowed" %]
+  You must enter a query for this milestone.
+
+[% ELSIF error == "roadmap_milestone_sortkey_invalid" %]
+  [% title = "Invalid Milestone Sortkey" %]
+  The sortkey '[% sortkey FILTER html %]' is not in the range
+  [%+ constants.MIN_SMALLINT FILTER html %] &le; sortkey &le;
+  [%+ constants.MAX_SMALLINT FILTER html %].
+
+[% END %]

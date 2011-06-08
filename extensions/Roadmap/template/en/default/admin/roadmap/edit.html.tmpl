@@ -1,0 +1,106 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the BMO Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is the Mozilla Foundation
+  # Portions created by the Initial Developers are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s): David Lawrence <dkl@mozilla.com>
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% PROCESS global/header.html.tmpl
+   title = "Edit Roadmap"
+   javascript_urls = [ 'js/field.js', 'js/util.js' ]
+   yui = [ 'autocomplete' ]
+   style_urls = [ 'extensions/Roadmap/web/roadmap.css' ]
+%]
+
+<h4>Roadmap Information</h4>
+
+<form method="post" action="page.cgi?id=roadmap/list.html" id="roadmap">
+<input type="hidden" name="token" value="[% token FILTER none %]">
+<input type="hidden" name="old_name" value="[% roadmap.name FILTER html %]">
+<input type="hidden" name="action" value="update">
+
+<table id="roadmap-form">
+
+[% PROCESS "admin/roadmap/edit-common.html.tmpl" %]
+
+<tr class="even">
+  <th>Enabled:</th>
+  <td>
+    <input id="is_active" name="is_active" type="checkbox" value="1" 
+           [% 'checked="checked"' IF roadmap.is_active %]>
+  </td>
+</tr>
+</table>
+
+<h4>Add a New Milestone</h4>
+
+<table id="roadmap-form">
+<tr class="even">
+  <th align="left">Name</th>
+  <td><input type="text" id="milestone_name" name="milestone_name" size="30"></td>
+</tr>
+<tr class="odd">
+  <th align="left">Sortkey</th>
+  <td><input type="text" id="milestone_sortkey" name="milestone_sortkey" size="30"></td>
+</tr>
+<tr class="even">
+  <th align="left">Query</th>
+  <td><input type="text" id="milestone_query" name="milestone_query" size="50"></td>
+</tr>
+<table>
+
+[% IF roadmap.milestones.size > 0 %]
+  <h4>Update Current Milestones</h4>
+
+  <table id="roadmap-form">
+  <tr class="even">
+    <th>Name</th>
+    <th>Sortkey</th>
+    <th>Query</th>
+    <th>Action</th>
+  </tr>  
+  [% FOREACH milestone = roadmap.milestones %]
+    <tr class="[% IF loop.count % 2 == 0 %]even[% ELSE %]odd[% END %]">
+      <td>
+        <input type="text" id="milestone_name_[% milestone.id FILTER html %]" 
+               name="milestone_name_[% milestone.id FILTER html %]" value="[% milestone.name %]"
+               size="30">
+      </td>
+      <td>
+        <input type="text" id="milestone_sortkey_[% milestone.id FILTER html %]" 
+               name="milestone_sortkey_[% milestone.id FILTER html %]" value="[% milestone.sortkey %]"
+               size="20">
+      </td>
+      <td>
+        <input type="text" id="milestone_query_[% milestone.id FILTER html %]" 
+               name="milestone_query_[% milestone.id FILTER html %]" value="[% milestone.query %]"
+               size="50">
+      </td>
+      <td>
+          <a href="[% urlbase FILTER none %]page.cgi?id=roadmap/milestone-confirm-delete.html&amp;action=delete&amp;milestone=[% milestone.id FILTER url_quote %]&amp;name=[% roadmap.name FILTER url_quote %]">Delete</a>
+      </td>
+    </tr>
+  [% END %]
+  </table>
+[% END %]
+
+<br>
+<input type="submit" value="Submit">
+
+</form>
+
+[% PROCESS global/footer.html.tmpl %]

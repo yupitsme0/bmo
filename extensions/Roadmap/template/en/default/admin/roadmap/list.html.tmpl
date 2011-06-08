@@ -1,0 +1,83 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Roadmap Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is Mozilla Foundation
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Dave Lawrence <dkl@mozilla.com>
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% PROCESS global/header.html.tmpl
+  title = "Edit Roadmap" 
+%]
+
+[% edit_contentlink = BLOCK %]page.cgi?id=roadmap/edit.html&amp;name=%%name%%[% END %]
+[% delete_contentlink = BLOCK %]page.cgi?id=roadmap/delete.html&amp;name=%%name%%[% END %]
+
+[% columns = [
+     { 
+       name => "name"
+       heading => "Edit Roadmap..."
+       contentlink => edit_contentlink
+     },
+     { 
+       name => "description"
+       heading => "Description" 
+       allow_html_content => 1
+     },
+     { 
+       name => "owner"
+       heading => "Owner"
+     },
+     {
+       name => "sortkey"
+       heading => "Sortkey"
+     },
+     {
+       name => "is_active"
+       heading => "Active"
+       yesno_field => 1
+     },
+     {
+       heading => "Action"
+       content => "Delete"
+       contentlink => delete_contentlink
+     }
+] %]
+
+
+[%# Overrides the owner with right values %]
+[% overrides.owner = {} %]
+
+[% FOREACH roadmap = roadmap_list %]
+  [% overrides.owner.name.${roadmap.name} = {
+       override_content => 1
+       content => roadmap.owner.login
+     }
+  %]
+[% END %]
+
+[% Hook.process('before_table') %]
+
+[% PROCESS admin/table.html.tmpl
+   columns   = columns
+   data      = roadmap_list 
+   overrides = overrides
+%]
+
+<p><a href="page.cgi?id=roadmap/create.html">Add</a> a new roadmap.</p>
+
+[% PROCESS global/footer.html.tmpl %]
