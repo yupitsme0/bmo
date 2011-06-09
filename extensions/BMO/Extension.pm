@@ -968,7 +968,9 @@ sub _last_closed_date {
 }
 
 sub field_end_of_create {
-    my $field = shift;
+    my ($self, $args) = @_;
+    my $field = $args->{'field'};
+
     # email mozilla's DBAs so they can update the grants for metrics
     # this really should create a bug in mozilla.org/Server Operations: Database
 
