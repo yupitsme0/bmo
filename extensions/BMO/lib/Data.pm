@@ -31,6 +31,7 @@ our @EXPORT_OK = qw($cf_visible_in_products
                     $blocking_trusted_setters
                     $blocking_trusted_requesters
                     $status_trusted_wanters
+                    $status_trusted_setters
                     $other_setters
                     %always_fileable_group
                     %product_sec_groups);
@@ -57,7 +58,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "Toolkit"             => [],
         "Tech Evangelism"     => [],
     },
-    qr/^cf_blocking_thunderbird|cf_status_thunderbird/ => {
+    qr/^cf_tracking_thunderbird|cf_blocking_thunderbird|cf_status_thunderbird/ => {
         "support.mozillamessaging.com"  => [],
         "Thunderbird"                   => [],
         "MailNews Core"                 => [],
@@ -148,29 +149,36 @@ our %group_to_cc_map = (
 # Only users in certain groups can change certain custom fields in 
 # certain ways. 
 #
-# Who can set "cf_blocking_*" to +?
+# Who can set cf_blocking_* or cf_tracking_* to +/-
 our $blocking_trusted_setters = {
     'cf_blocking_fennec'          => 'fennec-drivers',
     'cf_blocking_20'              => 'mozilla-next-drivers',
     qr/^cf_tracking_firefox/      => 'mozilla-next-drivers',
     qr/^cf_blocking_thunderbird/  => 'thunderbird-drivers',
+    qr/^cf_tracking_thunderbird/  => 'thunderbird-drivers',
     qr/^cf_tracking_seamonkey/    => 'seamonkey-council',
     qr/^cf_blocking_seamonkey/    => 'seamonkey-council',
     '_default'                    => 'mozilla-stable-branch-drivers',
 };
 
-# Who can request "cf_blocking_*"?
+# Who can request cf_blocking_* or cf_tracking_*
 our $blocking_trusted_requesters = {
     qr/^cf_blocking_thunderbird/  => 'thunderbird-trusted-requesters',
     '_default'                    => 'everyone',
 };
 
-# Who can set "cf_status_*" to "wanted"?
+# Who can set cf_status_* to "wanted"?
 our $status_trusted_wanters = {
     'cf_status_20'                => 'mozilla-next-drivers',
     qr/^cf_status_thunderbird/    => 'thunderbird-drivers',
     qr/^cf_status_seamonkey/      => 'seamonkey-council',
     '_default'                    => 'mozilla-stable-branch-drivers',
+};
+
+# Who can set cf_status_* to values other than "wanted"?
+our $status_trusted_setters = {
+    qr/^cf_status_thunderbird/    => 'editbugs',
+    '_default'                    => 'everyone',
 };
 
 # Who can set other custom flags (use full field names only, not regex's)
