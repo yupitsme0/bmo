@@ -23,12 +23,11 @@
 
 [% PROCESS global/header.html.tmpl
    title = "Event Request Form"
-   style_urls = [ 'skins/custom/calendar.css' ]
-   javascript_urls = [ 'js/calendar.js', 
-                       'extensions/BMO/web/js/swag.js', 
-                       'extensions/BMO/web/js/form_validate.js', 
-                       'js/field.js' ]
-   yui = [ 'autocomplete' ]
+   javascript_urls = [ 'extensions/BMO/web/js/form_validate.js', 
+                       'js/field.js', 
+                       'js/util.js' ]
+   style = ".yui-skin-sam .yui-calcontainer { z-index: 1; }"
+   yui = [ 'autocomplete', 'calendar' ]
 %]
 
 <div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Event Request Form</div>
@@ -156,7 +155,12 @@ function validateAndSubmit() {
 <tr>
   <td align="right"><strong>Event Date: <span style="color: red;">*</span></strong></td>
   <td>
-    <input type="text" name="date" id="date" value="" size="10" maxlength="10" readonly onfocus="cal.showCal(this);"/>
+    <input type="text" id="date" name="date" size="10"
+           onchange="updateCalendarFromField(this)">
+    <button type="button" class="calendar_button" id="button_calendar_date"
+            onclick="showCalendar('date')"><span>Calendar</span>
+    </button>
+    <div id="con_calendar_date"></div>
   </td>
 </tr>
 
@@ -238,5 +242,9 @@ function validateAndSubmit() {
   Thanks for contacting us.
 
 </p>
+
+<script type="text/javascript">
+  createCalendar('date');
+</script>
 
 [% PROCESS global/footer.html.tmpl %]

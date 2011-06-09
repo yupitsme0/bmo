@@ -42,7 +42,7 @@ my $syntax =
     "the default field type is single_select\n";
 
 my $name = shift || die $syntax;
-my $type = lc shift || 'single_select';
+my $type = lc(shift || 'single_select');
 exists $types{$type} || die "Invalid field type '$type'.\n\n$syntax";
 $type = $types{$type};
 

@@ -64,7 +64,7 @@ function mandatory(ids) {
 }
 
 function submitForm() {
-  if (!mandatory([ 'first_name', 'last_name', 'age', 'sex', 'city', 'country',
+  if (!mandatory([ 'first_name', 'last_name', 'sex', 'city', 'country',
                    'languages', 'learn', 'motivation', 'privacy' ])
   ) {
     alert('Please enter all the required fields.');
@@ -112,8 +112,8 @@ function submitForm() {
 </tr>
 
 <tr class="odd">
-  <th>Age:[% mandatory %]</th>
-  <td><input id="age" name="age" size="40" placeholder="24"></td>
+  <th>Are you under 18 years old?:</th>
+  <td><input type="checkbox" id="underage" name="underage" value="1"></td>
 </tr>
 
 <tr class="even">

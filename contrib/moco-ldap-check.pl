@@ -41,17 +41,23 @@ with Mozilla's LDAP repository.
 To run this script you need:
   - a bugzilla.mozilla.org admin account
   - a Mozilla LDAP account
-  - to be connected to the Mozilla network (directly or via the VPN)
 
 EOF
 
-my $bugzillaLogin = get_text('Bugzilla Login: ');
-my $bugzillaPassword = get_text('Bugzilla Password: ', 1);
-my $ldapLogin = get_text('LDAP Login: ');
-my $ldapPassword = get_text('LDAP Password: ', 1);
+my $bugzillaLogin = get_text('bl', 'Bugzilla Login: ');
+my $bugzillaPassword = get_text('bp', 'Bugzilla Password: ', 1);
+my $ldapLogin = get_text('ll', 'LDAP Login: ');
+my $ldapPassword = get_text('lp', 'LDAP Password: ', 1);
 
 sub get_text {
-    my($prompt, $password) = @_;
+    my($switch, $prompt, $password) = @_;
+
+    for (my $i = 0; $i <= $#ARGV; $i++) {
+        if ($ARGV[$i] eq "-$switch") {
+            return $ARGV[$i + 1];
+        }
+    }
+
     print STDERR $prompt;
     my $response = '';
     ReadMode 4;
@@ -112,8 +118,8 @@ my %bugzilla;
 
     my $ua = LWP::UserAgent->new();
     $ua->cookie_jar($cookie_jar);
-    $response = $ua->get('https://bugzilla.mozilla.org/editusers.cgi?' +
-        'action=list&matchvalue=login_name&matchstr=&matchtype=substr&' +
+    $response = $ua->get('https://bugzilla.mozilla.org/editusers.cgi?' .
+        'action=list&matchvalue=login_name&matchstr=&matchtype=substr&' .
         'grouprestrict=1&groupid=42');
     if (!$response->is_success) {
         die $response->status_line;
@@ -146,7 +152,7 @@ my %bugzilla;
 my %ldap;
 {
     print STDERR "Logging into LDAP...\n";
-    my $ldap = Net::LDAP->new('addressbook',
+    my $ldap = Net::LDAP->new('addressbook.mozilla.com',
         scheme => 'ldaps', onerror => 'die') or die "$@";
     $ldap->bind("mail=$ldapLogin,o=com,dc=mozilla", password => $ldapPassword);
     my $result = $ldap->search(
