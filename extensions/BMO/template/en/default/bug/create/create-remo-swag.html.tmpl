@@ -51,6 +51,7 @@ function validateAndSubmit() {
   if(!isFilledOut('lastname')) alert_text += "Please enter your last name\n";
   if(!isFilledOut('wikiprofile')) alert_text += "Please enter your wiki user profile\n";
   if(!isFilledOut('wikipage')) alert_text += "Please enter the event wiki page.\n";
+  if(!isFilledOut('attendance')) alert_text += "Please enter the estimated attendance.\n";
   if(!isFilledOut('shiptofirstname')) alert_text += "Please enter the shipping first name\n";
   if(!isFilledOut('shiptolastname')) alert_text += "Please enter the shipping last name\n";
   if(!isFilledOut('shiptoaddress')) alert_text += "Please enter the ship to address\n";
@@ -116,6 +117,13 @@ function validateAndSubmit() {
     <input type="text" name="wikipage" id="wikipage" size="40">
   </td>
 </tr>
+
+<tr class="even">
+  <td><strong>Estimated Attendance: <span style="color: red;" title="Required">*</span></strong></td>
+  <td>
+    <input type="text" name="attendance" id="attendance" size="40">
+  </td>
+</tr
 
 <tr class="odd">
   <td><!--spacer-->&nbsp;</td>
@@ -265,9 +273,10 @@ function validateAndSubmit() {
 
 <p>
   Quantities of different swag items requested that will actually be shipped 
-  are depend on stock availability and number of attendees. Mozilla cannot 
-  guarantee that all items requested will be in stock at the time of shipment 
-  and you will be notified in case an item cannot be shipped.
+  depend on stock availability and number of attendees. Mozilla cannot guarantee 
+  that all items requested will be in stock at the time of shipment and you will 
+  be notified in case an item cannot be shipped. Please request swag at least 1 
+  month before desired delivery date.
 </p>
 
 <p>
