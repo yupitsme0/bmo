@@ -1,6 +1,10 @@
 .description { 
-    margin: 1em 0 2em;
+    margin: 1em;
 }
+
+.legend {
+    margin-top: 0.5em;
+} 
 
 #roadmap-form {
     width: 700px;
@@ -51,7 +55,17 @@
     background: #FFC1C1;
 }
 
-.bar_graph td {
-    border: 1px solid gray;
+.bar_graph {  
+    height: 20px;  
+    border: 1px solid #A1CA68;  
+    width: 400px;  
+    text-align: left;  
 }
 
+.graph_color {  
+    height: 17px;  
+    background: url(./bar_graph.gif) repeat-x top;  
+    color: #fff;  
+    text-align: center;  
+    padding-top: 3px;  
+}

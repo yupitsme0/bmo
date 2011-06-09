@@ -26,7 +26,7 @@
 %]
 
 [% IF roadmap %]
-  <p style="font-size:smaller;">
+  <p>
     <a href="[% urlbase FILTER none %]page.cgi?id=roadmap.html">Back to roadmap list</a>
   </p>
 
@@ -47,7 +47,9 @@
   [% END %]
 
 [% ELSE %]
-  <p style="font-size:smaller;">Click on roadmap name to see individual milestones.</p>
+  <p>
+    Click on roadmap name to see individual milestones.
+  </p>
 
   [% FOREACH roadmap = roadmap_list %]
     <h2><a href="[% urlbase FILTER none %]page.cgi?id=roadmap.html&amp;name=[% roadmap.name FILTER html %]">
@@ -69,28 +71,17 @@
   [% ELSE %]
     [% percentage_closed = 0 %]
   [% END %]
+
   <div class="bar_graph">
-    <table cellpadding="0" cellspacing="0" width="500px">
-    <tr>
-      <td width="[% percentage_closed FILTER html %]%">
-        <table cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-          <td bgcolor="#3c78b5">
-            <a title="[% percentage_closed FILTER html %]%">
-              <img src="extensions/Roadmap/web/spacer.gif" height=10 width="100%" title="[% percentage_closed FILTER html %]%">
-            </a>
-          </td>
-        </tr>
-        </table>
-      </td>
-      <td width="[% 100 - percentage_closed FILTER html %]%">&nbsp;&nbsp;&nbsp;[% percentage_closed FILTER html %]%</td>
-    </tr>
-    </table>
-  </div
-  <p>
+    <div class="graph_color" style="width:[% percentage_closed FILTER html %]%;"></div>
+  </div>
+  <p class="legend">
+    <span class="interval">Percentage: 
+      [% percentage_closed FILTER html %]%
+    </span> -
     <span class="interval">
       [% IF total_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% total_query FILTER none %]">[% END %]
-      Total number of [% terms.bugs %]: [% total FILTER html %]
+      Total: [% total FILTER html %]
       [% IF total_query %]</a>[% END %]
     </span> -
     <span class="interval">
