@@ -52,9 +52,9 @@ Please wait...
 </div>
 
 <div id="advanced">
-  <a onclick="return guided.onAdvancedClick()" href="javascript:void(0)"><img
+  <a id="advanced_img" href="enter_bug.cgi?format=__default__"><img
   src="extensions/GuidedBugEntry/web/images/advanced.png" width="16" height="16" border="0"></a>
-  <a onclick="return guided.onAdvancedClick()" href="javascript:void(0)">Switch to the advanced bug entry form</a>
+  <a id="advanced_link" href="enter_bug.cgi?format=__default__">Switch to the advanced bug entry form</a>
 </div>
 
 <script type="text/javascript">
@@ -217,7 +217,7 @@ dupes.setLabels(
    desc="For technical support or help getting your site to work with Mozilla."
 %]
 [% INCLUDE exit_block
-   name="I have an idea or suggestion"
+   name="I'd prefer to leave quick feedback rather than filing a detailed bug report"
    icon="idea.png"
    href="http://input.mozilla.org/idea/"
    desc="For offering us ideas on how to enhance Firefox."
@@ -262,6 +262,11 @@ None of the above; my bug is in:
 [% INCLUDE page_title
    step_number = "2"
 %]
+
+<p>
+Product: <b><span id="dupes_product_name">?</span></b>:
+(<a href="javascript:void(0)" onclick="guided.setStep('product')">Change</a>)
+</p>
 
 <table border="0" cellpadding="5" cellspacing="0" id="product_support" class="hidden">
 <tr>
@@ -332,15 +337,18 @@ explain how to write effective bug reports.</li>
     <div id="summary_help" class="hidden help">
     A sentence which summarises the problem. Please be descriptive and use lots of keywords.<br>
     <br>
-    <font color="#990000">Bad example</font> : mail crashed<br>
-    <font color="#009900">Good example</font> : crash if I close the mail window while checking for new POP mail 
+    <span class="help-bad">Bad example</span>: mail crashed<br>
+    <span class="help-good">Good example</span>: crash if I close the mail window while checking for new POP mail
     </div>
   </td>
 </tr>
 
 <tr class="even">
   <td class="label">Product:</td>
-  <td id="productTD"><span id="product_label"></span></td>
+  <td id="productTD">
+    <span id="product_label"></span>
+    (<a href="javascript:void(0)" onclick="guided.setStep('product')">Change</a>)
+  </td>
   <td id="versionTD" class="hidden">
     <span class="label">Version:
     <select id="version_select" onchange="bugForm.onVersionChange(this.value)">
@@ -354,7 +362,14 @@ explain how to write effective bug reports.</li>
 </tr>
 
 <tr class="odd">
-  <td class="label">Component:</td>
+  <td>
+    <div class="label">
+    Component:
+    </div>
+    (<a id="list_comp" href="describecomponents.cgi" target="_blank"
+    title="Show a list of all components and descriptions (in a new window)."
+    >List</a>)
+  </td>
   <td valign="top" colspan="2">
     <select id="component_select" onchange="bugForm.onComponentChange(this.value)" class="mandatory">
     </select>
@@ -364,9 +379,8 @@ explain how to write effective bug reports.</li>
     [% PROCESS help id="component_help" %]
     <div id="component_help" class="hidden help">
     The area where the problem occurs.<br>
-    <br>To pick the right component, you could use the same one as similar bugs
-    you found in your search, or read the full list of
-    <a id="component_help_describe" target="_blank">component descriptions</a> (opens in new window) if you need more help.
+    <br>
+    If you are unsure which component to use, select a 'General' component.
     </div>
 </tr>
 
@@ -379,7 +393,12 @@ explain how to write effective bug reports.</li>
   to cause the problem.  Providing step-by-step instructions
   would be ideal.<br>
   <br>
-  Include any relevant URLs and special setup steps.
+  Include any relevant URLs and special setup steps.<br>
+  <br>
+  <span class="help-bad">Bad example</span>: Mozilla crashed. You suck!<br>
+  <span class="help-good">Good example</span>: After a crash which happened
+  when I was sorting in the Bookmark Manager, all of my top-level bookmark
+  folders beginning with the letters Q to Z are no longer present. 
   </div>
   </td>
 </tr>
@@ -473,5 +492,6 @@ explain how to write effective bug reports.</li>
 
 [% BLOCK help %]
 <img src="extensions/GuidedBugEntry/web/images/help.png" width="16" height="16" class="help_image"
- title="Display help for this field." helpid="[% id FILTER html %]" onclick="bugForm.toggleHelp(this)">
+ helpid="[% id FILTER html %]" onMouseOver="bugForm.showHelp(this)" onMouseOut="bugForm.hideHelp(this)"
+ >
 [% END %]
