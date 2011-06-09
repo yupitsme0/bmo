@@ -132,7 +132,7 @@
             <td>
               [% IF change.attachid %]
                 <a href="attachment.cgi?id=[% change.attachid %]">Attachment #[% change.attachid %]</a>
-              [% ELSIF change.comment.defined %]
+              [% ELSIF change.comment.defined && change.fieldname == 'longdesc' %]
                  [% "Comment $change.comment.count" FILTER bug_link(operation.bug, comment_num => change.comment.count) %]
               [% ELSE %]
                 [%+ field_descs.${change.fieldname} FILTER html %]
