@@ -22,6 +22,7 @@
 [% PROCESS global/header.html.tmpl
    title = "Create Roadmap"
    javascript_urls = [ 'js/field.js', 'js/util.js' ]
+   style_urls = [ 'extensions/Roadmap/web/roadmap.css' ]
    yui = [ 'autocomplete' ]
 %]
 
@@ -29,7 +30,7 @@
 <input type="hidden" name="token" value="[% token FILTER none %]">
 <input type="hidden" name="action" value="new">
 
-<table>
+<table id="roadmap-form">
 
 [% PROCESS "admin/roadmap/edit-common.html.tmpl" %]
 

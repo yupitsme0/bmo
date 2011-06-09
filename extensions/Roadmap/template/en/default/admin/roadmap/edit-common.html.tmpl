@@ -24,7 +24,7 @@
   </td>
 </tr>
 <tr class="odd">
-  <th>Description:</th>
+  <th>Description</th>
   <td>
     [% INCLUDE global/textarea.html.tmpl
        id      = 'description'
@@ -37,7 +37,7 @@
   </td>
 </tr>
 <tr class="even">
-  <th>Owner:</th>
+  <th>Owner</th>
   <td>
     [% INCLUDE global/userselect.html.tmpl
        id    = 'owner'
@@ -48,7 +48,7 @@
   </td>
 </tr>
 <tr class="odd">
-  <th>Sortkey:</th>
+  <th>Sortkey</th>
   <td>
     <input id="sortkey" name="sortkey" size="40" 
            value="[% (roadmap.sortkey.defined ? roadmap.sortkey : 0) FILTER html %]">

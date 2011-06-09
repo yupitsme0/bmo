@@ -26,10 +26,16 @@
 %]
 
 [% IF roadmap %]
+  <p style="font-size:smaller;">
+    <a href="[% urlbase FILTER none %]page.cgi?id=roadmap.html">Back to roadmap list</a>
+  </p>
+
   <h2>[% roadmap.name FILTER html %]</h2>
+
   <div class="description">[% roadmap.description FILTER html_light %]</div>
   [% FOREACH milestone = roadmap.milestones %]
     <h3>[% milestone.name FILTER html %]</h3>
+
     [% INCLUDE bar_graph 
        total        = milestone.stats.total
        open         = milestone.stats.open
@@ -41,7 +47,7 @@
   [% END %]
 
 [% ELSE %]
-  <p style="smaller">Click on Roadmap name to see individual milestones.</p>
+  <p style="font-size:smaller;">Click on roadmap name to see individual milestones.</p>
 
   [% FOREACH roadmap = roadmap_list %]
     <h2><a href="[% urlbase FILTER none %]page.cgi?id=roadmap.html&amp;name=[% roadmap.name FILTER html %]">
