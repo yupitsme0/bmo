@@ -30,16 +30,6 @@
 <script type="text/javascript">
 var Dom = YAHOO.util.Dom;
 
-function onExistingClick() {
-  if (Dom.get('existing').checked) {
-    Dom.removeClass('existingProjectsTR', 'hidden');
-    Dom.removeClass('existingActiveTR', 'hidden');
-  } else {
-    Dom.addClass('existingProjectsTR', 'hidden');
-    Dom.addClass('existingActiveTR', 'hidden');
-  }
-}
-
 function mandatory(ids) {
   result = true;
   for (i in ids) {
@@ -148,18 +138,14 @@ function submitForm() {
 </tr>
 
 <tr class="odd">
-  <th>Already Mozilla contributor?</th>
-  <td><input id="existing" name="existing" type="checkbox" value="1" onclick="onExistingClick()"></td>
+  <th colspan="2">
+    How are you involved with Mozilla?
+  </th>
 </tr>
-
-<tr class="odd hidden" id="existingProjectsTR">
-  <th class="subTH">Mozilla projects involved in:</th>
-  <td><input id="existingProjects" name="existingProjects" size="40" placeholder="Add-ons, l10n, SUMO, QA, ..."></td>
-</tr>
-
-<tr class="odd hidden" id="existingActiveTR">
-  <th class="subTH">Active since:</th>
-  <td><input id="existingActive" name="existingActive" size="40" placeholder="Year"></td>
+<tr class="odd">
+  <td colspan="2">
+    <textarea id="involved" name="involved" rows="4" placeholder="Add-ons,  l10n,  SUMO,  QA,  ..."></textarea>
+  </td>
 </tr>
 
 <tr class="even">
@@ -202,9 +188,5 @@ function submitForm() {
 </table>
 
 </form>
-
-<script type="text/javascript">
-onExistingClick();
-</script>
 
 [% PROCESS global/footer.html.tmpl %]
