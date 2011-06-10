@@ -82,7 +82,7 @@ my $bugs = $dbh->selectall_arrayref("
     SELECT bugs.bug_id, bugs.short_desc
       FROM bugs LEFT JOIN keywords ON bugs.bug_id = keywords.bug_id
      WHERE (keywords.keywordid = ? OR keywords.keywordid = ?)
-           AND bugs.status_whiteboard NOT REGEXP '\\[notacrash\\]'
+           AND bugs.status_whiteboard NOT REGEXP '\\\\[notacrash\\\\]'
            AND bugs.short_desc REGEXP '\\\\[@.+\\\\]'
            AND (bugs.cf_crash_signature IS NULL OR bugs.cf_crash_signature = '')
   ORDER BY bugs.bug_id",
