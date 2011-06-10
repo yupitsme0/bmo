@@ -24,8 +24,8 @@ First Name:
 Last Name:
 [%+ cgi.param('last_name') %]
 
-Age:
-[%+ cgi.param('age') %]
+Under 18 years old:
+[%+ IF cgi.param('underage') %]Yes[% ELSE %]No[% END %]
 
 Sex:
 [%+ cgi.param('sex') %]
@@ -37,7 +37,7 @@ Country:
 [%+ cgi.param('country') %]
 
 Local Community:
-[% IF cgi.param('communit') %]
+[% IF cgi.param('community') %]
 [%+ cgi.param('community') %]
 [% ELSE %]
 -
@@ -50,25 +50,11 @@ IM:
 -
 [% END %]
 
-Existing Mozilla Contributor:
-[% IF cgi.param('existing') == "1" %]
-yes
-
-Mozilla projects involved in:
-[% IF cgi.param('existingProjects') %]
-[%+ cgi.param('existingProjects') %]
+Currently Involved with Mozilla:
+[% IF cgi.param('involved') %]
+[%+ cgi.param('involved') %]
 [% ELSE %]
 -
-[% END %]
-
-Active Since:
-[% IF cgi.param('existingActive') %]
-[%+ cgi.param('existingActive') %]
-[% ELSE %]
--
-[% END %]
-[% ELSE %]
-no
 [% END %]
 
 Languages Spoken:
