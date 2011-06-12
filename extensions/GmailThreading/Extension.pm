@@ -43,14 +43,11 @@ sub mailer_before_send {
     }
 
     # make a bugzilla user object
-    my $user;
-    eval {
-        $user = Bugzilla::User->new({ name => $login });
-    };
-    return if $@;
+    my $user = Bugzilla::User->new({ name => $login })  
+        or return;
 
     # check recipient's setting
-    if (!$user || $user->settings->{gmail_threading}->{value} ne 'On') {
+    if ($user->settings->{gmail_threading}->{value} ne 'On') {
         return;
     }
 
