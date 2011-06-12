@@ -168,36 +168,36 @@ sub stats {
     my $dbh = Bugzilla->dbh;
    
     my $search = Bugzilla::Search->new(
-	fields   => ['bug_id'],
+	    fields   => ['bug_id'],
         params   => Bugzilla::CGI->new($self->query), 
         no_perms => 1
     );
-    my $total_sth = $dbh->prepare($search->getSQL());
-    $total_sth->execute();
-    my $total = $total_sth->rows;
+    my $total_bugs  = $dbh->selectall_arrayref($search->getSQL());
+    my $total_count = scalar @$total_bugs;
 
     $search = Bugzilla::Search->new(
-	fields   => ['bug_id'],
+	    fields   => ['bug_id'],
         params   => Bugzilla::CGI->new($self->query . "&bug_status=__open__"), 
         no_perms => 1
     );
-    my $open_sth = $dbh->prepare($search->getSQL());
-    $open_sth->execute();
-    my $open = $open_sth->rows;
+    my $open_bugs  = $dbh->selectall_arrayref($search->getSQL());
+    my $open_count = scalar @$open_bugs;
 
     $search = Bugzilla::Search->new(
-	fields   => ['bug_id'],
+	    fields   => ['bug_id'],
         params   => Bugzilla::CGI->new($self->query . "&bug_status=__closed__"),
         no_perms => 1
     );
-    my $closed_sth = $dbh->prepare($search->getSQL());
-    $closed_sth->execute();
-    my $closed = $closed_sth->rows;
+    my $closed_bugs  = $dbh->selectall_arrayref($search->getSQL());
+    my $closed_count = scalar @$closed_bugs;
 
     $self->{'stats'} = {
-        open   => $open, 
-        closed => $closed, 
-        total  => $total
+        open        => $open_count, 
+        closed      => $closed_count, 
+        total       => $total_count, 
+        open_bugs   => $open_bugs, 
+        closed_bugs => $closed_bugs, 
+        total_bugs  => $total_bugs
     };
 
     return $self->{'stats'};

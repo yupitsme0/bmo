@@ -209,24 +209,35 @@ sub stats {
 
     return $self->{'stats'} if exists $self->{'stats'} && !$refresh;
     
-    my $total = 0;
-    my $open = 0;
-    my $closed = 0;
+    my %total;
+    my %open;
+    my %closed;
 
+    # We get the union of each of the bug lists in case some of the milestones
+    # contain duplicate bug ids in there queries.
     foreach my $milestone (@{ $self->milestones }) {
         my $results = $milestone->stats;
-        $total  += $results->{'total'};
-        $open   += $results->{'open'};
-        $closed += $results->{'closed'};
+        foreach my $bug_id (@{ $results->{'total_bugs'} }) {
+            $total{$bug_id} = 1;
+        }
+        foreach my $bug_id (@{ $results->{'open_bugs'} }) {
+            $open{$bug_id} = 1;
+        }
+        foreach my $bug_id (@{ $results->{'closed_bugs'} }) {
+            $closed{$bug_id} = 1;
+        }
     }
     
     $self->{'stats'} = {
-        total  => $total, 
-        open   => $open, 
-        closed => $closed, 
+        total       => scalar keys %total, 
+        open        => scalar keys %open, 
+        closed      => scalar keys %closed,
+        total_bugs  => [ keys %total ],
+        open_bugs   => [ keys %open ],
+        closed_bugs => [ keys %closed ],
     };
-    return $self->{'stats'};
 
+    return $self->{'stats'};
 }
 
 1;

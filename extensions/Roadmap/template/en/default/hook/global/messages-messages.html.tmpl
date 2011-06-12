@@ -51,4 +51,34 @@
   [% ELSE %]
     No changes made to roadmap <em>[% roadmap.name FILTER html %]</em>.
   [% END %]
+
+  [% IF milestone_changes.added || milestone_changes.changes.size %] 
+    Changes to the roadmap <em>[% roadmap.name FILTER html %]</em> milestones 
+    have been saved:
+    <ul>
+      [% IF milestone_changes.added %]
+        <li>The milestone <em>[% milestone_changes.added FILTER html %]</em> has been created.
+      [% END %]
+      [% IF milestone_changes.changes.size %]
+        [% FOREACH milestone = milestone_changes.changes.keys %]
+          [% IF milestone_changes.changes.$milestone.size %]
+            <li>
+              Changes to the milestone <em>[% milestone FILTER html %]</em> have been saved:
+              <ul>
+                [% IF milestone_changes.changes.$milestone.name.defined %]
+                  <li>Name updated to <em>[%  milestone_changes.changes.$milestone.name.1 FILTER html %]</em></li>
+                [% END %]
+                [% IF milestone_changes.changes.$milestone.sortkey.defined %]
+                  <li>Sortkey updated to <em>[%  milestone_changes.changes.$milestone.sortkey.1 FILTER html %]</em>
+                [% END %]
+                [% IF milestone_changes.changes.$milestone.query.defined %]
+                  <li>Query has been updated.</li>
+                [% END %]
+              </ul>
+            </li>
+          [% END %]
+        [% END %]
+      [% END %]
+    </ul>
+  [% END %]
 [% END %]

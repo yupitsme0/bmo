@@ -22,11 +22,12 @@
 [% PROCESS global/header.html.tmpl
    title = "Edit Roadmap"
    javascript_urls = [ 'js/field.js', 'js/util.js' ]
-   yui = [ 'autocomplete' ]
-   style_urls = [ 'extensions/Roadmap/web/roadmap.css' ]
+   yui = [ 'autocomplete', 'calendar' ]
+   style_urls = [ 'extensions/Roadmap/web/roadmap.css', 
+                  'skins/custom/calendar.css' ]
 %]
 
-<h4>Roadmap Information</h4>
+<h3>Roadmap Information</h3>
 
 <form method="post" action="page.cgi?id=roadmap/list.html" id="roadmap">
 <input type="hidden" name="token" value="[% token FILTER none %]">
@@ -37,7 +38,7 @@
 
 [% PROCESS "admin/roadmap/edit-common.html.tmpl" %]
 
-<tr class="even">
+<tr class="odd">
   <th>Enabled:</th>
   <td>
     <input id="is_active" name="is_active" type="checkbox" value="1" 
@@ -46,7 +47,7 @@
 </tr>
 </table>
 
-<h4>Add a New Milestone</h4>
+<h3>Add a New Milestone</h3>
 
 <table id="roadmap-form">
 <tr class="even">
@@ -64,7 +65,7 @@
 <table>
 
 [% IF roadmap.milestones.size > 0 %]
-  <h4>Update Current Milestones</h4>
+  <h3>Update Current Milestones</h3>
 
   <table id="roadmap-form">
   <tr class="even">

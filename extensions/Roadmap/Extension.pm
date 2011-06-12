@@ -168,13 +168,14 @@ sub page_before_template {
             $roadmap->set_description($input->{'description'});
             $roadmap->set_owner($input->{'owner'});
             $roadmap->set_sortkey($input->{'sortkey'});
+            $roadmap->set_deadline($input->{'deadline'});
             $roadmap->set_is_active($input->{'is_active'});
             my $changes = $roadmap->update();
 
             # Add a new milestone
             if ($input->{'milestone_name'}) {
                 Bugzilla::Extension::Roadmap::Roadmap::Milestone->create({
-		    roadmap_id => $roadmap->id,
+		            roadmap_id => $roadmap->id,
                     name       => $input->{'milestone_name'}, 
                     sortkey    => $input->{'milestone_sortkey'}, 
                     query      => $input->{'milestone_query'},                
@@ -185,17 +186,18 @@ sub page_before_template {
             }
 
             # Update existing milestones
+            $vars->{'milestone_changes'}{'changes'} = {};
             foreach my $milestone (@{ $roadmap->milestones }) {
                 if ($input->{'milestone_name_' . $milestone->id}) {
+		            my $old_name = $milestone->name;
                     $milestone->set_name($input->{'milestone_name_' . $milestone->id});
                     $milestone->set_sortkey($input->{'milestone_sortkey_' . $milestone->id});
                     $milestone->set_query($input->{'milestone_query_' . $milestone->id});
                     my $changes = $milestone->update();
-                    $vars->{'milestone_changes'}{'changes'} = {};
-                    $vars->{'milestone_changes'}{'changes'}{$milestone->name} = $changes;
+                    $vars->{'milestone_changes'}{'changes'}{$old_name} = $changes;
                 }
             }
-            
+
             $vars->{'message'} = 'roadmap_updated';
             $vars->{'roadmap'} = $roadmap;
             $vars->{'changes'} = $changes;

@@ -29,22 +29,39 @@
   <p>
     <a href="[% urlbase FILTER none %]page.cgi?id=roadmap.html">Back to roadmap list</a>
   </p>
-
-  <h2>[% roadmap.name FILTER html %]</h2>
-
-  <div class="description">[% roadmap.description FILTER html_light %]</div>
-  [% FOREACH milestone = roadmap.milestones %]
-    <h3>[% milestone.name FILTER html %]</h3>
-
+  
+  <div class="roadmap">
+    <h2>[% roadmap.name FILTER html %]</h2>
+  
+    [% IF roadmap.deadline %]
+      <div class="deadline">
+        <b>Deadline:</b> [% roadmap.deadline FILTER html %]
+      </div>
+    [% END %]
+  
+    <div class="description">[% roadmap.description FILTER html_light %]</div>
+    
+    <h3>Total Progress</h3>    
     [% INCLUDE bar_graph 
-       total        = milestone.stats.total
-       open         = milestone.stats.open
-       closed       = milestone.stats.closed
-       total_query  = milestone.query 
-       open_query   = milestone.query _ "&amp;bug_status=__open__"
-       closed_query = milestone.query _ "&amp;bug_status=__closed__"
+       total  = roadmap.stats.total
+       open   = roadmap.stats.open
+       closed = roadmap.stats.closed
     %]
-  [% END %]
+   
+    <h3>Milestones</h3>
+    [% FOREACH milestone = roadmap.milestones %]
+      <h4>[% milestone.name FILTER html %]</h4>
+  
+      [% INCLUDE bar_graph 
+         total        = milestone.stats.total
+         open         = milestone.stats.open
+         closed       = milestone.stats.closed
+         total_query  = milestone.query 
+         open_query   = milestone.query _ "&amp;bug_status=__open__"
+         closed_query = milestone.query _ "&amp;bug_status=__closed__"
+      %]
+    [% END %]
+  </div>
 
 [% ELSE %]
   <p>
@@ -52,15 +69,25 @@
   </p>
 
   [% FOREACH roadmap = roadmap_list %]
-    <h2><a href="[% urlbase FILTER none %]page.cgi?id=roadmap.html&amp;name=[% roadmap.name FILTER html %]">
-        [% roadmap.name FILTER html %]</a></h2>
-    <div class="description">[% roadmap.description FILTER html_light %]</div>
-    [% INCLUDE bar_graph
-       total  = roadmap.stats.total
-       open   = roadmap.stats.open
-       closed = roadmap.stats.closed
-    %]  
-  [% END %]
+    <div class="roadmap">
+      <h2><a href="[% urlbase FILTER none %]page.cgi?id=roadmap.html&amp;name=[% roadmap.name FILTER html %]">
+          [% roadmap.name FILTER html %]</a></h2>
+  
+      [% IF roadmap.deadline %]
+        <div class="deadline">
+          <b>Deadline:</b> [% roadmap.deadline FILTER html %]
+        </div>
+      [% END %]
+  
+      <div class="description">[% roadmap.description FILTER html_light %]</div>
+  
+      [% INCLUDE bar_graph
+         total  = roadmap.stats.total
+         open   = roadmap.stats.open
+         closed = roadmap.stats.closed
+      %]  
+    [% END %]
+  </div>
 [% END %]
 
 [% PROCESS global/footer.html.tmpl %]
@@ -72,27 +99,29 @@
     [% percentage_closed = 0 %]
   [% END %]
 
-  <div class="bar_graph">
-    <div class="graph_color" style="width:[% percentage_closed FILTER html %]%;"></div>
+  <div class="progress">
+    <div class="bar_graph">
+      <div class="graph_color" style="width:[% percentage_closed FILTER html %]%;"></div>
+    </div>
+    <p class="legend">
+      <span class="interval">Percentage: 
+        [% percentage_closed FILTER html %]%
+      </span> -
+      <span class="interval">
+        [% IF total_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% total_query FILTER none %]">[% END %]
+        Total: [% total FILTER html %]
+        [% IF total_query %]</a>[% END %]
+      </span> -
+      <span class="interval">
+        [% IF closed_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% closed_query FILTER none %]">[% END %]
+        Closed: [% closed FILTER html %]
+        [% IF closed_query %]</a>[% END %]  
+      </span> -
+      <span class="interval">
+        [% IF open_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% open_query FILTER none %]">[% END %]
+        Active: [% open FILTER html %]
+        [% IF open_query %]</a>[% END %]
+      </span>
+    </p>
   </div>
-  <p class="legend">
-    <span class="interval">Percentage: 
-      [% percentage_closed FILTER html %]%
-    </span> -
-    <span class="interval">
-      [% IF total_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% total_query FILTER none %]">[% END %]
-      Total: [% total FILTER html %]
-      [% IF total_query %]</a>[% END %]
-    </span> -
-    <span class="interval">
-      [% IF closed_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% closed_query FILTER none %]">[% END %]
-      Closed: [% closed FILTER html %]
-      [% IF closed_query %]</a>[% END %]  
-    </span> -
-    <span class="interval">
-      [% IF open_query %]<a href="[% urlbase FILTER none %]buglist.cgi?[% open_query FILTER none %]">[% END %]
-      Active: [% open FILTER html %]
-      [% IF open_query %]</a>[% END %]
-    </span>
-  </p>
 [% END %]

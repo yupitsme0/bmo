@@ -20,7 +20,8 @@
 <tr class="even">
   <th>Name:</th>
   <td>
-    <input id="name" name="name" size="40" value="[% roadmap.name FILTER html %]">
+    <input type="text" id="name" name="name" 
+           size="40" value="[% roadmap.name FILTER html %]">
   </td>
 </tr>
 <tr class="odd">
@@ -50,7 +51,21 @@
 <tr class="odd">
   <th>Sortkey</th>
   <td>
-    <input id="sortkey" name="sortkey" size="40" 
+    <input type="text" id="sortkey" name="sortkey" size="40" 
            value="[% (roadmap.sortkey.defined ? roadmap.sortkey : 0) FILTER html %]">
+  </td>
+</tr>
+<tr class="even">
+  <th>Deadline</th>
+  <td>
+    <input type="text" id="deadline" name="deadline" 
+           size="10" value="[% roadmap.deadline FILTER html %]">
+    <button type="button" class="calendar_button" id="button_calendar_date"
+            onclick="showCalendar('deadline')"><span>Calendar</span>
+    </button>
+    <div id="con_calendar_deadline"></div>
+    <script type="text/javascript">
+      createCalendar('deadline');
+    </script> 
   </td>
 </tr>

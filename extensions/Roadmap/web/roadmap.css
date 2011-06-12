@@ -1,9 +1,32 @@
+.roadmap h2 {
+    background: none repeat scroll 0 0;
+    border-bottom: 2px solid #747E93;
+    margin: 0;
+}
+
+.roadmap .deadline {
+    color: #888888;
+    font-size: 13px;
+    font-style: italic;
+    margin: .1em 0 1em;
+}
+
+.progress {
+    margin: 0 1em;
+    max-width: 70%;
+    width: 40em;
+}
+
 .description { 
     margin: 1em;
 }
 
 .legend {
-    margin-top: 0.5em;
+    clear: left;
+    font-size: 12px;
+    font-style: italic;
+    margin: 1em 1em 2em;
+    white-space: nowrap;
 } 
 
 #roadmap-form {
