@@ -36,15 +36,20 @@ use Bugzilla::Extension::Roadmap::Util;
 ####    Initialization     ####
 ###############################
 
-use constant DB_COLUMNS => qw(
-    id
-    name
-    description
-    owner
-    sortkey
-    isactive
-    deadline
-);
+# This is a sub because it needs to call other subroutines.
+sub  DB_COLUMNS {
+    my $dbh = Bugzilla->dbh;
+    my @columns = (qw(
+        id
+        name
+        description
+        owner
+        sortkey
+        isactive),
+        $dbh->sql_date_format('deadline', '%Y-%m-%d') . ' AS deadline',
+    );
+    return @columns;
+}
 
 use constant UPDATE_COLUMNS => qw(
     name

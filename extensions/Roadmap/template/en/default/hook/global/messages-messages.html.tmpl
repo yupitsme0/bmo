@@ -44,6 +44,9 @@
       [% IF changes.owner.defined %]
         <li>Owner updated to <em>[% roadmap.owner.login FILTER html %]</em></li>
       [% END %]
+      [% IF changes.deadline.defined %]
+        <li>Deadline updated to <em>[% roadmap.deadline FILTER html %]</em></li>
+      [% END %]
       [% IF changes.description.defined %]
         <li>Description has been updated</li>
       [% END %]

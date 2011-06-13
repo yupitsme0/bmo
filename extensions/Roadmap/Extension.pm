@@ -28,6 +28,7 @@ use Bugzilla::Constants;
 use Bugzilla::Util;
 use Bugzilla::Error;
 use Bugzilla::Token;
+use Bugzilla::Group;
 
 use Bugzilla::Extension::Roadmap::Util;
 use Bugzilla::Extension::Roadmap::Roadmap;
@@ -121,6 +122,29 @@ sub db_schema_abstract_schema {
     };
 }
 
+sub install_update_db {
+    my $group = new Bugzilla::Group({ name => 'editroadmaps' });
+    if (!$group) {
+        Bugzilla::Group->create({ 
+            name        => 'editroadmaps', 
+            description => 'Edit Roadmaps', 
+            userregexp  => '', 
+            isactive    => 1,  
+            icon_url    => '', 
+            isbuggroup  => 0
+        });
+    }
+}
+
+sub template_before_process {
+    my ($self, $args) = @_;
+    my ($vars, $file) = @$args{qw(vars file)};
+
+    if ($file =~ /^global\/common-links/) {
+        $vars->{'roadmaps'} = scalar @{ Bugzilla::Extension::Roadmap::Roadmap->match({ isactive => 1 }) };
+    }
+};
+
 sub page_before_template {
     my ($self, $args) = @_;
     my ($vars, $page) = @$args{qw(vars page_id)};
@@ -194,7 +218,7 @@ sub page_before_template {
                     $milestone->set_sortkey($input->{'milestone_sortkey_' . $milestone->id});
                     $milestone->set_query($input->{'milestone_query_' . $milestone->id});
                     my $changes = $milestone->update();
-                    $vars->{'milestone_changes'}{'changes'}{$old_name} = $changes;
+                    $vars->{'milestone_changes'}{'changes'}{$old_name} = $changes if %$changes;
                 }
             }
 

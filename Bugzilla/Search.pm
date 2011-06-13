@@ -1088,9 +1088,10 @@ sub init {
                       "    OR (bugs.cclist_accessible = 1 AND cc.who IS NOT NULL) " .
                       "    OR (bugs.assigned_to = $userid) ";
             if (Bugzilla->params->{'useqacontact'}) {
-                $query .= "OR (bugs.qa_contact = $userid)) ";
+                $query .= "OR (bugs.qa_contact = $userid) ";
             }
         }
+        $query .= ") ";
     }
 
     # For some DBs, every field in the SELECT must be in the GROUP BY.
