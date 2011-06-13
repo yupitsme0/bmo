@@ -24,6 +24,8 @@ use base qw(Bugzilla::Extension);
 use Bugzilla::User::Setting;
 use Bugzilla::Util;
 
+use Encode qw(encode);
+
 our $VERSION = '1';
 
 sub mailer_before_send {
@@ -41,11 +43,8 @@ sub mailer_before_send {
     }
 
     # make a bugzilla user object
-    my $user;
-    eval {
-        $user = Bugzilla::User->new({ name => $login });
-    };
-    return if $@;
+    my $user = Bugzilla::User->new({ name => $login })  
+        or return;
 
     # check recipient's setting
     if ($user->settings->{gmail_threading}->{value} ne 'On') {
@@ -56,7 +55,14 @@ sub mailer_before_send {
     my $bug_word = template_var('terms')->{Bug};
     my $subject = $header->header('subject');
     $subject =~ s/^(\[$bug_word \d+\] )New: /$1/;
-    $header->header_set('subject', $subject);
+
+    # we need to re-encode the subject because Email::MIME decodes it
+    if (Bugzilla->params->{'utf8'} && !utf8::is_utf8($subject)) {
+        utf8::decode($subject);
+    }
+    # avoid excessive line wrapping done by Encode.
+    local $Encode::Encoding{'MIME-Q'}->{'bpl'} = 998;
+    $header->header_set('subject', encode('MIME-Q', $subject));
 }
 
 sub install_before_final_checks {
