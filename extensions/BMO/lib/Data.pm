@@ -107,6 +107,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         ],
     },
     qr/^cf_crash_signature$/ => {
+        "addons.mozilla.org"    => [], 
         "Add-on SDK"            => [], 
         "Calendar"              => [], 
         "Camino"                => [], 
