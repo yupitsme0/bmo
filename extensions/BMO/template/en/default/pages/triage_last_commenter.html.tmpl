@@ -1,0 +1,143 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the BMO Extension
+  #
+  # The Initial Developer of the Original Code is the Mozilla Foundation
+  # Portions created by the Initial Developers are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   Byron Jones <bjones@mozilla.com>
+  #%]
+
+[% INCLUDE global/header.html.tmpl
+  title = "UNCONFIRMED Last Commenter Reports"
+  yui = [ 'autocomplete', 'calendar' ]
+  javascript_urls = [ "js/util.js", "js/field.js" ]
+  style_urls = [ "skins/standard/buglist.css" ]
+%]
+
+<style>
+.hidden {
+  display: none;
+}
+
+#report tr.bugitem:hover {
+  background: #ccccff;
+}
+
+#report-header {
+  background: #dddddd;
+}
+</style>
+
+[% PROCESS "global/field-descs.none.tmpl" %]
+[% PROCESS bug/time.html.tmpl %]
+
+<form id="activity_form" name="activity_form" action="page.cgi" method="get">
+<input type="hidden" name="id" value="triage_last_commenter.html">
+<input type="hidden" name="action" value="run">
+
+<p>
+Show UNCONFIRMED bugs in
+<select name="product" id="product">
+  <option value=""></option>
+  [% IF Param('useclassification') %]
+    [% FOREACH c = classifications %]
+      [% NEXT IF c.name == 'Graveyard' %]
+      <optgroup label="[% c.name FILTER html %]">
+      [% FOREACH p = user.get_selectable_products(c.id) %]
+        [% IF p.components.size %]
+          <option value="[% p.id FILTER html %]"
+            [% " selected" IF product == p.id %]>
+            [% p.name FILTER html %]
+          </option>
+        [% END %]
+      [% END %]
+      </optgroup>
+    [% END %]
+  [% ELSE %]
+    [% FOREACH p = productp %]
+      <option value="[% p.name FILTER html %]"
+        [% " selected" IF lsearch(default.product, p.name) != -1 %]>
+        [% p.name FILTER html %]
+      </option>
+    [% END %]
+  [% END %]
+</select>
+where the last commenter
+<select name="commenter" id="commenter">
+  <option value="reporter" [% IF commenter == 'reporter' %] selected [% END %]>is the reporter</option>
+  <option value="canconfirm" [% IF commenter == 'canconfirm' %] selected [% END %]>does not have canconfirm</option>
+</select>
+&nbsp;
+<input type="submit" value="Generate Report">
+</p>
+</form>
+
+[% IF action == 'run' %]
+
+[% IF bugs.size > 0 %]
+  <p>
+    Found [% bugs.size %] [%+ terms.bug %][% 's' IF bugs.size != 1 %]:
+  </p>
+  <table border="0" cellpadding="4" cellspacing="0" id="report" width="100%">
+    <tr id="report-header">
+      <th>Bug</th>
+      <th>Summary</th>
+      <th>Reporter / Date</th>
+      [% IF commenter != 'reporter' %]
+        <th>Commenter / Date</th>
+      [% END %]
+      <th>Last Comment</th>
+    </tr>
+
+    [% FOREACH bug = bugs %]
+      [% count = loop.count() %]
+      <tr class="bz_bugitem [% count % 2 == 1 ? "bz_row_odd" : "bz_row_even" %]">
+        <td>
+          [% bug.id FILTER bug_link(bug.id) FILTER none %]
+        </td>
+        <td>
+          [% bug.summary FILTER html %]
+        </td>
+        <td>
+          [% INCLUDE global/user.html.tmpl who = bug.reporter %]<br>
+          [% bug.creation_ts FILTER html FILTER no_break %]
+        </td>
+        [% IF commenter != 'reporter' %]
+          <td>
+            [% INCLUDE global/user.html.tmpl who = bug.commenter %]<br>
+            [% bug.comment_ts FILTER html FILTER no_break %]
+          </td>
+        [% END %]
+        <td>
+          [% bug.comment FILTER html %]
+        </td>
+      </tr>
+    [% END %]
+  </table>
+
+  <p>
+    <a href="buglist.cgi?bug_id=
+    [%- FOREACH bug = bugs %][% bug.id %],[% END -%]
+    ">Show as a [% terms.Bug %] List</a>
+  </p>
+
+[% ELSE %]
+  <p>
+    No bugs found.
+  </p>
+[% END %]
+
+[% END %]
+
+[% INCLUDE global/footer.html.tmpl %]

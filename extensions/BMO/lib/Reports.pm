@@ -292,4 +292,111 @@ sub user_activity_report {
     $vars->{'to'} = $to;
 }
 
+sub triage_last_commenter_report {
+    my ($vars) = @_;
+    my $dbh = Bugzilla->dbh;
+    my $input = Bugzilla->input_params;
+    my $user = Bugzilla->user;
+
+    my @selectable_products = sort { lc($a->name) cmp lc($b->name) }
+        @{$user->get_selectable_products};
+    Bugzilla::Product::preload(\@selectable_products);
+    $vars->{'products'} = \@selectable_products;
+
+    if (Bugzilla->params->{'useclassification'}) {
+        $vars->{'classifications'} = $user->get_selectable_classifications;
+    }
+
+    my @products = @{Bugzilla->user->get_accessible_products()};
+    @products = sort { lc($a->name) cmp lc($b->name) } @products;
+    $vars->{'accessible_products'} = \@products;
+
+    if ($input->{'action'} eq 'run' && $input->{'product'}) {
+        my $query = "
+              SELECT bug_id, short_desc, reporter, creation_ts
+                FROM bugs
+               WHERE product_id = ?
+                     AND bug_status = 'UNCONFIRMED'
+            ORDER BY creation_ts
+        ";
+        my ($product_id) = $input->{product} =~ /(\d+)/;
+        my $list = $dbh->selectall_arrayref($query, undef, $product_id);
+
+        my @bugs;
+
+        my $comment_count_sql = "
+            SELECT COUNT(*)
+              FROM longdescs
+             WHERE bug_id = ?
+        ";
+
+        my $comment_sql = "
+              SELECT who, bug_when, type, thetext, extra_data
+                FROM longdescs
+               WHERE bug_id = ?
+        ";
+        if (!Bugzilla->user->is_insider) {
+            $comment_sql .= " AND isprivate = 0 ";
+        }
+        $comment_sql .= "
+            ORDER BY bug_when DESC
+               LIMIT 1
+        ";
+
+        my $attach_sql = "
+            SELECT description
+              FROM attachments
+             WHERE attach_id = ?
+        ";
+
+        my $commenter = $input->{commenter};
+        foreach my $entry (@$list) {
+            my ($bug_id, $summary, $reporter_id, $creation_ts) = @$entry;
+
+            next unless $user->can_see_bug($bug_id);
+
+            # skip bugs with one comment
+            my ($count) = $dbh->selectrow_array($comment_count_sql, undef, $bug_id);
+            next if $count == 1;
+
+            my ($commenter_id, $comment_ts, $type, $comment, $extra) = $dbh->selectrow_array($comment_sql, undef, $bug_id);
+            if ($commenter eq 'reporter') {
+                next unless $commenter_id == $reporter_id;
+            } elsif ($commenter eq 'canconfirm') {
+                my $commenter = Bugzilla::User->new($commenter_id);
+                next if $commenter->in_group('canconfirm');
+            } else {
+                die;
+            }
+
+            if ($type == 5) {
+                ($comment) = $dbh->selectrow_array($attach_sql, undef, $extra);
+                $comment = "(Attachment) " . $comment;
+            }
+
+            if (length($comment) > 80) {
+                $comment = substr($comment, 0, 80) . '...';
+            }
+
+            my $bug = {};
+            $bug->{id} = $bug_id;
+            $bug->{summary} = $summary;
+            $bug->{reporter} = Bugzilla::User->new($reporter_id);
+            $bug->{creation_ts} = $creation_ts;
+            $bug->{commenter} = Bugzilla::User->new($commenter_id);
+            $bug->{comment_ts} = $comment_ts;
+            $bug->{comment} = $comment;
+            push @bugs, $bug;
+        }
+
+        $vars->{bugs} = \@bugs;
+    } else {
+        $input->{action} = '';
+    }
+
+    foreach my $name (qw(action product commenter)) {
+        $vars->{$name} = $input->{$name};
+    }
+}
+
 1;
