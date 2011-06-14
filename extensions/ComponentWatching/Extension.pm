@@ -193,7 +193,7 @@ sub bugmail_recipients {
     $sth->execute($oldProductId, $newProductId, $oldComponentId, $newComponentId);
     while (my ($uid) = $sth->fetchrow_array) {
         if (!exists $recipients->{$uid}) {
-            $recipients->{$uid}->{+REL_COMPONENT_WATCHER} = Bugzilla::BugMail::BIT_DIRECT();
+            $recipients->{$uid}->{+REL_COMPONENT_WATCHER} = Bugzilla::BugMail::BIT_WATCHING();
         }
     }
 }
