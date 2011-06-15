@@ -21,8 +21,9 @@ package Bugzilla::Extension::BMO::Reports;
 use strict;
 
 use Bugzilla::User;
-use Bugzilla::Util qw(trim);
+use Bugzilla::Util qw(trim detaint_natural);
 use Bugzilla::Error;
+use Bugzilla::Constants;
 
 use Date::Parse;
 use DateTime;
@@ -30,7 +31,8 @@ use DateTime;
 use base qw(Exporter);
 
 our @EXPORT_OK = qw(user_activity_report
-                    triage_last_commenter_report);
+                    triage_last_commenter_report
+                    triage_stale_report);
 
 sub user_activity_report {
     my ($vars) = @_;
@@ -133,7 +135,7 @@ sub user_activity_report {
         INNER JOIN profiles
                 ON profiles.userid = bugs_activity.who
              WHERE profiles.login_name IN ($who_bits)
-                   AND bugs_activity.bug_when > ? AND bugs_activity.bug_when <= ?
+                   AND bugs_activity.bug_when >= ? AND bugs_activity.bug_when <= ?
                    $activity_where
 
         UNION ALL
@@ -152,7 +154,7 @@ sub user_activity_report {
         INNER JOIN profiles
                 ON profiles.userid = bugs.reporter
              WHERE profiles.login_name IN ($who_bits)
-                   AND bugs.creation_ts > ? AND bugs.creation_ts <= ?
+                   AND bugs.creation_ts >= ? AND bugs.creation_ts <= ?
 
         UNION ALL
 
@@ -170,7 +172,7 @@ sub user_activity_report {
         INNER JOIN profiles
                 ON profiles.userid = longdescs.who
              WHERE profiles.login_name IN ($who_bits)
-                   AND longdescs.bug_when > ? AND longdescs.bug_when <= ?
+                   AND longdescs.bug_when >= ? AND longdescs.bug_when <= ?
                    $comment_filter
 
         UNION ALL
@@ -189,7 +191,7 @@ sub user_activity_report {
         INNER JOIN profiles
                 ON profiles.userid = attachments.submitter_id
              WHERE profiles.login_name IN ($who_bits)
-                   AND attachments.creation_ts > ? AND attachments.creation_ts <= ?
+                   AND attachments.creation_ts >= ? AND attachments.creation_ts <= ?
                    $attachments_where
 
           ORDER BY bug_when ";
@@ -290,6 +292,150 @@ sub user_activity_report {
     $vars->{'who'} = join(',', @who);
     $vars->{'from'} = $from;
     $vars->{'to'} = $to;
+}
+
+sub triage_last_commenter_report {
+    my ($vars) = @_;
+
+    my $input = Bugzilla->input_params;
+    my $commenter = $input->{commenter};
+    $vars->{commenter} = $commenter;
+
+    _triage_report($vars, sub {
+        my $bug = shift;
+        return 0 if $bug->{comment_count} <= 1;
+
+        if ($commenter eq 'reporter') {
+            return $bug->{commenter}->id == $bug->{reporter}->id;
+        }
+
+        if ($commenter eq 'canconfirm') {
+            return ($bug->{commenter}->id == $bug->{reporter}->id)
+                || !$bug->{commenter}->in_group('canconfirm');
+        }
+
+        return 0;
+    });
+}
+
+sub triage_stale_report {
+    my ($vars) = @_;
+
+    my $input = Bugzilla->input_params;
+    my $period = $input->{period};
+
+    detaint_natural($period);
+    $period = 14 if $period < 14;
+    $vars->{period} = $period;
+
+    my $now = (time);
+    _triage_report($vars, sub {
+        my $bug = shift;
+        my $comment_time = str2time($bug->{comment_ts})
+            or return 0;
+        return $now - $comment_time > 60 * 60 * 24 * $period;
+    });
+}
+
+sub _triage_report {
+    my ($vars, $filter) = @_;
+    my $dbh = Bugzilla->dbh;
+    my $input = Bugzilla->input_params;
+    my $user = Bugzilla->user;
+
+    my @selectable_products = sort { lc($a->name) cmp lc($b->name) }
+        @{$user->get_selectable_products};
+    Bugzilla::Product::preload(\@selectable_products);
+    $vars->{'products'} = \@selectable_products;
+
+    if (Bugzilla->params->{'useclassification'}) {
+        $vars->{'classifications'} = $user->get_selectable_classifications;
+    }
+
+    my @products = @{Bugzilla->user->get_accessible_products()};
+    @products = sort { lc($a->name) cmp lc($b->name) } @products;
+    $vars->{'accessible_products'} = \@products;
+
+    if ($input->{'action'} eq 'run' && $input->{'product'}) {
+        my $query = "
+              SELECT bug_id, short_desc, reporter, creation_ts
+                FROM bugs
+               WHERE product_id = ?
+                     AND bug_status = 'UNCONFIRMED'
+            ORDER BY creation_ts
+        ";
+        my ($product_id) = $input->{product} =~ /(\d+)/;
+        my $list = $dbh->selectall_arrayref($query, undef, $product_id);
+
+        my @bugs;
+
+        my $comment_count_sql = "
+            SELECT COUNT(*)
+              FROM longdescs
+             WHERE bug_id = ?
+        ";
+
+        my $comment_sql = "
+              SELECT who, bug_when, type, thetext, extra_data
+                FROM longdescs
+               WHERE bug_id = ?
+        ";
+        if (!Bugzilla->user->is_insider) {
+            $comment_sql .= " AND isprivate = 0 ";
+        }
+        $comment_sql .= "
+            ORDER BY bug_when DESC
+               LIMIT 1
+        ";
+
+        my $attach_sql = "
+            SELECT description
+              FROM attachments
+             WHERE attach_id = ?
+        ";
+
+        my $commenter = $input->{commenter};
+        foreach my $entry (@$list) {
+            my ($bug_id, $summary, $reporter_id, $creation_ts) = @$entry;
+
+            next unless $user->can_see_bug($bug_id);
+
+            my ($comment_count) = $dbh->selectrow_array($comment_count_sql, undef, $bug_id);
+            my ($commenter_id, $comment_ts, $type, $comment, $extra) = $dbh->selectrow_array($comment_sql, undef, $bug_id);
+
+            if ($type == CMT_ATTACHMENT_CREATED) {
+                ($comment) = $dbh->selectrow_array($attach_sql, undef, $extra);
+                $comment = "(Attachment) " . $comment;
+            }
+
+            if (length($comment) > 80) {
+                $comment = substr($comment, 0, 80) . '...';
+            }
+
+            my $bug = {};
+            $bug->{id} = $bug_id;
+            $bug->{summary} = $summary;
+            $bug->{reporter} = Bugzilla::User->new($reporter_id);
+            $bug->{creation_ts} = $creation_ts;
+            $bug->{commenter} = Bugzilla::User->new($commenter_id);
+            $bug->{comment_ts} = $comment_ts;
+            $bug->{comment} = $comment;
+            $bug->{comment_count} = $comment_count;
+
+            next unless &$filter($bug);
+            push @bugs, $bug;
+        }
+
+        @bugs = sort { $b->{comment_ts} cmp $a->{comment_ts} } @bugs;
+
+        $vars->{bugs} = \@bugs;
+    } else {
+        $input->{action} = '';
+    }
+
+    foreach my $name (qw(action product)) {
+        $vars->{$name} = $input->{$name};
+    }
 }
 
 1;

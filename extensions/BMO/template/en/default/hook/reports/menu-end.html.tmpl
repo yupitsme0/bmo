@@ -22,8 +22,20 @@
 
 <ul>
   <li>
-    <strong><a href="[% urlbase FILTER none %]page.cgi?id=user_activity.html">User Changes</a></strong> - Show changes made by an
-    individual user.
+    <strong><a href="[% urlbase FILTER none
+    %]page.cgi?id=user_activity.html">User Changes</a></strong> - Show changes
+    made by an individual user.
+  </li>
+  <li>
+    <strong><a href="[% urlbase FILTER none
+    %]page.cgi?id=triage_last_commenter.html">UNCONFIRMED with
+    comment</a></strong> - Show UNCONFIRMED bugs where the reporter is the
+    last commenter
+  </li>
+  <li>
+    <strong><a href="[% urlbase FILTER none
+    %]page.cgi?id=triage_stale.html">UNCONFIRMED stale</a></strong> - Show
+    UNCONFIRMED bugs without a comment for 30 days
   </li>
 </ul>
 
