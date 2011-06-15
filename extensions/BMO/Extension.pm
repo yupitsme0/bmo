@@ -49,7 +49,8 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       %always_fileable_group
                                       %product_sec_groups);
 use Bugzilla::Extension::BMO::Reports qw(user_activity_report
-                                         triage_last_commenter_report);
+                                         triage_last_commenter_report
+                                         triage_stale_report);
 
 our $VERSION = '0.1';
 
@@ -139,6 +140,9 @@ sub page_before_template {
 
     } elsif ($page eq 'triage_last_commenter.html') {
         triage_last_commenter_report($vars);
+
+    } elsif ($page eq 'triage_stale.html') {
+        triage_stale_report($vars);
 
     } elsif ($page eq 'upgrade-3.6.html') {
         $vars->{'bzr_history'} = sub { 

@@ -19,7 +19,7 @@
   #%]
 
 [% INCLUDE global/header.html.tmpl
-  title = "UNCONFIRMED Last Commenter Reports"
+  title = "UNCONFIRMED Stale Reports"
   yui = [ 'autocomplete', 'calendar' ]
   javascript_urls = [ "js/util.js", "js/field.js" ]
   style_urls = [ "skins/standard/buglist.css" ]
@@ -47,7 +47,7 @@
 [% PROCESS bug/time.html.tmpl %]
 
 <form id="activity_form" name="activity_form" action="page.cgi" method="get">
-<input type="hidden" name="id" value="triage_last_commenter.html">
+<input type="hidden" name="id" value="triage_stale.html">
 <input type="hidden" name="action" value="run">
 
 <p>
@@ -77,10 +77,12 @@ Show UNCONFIRMED bugs in
     [% END %]
   [% END %]
 </select>
-where the last commenter
-<select name="commenter" id="commenter">
-  <option value="reporter" [% 'selected' IF commenter == 'reporter' %]>is the reporter</option>
-  <option value="canconfirm" [% 'selected' IF commenter == 'canconfirm' %]>does not have canconfirm</option>
+where the last comment is older than
+<select name="period" id="period">
+  <option value="30" [% 'selected' IF period == '30' %]>30 days</option>
+  <option value="60" [% 'selected' IF period == '60' %]>60 days</option>
+  <option value="90" [% 'selected' IF period == '90' %]>90 days</option>
+  <option value="365" [% 'selected' IF period == '365' %]>one year</option>
 </select>
 &nbsp;
 <input type="submit" value="Generate Report">
