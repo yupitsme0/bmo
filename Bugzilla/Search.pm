@@ -418,7 +418,7 @@ sub init {
     $params->convert_old_params();
     $self->{'user'} ||= Bugzilla->user;
     my $user = $self->{'user'};
-
+    my $no_perms = $self->{'no_perms'};
     my @inputorder = @{ $self->{'order'} || [] };
     my @orderby;
 
@@ -1059,31 +1059,39 @@ sub init {
                                                  : COLUMNS->{$field}->{name} . " AS $alias";
         push(@sql_fields, $sql_field);
     }
+
     my $query = "SELECT " . join(', ', @sql_fields) .
-                " FROM $suppstring" .
-                " LEFT JOIN bug_group_map " .
-                " ON bug_group_map.bug_id = bugs.bug_id ";
+                " FROM $suppstring";
 
-    if ($user->id) {
-        if (scalar @{ $user->groups }) {
-            $query .= " AND bug_group_map.group_id NOT IN (" 
-                   . $user->groups_as_string . ") ";
+    if (!$no_perms) {
+        $query .= " LEFT JOIN bug_group_map " .
+                  " ON bug_group_map.bug_id = bugs.bug_id ";
+        if ($user->id) {
+            if (scalar @{ $user->groups }) {
+                $query .= " AND bug_group_map.group_id NOT IN (" 
+                       . $user->groups_as_string . ") ";
+            }
+
+            $query .= " LEFT JOIN cc ON cc.bug_id = bugs.bug_id AND cc.who = " . $user->id;
         }
-
-        $query .= " LEFT JOIN cc ON cc.bug_id = bugs.bug_id AND cc.who = " . $user->id;
     }
 
     $query .= " WHERE " . join(' AND ', (@wherepart, @andlist)) .
-              " AND bugs.creation_ts IS NOT NULL AND ((bug_group_map.group_id IS NULL)";
+              " AND bugs.creation_ts IS NOT NULL ";
+            
+    if (!$no_perms) {
+        $query .=  "AND ((bug_group_map.group_id IS NULL)";
 
-    if ($user->id) {
-        my $userid = $user->id;
-        $query .= "    OR (bugs.reporter_accessible = 1 AND bugs.reporter = $userid) " .
-              "    OR (bugs.cclist_accessible = 1 AND cc.who IS NOT NULL) " .
-              "    OR (bugs.assigned_to = $userid) ";
-        if (Bugzilla->params->{'useqacontact'}) {
-            $query .= "OR (bugs.qa_contact = $userid) ";
+        if ($user->id) {
+            my $userid = $user->id;
+            $query .= "    OR (bugs.reporter_accessible = 1 AND bugs.reporter = $userid) " .
+                      "    OR (bugs.cclist_accessible = 1 AND cc.who IS NOT NULL) " .
+                      "    OR (bugs.assigned_to = $userid) ";
+            if (Bugzilla->params->{'useqacontact'}) {
+                $query .= "OR (bugs.qa_contact = $userid) ";
+            }
         }
+        $query .= ") ";
     }
 
     # For some DBs, every field in the SELECT must be in the GROUP BY.
@@ -1107,7 +1115,7 @@ sub init {
             push(@groupby, @{ $special_order{$column_name} });
         }
     }
-    $query .= ") " . $dbh->sql_group_by("bugs.bug_id", join(', ', @groupby));
+    $query .= $dbh->sql_group_by("bugs.bug_id", join(', ', @groupby));
 
 
     if (@having) {

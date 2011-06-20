@@ -1,0 +1,59 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the BMO Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is the Mozilla Foundation
+  # Portions created by the Initial Developers are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s): David Lawrence <dkl@mozilla.com>
+  #%]
+
+[% title = BLOCK %]Delete milestone'[% milestone.name FILTER html %]'
+from '[% roadmap.name FILTER html %]' roadmap
+  [% END %]
+
+[% PROCESS global/header.html.tmpl
+  title = title
+%]
+
+<table border="1" cellpadding="4" cellspacing="0">
+<tr bgcolor="#6666FF">
+  <th valign="top" align="left">Field</th>
+  <th valign="top" align="left">Value</th>
+</tr>
+<tr>
+  <td valign="top">Milestone:</td>
+  <td valign="top">[% milestone.name FILTER html %]</td>
+</tr>
+<tr>
+  <td valign="top">Sortkey:</td>
+  <td valign="top">[% milestone.sortkey FILTER html %]</td>
+</tr>
+<tr>
+  <td valign="top">Query:</td>
+  <td valign="top">[% milestone.query FILTER html %]</td>
+</tr>
+</table>
+
+<h2>Confirmation</h2>
+  
+<p>Do you really want to delete this milestone?</p>
+  
+<form method="post" action="page.cgi?id=roadmap/edit.html">
+  <input type="submit" id="delete" value="Yes, delete">
+  <input type="hidden" name="action" value="delete_milestone">
+  <input type="hidden" name="name" value="[% roadmap.name FILTER html %]">
+  <input type="hidden" name="milestone" value="[% milestone.id FILTER html %]">
+  <input type="hidden" name="token" value="[% token FILTER html %]">
+</form>
+
+[% PROCESS global/footer.html.tmpl %] 
