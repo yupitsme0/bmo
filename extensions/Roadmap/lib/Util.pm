@@ -23,7 +23,21 @@ package Bugzilla::Extension::Roadmap::Util;
 use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
-    
+    clean_search_url    
 );
+
+sub clean_search_url {
+    my $cgi = shift;
+
+    # Run the cleaning routine in Bugzilla::CGI first to fix
+    # any common issues.
+    $cgi->clean_search_url;
+
+    # Remove any mention of bug_status as we will be adding
+    # that later for getting the stats.
+    $cgi->delete('bug_status');
+
+    return $cgi;
+}
 
 1;

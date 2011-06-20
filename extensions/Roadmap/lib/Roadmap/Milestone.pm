@@ -120,8 +120,16 @@ sub _check_name {
 
 sub _check_query {
     my ($invocant, $query) = @_;
+
     $query = trim($query);
     $query || ThrowUserError('roadmap_milestone_query_needed');
+
+    # Create CGI object,  clean it,  and then makes sure it is not empty.
+    my $cgi = Bugzilla::CGI->new($query);
+    $cgi = clean_search_url($cgi);
+    $query = $cgi->canonicalise_query("id");
+    $query || ThrowUserError('roadmap_milestone_query_needed');
+
     return $query;
 }
 
