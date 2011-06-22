@@ -21,102 +21,31 @@
 [% PROCESS global/variables.none.tmpl %]
 
 [% js_data = BLOCK %]
-var Dom = YAHOO.util.Dom;
-
 var useclassification = false;
 var first_load = true;
 var last_sel = [];
 var cpts = new Array();
 [% n = 1 %]
 [% FOREACH p = user.get_selectable_products %]
-  cpts['[% n %]'] = [
+  cpts['[% n FILTER js %]'] = [
     [%- FOREACH c = p.components %]'[% c.name FILTER js %]'[% ", " UNLESS loop.last %] [%- END -%] ];
   [% n = n+1 %]
 [% END %]
 
-function onSelectProduct() {
-  var component = Dom.get('component');
-  if (Dom.get('product').value == '') {
-    bz_clearOptions(component);
-    return;
-  }
-  selectProduct(Dom.get('product'), component);
-  // selectProduct only supports __Any__ on both elements
-  // we only want it on component, so add it back in
-  try {
-    component.add(new Option('__Any__', ''), component.options[0]);
-  } catch(e) {
-    // support IE
-    component.add(new Option('__Any__', ''), 0);
-  }
-  component.value = '';
-}
+var selected_components = [
+  [%- FOREACH c = input.component %]'[% c FILTER js %]'
+  [%- ',' UNLESS loop.last %] [%- END ~%] ];
 
-function onCommenterChange() {
-  var commenter_is = Dom.get('commenter_is');
-  if (Dom.get('commenter').value == 'is') {
-    Dom.removeClass(commenter_is, 'hidden');
-  } else {
-    Dom.addClass(commenter_is, 'hidden');
-  }
-}
-
-function onLastChange() {
-  var last_is_span = Dom.get('last_is_span');
-  if (Dom.get('last').value == 'is') {
-    Dom.removeClass(last_is_span, 'hidden');
-  } else {
-    Dom.addClass(last_is_span, 'hidden');
-  }
-}
-
-function onGenerateReport() {
-  if (Dom.get('product').value == '') {
-    alert('You must select a product.');
-    return false;
-  }
-  if (Dom.get('component').value == '' && !Dom.get('component').options[0].selected) {
-    alert('You must select at least one component.');
-    return false;
-  }
-  if (!(Dom.get('filter_commenter').checked || Dom.get('filter_last').checked)) {
-    alert('You must select at least one comment filter.');
-    return false;
-  }
-  if (Dom.get('commenter').value == 'is' && Dom.get('commenter_is').value == '') {
-    alert('You must specify the last commenter\'s email address.');
-    return false;
-  }
-  return true;
-}
-
-YAHOO.util.Event.onDOMReady(function() {
-  onSelectProduct();
-  onCommenterChange();
-  onLastChange();
-
-  var selected = [
-    [%- FOREACH c = input.component %]'[% c FILTER js %]'
-    [%- ',' UNLESS loop.last %] [%- END ~%] ];
-  var component = Dom.get('component');
-  if (selected.length == 0)
-    return;
-  component.options[0].selected = false;
-  for (var i = 0, n = selected.length; i < n; i++) {
-    var index = bz_optionIndex(component, selected[i]);
-    if (index != -1)
-      component.options[index].selected = true;
-  }
-});
 [% END %]
 
 [% INCLUDE global/header.html.tmpl
   title = "Triage Reports"
   yui = [ 'autocomplete', 'calendar' ]
   javascript = js_data
-  javascript_urls = [ "js/util.js", "js/field.js", "js/productform.js" ]
+  javascript_urls = [ "js/util.js", "js/field.js", "js/productform.js",
+                      "extensions/BMO/web/js/triage_reports.js" ]
   style_urls = [ "skins/standard/buglist.css",
-    "extensions/BMO/web/styles/triage_reports.css" ]
+                 "extensions/BMO/web/styles/triage_reports.css" ]
 %]
 
 <noscript>
@@ -126,7 +55,7 @@ YAHOO.util.Event.onDOMReady(function() {
 [% PROCESS "global/field-descs.none.tmpl" %]
 
 <form id="activity_form" name="activity_form" action="page.cgi" method="get"
-  onSubmit="return onGenerateReport()">
+      onSubmit="return onGenerateReport()">
 <input type="hidden" name="id" value="triage_reports.html">
 <input type="hidden" name="action" value="run">
 
@@ -146,15 +75,15 @@ Show UNCONFIRMED bugs with:
       [% END %]
     </select>
   </td>
-  <th>Comment:</th>
   <td rowspan="2" valign="top">
+    <b>Comment:</b><br>
 
     <input type="checkbox" name="filter_commenter" id="filter_commenter" value="1"
     [% 'checked' IF input.filter_commenter %]>
     <label for="filter_commenter">where the last commenter</label>
     <select name="commenter" id="commenter" onChange="onCommenterChange()">
       <option value="reporter" [% 'selected' IF input.commenter == 'reporter' %]>is the reporter</option>
-      <option value="canconfirm" [% 'selected' IF input.commenter == 'canconfirm' %]>does not have canconfirm</option>
+      <option value="noconfirm" [% 'selected' IF input.commenter == 'noconfirm' %]>does not have canconfirm</option>
       <option value="is" [% 'selected' IF input.commenter == 'is' %]>is</option>
     </select>
     [%+ INCLUDE global/userselect.html.tmpl
@@ -179,10 +108,10 @@ Show UNCONFIRMED bugs with:
     </select>
     <span id="last_is_span" class="[% 'hidden' IF input.last != 'is' %]">
       <input type="text" id="last_is" name="last_is" size="11" maxlength="10"
-        value="[% input.last_is FILTER html %]"
-        onChange="updateCalendarLastIs(this)">
+             value="[% input.last_is FILTER html %]"
+             onChange="updateCalendarLastIs(this)">
       <button type="button" class="calendar_button" id="button_calendar_last_is"
-        onClick="showCalendar('last_is')"><span>Calendar</span>
+              onClick="showCalendar('last_is')"><span>Calendar</span>
       </button>
       <div id="con_calendar_last_is"></div>
     </span>
@@ -199,10 +128,10 @@ Show UNCONFIRMED bugs with:
 </tr>
 
 <tr>
-  <td colspan="3">&nbsp;</td>
+  <td>&nbsp;</td>
   <td>
     <input type="submit" value="Generate Report">
-  </td> 
+  </td>
 </tr>
 
 </table>
