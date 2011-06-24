@@ -40,9 +40,17 @@
 <iframe id="yui-history-iframe" src="extensions/GuidedBugEntry/web/yui-history-iframe.txt"></iframe>
 <input id="yui-history-field" type="hidden">
 
-<div id="loading">
+<noscript>
+You require JavaScript to use this bug entry form.<br><br>
+Please use the <a href="enter_bug.cgi?format=__default__">advanced bug entry form</a>.
+</noscript>
+
+<div id="loading" class="hidden">
 Please wait...
 </div>
+<script type="text/javascript">
+YAHOO.util.Dom.removeClass('loading', 'hidden');
+</script>
 
 <div id="steps">
 [% INCLUDE product_step %]
@@ -281,7 +289,7 @@ Product: <b><span id="dupes_product_name">?</span></b>:
   Please summarise your issue or request in one sentence:
   </p>
   <input id="dupes_summary" value="Short summary of issue" spellcheck="true" placeholder="Short summary of issue">
-  <button id="dupes_search">Find Similar Issues</button>
+  <button id="dupes_search">Find similar issues</button>
   <button id="dupes_continue_button_top" onclick="guided.setStep('bugForm')">My issue is not listed</button>
 </div>
 
@@ -362,7 +370,7 @@ explain how to write effective bug reports.</li>
 </tr>
 
 <tr class="odd">
-  <td>
+  <td valign="top">
     <div class="label">
     Component:
     </div>

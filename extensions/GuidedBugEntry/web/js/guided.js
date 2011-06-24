@@ -264,7 +264,7 @@ var dupes = {
           oFullResponse.result = {};
           oFullResponse.result.bugs = [];
           if (console)
-            console.log("JSON-RPC error:", oFullResponse.error);
+            console.error("JSON-RPC error:", oFullResponse.error);
         }
         return oFullResponse;
       };
@@ -336,12 +336,12 @@ var dupes = {
     var button = document.createElement('button');
     button.setAttribute('type', 'button');
     if (isCCed) {
-      button.innerHTML = 'Stop&nbsp;Following';
+      button.innerHTML = 'Stop&nbsp;following';
       button.onclick = function() {
         dupes.updateFollowing(el, id, bugStatus, button, false); return false;
       };
     } else {
-      button.innerHTML = 'Follow&nbsp;Bug';
+      button.innerHTML = 'Follow&nbsp;bug';
       button.onclick = function() {
         dupes.updateFollowing(el, id, bugStatus, button, true); return false;
       };
@@ -539,14 +539,19 @@ var bugForm = {
     Dom.removeClass('advanced', 'hidden');
     // default the summary to the dupes query
     Dom.get('short_desc').value = dupes.getSummary();
-    Dom.get('submit').disabled = false;
-    Dom.get('submit').value = 'Submit Bug';
+    this.resetSubmitButton();
     if (Dom.get('component_select').length == 0)
       this.onProductUpdated();
     this.onFileChange();
     for (var i = 0, n = this._mandatoryFields.length; i < n; i++) {
       Dom.removeClass(this._mandatoryFields[i], 'missing');
     }
+  },
+
+  resetSubmitButton: function() {
+    console.log('>> bugForm.resetSubmitButton <<');
+    Dom.get('submit').disabled = false;
+    Dom.get('submit').value = 'Submit Bug';
   },
 
   onProductUpdated: function() {

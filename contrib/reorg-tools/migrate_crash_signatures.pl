@@ -107,11 +107,14 @@ foreach my $bug (@$bugs) {
     }
  
     if (@signatures && $UPDATE_DB) {
+        my $timestamp = $dbh->selectrow_array('SELECT LOCALTIMESTAMP(0)');
 	    $dbh->do("UPDATE bugs SET cf_crash_signature = ? WHERE bug_id = ?",
 		         undef, join("\n", @signatures), $bug_id);
     	$dbh->do("INSERT INTO bugs_activity(bug_id, who, bug_when, fieldid, removed, added) " .
-       	         "VALUES (?, ?, now(), ?, '', ?)",
-                 undef, $bug_id, $user_id, $field_id, join("\n", @signatures));
+       	         "VALUES (?, ?, ?, ?, '', ?)",
+                 undef, $bug_id, $user_id, $timestamp, $field_id, join("\n", @signatures));
+        $dbh->do("UPDATE bugs SET delta_ts = ?, lastdiffed = ? WHERE bug_id = ?", 
+                 undef, $timestamp, $timestamp, $bug_id);
     }
     elsif (@signatures) {
 	    print Dumper(\@signatures);

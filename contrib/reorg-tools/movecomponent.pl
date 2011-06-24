@@ -25,6 +25,12 @@
 
 use strict;
 
+use Cwd 'abs_path';
+use File::Basename;
+BEGIN {
+    my $root = abs_path(dirname(__FILE__) . '/../..');
+    chdir($root);
+}
 use lib qw(. lib);
 
 use Bugzilla;
@@ -94,6 +100,51 @@ if (!$fieldid) {
     exit(1);
 }
 
+# check versions
+my @missing_versions;
+my $ra_versions = $dbh->selectcol_arrayref(
+    "SELECT DISTINCT version FROM bugs WHERE component_id = ?",
+    undef, $compid);
+foreach my $version (@$ra_versions) {
+    my $has_version = $dbh->selectrow_array(
+        "SELECT 1 FROM versions WHERE product_id = ? AND value = ?",
+        undef, $newprodid, $version);
+    push @missing_versions, $version unless $has_version;
+}
+
+# check milestones
+my @missing_milestones;
+my $ra_milestones = $dbh->selectcol_arrayref(
+    "SELECT DISTINCT target_milestone FROM bugs WHERE component_id = ?",
+    undef, $compid);
+foreach my $milestone (@$ra_milestones) {
+    my $has_milestone = $dbh->selectrow_array(
+        "SELECT 1 FROM milestones WHERE product_id=? AND value=?",
+        undef, $newprodid, $milestone);
+    push @missing_milestones, $milestone unless $has_milestone;
+}
+
+my $missing_error = '';
+if (@missing_versions) {
+    $missing_error .= "'$newproduct' is missing the following version(s):\n  " .
+        join("\n  ", @missing_versions) . "\n";
+}
+if (@missing_milestones) {
+    $missing_error .= "'$newproduct' is missing the following milestone(s):\n  " .
+        join("\n  ", @missing_milestones) . "\n";
+}
+die $missing_error if $missing_error;
+
+# confirmation
+print <<EOF;
+About to move the component '$component'
+From '$oldproduct'
+To '$newproduct'
+
+Press <Ctrl-C> to stop or <Enter> to continue...
+EOF
+getc();
+
 print "Moving '$component' from '$oldproduct' to '$newproduct'...\n\n";
 #$dbh->bz_start_transaction();
 
@@ -117,8 +168,9 @@ $dbh->do("UPDATE components SET product_id = ? WHERE id = ?",
          ($newprodid, $compid));
 
 # Mark bugs as touched
-# 
 $dbh->do("UPDATE bugs SET delta_ts = NOW() 
+          WHERE component_id = ?", undef, $compid);
+$dbh->do("UPDATE bugs SET lastdiffed = NOW() 
           WHERE component_id = ?", undef, $compid);
 
 # Update bugs_activity
