@@ -744,10 +744,9 @@ sub field_end_of_create {
     push @message, "The custom field '$name' has been added to the BMO database.";
     push @message, '';
     push @message, 'Please run the following on tm-bugs01-master01:';
-    foreach my $host ("10.2.72.22","10.2.72.28","10.2.72.34","10.2.70.20_") {
-        push @message, "  GRANT SELECT ON `bugs`.`$name` TO 'metrics'\@'$host';";
-        push @message, "  GRANT SELECT ($name) ON `bugs`.`bugs` TO 'metrics'\@'$host';";
-    }
+    push @message, "  GRANT SELECT ON `bugs`.`$name` TO 'metrics'\@'10.2.70.20_';";
+    push @message, "  GRANT SELECT ($name) ON `bugs`.`bugs` TO 'metrics'\@'10.2.70.20_';";
+    push @message, '';
     MessageToMTA(join("\n", @message));
 }
 
