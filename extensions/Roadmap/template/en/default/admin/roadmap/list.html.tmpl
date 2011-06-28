@@ -21,67 +21,49 @@
 [% PROCESS global/variables.none.tmpl %]
 
 [% PROCESS global/header.html.tmpl
-  title = "Edit Roadmap" 
+  title = "Edit Roadmap"
+  style_urls = [ 'extensions/Roadmap/web/roadmap.css' ]
 %]
 
-[% edit_contentlink = BLOCK %]page.cgi?id=roadmap/edit.html&amp;name=%%name%%[% END %]
-[% delete_contentlink = BLOCK %]page.cgi?id=roadmap/delete.html&amp;name=%%name%%[% END %]
-
-[% columns = [
-     { 
-       name => "name"
-       heading => "Edit Roadmap..."
-       contentlink => edit_contentlink
-     },
-     { 
-       name => "description"
-       heading => "Description" 
-       allow_html_content => 1
-     },
-     { 
-       name => "owner"
-       heading => "Owner"
-     },
-     {
-       name => "sortkey"
-       heading => "Sortkey"
-     },
-     {
-       name => "deadline"
-       heading => "Deadline"
-     }, 
-     {
-       name => "is_active"
-       heading => "Active"
-       yesno_field => 1
-     },
-     {
-       heading => "Action"
-       content => "Delete"
-       contentlink => delete_contentlink
-     }
-] %]
-
-
-[%# Overrides the owner with right values %]
-[% overrides.owner = {} %]
-
-[% FOREACH roadmap = roadmap_list %]
-  [% overrides.owner.name.${roadmap.name} = {
-       override_content => 1
-       content => roadmap.owner.login
-     }
-  %]
+[% IF roadmap_list.size %]
+  <table class="roadmap-form">
+  <thead>
+  <tr class="even">
+    <th>Edit Roadmap...</th>
+    <th>Description</th>
+    <th>Owner</th>
+    <th>Sortkey</th>
+    <th>Deadline</th>
+    <th>Active</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+  <tbody>
+  [% FOREACH roadmap = roadmap_list %]
+    <tr class="[% loop.count % 2 == 0 ? "even" : "odd" %]">
+      <td>
+        <a href="[% urlbase FILTER none %]page.cgi?id=roadmap/edit.html&amp;name=[% roadmap.name FILTER url_quote %]">
+        [% roadmap.name FILTER html %]</a>
+      </td>
+      <td>[% roadmap.description FILTER truncate(50, '...') FILTER html %]</td>
+      <td>[% roadmap.owner.login FILTER html %]</td>
+      <td>[% roadmap.sortkey FILTER html %]</td>
+      <td>[% roadmap.deadline FILTER html %]</td>
+      <td>[% roadmap.isactive ? "Yes" : "No" %]</td>
+      <td>
+        <a href="[% urlbase FILTER none %]page.cgi?id=roadmap/delete.html&amp;name=[% roadmap.name FILTER url_quote %]">
+        Delete</a>
+      </td>
+    </tr>
+  [% END %]
+  </tbody>
+  </table>
+[% ELSE %]
+  No roadmaps currently defined.
 [% END %]
 
-[% Hook.process('before_table') %]
-
-[% PROCESS admin/table.html.tmpl
-   columns   = columns
-   data      = roadmap_list 
-   overrides = overrides
-%]
-
-<p><a href="page.cgi?id=roadmap/create.html">Add</a> a new roadmap.</p>
+<p>
+  <a href="page.cgi?id=roadmap/create.html">Add</a> a new roadmap.
+</p>
 
 [% PROCESS global/footer.html.tmpl %]

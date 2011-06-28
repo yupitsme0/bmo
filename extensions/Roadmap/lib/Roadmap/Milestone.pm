@@ -28,7 +28,7 @@ use base qw(Bugzilla::Object);
 use Bugzilla::CGI;
 use Bugzilla::Constants;
 use Bugzilla::Error;
-use Bugzilla::Util qw(trim detaint_signed);
+use Bugzilla::Util qw(trim detaint_signed validate_date);
 
 use Bugzilla::Extension::Roadmap::Util;
 
@@ -36,18 +36,25 @@ use Bugzilla::Extension::Roadmap::Util;
 ####    Initialization     ####
 ###############################
 
-use constant DB_COLUMNS => qw(
-    id
-    roadmap_id
-    name 
-    query 
-    sortkey
-);
+# This is a sub because it needs to call other subroutines.
+sub DB_COLUMNS {
+    my $dbh = Bugzilla->dbh;
+    my @columns = (qw(
+        id
+        roadmap_id
+        name 
+        query 
+        sortkey),
+        $dbh->sql_date_format('deadline', '%Y-%m-%d') . ' AS deadline',
+    );
+    return @columns;
+}
 
 use constant UPDATE_COLUMNS => qw(
     name
     query
     sortkey
+    deadline
 );
 
 use constant DB_TABLE => 'roadmap_milestones';
@@ -55,9 +62,10 @@ use constant ID_FIELD => 'id';
 use constant LIST_ORDER => 'sortkey, name';
 
 use constant VALIDATORS => {
-    name    => \&_check_name,
-    query   => \&_check_query, 
-    sortkey => \&_check_sortkey,
+    name     => \&_check_name,
+    query    => \&_check_query, 
+    sortkey  => \&_check_sortkey,
+    deadline => \&_check_deadline,
 };
 
 #########################
@@ -145,6 +153,16 @@ sub _check_sortkey {
     return $sortkey;
 }
 
+sub _check_deadline {
+    my ($invocant, $date) = @_;
+    $date = trim($date);
+    return undef if !$date;
+    validate_date($date)
+        || ThrowUserError('illegal_date', { date   => $date,
+                                            format => 'YYYY-MM-DD' });
+    return $date;
+}
+
 #############
 # Accessors #
 #############
@@ -154,15 +172,16 @@ sub roadmap_id { return $_[0]->{'roadmap_id'}; }
 sub name       { return $_[0]->{'name'};       }
 sub query      { return $_[0]->{'query'};      }
 sub sortkey    { return $_[0]->{'sortkey'};    }
-
+sub deadline   { return $_[0]->{'deadline'};   }
 
 ############
 # Mutators #
 ############
 
-sub set_name    { $_[0]->set('name', $_[1]);    }
-sub set_query   { $_[0]->set('query', $_[1]);   }
-sub set_sortkey { $_[0]->set('sortkey', $_[1]); }
+sub set_name     { $_[0]->set('name', $_[1]);     }
+sub set_query    { $_[0]->set('query', $_[1]);    }
+sub set_sortkey  { $_[0]->set('sortkey', $_[1]);  }
+sub set_deadline { $_[0]->set('deadline', $_[1]); }
 
 ###################
 # Class Accessors #

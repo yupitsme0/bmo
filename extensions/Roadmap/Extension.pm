@@ -111,7 +111,10 @@ sub db_schema_abstract_schema {
             query => {
                 TYPE    => 'MEDIUMTEXT',
                 NOTNULL => 1,
-            },    
+            },
+            deadline => {
+                TYPE => 'DATETIME'
+            }, 
         ],
         INDEXES => [
             roadmap_fields_unique_idx => {
@@ -196,32 +199,6 @@ sub page_before_template {
             $roadmap->set_is_active($input->{'is_active'});
             my $changes = $roadmap->update();
 
-            # Add a new milestone
-            if ($input->{'milestone_name'}) {
-                Bugzilla::Extension::Roadmap::Roadmap::Milestone->create({
-		            roadmap_id => $roadmap->id,
-                    name       => $input->{'milestone_name'}, 
-                    sortkey    => $input->{'milestone_sortkey'}, 
-                    query      => $input->{'milestone_query'},                
-                });
-                $vars->{'milestone_changes'} = {
-                    added => $input->{'milestone_name'}, 
-                }
-            }
-
-            # Update existing milestones
-            $vars->{'milestone_changes'}{'changes'} = {};
-            foreach my $milestone (@{ $roadmap->milestones }) {
-                if ($input->{'milestone_name_' . $milestone->id}) {
-		            my $old_name = $milestone->name;
-                    $milestone->set_name($input->{'milestone_name_' . $milestone->id});
-                    $milestone->set_sortkey($input->{'milestone_sortkey_' . $milestone->id});
-                    $milestone->set_query($input->{'milestone_query_' . $milestone->id});
-                    my $changes = $milestone->update();
-                    $vars->{'milestone_changes'}{'changes'}{$old_name} = $changes if %$changes;
-                }
-            }
-
             $vars->{'message'} = 'roadmap_updated';
             $vars->{'roadmap'} = $roadmap;
             $vars->{'changes'} = $changes;
@@ -278,40 +255,6 @@ sub page_before_template {
         exit;
     } 
 
-    if ($page eq 'roadmap/edit.html') {
-        $can_edit || ThrowUserError("auth_failure", { group  => "editroadmaps",
-                                                      action => "edit",
-                                                      object => "roadmaps" });
-
-        my $action = $input->{'action'} || "";
-        my $token  = $input->{'token'};
-
-        if ($action eq 'delete_milestone') {
-            check_token_data($token, 'delete_roadmap_milestone');
-
-            my $milestone = 
-                Bugzilla::Extension::Roadmap::Roadmap::Milestone->new($input->{'milestone'});
-            $milestone->remove_from_db();
-
-            $vars->{'message'} = 'milestone_deleted';
-            $vars->{'milestone_changes'} = {
-                deleted => $milestone->name,
-            };
-
-            delete_token($token);
-        }
-    
-        $vars->{'token'} = issue_session_token('edit_roadmap');
-
-        $vars->{'roadmap'} =
-            Bugzilla::Extension::Roadmap::Roadmap->check($input->{'name'});
-
-        print $cgi->header();
-        $template->process("admin/roadmap/edit.html.tmpl", $vars)
-            || ThrowTemplateError($template->error());
-        exit; 
-    }
-
     if ($page eq 'roadmap/delete.html') {
         $can_edit || ThrowUserError("auth_failure", { group  => "editroadmaps",
                                                       action => "edit",
@@ -328,6 +271,112 @@ sub page_before_template {
         exit;
     }
 
+    if ($page eq 'roadmap/edit.html') {
+        $can_edit || ThrowUserError("auth_failure", { group  => "editroadmaps",
+                                                      action => "edit",
+                                                      object => "roadmaps" });
+
+        my $action = $input->{'action'} || "";
+        my $token  = $input->{'token'};
+
+        my $roadmap =
+            Bugzilla::Extension::Roadmap::Roadmap->check($input->{'name'});
+
+        if ($action =~ /(add|delete|update)_milestone/) {
+            $vars->{'changes'} = {};
+        }
+
+        if ($action eq 'delete_milestone') {
+            check_token_data($token, 'delete_roadmap_milestone');
+
+            my $milestone = 
+                Bugzilla::Extension::Roadmap::Roadmap::Milestone->check(
+                    { roadmap_id => $roadmap->id, name => $input->{'milestone_name'} });
+            $milestone->remove_from_db();
+
+            $vars->{'message'} = 'roadmap_milestone_deleted';
+            $vars->{'milestone'} = $milestone;
+
+            delete_token($token);
+        }
+    
+        if ($action eq 'add_milestone') {
+            check_token_data($token,  'edit_roadmap_milestone');
+
+            my $milestone = Bugzilla::Extension::Roadmap::Roadmap::Milestone->create({
+		        roadmap_id => $roadmap->id,
+                name       => $input->{'milestone_name'}, 
+                sortkey    => $input->{'milestone_sortkey'}, 
+                deadline   => $input->{'milestone_deadline'},
+                query      => $input->{'milestone_query'},                
+            });
+
+            $vars->{'message'} = 'roadmap_milestone_created';
+            $vars->{'milestone'} = $milestone;
+            
+            delete_token($token);
+        }
+
+        if ($action eq 'update_milestone') {
+            check_token_data($token, 'edit_roadmap_milestone');
+
+            my $old_name = $input->{'milestone_old_name'};
+
+            my $milestone = 
+                Bugzilla::Extension::Roadmap::Roadmap::Milestone->check(
+                    { name => $old_name, roadmap_id => $roadmap->id });
+
+            $milestone->set_name($input->{'milestone_name'});
+            $milestone->set_sortkey($input->{'milestone_sortkey'});
+            $milestone->set_deadline($input->{'milestone_deadline'});
+            $milestone->set_query($input->{'milestone_query'});
+            my $changes = $milestone->update();
+
+            if (%$changes) {
+                $vars->{'message'} = 'roadmap_milestone_updated';
+                $vars->{'changes'} = $changes;
+            }
+
+            $vars->{'milestone'} = $milestone;
+ 
+            delete_token($token);
+        }
+
+        $vars->{'roadmap'} = $roadmap;
+        $vars->{'token'}   = issue_session_token('edit_roadmap');
+
+        print $cgi->header();
+        $template->process("admin/roadmap/edit.html.tmpl", $vars)
+            || ThrowTemplateError($template->error());
+        exit; 
+    }
+
+    if ($page eq 'roadmap/edit-milestone.html') {
+        $can_edit || ThrowUserError("auth_failure", { group  => "editroadmaps",
+                                                      action => "edit",
+                                                      object => "roadmaps" });
+
+        $vars->{'token'} = issue_session_token('edit_roadmap_milestone');
+
+        my $roadmap =
+            Bugzilla::Extension::Roadmap::Roadmap->check($input->{'name'});
+
+        if ($input->{'action'} ne 'new') {
+            $vars->{'milestone'} = 
+                Bugzilla::Extension::Roadmap::Roadmap::Milestone->check(
+                    { name => $input->{'milestone_name'}, roadmap_id => $roadmap->id });
+        }
+
+        $vars->{'roadmap'} = $roadmap;
+        $vars->{'action'} = $input->{'action'};
+
+        print $cgi->header();
+        $template->process("admin/roadmap/edit-milestone.html.tmpl", $vars)
+            || ThrowTemplateError($template->error());
+        exit;
+
+    }
+
     if ($page eq 'roadmap/milestone-confirm-delete.html') {
         $can_edit || ThrowUserError("auth_failure",  { group  => "editroadmaps", 
                                                        action => "edit", 
@@ -335,16 +384,60 @@ sub page_before_template {
 
         $vars->{'token'} = issue_session_token('delete_roadmap_milestone');
 
-        $vars->{'roadmap'} = 
+        my $roadmap = 
             Bugzilla::Extension::Roadmap::Roadmap->check($input->{'name'});
+        $vars->{'roadmap'} = $roadmap;
+
         $vars->{'milestone'} =
-            Bugzilla::Extension::Roadmap::Roadmap::Milestone->new($input->{'milestone'});
+            Bugzilla::Extension::Roadmap::Roadmap::Milestone->check(
+                { name => $input->{'milestone_name'}, roadmap_id => $roadmap->id });
 
         print $cgi->header();
         $template->process("admin/roadmap/milestone-confirm-delete.html.tmpl",  $vars)
             || ThrowTemplateError($template->error());
         exit;
     }
+}
+
+sub _update_boolean_charts {
+    my ($cgi) = @_;
+
+    # Creating new charts - if the cmd-add value is there, we define the field
+    # value so the code sees it and creates the chart. It will attempt to select
+    # "xyzzy" as the default, and fail. This is the correct behaviour.
+    foreach my $cmd (grep(/^cmd-/, $cgi->param)) {
+        if ($cmd =~ /^cmd-add(\d+)-(\d+)-(\d+)$/) {
+            $cgi->param(-name => "field$1-$2-$3", -value => "xyzzy");
+        }
+    }
+
+    if (!$cgi->param('field0-0-0')) {
+        $cgi->param(-name => 'field0-0-0', -value => "xyzzy");
+    }
+
+    # Create data structure of boolean chart info. It's an array of arrays of
+    # arrays - with the inner arrays having three members - field, type and
+    # value.
+    my @charts;
+    for (my $chart = 0; $cgi->param("field$chart-0-0"); $chart++) {
+        my @rows;
+        for (my $row = 0; $cgi->param("field$chart-$row-0"); $row++) {
+            my @cols;
+            for (my $col = 0; $cgi->param("field$chart-$row-$col"); $col++) {
+                my $value = $cgi->param("value$chart-$row-$col");
+                if (!defined($value)) {
+                    $value = '';
+                }
+                push(@cols, { field => $cgi->param("field$chart-$row-$col"),
+                              type => $cgi->param("type$chart-$row-$col") || 'noop',
+                              value => $value });
+            }
+            push(@rows, \@cols);
+        }
+        push(@charts, {'rows' => \@rows, 'negate' => scalar($cgi->param("negate$chart")) });
+    }
+
+    return \@charts;
 }
 
 __PACKAGE__->NAME;

@@ -39,6 +39,10 @@ from '[% roadmap.name FILTER html %]' roadmap
   <td valign="top">[% milestone.sortkey FILTER html %]</td>
 </tr>
 <tr>
+  <td valign="top">Deadline:</td>
+  <td valign="top">[% milestone.deadline FILTER html %]</td>
+</tr>
+<tr>
   <td valign="top">Query:</td>
   <td valign="top">[% milestone.query FILTER html %]</td>
 </tr>
@@ -52,7 +56,7 @@ from '[% roadmap.name FILTER html %]' roadmap
   <input type="submit" id="delete" value="Yes, delete">
   <input type="hidden" name="action" value="delete_milestone">
   <input type="hidden" name="name" value="[% roadmap.name FILTER html %]">
-  <input type="hidden" name="milestone" value="[% milestone.id FILTER html %]">
+  <input type="hidden" name="milestone_name" value="[% milestone.name FILTER html %]">
   <input type="hidden" name="token" value="[% token FILTER html %]">
 </form>
 

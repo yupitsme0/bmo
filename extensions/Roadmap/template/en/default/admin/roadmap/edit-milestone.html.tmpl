@@ -1,0 +1,84 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the BMO Bugzilla Extension.
+  #
+  # The Initial Developer of the Original Code is the Mozilla Foundation
+  # Portions created by the Initial Developers are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s): David Lawrence <dkl@mozilla.com>
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% PROCESS global/header.html.tmpl
+   title = "Edit Roadmap Milestone"
+   javascript_urls = [ 'js/field.js', 'js/util.js' ]
+   yui = [ 'autocomplete', 'calendar' ]
+   style_urls = [ 'extensions/Roadmap/web/roadmap.css' ]
+%]
+
+<h3>Roadmap Milestone Information</h3>
+
+<form method="post" action="page.cgi?id=roadmap/edit.html" id="roadmap">
+<input type="hidden" name="token" value="[% token FILTER none %]">
+<input type="hidden" name="name" value="[% roadmap.name FILTER html %]">
+[% IF action == "new" %]
+  <input type="hidden" name="action" value="add_milestone">
+[% ELSE %]
+  <input type="hidden" name="milestone_old_name" value="[% milestone.name FILTER html %]">
+  <input type="hidden" name="action" value="update_milestone">
+[% END %]
+
+<table class="roadmap-form">
+<tr class="even">
+  <th align="left">Name</th>
+  <td><input type="text" id="milestone_name" name="milestone_name" 
+             value="[% milestone.name FILTER html %]" size="30"></td>
+</tr>
+<tr class="odd">
+  <th align="left">Sortkey</th>
+  <td><input type="text" id="milestone_sortkey" name="milestone_sortkey" 
+             value="[% milestone.sortkey FILTER html %]" size="30"></td>
+</tr>
+<tr class="even">
+  <th>Deadline</th>
+  <td>
+    <input type="text" id="milestone_deadline" name="milestone_deadline" 
+           size="10" value="[% milestone.deadline FILTER html %]">
+    <button type="button" class="calendar_button" id="button_calendar_milestone_deadline"
+            onclick="showCalendar('milestone_deadline')"><span>Calendar</span>
+    </button>
+    <div id="con_calendar_milestone_deadline"></div>
+    <script type="text/javascript">
+      createCalendar('milestone_deadline');
+    </script>
+  </td>
+</tr>
+<tr class="odd">
+  <th align="left">Query</th>
+    <td><input type="text" id="milestone_query" name="milestone_query" 
+               value="[% milestone.query FILTER html %]" size="50"></td>
+</tr>
+</table>
+
+<br>
+<input type="submit" value="Submit">
+
+</form>
+
+<p>
+  Back to roadmap '<a href="[% urlbase FILTER none %]page.cgi?id=roadmap/edit.html&amp;name=[% roadmap.name FILTER url_quote %]">
+  [% roadmap.name FILTER html %]</a>', or edit other 
+  <a href="[% urlbase FILTER none %]page.cgi?id=roadmap/list.html">roadmaps</a>.
+</p>
+
+[% PROCESS global/footer.html.tmpl %]
