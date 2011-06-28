@@ -549,7 +549,6 @@ var bugForm = {
   },
 
   resetSubmitButton: function() {
-    console.log('>> bugForm.resetSubmitButton <<');
     Dom.get('submit').disabled = false;
     Dom.get('submit').value = 'Submit Bug';
   },
