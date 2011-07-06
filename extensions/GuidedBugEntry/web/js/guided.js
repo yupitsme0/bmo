@@ -50,7 +50,7 @@ var guided = {
     // update history
     if (History && !noSetHistory) {
       History.navigate('h', newStep + "|" + product.getName());
-}
+    }
   },
 
   init: function() {
@@ -78,10 +78,12 @@ var guided = {
     guided.setStep(state[0], noSetHistory);
   },
 
-  onAdvancedClick: function() {
-    document.location.href = 'enter_bug.cgi?format=__default__&product=' +
-      escape(product.getName());
-    return false;
+  setAdvancedLink: function() {
+    href = 'enter_bug.cgi?format=__default__' +
+      '&product=' + escape(product.getName()) +
+      '&short_desc=' + escape(dupes.getSummary());
+    Dom.get('advanced_img').href = href;
+    Dom.get('advanced_link').href = href;
   }
 };
 
@@ -132,9 +134,7 @@ var product = {
     Dom.get('product_label').innerHTML = productName;
     Dom.get('dupes_product_name').innerHTML = productName;
     Dom.get('list_comp').href = 'describecomponents.cgi?product=' + escape(productName);
-    Dom.get('advanced').href = 'enter_bug.cgi?format=__default__&product=' + escape(productName);
-    Dom.get('advanced_img').href = 'enter_bug.cgi?format=__default__&product=' + escape(productName);
-    Dom.get('advanced_link').href = 'enter_bug.cgi?format=__default__&product=' + escape(productName);
+    guided.setAdvancedLink();
 
     if (productName == '') {
       Dom.addClass("product_support", "hidden");
@@ -432,6 +432,7 @@ var dupes = {
 
   _onSummaryBlur: function() {
     dupes._elSearch.disabled = dupes._elSummary.value == '';
+    guided.setAdvancedLink();
   },
 
   _onSummaryKeyDown: function(e) {

@@ -60,6 +60,12 @@ a:hover {
   text-decoration: underline;
 }
 
+a.controller {
+    font-size: 100%;
+    border: 1px solid #c0c0c0;
+    padding: 3px;
+}
+
 #footer .outro {
     text-align:left;
     padding-left:1ex;
