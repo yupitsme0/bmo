@@ -2394,7 +2394,7 @@ Splinter.init = function () {
 
     Dom.get("bugId").innerHTML = Splinter.theBug.id;
     Dom.get("bugLink").setAttribute('href', Splinter.configBugzillaUrl + "show_bug.cgi?id=" + Splinter.theBug.id);
-    Dom.get("bugShortDesc").innerHTML = Splinter.theBug.shortDesc;
+    Dom.get("bugShortDesc").innerHTML = YAHOO.lang.escapeHTML(Splinter.theBug.shortDesc);
     Dom.get("bugReporter").appendChild(document.createTextNode(Splinter.theBug.getReporter()));
     Dom.get("bugCreationDate").innerHTML = Splinter.Utils.formatDate(Splinter.theBug.creationDate);
     Dom.setStyle('bugInfo', 'display', 'block');
@@ -2417,7 +2417,7 @@ Splinter.init = function () {
     } else {
         Dom.get("attachId").innerHTML = Splinter.theAttachment.id;
         Dom.get("attachLink").setAttribute('href', Splinter.configBugzillaUrl + "attachment.cgi?id=" + Splinter.theAttachment.id);
-        Dom.get("attachDesc").innerHTML = Splinter.theAttachment.description;
+        Dom.get("attachDesc").innerHTML = YAHOO.lang.escapeHTML(Splinter.theAttachment.description);
         Dom.get("attachCreator").appendChild(document.createTextNode(Splinter.Bug._formatWho(Splinter.theAttachment.whoName, 
                                                                                              Splinter.theAttachment.whoEmail)));
         Dom.get("attachDate").innerHTML = Splinter.Utils.formatDate(Splinter.theAttachment.date);

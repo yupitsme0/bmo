@@ -41,10 +41,11 @@ sub enter_bug_start {
     $vars->{'disable_guided'} = 1;
 
     # force guided format for new users
+    my $format = $cgi->param('format') || '';
     if (
-        $cgi->param('format') eq 'guided' ||
+        $format eq 'guided' ||
         (
-            $cgi->param('format') eq '' &&
+            $format eq '' &&
             !$user->in_group('canconfirm')
         )
     ) {
