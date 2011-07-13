@@ -102,10 +102,13 @@
 	if (listType) {
             if (listType == "lists.mozilla.org") {
                 document.getElementById('component').value = "Discussion Forums";
-	        short_desc = "Discussion Forum: " + listName;
+	            short_desc = "Discussion Forum: " + listName;
+            } else if (listType == "mozilla.com" ) {
+                document.getElementById('component').value = "Server Operations: Desktop Issues";
+                short_desc = "[Zimbra Distribution List Request] " + listName + "@" + listType;
             } else {
                 document.getElementById('component').value = "Server Operations";
-                short_desc = "[List Request] " + listName + "@" + listType;
+                short_desc = "[Mailman List Request] " + listName + "@" + listType;
             }
         } else {
             alert_text += "Please select a list type\n";
