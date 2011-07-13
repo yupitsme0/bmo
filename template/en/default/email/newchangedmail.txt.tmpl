@@ -20,10 +20,12 @@
 
 [% PROCESS "global/variables.none.tmpl" %]
 [% PROCESS "global/reason-descs.none.tmpl" %]
+[% show_new = isnew
+              && (to_user.settings.bugmail_new_prefix.value == 'on') %]
 
 From: [% Param('mailfrom') %]
 To: [% to_user.email %]
-Subject: [[% terms.Bug %] [%+ bug.id %]] [% 'New: ' IF isnew %][%+ bug.short_desc %]
+Subject: [[% terms.Bug %] [%+ bug.id %]] [% 'New: ' IF show_new %][%+ bug.short_desc %]
 Date: [% date %]
 X-Bugzilla-Reason: [% reasonsheader %]
 X-Bugzilla-Type: [% isnew ? 'new' : 'changed' %]
