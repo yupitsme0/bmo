@@ -90,6 +90,8 @@ sub SETTINGS {
     timezone           => { subclass => 'Timezone', default => 'local' },
     # 2011-02-07 dkl@mozilla.com -- Bug 580490
     quicksearch_fulltext => { options => ['on', 'off'], default => 'on' },
+    # 2011-06-16 glob@mozilla.com -- Bug 663747
+    bugmail_new_prefix => { options => ['on', 'off'], default => 'on' },
     }
 };
 

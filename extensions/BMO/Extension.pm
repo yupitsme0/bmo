@@ -536,14 +536,34 @@ sub object_end_of_create_validators {
     }
 }
 
-# Add product chooser setting (although it was added long ago, so add_setting
-# will just return every time).
 sub install_before_final_checks {
     my ($self, $args) = @_;
     
+    # Add product chooser setting (although it was added long ago, so add_setting
+    # will just return every time).
     add_setting('product_chooser', 
                 ['pretty_product_chooser', 'full_product_chooser'],
                 'pretty_product_chooser');
+
+    # Migrate from 'gmail_threading' setting to 'bugmail_new_prefix'
+    my $dbh = Bugzilla->dbh;
+    if ($dbh->selectrow_array("SELECT 1 FROM setting WHERE name='gmail_threading'")) {
+        $dbh->bz_start_transaction();
+        $dbh->do("UPDATE profile_setting
+                     SET setting_value='on-temp'
+                   WHERE setting_name='gmail_threading' AND setting_value='Off'");
+        $dbh->do("UPDATE profile_setting
+                     SET setting_value='off'
+                   WHERE setting_name='gmail_threading' AND setting_value='On'");
+        $dbh->do("UPDATE profile_setting
+                     SET setting_value='on'
+                   WHERE setting_name='gmail_threading' AND setting_value='on-temp'");
+        $dbh->do("UPDATE profile_setting
+                     SET setting_name='bugmail_new_prefix'
+                   WHERE setting_name='gmail_threading'");
+        $dbh->do("DELETE FROM setting WHERE name='gmail_threading'");
+        $dbh->bz_commit_transaction();
+    }
 }
 
 # Migrate old is_active stuff to new patch (is in core in 4.2), The old column
