@@ -204,6 +204,8 @@ our %always_fileable_group = (
 );
 
 # Mapping of products to their security bits
+# These are mirrored in the GuidedBugEntry extension, see
+#   extensions/GuidedBugEntry/web/js/products.js
 our %product_sec_groups = (
     "mozilla.org"                  => 'mozilla-confidential',
     "Webtools"                     => 'webtools-security',
@@ -222,6 +224,7 @@ our %product_sec_groups = (
     "Skywriter"                    => 'websites-security',
     "support.mozillamessaging.com" => 'websites-security',
     "Bugzilla"                     => 'bugzilla-security',
+    "bugzilla.mozilla.org"         => 'bugzilla-security',
     "Testopia"                     => 'bugzilla-security',
     "Tamarin"                      => 'tamarin-security',
     "Mozilla PR"                   => 'pr-private',
