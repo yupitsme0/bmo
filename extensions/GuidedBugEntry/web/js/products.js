@@ -28,6 +28,7 @@
  * related: array of product names which will also be searched for duplicates
  * version: function which returns a version (eg. detected from UserAgent)
  * support: string which is displayed at the top of the duplicates page
+ * secgroup: the group to place confidential bugs into
  */
 
 var products = {

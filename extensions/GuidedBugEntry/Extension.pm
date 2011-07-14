@@ -98,6 +98,23 @@ sub _init_vars {
     $vars->{'open_states'} = \@open_states;
 
     $vars->{'token'} = issue_session_token('createbug:');
+
+}
+
+sub page_before_template {
+    my ($self, $args) = @_;
+    my $page = $args->{'page_id'};
+    my $vars = $args->{'vars'};
+
+    return unless $page eq 'guided_products.js';
+
+    # import product -> security group mappings from the BMO ext
+
+    our %product_sec_groups;
+    eval q#use Bugzilla::Extension::BMO::Data '%product_sec_groups'#;
+    return if $@;
+
+    $vars->{'products'} = \%product_sec_groups;
 }
 
 __PACKAGE__->NAME;
