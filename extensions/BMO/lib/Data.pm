@@ -204,8 +204,6 @@ our %always_fileable_group = (
 );
 
 # Mapping of products to their security bits
-# These are mirrored in the GuidedBugEntry extension, see
-#   extensions/GuidedBugEntry/web/js/products.js
 our %product_sec_groups = (
     "mozilla.org"                  => 'mozilla-confidential',
     "Webtools"                     => 'webtools-security',

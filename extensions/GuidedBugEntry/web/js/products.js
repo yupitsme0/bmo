@@ -94,95 +94,13 @@ var products = {
   },
 
   "Bugzilla": {
-    secgroup: 'bugzilla-security',
     support:
       'Please use <a href="http://landfill.bugzilla.org/">Bugzilla Landfill</a> to file "test bugs".'
   },
 
   "bugzilla.mozilla.org": {
     related: [ "Bugzilla" ],
-    secgroup: 'bugzilla-security',
     support:
       'Please use <a href="http://landfill.bugzilla.org/">Bugzilla Landfill</a> to file "test bugs".'
-  },
-
-  "mozilla.org": {
-    secgroup: 'mozilla-confidential'
-  },
-
-  "Webtools": {
-    secgroup: 'webtools-security'
-  },
-
-  "Marketing": {
-    secgroup: 'marketing-private'
-  },
-
-  "addons.mozilla.org": {
-    secgroup: 'client-services-security'
-  },
-
-  "AUS": {
-    secgroup: 'client-services-security'
-  },
-
-  "Mozilla Services": {
-    secgroup: 'client-services-security'
-  },
-
-  "Mozilla Corporation": {
-    secgroup: 'mozilla-corporation-confidential'
-  },
-
-  "Mozilla Metrics": {
-    secgroup: 'metrics-private'
-  },
-
-  "Legal": {
-    secgroup: 'legal'
-  },
-
-  "Mozilla Messaging": {
-    secgroup: 'mozilla-messaging-confidential'
-  },
-
-  "Websites": {
-    secgroup: 'websites-security'
-  },
-
-  "Mozilla Developer Network": {
-    secgroup: 'websites-security'
-  },
-
-  "support.mozilla.com": {
-    secgroup: 'websites-security'
-  },
-
-  "quality.mozilla.org": {
-    secgroup: 'websites-security'
-  },
-
-  "Skywriter": {
-    secgroup: 'websites-security'
-  },
-
-  "support.mozillamessaging.com": {
-    secgroup: 'websites-security'
-  },
-
-  "Testopia": {
-    secgroup: 'bugzilla-security'
-  },
-
-  "Tamarin": {
-    secgroup: 'tamarin-security'
-  },
-
-  "Mozilla PR": {
-    secgroup: 'pr-private'
-  },
-
-  "_default": {
-    secgroup: 'core-security'
   }
 }
