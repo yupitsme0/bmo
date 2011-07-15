@@ -41,6 +41,7 @@ use DateTime;
 
 use Bugzilla::Extension::BMO::FakeBug;
 use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
+                                      $cf_flags
                                       %group_to_cc_map
                                       $blocking_trusted_setters
                                       $blocking_trusted_requesters
@@ -170,7 +171,7 @@ sub _get_field_values_sort_key {
 }
 
 sub cf_hidden_in_product {
-    my ($field_name, $product_name, $component_name) = @_;
+    my ($field_name, $product_name, $component_name, $custom_flag_mode) = @_;
 
     # If used in buglist.cgi, we pass in one_product which is a Bugzilla::Product
     # elsewhere, we just pass the name of the product.
@@ -181,7 +182,26 @@ sub cf_hidden_in_product {
     # of a single compoent name everywhere else.
     my $component_list = ref $component_name ? $component_name 
                                              : [ $component_name ];
-   
+
+    if ($custom_flag_mode) {
+        if ($custom_flag_mode == 1) {
+            # skip custom flags
+            foreach my $flag_re (@$cf_flags) {
+                return 1 if $field_name =~ $flag_re;
+            }
+        } elsif ($custom_flag_mode == 2) {
+            # custom flags only
+            my $found = 0;
+            foreach my $flag_re (@$cf_flags) {
+                if ($field_name =~ $flag_re) {
+                    $found = 1;
+                    last;
+                }
+            }
+            return 1 unless $found;
+        }
+    }
+
     foreach my $field_re (keys %$cf_visible_in_products) {
         if ($field_name =~ $field_re) {
             # If no product given, for example more than one product
@@ -287,8 +307,9 @@ sub bug_check_can_change_field {
     my $priv_results = $args->{'priv_results'};
     my $user = Bugzilla->user;
 
-    # Purpose: Only users in the appropriate drivers group can change the 
+    # Only users in the appropriate drivers group can change the 
     # cf_blocking_* fields or cf_tracking_* fields
+
     if ($field =~ /^cf_(?:blocking|tracking)_/) {
         # 0 -> 1 is used by show_bug, always allow so we skip this whole part
         if (!($old_value eq '0' && $new_value eq '1')) {
@@ -308,26 +329,23 @@ sub bug_check_can_change_field {
         if ($new_value eq '?') {
             _check_trusted($field, $blocking_trusted_requesters, $priv_results);
         }
-        push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
-    }
+        if ($user->id) {
+            push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
+        }
 
-    if ($field =~ /^cf_status_/) {
+    } elsif ($field =~ /^cf_status_/) {
         # Only drivers can set wanted.
         if ($new_value eq 'wanted') {
             _check_trusted($field, $status_trusted_wanters, $priv_results);
-        } else {
+        } elsif (_is_field_set($new_value)) {
             _check_trusted($field, $status_trusted_setters, $priv_results);
         }
-        
-        # Require 'canconfirm' to change anything else
-        if (!$user->in_group('canconfirm', $bug->{'product_id'})) {
-            push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
+        if ($user->id) {
+            push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
         }
-        push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
-    }
 
-    # "other" custom field setters restrictions
-    if ($field =~ /^cf/ && !@$priv_results && $new_value ne '---') {
+    } elsif ($field =~ /^cf/ && !@$priv_results && $new_value ne '---') {
+        # "other" custom field setters restrictions
         if (exists $other_setters->{$field}) {
             my $in_group = 0;
             foreach my $group (@{$other_setters->{$field}}) {
@@ -340,25 +358,22 @@ sub bug_check_can_change_field {
                 push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
             }
         }
-    }
 
-    # The EXPIRED resolution should only be settable by gerv.
-    if ($field eq 'resolution' && $new_value eq 'EXPIRED') {
+    } elsif ($field eq 'resolution' && $new_value eq 'EXPIRED') {
+        # The EXPIRED resolution should only be settable by gerv.
         if ($user->login ne 'gerv@mozilla.org') {
             push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
         }
-    }
 
-    # You need at least canconfirm to mark a bug as FIXED
-    if ($field eq 'resolution' && $new_value eq 'FIXED') {
+    } elsif ($field eq 'resolution' && $new_value eq 'FIXED') {
+        # You need at least canconfirm to mark a bug as FIXED
         if (!$user->in_group('canconfirm', $bug->{'product_id'})) {
             push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
         }
-    }
 
-    # Canconfirm is really "cantriage"; users with canconfirm can also mark 
-    # bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
-    if ($user->in_group('canconfirm', $bug->{'product_id'})) {
+    } elsif ($user->in_group('canconfirm', $bug->{'product_id'})) {
+        # Canconfirm is really "cantriage"; users with canconfirm can also mark 
+        # bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
         if ($field eq 'bug_status'
             && is_open_state($old_value)
             && !is_open_state($new_value))
@@ -372,10 +387,9 @@ sub bug_check_can_change_field {
         {
             push (@$priv_results, PRIVILEGES_REQUIRED_NONE);
         }
-    }
 
-    # Bug 649625 - Disallow reopening of bugs which have been resolved for > 1 year
-    if ($field eq 'bug_status') {
+    } elsif ($field eq 'bug_status') {
+        # Disallow reopening of bugs which have been resolved for > 1 year
         if (is_open_state($new_value) 
             && !is_open_state($old_value)
             && $bug->resolution eq 'FIXED') 
