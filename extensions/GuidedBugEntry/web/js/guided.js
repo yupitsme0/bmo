@@ -130,6 +130,7 @@ var product = {
     if (productName == this.getName() && this.details)
       return;
 
+    // display the product name
     Dom.get('product').value = productName;
     Dom.get('product_label').innerHTML = productName;
     Dom.get('dupes_product_name').innerHTML = productName;
@@ -139,6 +140,13 @@ var product = {
     if (productName == '') {
       Dom.addClass("product_support", "hidden");
       return;
+    }
+
+    // use the correct security group
+    if (products[productName] && products[productName].secgroup) {
+      Dom.get('groups').value = products[productName].secgroup;
+    } else {
+      Dom.get('groups').value = products['_default'].secgroup;
     }
 
     // show support message

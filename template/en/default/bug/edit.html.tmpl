@@ -939,7 +939,7 @@
   [% USE Bugzilla %]
   [% FOREACH field = Bugzilla.active_custom_fields %]
     [% NEXT IF NOT user.id AND field.value == "---" %]
-    [% NEXT IF cf_hidden_in_product(field.name, bug.product, bug.component) %]
+    [% NEXT IF cf_hidden_in_product(field.name, bug.product, bug.component, 1) %]
     <tr>
       [% PROCESS bug/field.html.tmpl value = bug.${field.name}
                                      editable = bug.check_can_change_field(field.name, 0, 1)
