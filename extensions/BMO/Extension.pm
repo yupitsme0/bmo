@@ -626,4 +626,11 @@ sub field_end_of_create {
     MessageToMTA(join("\n", @message));
 }
 
+sub webservice {
+    my ($self,  $args) = @_;
+
+    my $dispatch = $args->{dispatch};
+    $dispatch->{BMO} = "Bugzilla::Extension::BMO::WebService";
+}
+
 __PACKAGE__->NAME;
