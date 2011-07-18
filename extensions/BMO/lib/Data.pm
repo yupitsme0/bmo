@@ -27,6 +27,7 @@ use base qw(Exporter);
 use Tie::IxHash;
 
 our @EXPORT_OK = qw($cf_visible_in_products
+                    $cf_flags
                     %group_to_cc_map
                     $blocking_trusted_setters
                     $blocking_trusted_requesters
@@ -137,6 +138,11 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
     }, 
 );
 
+# Which custom fields are acting as flags (ie. custom flags)
+our $cf_flags = [
+    qr/^cf_(?:blocking|tracking|status)_/,
+];
+
 # Who to CC on particular bugmails when certain groups are added or removed.
 our %group_to_cc_map = (
   'bugzilla-security'        => 'security@bugzilla.org',
@@ -179,7 +185,7 @@ our $status_trusted_wanters = {
 # Who can set cf_status_* to values other than "wanted"?
 our $status_trusted_setters = {
     qr/^cf_status_thunderbird/    => 'editbugs',
-    '_default'                    => 'everyone',
+    '_default'                    => 'canconfirm',
 };
 
 # Who can set other custom flags (use full field names only, not regex's)
