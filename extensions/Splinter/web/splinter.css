@@ -395,3 +395,7 @@ div.review-patch-comment-text {
     padding-left: 0.5em;
     margin-bottom: 10px;
 }
+
+.file-label-collapse {
+    padding-right: 5px;
+}
