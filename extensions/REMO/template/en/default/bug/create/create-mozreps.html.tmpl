@@ -139,40 +139,52 @@ function submitForm() {
 
 <tr class="odd">
   <th colspan="2">
-    How are you involved with Mozilla?
+    References:
   </th>
 </tr>
 <tr class="odd">
+  <td colspan="2">
+    <textarea id="references" name="references" rows="4"
+              placeholder="Add contact info of people referencing you."></textarea>
+  </td>
+</tr>
+
+<tr class="even">
+  <th colspan="2">
+    How are you involved with Mozilla?
+  </th>
+</tr>
+<tr class="even">
   <td colspan="2">
     <textarea id="involved" name="involved" rows="4" placeholder="Add-ons,  l10n,  SUMO,  QA,  ..."></textarea>
   </td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <th>Languages Spoken:[% mandatory %]</th>
   <td><input id="languages" name="languages" size="40"></td>
 </tr>
 
-<tr class="odd">
+<tr class="even">
   <th>How did you learn about Mozilla Reps?[% mandatory %]</th>
   <td><input id="learn" name="learn" size="40"></td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <th colspan="2">What motivates you most about joining Mozilla Reps?[% mandatory %]</th>
 </tr>
-<tr class="even">
+<tr class="odd">
   <td colspan="2"><textarea id="motivation" name="motivation" rows="4"></textarea></td>
 </tr>
 
-<tr class="odd">
+<tr class="even">
   <th colspan="2">Comments:</th>
 </tr>
-<tr class="odd">
+<tr class="even">
   <td colspan="2"><textarea id="comments" name="comments" rows="4"></textarea></td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <th>
     I have read the
     <a href="http://www.mozilla.com/en-US/privacy-policy" target="_blank">Mozilla Privacy Policy</a>:[% mandatory %]
@@ -180,7 +192,7 @@ function submitForm() {
   <td><input id="privacy" type="checkbox"></td>
 </tr>
 
-<tr class="odd">
+<tr class="even">
   <td>&nbsp;</td>
   <td align="right"><input type="submit" value="Submit" onclick="return submitForm()"></td>
 </tr>

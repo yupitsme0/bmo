@@ -55,7 +55,10 @@ my $vars = {};
 ######################################################################
 
 # redirect to enter_bug if no field is passed.
-print $cgi->redirect(correct_urlbase() . 'enter_bug.cgi') unless $cgi->param();
+unless ($cgi->param()) {
+    print $cgi->redirect(correct_urlbase() . 'enter_bug.cgi');
+    exit;
+}
 
 # BMO: Don't allow updating of bugs if disabled
 if (Bugzilla->params->{disable_bug_updates}) {

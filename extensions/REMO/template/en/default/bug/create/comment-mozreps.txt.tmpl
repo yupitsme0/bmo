@@ -50,6 +50,13 @@ IM:
 -
 [% END %]
 
+References:
+[% IF cgi.param('references') %]
+[%+ cgi.param('references') %]
+[% ELSE %]
+-
+[% END %]
+
 Currently Involved with Mozilla:
 [% IF cgi.param('involved') %]
 [%+ cgi.param('involved') %]

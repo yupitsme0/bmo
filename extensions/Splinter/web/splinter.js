@@ -1247,10 +1247,12 @@ Splinter.publishReview = function () {
     publish_attach_isprivate.value = Splinter.theAttachment.isPrivate;
 
     // This is a "magic string" used to identify review comments
-    var comment = "Review of attachment " + Splinter.theAttachment.id + ":\n" +
-                  "-----------------------------------------------------------------\n\n" + 
-                  Splinter.theReview.toString();
-    publish_review.value = comment;
+    if (Splinter.theReview.toString()) {
+        var comment = "Review of attachment " + Splinter.theAttachment.id + ":\n" +
+                      "-----------------------------------------------------------------\n\n" + 
+                      Splinter.theReview.toString();
+        publish_review.value = comment;
+    }
 
     if (Splinter.theAttachment.status 
         && Dom.get('attachmentStatus').value != Splinter.theAttachment.status) 
