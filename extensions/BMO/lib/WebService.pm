@@ -88,6 +88,7 @@ sub getBugsVerifier {
                         LEFT JOIN bug_group_map 
                         ON bugs_activity.bug_id = bug_group_map.bug_id
                   WHERE bugs_activity.fieldid = ?
+                        AND bugs_activity.removed = 'RESOLVED'
                         AND bugs_activity.added = 'VERIFIED'
                         AND bugs_activity.who = ?
                         AND bug_group_map.bug_id IS NULL
