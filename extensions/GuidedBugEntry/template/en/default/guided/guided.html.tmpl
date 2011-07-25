@@ -68,6 +68,8 @@ YAHOO.util.Dom.removeClass('loading', 'hidden');
 <script type="text/javascript">
 YAHOO.util.Dom.addClass('loading', 'hidden');
 guided.init();
+guided.detectedPlatform = '[% platform FILTER js %]';
+guided.detectedOpSys = '[% op_sys FILTER js %]';
 guided.currentUser = '[% user.login FILTER js %]';
 guided.openStates = [
 [% FOREACH state = open_states %]
@@ -219,28 +221,54 @@ dupes.setLabels(
 
 [% BLOCK exits %]
 <table class="exits">
-[% INCLUDE exit_block
-   name="I need technical support"
-   icon="support.png"
-   href="http://www.mozilla.org/support/"
-   desc="For technical support or help getting your site to work with Mozilla."
-%]
-[% INCLUDE exit_block
-   name="I'd prefer to leave quick feedback rather than filing a detailed bug report"
-   icon="idea.png"
-   href="http://input.mozilla.org/idea/"
-   desc="For offering us ideas on how to enhance Firefox."
-%]
-[% INCLUDE exit_block
-   name="I have other feedback"
-   icon="input.png"
-   href="http://input.mozilla.org/feedback/"
-   desc="For reporting a broken web page, or providing quick feedback about Firefox."
-%]
+  <tr>
+    <td>
+      <div class="exit_img">
+        <a href="http://www.mozilla.org/support/"
+        ><img src="extensions/GuidedBugEntry/web/images/support.png" width="32" height="32"
+        ></a>
+      </div>
+    </td>
+    <td width="100%">
+      <h2>
+        <a href="http://www.mozilla.org/support/">I need technical support</a>
+      </h2>
+      For technical support or help getting your site to work with Mozilla.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div class="exit_img">
+        <a href="http://input.mozilla.org/idea/"
+        ><img src="extensions/GuidedBugEntry/web/images/idea.png" width="32" height="32"
+        ></a>
+      </div>
+    </td>
+    <td width="100%">
+      <h2>
+        <a href="http://input.mozilla.org/idea/">I have an idea for firefox</a>
+      </h2>
+      For offering us ideas on how to enhance Firefox.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div class="exit_img">
+        <a href="http://input.mozilla.org/feedback/"
+        ><img src="extensions/GuidedBugEntry/web/images/input.png" width="32" height="32"
+        ></a>
+      </div>
+    </td>
+    <td width="100%">
+      &bullet; <a href="http://input.mozilla.org/feedback/">Provide other feedback about Firefox</a><br>
+      &bullet; <a href="http://input.mozilla.org/feedback/#sad">Report an issue with a web site that I use</a><br>
+      &bullet; <a href="enter_bug.cgi?format=guided&product=Core">Report an issue with Firefox on a site that I've developed</a><br>
+    </td>
+  </tr>
 </table>
-<p>
-None of the above; my bug is in:
-</p>
+<h3>
+  None of the above; my bug is in:
+</h3>
 [% END %]
 
 [% BLOCK exit_block %]
@@ -318,9 +346,9 @@ Product: <b><span id="dupes_product_name">?</span></b>:
 <input type="hidden" name="product" id="product" value="">
 <input type="hidden" name="component" id="component" value="">
 <input type="hidden" name="bug_severity" value="normal">
-<input type="hidden" name="rep_platform" value="All">
+<input type="hidden" name="rep_platform" id="rep_platform" value="All">
 <input type="hidden" name="priority" value="--">
-<input type="hidden" name="op_sys" value="All">
+<input type="hidden" name="op_sys" id="op_sys" value="All">
 <input type="hidden" name="version" id="version" value="">
 <input type="hidden" name="comment" id="comment" value="">
 <input type="hidden" name="format" value="guided">
