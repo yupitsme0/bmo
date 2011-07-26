@@ -31,6 +31,8 @@ var History = YAHOO.util.History;
 
 var guided = {
   _currentStep: '',
+  detectedPlatform: '',
+  detectedOpSys: '',
   currentUser: '',
   openStates: [],
 
@@ -147,6 +149,15 @@ var product = {
       Dom.get('groups').value = products[productName].secgroup;
     } else {
       Dom.get('groups').value = products['_default'].secgroup;
+    }
+
+    // use the correct platform & op_sys
+    if (products[productName] && products[productName].detectPlatform) {
+      Dom.get('rep_platform').value = guided.detectedPlatform;
+      Dom.get('op_sys').value = guided.detectedOpSys;
+    } else {
+      Dom.get('rep_platform').value = 'All';
+      Dom.get('op_sys').value = 'All';
     }
 
     // show support message
@@ -541,7 +552,13 @@ var bugForm = {
 
   onInit: function() {
     Dom.get('user_agent').value = navigator.userAgent;
-    Dom.get('build_id').value = navigator.buildID ? navigator.buildID : '';
+    if (navigator.buildID && navigator.buildID != navigator.userAgent) {
+      Dom.get('build_id').value = navigator.buildID;
+    }
+    Event.addListener(Dom.get('short_desc'), 'blur', function() {
+      Dom.get('dupes_summary').value = Dom.get('short_desc').value;
+      guided.setAdvancedLink();
+    });
   },
 
   onShow: function() {

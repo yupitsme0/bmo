@@ -29,6 +29,8 @@
  * version: function which returns a version (eg. detected from UserAgent)
  * support: string which is displayed at the top of the duplicates page
  * secgroup: the group to place confidential bugs into
+ * detectPlatform: when true the platform and op_sys will be set from the
+ *                 browser's user agent.  when false, these will be set to All
  */
 
 var products = {
@@ -50,6 +52,7 @@ var products = {
         return false;
       }
     },
+    detectPlatform: true,
     support:
       'If you are new to Firefox or Bugzilla, please consider checking ' +
       '<a href="http://support.mozilla.com/">' +
@@ -59,6 +62,7 @@ var products = {
 
   "Fennec": {
     related: [ "Core", "Toolkit" ],
+    detectPlatform: true,
     support:
       'If you are new to Firefox or Bugzilla, please consider checking ' +
       '<a href="http://support.mozilla.com/">' +
@@ -68,6 +72,7 @@ var products = {
 
   "SeaMonkey": {
     related: [ "Core", "Toolkit" ],
+    detectPlatform: true,
     version: function() {
       var re = /SeaMonkey\/(\d+)\.(\d+)/i;
       var match = re.exec(navigator.userAgent);
@@ -82,11 +87,17 @@ var products = {
   },
 
   "Camino": {
-    related: [ "Core", "Toolkit" ]
+    related: [ "Core", "Toolkit" ],
+    detectPlatform: true
+  },
+
+  "Core": {
+    detectPlatform: true
   },
 
   "Thunderbird": {
-    related: [ "Core", "Toolkit", "MailNews Core" ]
+    related: [ "Core", "Toolkit", "MailNews Core" ],
+    detectPlatform: true
   },
 
   "Penelope": {
