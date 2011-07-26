@@ -74,6 +74,7 @@ body.bz_group_core-security {
    when comments are hidden */
 .bz_comment {
     width: 55em;
+    font-size: small;
 }
 .bz_comment_text {
     width: auto;
