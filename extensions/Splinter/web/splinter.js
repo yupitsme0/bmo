@@ -2066,19 +2066,20 @@ Splinter.showAllFiles = function () {
         }
     }
 }
-	
+
 Splinter.toggleCollapsed = function (filename, display) {
+    filename = decodeURIComponent(filename);
     var i;
     for (i = 0; i < Splinter.thePatch.files.length; i++) {
         var file = Splinter.thePatch.files[i];
         if ((filename && file.filename == filename) || !filename) {
             var fileTableContainer = file.div.getElementsByClassName('file-table-container')[0];
             var fileCollapseLink = file.div.getElementsByClassName('file-label-collapse')[0];
-	    if (!display) {
-         	display = Dom.getStyle(fileTableContainer, 'display') == 'block' ? 'none' : 'block';
+            if (!display) {
+                display = Dom.getStyle(fileTableContainer, 'display') == 'block' ? 'none' : 'block';
             }
             Dom.setStyle(fileTableContainer, 'display', display);
-	    fileCollapseLink.innerHTML = display == 'block' ? '[-]' : '[+]';
+            fileCollapseLink.innerHTML = display == 'block' ? '[-]' : '[+]';
         }
     }
 }
