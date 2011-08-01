@@ -400,3 +400,7 @@ div.review-patch-comment-text {
     padding-right: 5px;
     font-family: monospace;
 }
+
+.file-reviewed {
+    font-size: 80%;
+}
