@@ -110,7 +110,7 @@
         [% IF mode == "edit" %]
           <span class="bz_comment_actions">
             <script type="text/javascript"><!--
-              addReplyLink([% count %], [% comment.id %]);
+              addReplyLink([% count %], [% comment.id %], '[% comment.author.name || comment.author.nick FILTER js %]');
               addCollapseLink([% count %]); // -->
             </script>
           </span>

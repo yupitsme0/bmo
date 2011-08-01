@@ -97,7 +97,7 @@ sub bug_format_comment {
     # the hook.
     $$text =~ s~((?:^Created\ |\b)attachment\s*\#?\s*(\d+)(\s\[details\])?)
                ~(push(@$regexes, { match => qr/__REVIEW__$2/,
-                                   replace => get_review_link($bug, "$2", "[review]") })) &&
+                                   replace => get_review_link("$2", "[review]") })) &&
                 (attachment_id_is_patch($2) ? "$1 __REVIEW__$2" : $1)
                ~egmx;
     
