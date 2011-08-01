@@ -80,9 +80,13 @@ sub get_review_url {
 }
 
 sub get_review_link {
-    my ($bug, $attach_id, $link_text) = @_;
+    my ($attach_id, $link_text) = @_;
 
-    return "<a href='" . html_quote(get_review_url($bug, $attach_id)) . "'>$link_text</a>";
+    my $attachment = Bugzilla::Attachment->new($attach_id);
+
+    if ($attachment && $attachment->ispatch) {
+        return "<a href='" . html_quote(get_review_url($attachment->bug, $attach_id)) . "'>$link_text</a>";
+    }
 }
 
 sub munge_create_attachment {
