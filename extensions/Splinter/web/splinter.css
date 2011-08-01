@@ -398,4 +398,5 @@ div.review-patch-comment-text {
 
 .file-label-collapse {
     padding-right: 5px;
+    font-family: monospace;
 }

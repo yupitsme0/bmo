@@ -1,0 +1,11 @@
+InlineHistory inserts bug activity inline with the comments when viewing a bug.
+It was derived from the Bugzilla Tweaks Addon by Ehasn Akhgari.
+
+For technical and performance reasons it is only available to logged in users,
+and is enabled by a User Preference.
+
+**
+this version is still under development, and is not intended for deployment to
+production systems
+**
+
