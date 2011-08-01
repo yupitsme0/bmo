@@ -202,9 +202,7 @@ to some group are shown by default.
         [% NEXT IF column == group_field || excluded_columns.contains(column) %]
         <td>
           [% PROCESS "display_$column" %]
-          [% IF column == 'attachment' %]
-            [% Hook.process('after_attachment') %]
-          [% END %] 
+          [% Hook.process('after_column') %]
         </td>
       [% END %]
     </tr>

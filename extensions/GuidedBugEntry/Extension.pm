@@ -27,6 +27,7 @@ use Bugzilla::Token;
 use Bugzilla::Error;
 use Bugzilla::Status;
 use Bugzilla::Util 'url_quote';
+use Bugzilla::UserAgent;
 
 our $VERSION = '1';
 
@@ -99,6 +100,8 @@ sub _init_vars {
 
     $vars->{'token'} = issue_session_token('createbug:');
 
+    $vars->{'platform'} = detect_platform();
+    $vars->{'op_sys'} = detect_op_sys();
 }
 
 sub page_before_template {

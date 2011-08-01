@@ -1874,8 +1874,9 @@ Splinter.addPatchFile = function (file) {
     var fileCollapseLink = new Element(document.createElement('a'));
     Dom.addClass(fileCollapseLink, 'file-label-collapse');
     fileCollapseLink.appendChild(document.createTextNode('[-]'));
-    Dom.setAttribute(fileCollapseLink, 'href', "javascript:Splinter.toggleCollapsed('" + 
-                                               encodeURIComponent(file.filename) + "');");
+    Dom.setAttribute(fileCollapseLink, 'href', 'javascript:void(0);')
+    Dom.setAttribute(fileCollapseLink, 'onclick', "Splinter.toggleCollapsed('" + 
+                                                  encodeURIComponent(file.filename) + "');");
     Dom.setAttribute(fileCollapseLink, 'title', 'Click to expand or collapse this file table');
     fileCollapseLink.appendTo(fileLabel);
 
@@ -2078,6 +2079,23 @@ Splinter.toggleCollapsed = function (filename, display) {
             }
             Dom.setStyle(fileTableContainer, 'display', display);
 	    fileCollapseLink.innerHTML = display == 'block' ? '[-]' : '[+]';
+        }
+    }
+}
+
+Splinter.toggleCollapsed = function (filename, display) {
+    filename = decodeURIComponent(filename);
+    var i;
+    for (i = 0; i < Splinter.thePatch.files.length; i++) {
+        var file = Splinter.thePatch.files[i];
+        if ((filename && file.filename == filename) || !filename) {
+            var fileTableContainer = file.div.getElementsByClassName('file-table-container')[0];
+            var fileCollapseLink = file.div.getElementsByClassName('file-label-collapse')[0];
+            if (!display) {
+                display = Dom.getStyle(fileTableContainer, 'display') == 'block' ? 'none' : 'block';
+            }
+            Dom.setStyle(fileTableContainer, 'display', display);
+            fileCollapseLink.innerHTML = display == 'block' ? '[-]' : '[+]';
         }
     }
 }
