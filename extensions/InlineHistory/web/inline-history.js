@@ -1,0 +1,303 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1
+ * 
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+ * 
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+ * the specific language governing rights and limitations under the License.
+ * 
+ * The Original Code is the InlineHistory Bugzilla Extension;
+ * Derived from the Bugzilla Tweaks Addon.
+ * Derived from the Bugzilla Tweaks Addon.
+ * 
+ * The Initial Developer of the Original Code is the Mozilla Foundation.
+ * Portions created by the Initial Developer are Copyright (C) 2011 the Initial
+ * Developer. All Rights Reserved.
+ * 
+ * Contributor(s):
+ *   Johnathan Nightingale <johnath@mozilla.com>
+ *   Ehsan Akhgari <ehsan@mozilla.com>
+ *   Byron Jones <glob@mozilla.com>
+ *
+ * ***** END LICENSE BLOCK *****
+ */
+
+var inline_history = {
+  _ccDivs: null,
+
+  init: function() {
+    Dom = YAHOO.util.Dom;
+
+    // remove 'has been marked as a duplicate of this bug' comments
+    var reDuplicate = /\*\*\* \S+ \d+ has been marked as a duplicate of this/;
+    var comments = Dom.getElementsByClassName("bz_comment", 'div', 'comments');
+    for (var i = 1, il = comments.length; i < il; i++) {
+      var textDiv = Dom.getElementsByClassName('bz_comment_text', 'pre', comments[i]);
+      if (textDiv) {
+        var match = reDuplicate.exec(textDiv[0].textContent);
+        if (match)
+          comments[i].parentNode.removeChild(comments[i]);
+      }
+    }
+
+    // ensure new items are placed immediately after the last comment
+    var lastCommentDiv = Dom.getElementsByClassName('bz_comment', 'div', 'comments');
+    if (!lastCommentDiv) return;
+    lastCommentDiv = lastCommentDiv[lastCommentDiv.length - 1];
+
+    // insert activity into the correct location
+    var commentTimes = Dom.getElementsByClassName('bz_comment_time', 'span', 'comments');
+    for (var i = 0, il = ih_activity.length; i < il; i++) {
+      var item = ih_activity[i];
+      // item[0] : who
+      // item[1] : when
+      // item[2] : change html
+      // item[3] : header html
+      // item[4] : bool; cc-only
+      // item[5] : bool; is dupe
+      // item[6] : bool; is flag
+
+      var reachedEnd = false;
+      for (var j = 0, jl = commentTimes.length; j < jl; j++) {
+        var commentHead = commentTimes[j].parentNode;
+        var mainUser = Dom.getElementsByClassName('email', 'a', commentHead)[0].href.substr(7);
+        var user = item[0];
+        var time = item[1];
+        var mainTime = commentTimes[j].textContent.trim();
+
+        if (time > mainTime) {
+          if (j < commentTimes.length - 1) {
+            continue;
+          } else {
+            reachedEnd = true;
+          }
+        }
+
+        var inline = (mainUser == user && time == mainTime);
+        var currentDiv = document.createElement("div");
+
+        // place ih_cc class on parent container if it's the only child
+        var containerClass = '';
+        if (item[4]) {
+          item[2] = item[2].replace('"ih_cc"', '""');
+          containerClass = 'ih_cc';
+        }
+
+        if (inline) {
+          // assume that the change was made by the same user
+          commentHead.parentNode.appendChild(currentDiv);
+          currentDiv.innerHTML = item[2];
+          Dom.addClass(currentDiv, 'ih_inlinehistory');
+          Dom.addClass(currentDiv, containerClass);
+          if (item[6])
+            this.setFlagChangeID(item, commentHead.parentNode.id);
+
+        } else {
+          // the change was made by another user
+          if (!reachedEnd) {
+            var parentDiv = commentHead.parentNode;
+            var previous = this.previousElementSibling(parentDiv);
+            if (previous && previous.className.indexOf("ih_history") >= 0) {
+              currentDiv = parentDiv.previousElementSibling;
+            } else {
+              parentDiv.parentNode.insertBefore(currentDiv, parentDiv);
+            }
+          } else {
+            var parentDiv = commentHead.parentNode;
+            var next = this.nextElementSibling(parentDiv);
+            if (next && next.className.indexOf("ih_history") >= 0) {
+              currentDiv = parentDiv.nextElementSibling;
+            } else {
+              lastCommentDiv.parentNode.insertBefore(currentDiv, lastCommentDiv.nextSibling);
+              // parentDiv.parentNode.appendChild(currentDiv);
+            }
+          }
+
+          currentDiv.innerHTML = currentDiv.innerHTML
+                                 + '<div class="ih_history_item ' + containerClass + '" '
+                                 + 'id="h' + i + '">'
+                                 + item[3] + item[2]
+                                 + '</div>';
+          currentDiv.setAttribute("class", "bz_comment ih_history");
+          if (item[6])
+            this.setFlagChangeID(item, 'h' + i);
+        }
+        break;
+      }
+    }
+    ih_activity = undefined;
+
+    // find comment blocks which only contain cc changes, shift the ih_cc
+    var historyDivs = Dom.getElementsByClassName('ih_history', 'div', 'comments');
+    for (var i = 0, il = historyDivs.length; i < il; i++) {
+      var historyDiv = historyDivs[i];
+      var itemDivs = Dom.getElementsByClassName('ih_history_item', 'div', historyDiv);
+      var ccOnly = true;
+      for (var j = 0, jl = itemDivs.length; j < jl; j++) {
+        if (!Dom.hasClass(itemDivs[j], 'ih_cc')) {
+          ccOnly = false;
+          break;
+        }
+      }
+      if (ccOnly) {
+        for (var j = 0, jl = itemDivs.length; j < jl; j++) {
+          Dom.removeClass(itemDivs[j], 'ih_cc');
+        }
+        Dom.addClass(historyDiv, 'ih_cc');
+      }
+    }
+
+    this.linkFlags();
+    this._ccDivs = Dom.getElementsByClassName('ih_cc', '', 'comments');
+    this.hideCC();
+    YAHOO.util.Event.onDOMReady(this.addCCtoggler);
+  },
+
+  setFlagChangeID: function(changeItem, id) {
+    // put the ID for the change into ih_activity_flags
+    for (var i = 0, il = ih_activity_flags.length; i < il; i++) {
+      var flagItem = ih_activity_flags[i];
+      // flagItem[0] : who.login
+      // flagItem[1] : when
+      // flagItem[2] : attach id
+      // flagItem[3] : flag
+      // flagItem[4] : who.identity
+      // flagItem[5] : change div id
+      if (flagItem[0] == changeItem[0] && flagItem[1] == changeItem[1]) {
+        flagItem[5] = id;
+      }
+    }
+  },
+
+  linkFlags: function() {
+    var rows = Dom.get('attachment_table').getElementsByTagName('tr');
+    for (var i = 0, il = rows.length; i < il; i++) {
+
+      // deal with attachments with flags only
+      var tr = rows[i];
+      if (!tr.id || tr.id == 'a0')
+        continue;
+      var attachFlagTd = Dom.getElementsByClassName('bz_attach_flags', 'td', tr);
+      if (attachFlagTd.length == 0)
+        continue;
+      attachFlagTd = attachFlagTd[0];
+
+      // get the attachment id
+      var attachId = 0;
+      var anchors = tr.getElementsByTagName('a');
+      for (var j = 0, jl = anchors.length; j < jl; j++) {
+        var match = anchors[j].href.match(/attachment\.cgi\?id=(\d+)/);
+        if (match) {
+          attachId = match[1];
+          break;
+        }
+      }
+      if (!attachId)
+        continue;
+
+      var html = '';
+
+      // there may be multiple flags, split by <br>
+      var attachFlags = attachFlagTd.innerHTML.split('<br>');
+      for (var j = 0, jl = attachFlags.length; j < jl; j++) {
+        var match = attachFlags[j].match(/^\s*(<span.+\/span>):([^\?\-\+]+[\?\-\+])([\s\S]*)/);
+        if (!match) continue;
+        var authorSpan = match[1];
+        var flag = match[2].trim();
+        var requestee = match[3].trim();
+        var requesteeLogin = '';
+
+        match = authorSpan.match(/title="([^"]+)"/);
+        if (!match) continue;
+        var authorIdentity = this.htmlDecode(match[1]);
+
+        if (requestee) {
+          match = requestee.match(/title="([^"]+)"/);
+          if (!match) continue;
+          requesteeLogin = this.htmlDecode(match[1]);
+          match = requesteeLogin.match(/<([^>]+)>/);
+          if (!match) continue;
+          requesteeLogin = match[1];
+        }
+
+        var flagValue = requestee ? flag + '(' + requesteeLogin + ')' : flag;
+        // find the id for this change
+        for (var k = 0, kl = ih_activity_flags.length; k < kl; k++) {
+          flagItem = ih_activity_flags[k];
+          if (
+            flagItem[2] == attachId
+            && flagItem[3] == flagValue
+            && flagItem[4] == authorIdentity
+          ) {
+            html +=
+              authorSpan + ': '
+              + '<a href="#' + flagItem[5] + '">' + flag + '</a>'
+              + requestee + '<br>';
+            break;
+          }
+        }
+      }
+
+      if (html)
+        attachFlagTd.innerHTML = html;
+    }
+  },
+
+  hideCC: function() {
+    Dom.addClass(this._ccDivs, 'ih_hidden');
+  },
+
+  showCC: function() {
+    Dom.removeClass(this._ccDivs, 'ih_hidden');
+  },
+
+  addCCtoggler: function() {
+    var ul = Dom.getElementsByClassName('bz_collapse_expand_comments');
+    if (ul.length == 0)
+      return;
+    ul = ul[0];
+    var a = document.createElement('a');
+    a.href = 'javascript:void(0)';
+    a.id = 'ih_toggle_cc';
+    YAHOO.util.Event.addListener(a, 'click', function(e) {
+      if (Dom.get('ih_toggle_cc').innerHTML == 'Show CC Changes') {
+        a.innerHTML = 'Hide CC Changes';
+        inline_history.showCC();
+      } else {
+        a.innerHTML = 'Show CC Changes';
+        inline_history.hideCC();
+      }
+    });
+    a.innerHTML = 'Show CC Changes';
+    var li = document.createElement('li');
+    li.appendChild(a);
+    ul.appendChild(li);
+  },
+
+  previousElementSibling: function(el) {
+    if (el.previousElementSibling)
+      return el.previousElementSibling;
+    while (el = el.previousSibling) {
+      if (el.nodeType == 1)
+        return el;
+    }
+  },
+
+  nextElementSibling: function(el) {
+    if (el.nextElementSibling)
+      return el.nextElementSibling;
+    while (el = el.nextSibling) {
+      if (el.nodeType == 1)
+        return el;
+    }
+  },
+
+  htmlDecode: function(v) {
+    var e = document.createElement('div');
+    e.innerHTML = v;
+    return e.childNodes.length == 0 ? '' : e.childNodes[0].nodeValue;
+  }
+}
