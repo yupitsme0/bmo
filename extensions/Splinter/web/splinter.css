@@ -401,6 +401,10 @@ div.review-patch-comment-text {
     font-family: monospace;
 }
 
-.file-reviewed {
+.file-review-label {
     font-size: 80%;
+}
+
+.file-reviewed-nav {
+    text-decoration: line-through;
 }

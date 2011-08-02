@@ -1149,7 +1149,9 @@ Splinter.ReviewStorage.LocalReviewStorage.prototype = {
 
     saveDraft : function(bug, attachment, review, extraProps) {
         var propertyName = this._reviewPropertyName(bug, attachment);
-        if (!extraProps) { extraProps = {}; }
+        if (!extraProps) { 
+            extraProps = {}; 
+        }
         extraProps.isDraft = true;
         this._updateOrCreateReviewInfo(bug, attachment, extraProps);
         localStorage[propertyName] = "" + review;
@@ -1375,9 +1377,8 @@ Splinter.saveDraft = function () {
 
     var draftSaved = false;
     if (Splinter.haveDraft()) {
-        var i, filesReviewed;
-        filesReviewed = {};
-        for (i = 0; i < Splinter.thePatch.files.length; i++) {
+        var filesReviewed = {};
+        for (var i = 0; i < Splinter.thePatch.files.length; i++) {
             var file = Splinter.thePatch.files[i];
             if (file.fileReviewed) {
                 filesReviewed[file.filename] = true;
@@ -1908,14 +1909,15 @@ Splinter.addPatchFile = function (file) {
     fileLabelStatus.appendTo(fileLabel);
 
     var fileReviewed = new Element(document.createElement('span'));
-    Dom.addClass(fileReviewed, 'file-reviewed');
-    Dom.setAttribute(fileReviewed, 'title', 'If this box is checked, then a review has been ' +
-                                            'completed for this file.');
+    Dom.addClass(fileReviewed, 'file-review');
+    Dom.setAttribute(fileReviewed, 'title', 'Indicates that a review has been completed for this file. ' +
+                                            'This is for personal tracking purposes only and has no effect ' +
+                                            'on the published review.');
     fileReviewed.appendTo(fileLabel);
 
     var fileReviewedInput = new Element(document.createElement('input'));
     Dom.setAttribute(fileReviewedInput, 'type', 'checkbox');
-    Dom.setAttribute(fileReviewedInput, 'id', 'file-reviewed-chk-' + encodeURIComponent(file.filename));
+    Dom.setAttribute(fileReviewedInput, 'id', 'file-review-checkbox-' + encodeURIComponent(file.filename));
     Dom.setAttribute(fileReviewedInput, 'onchange', "Splinter.toggleFileReviewed('" +
                                                     encodeURIComponent(file.filename) + "');");
     if (file.fileReviewed) {
@@ -1923,10 +1925,11 @@ Splinter.addPatchFile = function (file) {
     }
     fileReviewedInput.appendTo(fileReviewed);
 
-    var fileReviewedInputLabel = new Element(document.createElement('label'));
-    Dom.setAttribute(fileReviewedInputLabel, 'for', 'file-reviewed-chk-' + encodeURIComponent(file.filename));
-    fileReviewedInputLabel.appendChild(document.createTextNode(' File Reviewed'));
-    fileReviewedInputLabel.appendTo(fileReviewed);
+    var fileReviewedLabel = new Element(document.createElement('label'));
+    Dom.addClass(fileReviewedLabel, 'file-review-label')
+    Dom.setAttribute(fileReviewedLabel, 'for', 'file-review-checkbox-' + encodeURIComponent(file.filename));
+    fileReviewedLabel.appendChild(document.createTextNode(' Reviewed'));
+    fileReviewedLabel.appendTo(fileReviewed);
 
     var lastHunk = file.hunks[file.hunks.length - 1];
     var lastLine = Math.max(lastHunk.oldStart + lastHunk.oldCount - 1,
@@ -2104,22 +2107,6 @@ Splinter.showAllFiles = function () {
         }
     }
 }
-	
-Splinter.toggleCollapsed = function (filename, display) {
-    var i;
-    for (i = 0; i < Splinter.thePatch.files.length; i++) {
-        var file = Splinter.thePatch.files[i];
-        if ((filename && file.filename == filename) || !filename) {
-            var fileTableContainer = file.div.getElementsByClassName('file-table-container')[0];
-            var fileCollapseLink = file.div.getElementsByClassName('file-label-collapse')[0];
-	    if (!display) {
-         	display = Dom.getStyle(fileTableContainer, 'display') == 'block' ? 'none' : 'block';
-            }
-            Dom.setStyle(fileTableContainer, 'display', display);
-	    fileCollapseLink.innerHTML = display == 'block' ? '[-]' : '[+]';
-        }
-    }
-}
 
 Splinter.toggleCollapsed = function (filename, display) {
     filename = decodeURIComponent(filename);
@@ -2138,39 +2125,26 @@ Splinter.toggleCollapsed = function (filename, display) {
     }
 }
 
-Splinter.toggleCollapsed = function (filename, display) {
-    filename = decodeURIComponent(filename);
-    var i;
-    for (i = 0; i < Splinter.thePatch.files.length; i++) {
-        var file = Splinter.thePatch.files[i];
-        if ((filename && file.filename == filename) || !filename) {
-            var fileTableContainer = file.div.getElementsByClassName('file-table-container')[0];
-            var fileCollapseLink = file.div.getElementsByClassName('file-label-collapse')[0];
-            if (!display) {
-                display = Dom.getStyle(fileTableContainer, 'display') == 'block' ? 'none' : 'block';
-            }
-            Dom.setStyle(fileTableContainer, 'display', display);
-            fileCollapseLink.innerHTML = display == 'block' ? '[-]' : '[+]';
-        }
-    }
-}
-
 Splinter.toggleFileReviewed = function (filename) {
-    var checkbox = Dom.get('file-reviewed-chk-' + filename);
+    var checkbox = Dom.get('file-review-checkbox-' + filename);
     if (checkbox) {
         filename = decodeURIComponent(filename);
-        var i;
-        for (i = 0; i < Splinter.thePatch.files.length; i++) {
+        for (var i = 0; i < Splinter.thePatch.files.length; i++) {
             var file = Splinter.thePatch.files[i];
             if (file.filename == filename) {
-                if (checkbox.checked) {
-                    file.fileReviewed = true;
-                }
-                else {
-                    file.fileReviewed = false;
-                }
+                file.fileReviewed = checkbox.checked;
+
                 Splinter.saveDraft();
                 Splinter.queueUpdateHaveDraft();
+
+                // Strike through file names to show review was completed
+                var fileNavLink = Dom.get('switch-' + encodeURIComponent(filename));
+                if (file.fileReviewed) {
+                    Dom.addClass(fileNavLink, 'file-reviewed-nav');
+                }
+                else {
+                    Dom.removeClass(fileNavLink, 'file-reviewed-nav');
+                }
             }
         }
     }
@@ -2308,11 +2282,13 @@ Splinter.start = function () {
                     Dom.get("restoredLastModified").innerHTML = Splinter.Utils.formatDate(new Date(storedReviews[i].modificationTime));
                     // Restore file reviewed checkboxes
                     if (storedReviews[i].filesReviewed) {
-                        var j;
-                        for (j = 0; j < Splinter.thePatch.files.length; j++) {
+                        for (var j = 0; j < Splinter.thePatch.files.length; j++) {
                             var file = Splinter.thePatch.files[j];
                             if (storedReviews[i].filesReviewed[file.filename]) {
                                 file.fileReviewed = true;
+                                // Strike through file names to show that review was completed
+                                var fileNavLink = Dom.get('switch-' + encodeURIComponent(file.filename));
+                                Dom.addClass(fileNavLink, 'file-reviewed-nav');
                             }
                         }
                     }
