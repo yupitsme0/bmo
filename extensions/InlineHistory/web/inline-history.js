@@ -27,6 +27,8 @@
 
 var inline_history = {
   _ccDivs: null,
+  _hasAttachmentFlags: false,
+  _hasBugFlags: false,
 
   init: function() {
     Dom = YAHOO.util.Dom;
@@ -112,7 +114,6 @@ var inline_history = {
               currentDiv = parentDiv.nextElementSibling;
             } else {
               lastCommentDiv.parentNode.insertBefore(currentDiv, lastCommentDiv.nextSibling);
-              // parentDiv.parentNode.appendChild(currentDiv);
             }
           }
 
@@ -128,7 +129,6 @@ var inline_history = {
         break;
       }
     }
-    ih_activity = undefined;
 
     // find comment blocks which only contain cc changes, shift the ih_cc
     var historyDivs = Dom.getElementsByClassName('ih_history', 'div', 'comments');
@@ -150,7 +150,14 @@ var inline_history = {
       }
     }
 
-    this.linkFlags();
+    if (this._hasAttachmentFlags)
+      this.linkAttachmentFlags();
+    if (this._hasBugFlags)
+      this.linkBugFlags();
+
+    ih_activity = undefined;
+    ih_activity_flags = undefined;
+
     this._ccDivs = Dom.getElementsByClassName('ih_cc', '', 'comments');
     this.hideCC();
     YAHOO.util.Event.onDOMReady(this.addCCtoggler);
@@ -167,12 +174,20 @@ var inline_history = {
       // flagItem[4] : who.identity
       // flagItem[5] : change div id
       if (flagItem[0] == changeItem[0] && flagItem[1] == changeItem[1]) {
+        // store the div
         flagItem[5] = id;
+        // tag that we have flags to process
+        if (flagItem[2]) {
+          this._hasAttachmentFlags = true;
+        } else {
+          this._hasBugFlags = true;
+        }
+        // don't break as there may be multiple flag changes at once
       }
     }
   },
 
-  linkFlags: function() {
+  linkAttachmentFlags: function() {
     var rows = Dom.get('attachment_table').getElementsByTagName('tr');
     for (var i = 0, il = rows.length; i < il; i++) {
 
@@ -205,14 +220,14 @@ var inline_history = {
       for (var j = 0, jl = attachFlags.length; j < jl; j++) {
         var match = attachFlags[j].match(/^\s*(<span.+\/span>):([^\?\-\+]+[\?\-\+])([\s\S]*)/);
         if (!match) continue;
-        var authorSpan = match[1];
+        var setterSpan = match[1];
         var flag = match[2].trim();
         var requestee = match[3].trim();
         var requesteeLogin = '';
 
-        match = authorSpan.match(/title="([^"]+)"/);
+        match = setterSpan.match(/title="([^"]+)"/);
         if (!match) continue;
-        var authorIdentity = this.htmlDecode(match[1]);
+        var setterIdentity = this.htmlDecode(match[1]);
 
         if (requestee) {
           match = requestee.match(/title="([^"]+)"/);
@@ -230,10 +245,10 @@ var inline_history = {
           if (
             flagItem[2] == attachId
             && flagItem[3] == flagValue
-            && flagItem[4] == authorIdentity
+            && flagItem[4] == setterIdentity
           ) {
             html +=
-              authorSpan + ': '
+              setterSpan + ': '
               + '<a href="#' + flagItem[5] + '">' + flag + '</a>'
               + requestee + '<br>';
             break;
@@ -243,6 +258,40 @@ var inline_history = {
 
       if (html)
         attachFlagTd.innerHTML = html;
+    }
+  },
+
+  linkBugFlags: function() {
+    var rows = Dom.get('flags').getElementsByTagName('tr');
+    for (var i = 0, il = rows.length; i < il; i++) {
+      var cells = rows[i].getElementsByTagName('td');
+      if (!cells[1]) continue;
+
+      var match = cells[0].innerHTML.match(/title="([^"]+)"/);
+      if (!match) continue;
+      var setterIdentity = this.htmlDecode(match[1]);
+
+      var flagValue = cells[2].getElementsByTagName('select');
+      if (!flagValue.length) continue;
+      flagValue = flagValue[0].value;
+
+      var flagLabel = cells[1].getElementsByTagName('label');
+      if (!flagLabel.length) continue;
+      flagLabel = flagLabel[0];
+      var flagName = flagLabel.innerHTML.trim().replace('\u2011', '-', 'g');
+
+      for (var j = 0, jl = ih_activity_flags.length; j < jl; j++) {
+        flagItem = ih_activity_flags[j];
+        if (
+          !flagItem[2]
+          && flagItem[3] == flagName + flagValue
+          && flagItem[4] == setterIdentity
+        ) {
+          flagLabel.innerHTML = 
+            '<a href="#' + flagItem[5] + '">' + flagName + '</a>';
+          break;
+        }
+      }
     }
   },
 

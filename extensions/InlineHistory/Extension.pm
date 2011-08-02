@@ -31,7 +31,7 @@ use Bugzilla::User::Setting;
 use Bugzilla::Constants;
 use Bugzilla::Attachment;
 
-our $VERSION = '0';
+our $VERSION = '1';
 
 sub template_before_process {
     my ($self, $args) = @_;
@@ -65,7 +65,6 @@ sub template_before_process {
     foreach my $operation (@$activity) {
         # make operation.who an object
         $operation->{who} = Bugzilla::User->new({ name => $operation->{who} });
-        #foreach my $change (@{$operation->{changes}}) {
         for (my $i = 0; $i < scalar(@{$operation->{changes}}); $i++) {
             my $change = $operation->{changes}->[$i];
 
@@ -102,12 +101,12 @@ sub template_before_process {
                 # restructure into added/removed for each flag
                 my %flags;
                 foreach my $added (@added) {
-                    my ($value, $name) = $added =~ /^(([^\?\-\+]+).+)/;
+                    my ($value, $name) = $added =~ /^((.+).)$/;
                     $flags{$name}{added} = $value;
                     $flags{$name}{removed} |= '';
                 }
                 foreach my $removed (@removed) {
-                    my ($value, $name) = $removed =~ /^(([^\?\-\+]+).+)/;
+                    my ($value, $name) = $removed =~ /^((.+).)$/;
                     $flags{$name}{added} |= '';
                     $flags{$name}{removed} = $value;
                 }
@@ -138,8 +137,8 @@ sub _add_duplicates {
     my $dbh = Bugzilla->dbh;
     my $sth = $dbh->prepare("
         SELECT profiles.login_name, " .
-               $dbh->sql_date_format('bug_when', '%Y.%m.%d %H:%i:%s') . "," .
-               "bug_when, extra_data
+               $dbh->sql_date_format('bug_when', '%Y.%m.%d %H:%i:%s') . ",
+               extra_data
           FROM longdescs
                INNER JOIN profiles ON profiles.userid = longdescs.who
          WHERE bug_id = ? AND type = ?

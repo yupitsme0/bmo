@@ -60,9 +60,9 @@
       [% IF change.attachid %]
         html += '<a '
                 + 'href="attachment.cgi?action=edit&amp;id=[% change.attachid FILTER none %]" '
-                + 'title="Attachment #[% change.attachid FILTER none %]" '
+                + 'title="[% change.attach.description FILTER html %]" '
                 + 'class="[% "bz_obsolete" IF change.attach.isobsolete %]"'
-                + '>Attachment "[% change.attach.description FILTER html %]"</a> - ';
+                + '>Attachment #[% change.attachid FILTER none %]</a> - ';
       [% END %]
 
       [%# display duplicates as history rather than comments %]
