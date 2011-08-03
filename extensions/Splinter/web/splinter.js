@@ -492,6 +492,13 @@ Splinter.Patch.Patch.prototype = {
             } else if (/^\/dev\/null/.test(m[1]) && /^b\//.test(m[2])) {
                 filename = m[2].substring(2);
                 status = Splinter.Patch.ADDED;
+            // Handle non-git and non-hg cases as well
+            } else if (!/^\/dev\/null/.test(m[1]) && /^\/dev\/null/.test(m[2])) {
+                filename = m[1];
+                status = Splinter.Patch.REMOVED;
+            } else if (/^\/dev\/null/.test(m[1]) && !/^\/dev\/null/.test(m[2])) {
+                filename = m[2];
+                status = Splinter.Patch.ADDED;
             } else {
                 filename = m[1];
             }
