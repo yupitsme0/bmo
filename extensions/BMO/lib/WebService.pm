@@ -33,8 +33,6 @@ sub getBugsConfirmer {
     my ($self, $params) = validate(@_, 'names');
     my $dbh = Bugzilla->dbh;
 
-    Bugzilla->login(LOGIN_REQUIRED);
-
     defined($params->{names}) 
         || ThrowCodeError('params_required',
                { function => 'BMO.getBugsConfirmer', params => ['names'] });
@@ -69,8 +67,6 @@ sub getBugsConfirmer {
 sub getBugsVerifier {
     my ($self, $params) = validate(@_, 'names');
     my $dbh = Bugzilla->dbh;
-
-    Bugzilla->login(LOGIN_REQUIRED);
 
     defined($params->{names}) 
         || ThrowCodeError('params_required',
