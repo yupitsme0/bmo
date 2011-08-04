@@ -77,7 +77,7 @@ Attachment [% attidsummary %]
 [%+ urlbase %]attachment.cgi?id=[% attachment.id %]&action=edit
 [%- END %]
 
-[% Hook.process('after_summary') %]
+[%- Hook.process('after_summary') -%]
 
 [%- FILTER bullet = wrap(80) %]
 
