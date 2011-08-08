@@ -67,6 +67,9 @@
           updateCommentTagControl(document.getElementById('newcommentprivacy'), 'comment'); 
       }
     [% END %]
+    
+      /* Remove embedded links to attachment details */
+      replytext = replytext.replace(/(attachment\s+\d+)(\s+\[[^\[]+\])+/gi, '$1');
 
       /* <textarea id="comment"> */
       var textarea = document.getElementById('comment');
