@@ -134,8 +134,8 @@ var product = {
 
     // display the product name
     Dom.get('product').value = productName;
-    Dom.get('product_label').innerHTML = productName;
-    Dom.get('dupes_product_name').innerHTML = productName;
+    Dom.get('product_label').innerHTML = YAHOO.lang.escapeHTML(productName);
+    Dom.get('dupes_product_name').innerHTML = YAHOO.lang.escapeHTML(productName);
     Dom.get('list_comp').href = 'describecomponents.cgi?product=' + escape(productName);
     guided.setAdvancedLink();
 
@@ -163,7 +163,7 @@ var product = {
     // show support message
     if (products[productName] && products[productName].support) {
       Dom.get("product_support_message").innerHTML =
-        products[productName].support;
+        YAHOO.lang.escapeHTML(products[productName].support);
       Dom.removeClass("product_support", "hidden");
     } else {
       Dom.addClass("product_support", "hidden");
