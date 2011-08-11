@@ -39,8 +39,9 @@
        * createElement, but finding a container isn't trivial.
        */
       [% IF user.settings.quote_replies.value != 'off' %]
+        var escaped_name = name.replace("\'", "\\\'", "g");
         document.write('[<a href="#add_comment" onclick="replyToComment(' + 
-                       id + ', ' + real_id + ', \'' + name +'\'); return false;">reply<' + '/a>]');
+                       id + ', ' + real_id + ', \'' + escaped_name +'\'); return false;">reply<' + '/a>]');
       [% END %]
   }
 
@@ -67,6 +68,9 @@
           updateCommentTagControl(document.getElementById('newcommentprivacy'), 'comment'); 
       }
     [% END %]
+    
+      /* Remove embedded links to attachment details */
+      replytext = replytext.replace(/(attachment\s+\d+)(\s+\[[^\[]+\])+/gi, '$1');
 
       /* <textarea id="comment"> */
       var textarea = document.getElementById('comment');

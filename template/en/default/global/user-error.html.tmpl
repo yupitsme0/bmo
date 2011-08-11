@@ -109,6 +109,11 @@
     [% terms.Bug %] aliases cannot be longer than 20 characters.
     Please choose a shorter alias.
 
+  [% ELSIF error == "attachment_bug_id_mismatch" %]
+    [% title = "Invalid Attachments" %]
+    You tried to perform an action on attachments from different [% terms.bugs %].
+    This operation requires all attachments to be from the same [% terms.bug %].
+
   [% ELSIF error == "auth_cant_create_account" %]
     [% title = "Can't create accounts" %]
     This site is using an authentication scheme which does not permit
@@ -214,6 +219,8 @@
       versions
     [% ELSIF object == "workflow" %]
       the workflow
+    [% ELSE %]
+      [%+ Hook.process('auth_failure_object') %]
     [% END %].
 
     [% Hook.process("auth_failure") %]
@@ -711,12 +718,6 @@
     in the database which refer to it. All references to this group must
     be removed before you can remove it.
 
-  [% ELSIF error == "group_change_denied" %]
-    [% title = "Cannot Add/Remove That Group" %]
-    You tried to add or remove the '[% group.name FILTER html %]' group
-    from [% terms.bug %] [%+ bug.id FILTER html %], but you do not
-    have permissions to do so.
-
   [% ELSIF error == "group_exists" %]
     [% title = "The group already exists" %]
     The group [% name FILTER html %] already exists.
@@ -737,23 +738,17 @@
 
 
   [% ELSIF error == "group_invalid_removal" %]
-    You tried to remove [% terms.bug %] [%+ bug.id FILTER html %]
-    from the '[% group.name FILTER html %]' group, but [% terms.bugs %]
-     in the '[% product FILTER html %]' product can not be removed from that
-    group.
-    
-  [% ELSIF error == "group_invalid_restriction" %]
-    You tried to restrict [% terms.bug %] [%+ bug.id FILTER html %] to
-    to the '[% group.name FILTER html %]' group, but [% terms.bugs %] in the
-    '[% product FILTER html %]' product can not be restricted to
-    that group.
+    You tried to remove [% terms.bug %] [%+ bug_id FILTER html %]
+    from the '[% name FILTER html %]' group, but either this group does not exist,
+    or you are not allowed to remove [% terms.bugs %] from this group in the
+    '[% product FILTER html %]' product.
 
   [% ELSIF error == "group_restriction_not_allowed" %]
     [% title = "Group Restriction Not Allowed" %]
-    You tried to restrict [% terms.abug %] to the "[% name FILTER html %]"
-    group, but either this group does not exist, or you are not allowed
-    to restrict [% terms.bugs %] to this group in the "[% product.name FILTER html %]"
-    product.
+    You tried to restrict [% bug_id ? "$terms.bug $bug_id" : terms.abug FILTER html %]
+    to the '[% name FILTER html %]' group, but either this group does not exist,
+    or you are not allowed to restrict [% terms.bugs %] to this group in the
+    '[% product FILTER html %]' product.
 
   [% ELSIF error == "group_not_specified" %]
     [% title = "Group not specified" %]
@@ -1823,4 +1818,5 @@
     [% SET field_name = matches.0 %]
     [% field_descs.$field_name FILTER html %]
   [% END %]
+  [% Hook.process('end_object_name', 'global/user-error.html.tmpl') %]
 [% END %]

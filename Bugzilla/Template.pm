@@ -691,6 +691,9 @@ sub create {
             # as prefix. In addition it replaces a ' ' by a '_'.
             css_class_quote => \&Bugzilla::Util::css_class_quote ,
 
+            # Removes control characters and trims extra whitespace.
+            clean_text => \&Bugzilla::Util::clean_text ,
+
             quoteUrls => [ sub {
                                my ($context, $bug, $comment) = @_;
                                return sub {
@@ -924,6 +927,10 @@ sub create {
             # it only once per-language no matter how many times
             # $template->process() is called.
             'field_descs' => sub { return template_var('field_descs') },
+
+            # Calling bug/field-help.none.tmpl once per label is very
+            # expensive, so we generate it once per-language.
+            'help_html' => sub { return template_var('help_html') },
 
             'install_string' => \&Bugzilla::Install::Util::install_string,
 
