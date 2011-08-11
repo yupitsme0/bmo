@@ -44,21 +44,28 @@ sub getBugsConfirmer {
 
     my $fieldid = get_field_id('bug_status');
 
-    my $query = "SELECT DISTINCT bugs_activity.bug_id
-                   FROM bugs_activity
-                        LEFT JOIN bug_group_map 
-                        ON bugs_activity.bug_id = bug_group_map.bug_id
-                  WHERE bugs_activity.fieldid = ?
-                        AND bugs_activity.added = 'NEW'
-                        AND bugs_activity.removed = 'UNCONFIRMED'
-                        AND bugs_activity.who = ?
-                        AND bug_group_map.bug_id IS NULL
-               ORDER BY bugs_activity.bug_id";
+    my $query;
+    if ($params->{count_only}) {
+        $query = "SELECT COUNT(DISTINCT bugs_activity.bug_id)";
+    }
+    else {
+        $query = "SELECT DISTINCT bugs_activity.bug_id";
+    }
+
+    $query .= " FROM bugs_activity
+                     LEFT JOIN bug_group_map 
+                     ON bugs_activity.bug_id = bug_group_map.bug_id
+               WHERE bugs_activity.fieldid = ?
+                     AND bugs_activity.added = 'NEW'
+                     AND bugs_activity.removed = 'UNCONFIRMED'
+                     AND bugs_activity.who = ?
+                     AND bug_group_map.bug_id IS NULL
+            ORDER BY bugs_activity.bug_id";
 
     my %users;
     foreach my $user (@user_objects) {
         my $bugs = $dbh->selectcol_arrayref($query, undef, $fieldid, $user->id);
-        $users{$user->login} = $bugs;
+        $users{$user->login} = $params->{count_only} ? $bugs->[0] : $bugs;
     }
 
     return \%users;
@@ -79,21 +86,28 @@ sub getBugsVerifier {
 
     my $fieldid = get_field_id('bug_status');
 
-    my $query = "SELECT DISTINCT bugs_activity.bug_id
-                   FROM bugs_activity
-                        LEFT JOIN bug_group_map 
-                        ON bugs_activity.bug_id = bug_group_map.bug_id
-                  WHERE bugs_activity.fieldid = ?
-                        AND bugs_activity.removed = 'RESOLVED'
-                        AND bugs_activity.added = 'VERIFIED'
-                        AND bugs_activity.who = ?
-                        AND bug_group_map.bug_id IS NULL
-               ORDER BY bugs_activity.bug_id";
+    my $query;
+    if ($params->{count_only}) {
+        $query = "SELECT COUNT(DISTINCT bugs_activity.bug_id)";
+    }
+    else {
+        $query = "SELECT DISTINCT bugs_activity.bug_id";
+    }
+
+    $query .= " FROM bugs_activity
+                     LEFT JOIN bug_group_map 
+                     ON bugs_activity.bug_id = bug_group_map.bug_id
+               WHERE bugs_activity.fieldid = ?
+                     AND bugs_activity.removed = 'RESOLVED'
+                     AND bugs_activity.added = 'VERIFIED'
+                     AND bugs_activity.who = ?
+                     AND bug_group_map.bug_id IS NULL
+            ORDER BY bugs_activity.bug_id";
 
     my %users;
     foreach my $user (@user_objects) {
         my $bugs = $dbh->selectcol_arrayref($query, undef, $fieldid, $user->id);
-        $users{$user->login} = $bugs;
+        $users{$user->login} = $params->{count_only} ? $bugs->[0] : $bugs;
     }
 
     return \%users;
