@@ -31,7 +31,8 @@ use DateTime;
 use base qw(Exporter);
 
 our @EXPORT_OK = qw(user_activity_report
-                    triage_reports);
+                    triage_reports
+                    group_admins);
 
 sub user_activity_report {
     my ($vars) = @_;
@@ -471,6 +472,43 @@ sub triage_reports {
     }
     
     $vars->{'input'} = $input;
+}
+
+sub group_admins {
+    my ($vars, $filter) = @_;
+    my $dbh = Bugzilla->dbh;
+    my $user = Bugzilla->user;
+
+    $user->in_group('editusers')
+        || ThrowUserError('auth_failure', { group  => 'editusers', 
+                                            action => 'run', 
+                                            object => 'group_admins' });
+
+    my $query = "
+        SELECT groups.name, " .
+               $dbh->sql_group_concat('profiles.login_name', "','", 1) . "
+          FROM groups
+               LEFT JOIN user_group_map
+                    ON user_group_map.group_id = groups.id
+                    AND user_group_map.isbless = 1
+                    AND user_group_map.grant_type = 0
+               LEFT JOIN profiles
+                    ON user_group_map.user_id = profiles.userid
+         WHERE groups.isbuggroup = 1
+      GROUP BY groups.name";
+    
+    my @groups;
+    foreach my $group (@{ $dbh->selectall_arrayref($query) }) {
+        my @admins;
+        if ($group->[1]) {
+            foreach my $admin (split(/,/, $group->[1])) {
+                push(@admins, Bugzilla::User->new({ name => $admin }));
+            }
+        }
+        push(@groups, { name => $group->[0], admins => \@admins });
+    }
+
+    $vars->{'groups'} = \@groups;
 }
 
 1;

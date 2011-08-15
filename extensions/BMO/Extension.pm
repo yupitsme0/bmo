@@ -51,7 +51,8 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       %always_fileable_group
                                       %product_sec_groups);
 use Bugzilla::Extension::BMO::Reports qw(user_activity_report
-                                         triage_reports);
+                                         triage_reports
+                                         group_admins);
 
 our $VERSION = '0.1';
 
@@ -157,6 +158,9 @@ sub page_before_template {
     }
     elsif ($page eq 'remo-form-payment.html') {
         _remo_form_payment($vars);
+    }
+    elsif ($page eq 'group_admins.html') {
+        group_admins($vars);
     }
 }
 
