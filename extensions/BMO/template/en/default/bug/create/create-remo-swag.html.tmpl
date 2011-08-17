@@ -37,10 +37,8 @@ any persons designated in the CC line, and authorized members of the Mozilla Rep
 
 <script language="javascript" type="text/javascript">
 function trySubmit() {
-  var firstname = document.getElementById('firstname').value;
-  var lastname = document.getElementById('lastname').value;
-  var requester = firstname + ' ' + lastname;
-  var shortdesc = 'Swag Request - ' + requester;
+  var eventname = document.getElementById('eventname').value;
+  var shortdesc = 'Swag Request - ' + eventname;
   document.getElementById('short_desc').value = shortdesc;
   return true;
 }
@@ -50,6 +48,7 @@ function validateAndSubmit() {
   if(!isFilledOut('firstname')) alert_text += "Please enter your first name\n";
   if(!isFilledOut('lastname')) alert_text += "Please enter your last name\n";
   if(!isFilledOut('wikiprofile')) alert_text += "Please enter your wiki user profile\n";
+  if(!isFilledOut('eventname')) alert_text += "Please enter your event name\n";
   if(!isFilledOut('wikipage')) alert_text += "Please enter the event wiki page.\n";
   if(!isFilledOut('attendance')) alert_text += "Please enter the estimated attendance.\n";
   if(!isFilledOut('shiptofirstname')) alert_text += "Please enter the shipping first name\n";
@@ -108,6 +107,13 @@ function validateAndSubmit() {
   <td><strong>Wiki User Profile: <span style="color: red;" title="Required">*</span></strong></td>
   <td>
     <input type="text" name="wikiprofile" id="wikiprofile" size="40">
+  </td>
+</tr>
+
+<tr class="odd">
+  <td><strong>Event Name: <span style="color: red;" title="Required">*</span></strong></td>
+  <td>
+    <input type="text" name="eventname" id="eventname" size="40">
   </td>
 </tr>
 
