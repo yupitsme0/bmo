@@ -27,7 +27,7 @@ use base qw(Exporter);
 use Tie::IxHash;
 
 our @EXPORT_OK = qw($cf_visible_in_products
-                    $cf_flags
+                    $cf_flags $cf_disabled_flags
                     %group_to_cc_map
                     $blocking_trusted_setters
                     $blocking_trusted_requesters
@@ -142,6 +142,20 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
 # Which custom fields are acting as flags (ie. custom flags)
 our $cf_flags = [
     qr/^cf_(?:blocking|tracking|status)_/,
+];
+
+# List of disabled fields.
+# Temp kludge until custom fields can be disabled correctly upstream.
+# Disabled fields are hidden unless they have a value set
+our $cf_disabled_flags = [
+    'cf_blocking_20',
+    'cf_status_20',
+    'cf_tracking_firefox5',
+    'cf_status_firefox5',
+    'cf_blocking_thunderbird32',
+    'cf_status_thunderbird32',
+    'cf_blocking_thunderbird30',
+    'cf_status_thunderbird30',
 ];
 
 # Who to CC on particular bugmails when certain groups are added or removed.

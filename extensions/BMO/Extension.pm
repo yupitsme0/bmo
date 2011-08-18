@@ -42,6 +42,7 @@ use DateTime;
 use Bugzilla::Extension::BMO::FakeBug;
 use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       $cf_flags
+                                      $cf_disabled_flags
                                       %group_to_cc_map
                                       $blocking_trusted_setters
                                       $blocking_trusted_requesters
@@ -70,6 +71,7 @@ sub template_before_process {
     my $vars = $args->{'vars'};
     
     $vars->{'cf_hidden_in_product'} = \&cf_hidden_in_product;
+    $vars->{'cf_flag_disabled'} = \&cf_flag_disabled;
     
     if ($file =~ /^list\/list/) {
         # Purpose: enable correct sorting of list table
@@ -244,6 +246,13 @@ sub cf_hidden_in_product {
     }
     
     return 0;
+}
+
+sub cf_flag_disabled {
+    my ($field_name, $bug) = @_;
+    return 0 unless grep { $field_name eq $_ } @$cf_disabled_flags;
+    my $value = $bug->{$field_name};
+    return $value eq '---' || $value eq '';
 }
 
 # Purpose: CC certain email addresses on bugmail when a bug is added or 
