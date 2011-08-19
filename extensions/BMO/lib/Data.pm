@@ -108,6 +108,9 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
             "Server Operations: Security",
         ],
     },
+    qw/^cf_office$/ => {
+        "mozilla.org"           => ["Server Operations: Desktop Issues"],
+    },
     qr/^cf_crash_signature$/ => {
         "addons.mozilla.org"    => [], 
         "Add-on SDK"            => [], 
