@@ -31,6 +31,7 @@ use Bugzilla::Status;
 use Bugzilla::User;
 use Bugzilla::User::Setting;
 use Bugzilla::Util qw(html_quote trick_taint trim datetime_from detaint_natural);
+use Bugzilla::Token;
 use Bugzilla::Error;
 use Bugzilla::Mailer;
 
@@ -41,6 +42,7 @@ use DateTime;
 use Bugzilla::Extension::BMO::FakeBug;
 use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       $cf_flags
+                                      $cf_disabled_flags
                                       %group_to_cc_map
                                       $blocking_trusted_setters
                                       $blocking_trusted_requesters
@@ -50,7 +52,8 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       %always_fileable_group
                                       %product_sec_groups);
 use Bugzilla::Extension::BMO::Reports qw(user_activity_report
-                                         triage_reports);
+                                         triage_reports
+                                         group_admins);
 
 our $VERSION = '0.1';
 
@@ -68,6 +71,7 @@ sub template_before_process {
     my $vars = $args->{'vars'};
     
     $vars->{'cf_hidden_in_product'} = \&cf_hidden_in_product;
+    $vars->{'cf_flag_disabled'} = \&cf_flag_disabled;
     
     if ($file =~ /^list\/list/) {
         # Purpose: enable correct sorting of list table
@@ -154,6 +158,9 @@ sub page_before_template {
         # that our hook template can see. 
         Bugzilla->request_cache->{'bmo_fields_page'} = 1;
     }
+    elsif ($page eq 'group_admins.html') {
+        group_admins($vars);
+    }
 }
 
 sub _get_field_values_sort_key {
@@ -236,6 +243,13 @@ sub cf_hidden_in_product {
     }
     
     return 0;
+}
+
+sub cf_flag_disabled {
+    my ($field_name, $bug) = @_;
+    return 0 unless grep { $field_name eq $_ } @$cf_disabled_flags;
+    my $value = $bug->{$field_name};
+    return $value eq '---' || $value eq '';
 }
 
 # Purpose: CC certain email addresses on bugmail when a bug is added or 

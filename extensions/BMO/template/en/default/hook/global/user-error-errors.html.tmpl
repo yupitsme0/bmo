@@ -34,4 +34,7 @@
     [% title = "Invalid Date" %]
     The date '[% date FILTER html %]' is invalid.
 
+[% ELSIF error == "invalid_object" %]
+   Invalid [% object FILTER html %]: "[% value FILTER html %]"
+
 [% END %]
