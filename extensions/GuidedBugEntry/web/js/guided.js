@@ -162,8 +162,7 @@ var product = {
 
     // show support message
     if (products[productName] && products[productName].support) {
-      Dom.get("product_support_message").innerHTML =
-        YAHOO.lang.escapeHTML(products[productName].support);
+      Dom.get("product_support_message").innerHTML = products[productName].support;
       Dom.removeClass("product_support", "hidden");
     } else {
       Dom.addClass("product_support", "hidden");

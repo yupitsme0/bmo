@@ -3208,6 +3208,26 @@ sub dependson {
     return $self->{'dependson'};
 }
 
+sub duplicates {
+    my $self = shift;
+    return $self->{duplicates} if exists $self->{duplicates};
+    return [] if $self->{error};
+    $self->{duplicates} = Bugzilla::Bug->new_from_list($self->duplicate_ids);
+    return $self->{duplicates};
+}
+
+sub duplicate_ids {
+    my $self = shift;
+    return $self->{duplicate_ids} if exists $self->{duplicate_ids};
+    return [] if $self->{error};
+
+    my $dbh = Bugzilla->dbh;
+    $self->{duplicate_ids} =
+      $dbh->selectcol_arrayref('SELECT dupe FROM duplicates WHERE dupe_of = ?',
+                               undef, $self->id);
+    return $self->{duplicate_ids};
+}
+
 sub flag_types {
     my ($self) = @_;
     return $self->{'flag_types'} if exists $self->{'flag_types'};

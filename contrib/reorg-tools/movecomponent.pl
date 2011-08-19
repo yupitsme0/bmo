@@ -39,14 +39,16 @@ use Bugzilla::Util;
 
 sub usage() {
     print <<USAGE;
-Usage: movecomponent.pl <oldproduct> <newproduct> <component>
+Usage: movecomponent.pl <oldproduct> <newproduct> <component> <doit>
 
 E.g.: movecomponent.pl ReplicationEngine FoodReplicator SeaMonkey
-will move the component "ReplicationEngine" from the product "FoodReplicator"
-to the product "SeaMonkey".
+will move the component "SeaMonkey" from the product "ReplicationEngine"
+to the product "FoodReplicator".
 
 Important: You must make sure the milestones and versions of the bugs in the
 component are available in the new product. See syncmsandversions.pl.
+
+Pass in a true value for "doit" to make the database changes permament.
 USAGE
 
     exit(1);
@@ -64,9 +66,11 @@ if (scalar @ARGV < 3) {
     exit();
 }
 
-my ($oldproduct, $newproduct, $component) = @ARGV;
+my ($oldproduct, $newproduct, $component, $doit) = @ARGV;
 
 my $dbh = Bugzilla->dbh;
+
+$dbh->{'AutoCommit'} = 0 unless $doit; # Turn off autocommit by default
 
 # Find product IDs
 my $oldprodid = $dbh->selectrow_array("SELECT id FROM products WHERE name = ?",
@@ -146,7 +150,7 @@ EOF
 getc();
 
 print "Moving '$component' from '$oldproduct' to '$newproduct'...\n\n";
-#$dbh->bz_start_transaction();
+$dbh->bz_start_transaction() if $doit;
 
 # Bugs table
 $dbh->do("UPDATE bugs SET product_id = ? WHERE component_id = ?", 
@@ -183,7 +187,7 @@ $dbh->do("INSERT INTO bugs_activity(bug_id, who, bug_when, fieldid, removed,
          undef,
          ($userid, $fieldid, $oldproduct, $newproduct, $compid));
 
-#$dbh->bz_commit_transaction();
+$dbh->bz_commit_transaction() if $doit;
 
 exit(0);
 
