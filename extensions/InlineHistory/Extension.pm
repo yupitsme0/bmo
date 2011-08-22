@@ -31,7 +31,7 @@ use Bugzilla::User::Setting;
 use Bugzilla::Constants;
 use Bugzilla::Attachment;
 
-our $VERSION = '1';
+our $VERSION = '1.0';
 
 sub template_before_process {
     my ($self, $args) = @_;
@@ -165,7 +165,7 @@ sub _add_duplicates {
 
 sub install_before_final_checks {
     my ($self, $args) = @_;
-    add_setting('inline_history', ['on', 'off'], 'on');
+    add_setting('inline_history', ['on', 'off'], 'off');
 }
 
 __PACKAGE__->NAME;
