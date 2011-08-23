@@ -250,6 +250,7 @@ var dupes = {
     this._elList = Dom.get('dupes_list');
 
     Event.onBlur(this._elSummary, this._onSummaryBlur);
+    Event.addListener(this._elSummary, 'input', this._onSummaryBlur);
     Event.addListener(this._elSummary, 'keydown', this._onSummaryKeyDown);
     Event.addListener(this._elSummary, 'keyup', this._onSummaryKeyUp);
     Event.addListener(this._elSearch, 'click', this._doSearch);
