@@ -374,6 +374,8 @@ sub flag_types {
     my $self = shift;
     my $params = shift;
 
+    $params ||= {};
+
     if (!defined $self->{'flag_types'}) {
         my $flagtypes = Bugzilla::FlagType::match({ product_id   => $self->product_id,
                                                     component_id => $self->id, 

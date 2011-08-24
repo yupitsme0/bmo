@@ -60,11 +60,9 @@ var flags = new Array([% product.components.size %]);
     initialowners[[% count %]] = "[% c.default_assignee.login FILTER js %]";
     [% flag_list = [] %]
     [% FOREACH f = c.flag_types(is_active=>1).bug %]
-      [% NEXT UNLESS f.is_active %]
       [% flag_list.push(f.id) %]
     [% END %]
     [% FOREACH f = c.flag_types(is_active=>1).attachment %]
-      [% NEXT UNLESS f.is_active %]
       [% flag_list.push(f.id) %]
     [% END %]
     flags[[% count %]] = [[% flag_list.join(",") FILTER js %]];
@@ -362,7 +360,6 @@ TUI_hide_default('expert_fields');
         [% any_flags_requesteeble = 0 %]
 
         [% FOREACH flag_type = product.flag_types(is_active=>1).bug %]
-          [% NEXT UNLESS flag_type.is_active %]
           [% display_flag_headers = 1 %]
           [% SET any_flags_requesteeble = 1 IF flag_type.is_requestable && flag_type.is_requesteeble %]
         [% END %]

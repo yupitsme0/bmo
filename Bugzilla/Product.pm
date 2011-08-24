@@ -782,6 +782,8 @@ sub flag_types {
     my $self = shift;
     my $params = shift;
 
+    $params ||= {};
+
     return $self->{'flag_types'} if defined $self->{'flag_types'};
 
     # We cache flag types to avoid useless calls to get_clusions().
