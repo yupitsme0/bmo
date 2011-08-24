@@ -115,7 +115,7 @@
   [% IF change.fieldname == 'estimated_time' ||
         change.fieldname == 'remaining_time' ||
         change.fieldname == 'work_time' %]
-    [% PROCESS formattimeunit time_unit = value FILTER js %]
+    [% PROCESS formattimeunit time_unit = value FILTER html FILTER js %]
   [% ELSIF change.fieldname == 'blocked' ||
            change.fieldname == 'dependson' ||
            change.fieldname == 'dupe' %]
@@ -127,7 +127,7 @@
            change.fieldname == 'flagtypes.name' %]
     [% display_value(change.fieldname, value) FILTER email FILTER js %]
   [% ELSE %]
-    [% display_value(change.fieldname, value) FILTER js %]
+    [% display_value(change.fieldname, value) FILTER html FILTER js %]
   [% END %]
   [% '</span>' IF is_old %]
   [%~ %]';
