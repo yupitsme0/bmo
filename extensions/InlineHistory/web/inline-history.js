@@ -221,7 +221,7 @@ var inline_history = {
         var match = attachFlags[j].match(/^\s*(<span.+\/span>):([^\?\-\+]+[\?\-\+])([\s\S]*)/);
         if (!match) continue;
         var setterSpan = match[1];
-        var flag = match[2].trim();
+        var flag = match[2].replace('\u2011', '-', 'g').trim();
         var requestee = match[3].trim();
         var requesteeLogin = '';
 
@@ -240,6 +240,7 @@ var inline_history = {
 
         var flagValue = requestee ? flag + '(' + requesteeLogin + ')' : flag;
         // find the id for this change
+        var found = false;
         for (var k = 0, kl = ih_activity_flags.length; k < kl; k++) {
           flagItem = ih_activity_flags[k];
           if (
@@ -251,8 +252,13 @@ var inline_history = {
               setterSpan + ': '
               + '<a href="#' + flagItem[5] + '">' + flag + '</a>'
               + requestee + '<br>';
+            found = true;
             break;
           }
+        }
+        if (!found) {
+          // something went wrong, insert the flag unlinked
+          html += attachFlags[j];
         }
       }
 
