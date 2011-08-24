@@ -441,11 +441,18 @@ sub search {
     delete $match_params{'include_fields'};
     delete $match_params{'exclude_fields'};
 
+    my $count_only = delete $match_params{count_only};
+
     my $bugs = Bugzilla::Bug->match(\%match_params);
     my $visible = Bugzilla->user->visible_bugs($bugs);
 
-    my @hashes = map { $self->_bug_to_hash($_, $params) } @$visible;
-    return { bugs => \@hashes };
+    if ($count_only) {
+        return { bug_count => scalar @$visible };
+    }
+    else {
+        my @hashes = map { $self->_bug_to_hash($_, $params) } @$visible;
+        return { bugs => \@hashes };
+    }
 }
 
 sub possible_duplicates {
@@ -2198,6 +2205,11 @@ C<string> The Version field of a bug.
 C<string> Search the "Status Whiteboard" field on bugs for a substring.
 Works the same as the C<summary> field described above, but searches the
 Status Whiteboard field.
+
+=item C<count_only>
+
+C<boolean> If count_only set to true, only a single hash key called C<bug_count> 
+will be returned which is the number of bugs that matched the search.
 
 =back
 
