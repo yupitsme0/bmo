@@ -400,3 +400,11 @@ div.review-patch-comment-text {
     padding-right: 5px;
     font-family: monospace;
 }
+
+.file-review-label {
+    font-size: 80%;
+}
+
+.file-reviewed-nav {
+    text-decoration: line-through;
+}
