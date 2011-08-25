@@ -3229,14 +3229,16 @@ sub duplicate_ids {
 }
 
 sub flag_types {
-    my ($self) = @_;
+    my ($self, $params) = @_;
+    $params ||= {};
     return $self->{'flag_types'} if exists $self->{'flag_types'};
     return [] if $self->{'error'};
 
     my $vars = { target_type  => 'bug',
                  product_id   => $self->{product_id},
                  component_id => $self->{component_id},
-                 bug_id       => $self->bug_id };
+                 bug_id       => $self->bug_id, 
+                 %$params };
 
     $self->{'flag_types'} = Bugzilla::Flag->_flag_types($vars);
     return $self->{'flag_types'};

@@ -156,12 +156,11 @@ OLDATTACH2NEW = {
 [% IF show_flags %]
           "flag_type": [
           [% flag_types = 
-              component.flag_types.bug.merge(component.flag_types.attachment) %]
+              component.flag_types(is_active=>1).bug.merge(component.flag_types(is_active=>1).attachment) %]
           [%-# "first" flag used to get commas right; can't use loop.last() in case
              # last flag is inactive %]
           [% first = 1 %]
           [% FOREACH flag_type = flag_types %]
-            [% NEXT UNLESS flag_type.is_active %]
             [% all_visible_flag_types.${flag_type.id} = flag_type %]
             [% ',' UNLESS first %][% flag_type.id FILTER json %][% first = 0 %]
           [% END %]],

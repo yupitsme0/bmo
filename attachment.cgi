@@ -498,7 +498,8 @@ sub enter {
 
   my $flag_types = Bugzilla::FlagType::match({'target_type'  => 'attachment',
                                               'product_id'   => $bug->product_id,
-                                              'component_id' => $bug->component_id});
+                                              'component_id' => $bug->component_id, 
+                                              'is_active'    => 1});
   $vars->{'flag_types'} = $flag_types;
   $vars->{'any_flags_requesteeble'} =
     grep { $_->is_requestable && $_->is_requesteeble } @$flag_types;
