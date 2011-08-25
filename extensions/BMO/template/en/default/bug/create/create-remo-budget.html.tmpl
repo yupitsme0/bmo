@@ -29,6 +29,8 @@
                        'js/field.js' ]
 %]
 
+[% IF user.in_group("mozilla-reps") %]
+
 <p>These requests will only be visible to the person who submitted the request,
 any persons designated in the CC line, and authorized members of the Mozilla
 Rep team.</p>
@@ -244,5 +246,9 @@ function togglePaymentInfo (e) {
   <strong><span style="color: red;">*</span></strong> - Required field<br />
   Thanks for contacting us.
 </p>
+
+[% ELSE %]
+  <p>Sorry, you do not have access to this page.</p>
+[% END %]
 
 [% PROCESS global/footer.html.tmpl %]
