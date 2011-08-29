@@ -258,7 +258,7 @@ var inline_history = {
         }
         if (!found) {
           // something went wrong, insert the flag unlinked
-          html += attachFlags[j];
+          html += attachFlags[j] + '<br>';
         }
       }
 

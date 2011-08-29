@@ -119,8 +119,8 @@ sub template_before_process {
                     $flag_change->{removed} = $flags{$flag}{removed};
                     $flag_change->{added} = $flags{$flag}{added};
                     splice(@{$operation->{changes}}, $i, 0, $flag_change);
-                    $i++;
                 }
+                $i--;
             }
         }
     }
