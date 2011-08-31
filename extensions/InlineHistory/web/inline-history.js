@@ -81,7 +81,6 @@ var inline_history = {
 
         var inline = (mainUser == user && time == mainTime);
         var currentDiv = document.createElement("div");
-console.log('currentDiv1', currentDiv);
 
         // place ih_cc class on parent container if it's the only child
         var containerClass = '';
@@ -119,7 +118,6 @@ console.log('currentDiv1', currentDiv);
             }
           }
 
-console.log('currentDiv2', currentDiv);
           currentDiv.innerHTML = currentDiv.innerHTML
                                  + '<div class="ih_history_item ' + containerClass + '" '
                                  + 'id="h' + i + '">'
