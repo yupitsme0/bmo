@@ -39,7 +39,7 @@ var inline_history = {
     for (var i = 1, il = comments.length; i < il; i++) {
       var textDiv = Dom.getElementsByClassName('bz_comment_text', 'pre', comments[i]);
       if (textDiv) {
-        var match = reDuplicate.exec(textDiv[0].textContent);
+        var match = reDuplicate.exec(textDiv[0].textContent || textDiv[0].innerText);
         if (match)
           comments[i].parentNode.removeChild(comments[i]);
       }
@@ -68,7 +68,8 @@ var inline_history = {
         var mainUser = Dom.getElementsByClassName('email', 'a', commentHead)[0].href.substr(7);
         var user = item[0];
         var time = item[1];
-        var mainTime = commentTimes[j].textContent.trim();
+        var text = commentTimes[j].textContent || commentTimes[j].innerText;
+        var mainTime = inline_history.trim(text);
 
         if (time > mainTime) {
           if (j < commentTimes.length - 1) {
@@ -80,6 +81,7 @@ var inline_history = {
 
         var inline = (mainUser == user && time == mainTime);
         var currentDiv = document.createElement("div");
+console.log('currentDiv1', currentDiv);
 
         // place ih_cc class on parent container if it's the only child
         var containerClass = '';
@@ -103,7 +105,7 @@ var inline_history = {
             var parentDiv = commentHead.parentNode;
             var previous = this.previousElementSibling(parentDiv);
             if (previous && previous.className.indexOf("ih_history") >= 0) {
-              currentDiv = parentDiv.previousElementSibling;
+              currentDiv = this.previousElementSibling(parentDiv);
             } else {
               parentDiv.parentNode.insertBefore(currentDiv, parentDiv);
             }
@@ -117,6 +119,7 @@ var inline_history = {
             }
           }
 
+console.log('currentDiv2', currentDiv);
           currentDiv.innerHTML = currentDiv.innerHTML
                                  + '<div class="ih_history_item ' + containerClass + '" '
                                  + 'id="h' + i + '">'
@@ -221,8 +224,8 @@ var inline_history = {
         var match = attachFlags[j].match(/^\s*(<span.+\/span>):([^\?\-\+]+[\?\-\+])([\s\S]*)/);
         if (!match) continue;
         var setterSpan = match[1];
-        var flag = match[2].replace('\u2011', '-', 'g').trim();
-        var requestee = match[3].trim();
+        var flag = inline_history.trim(match[2].replace('\u2011', '-', 'g'));
+        var requestee = inline_history.trim(match[3]);
         var requesteeLogin = '';
 
         match = setterSpan.match(/title="([^"]+)"/);
@@ -284,7 +287,7 @@ var inline_history = {
       var flagLabel = cells[1].getElementsByTagName('label');
       if (!flagLabel.length) continue;
       flagLabel = flagLabel[0];
-      var flagName = flagLabel.innerHTML.trim().replace('\u2011', '-', 'g');
+      var flagName = inline_history.trim(flagLabel.innerHTML).replace('\u2011', '-', 'g');
 
       for (var j = 0, jl = ih_activity_flags.length; j < jl; j++) {
         flagItem = ih_activity_flags[j];
@@ -354,5 +357,9 @@ var inline_history = {
     var e = document.createElement('div');
     e.innerHTML = v;
     return e.childNodes.length == 0 ? '' : e.childNodes[0].nodeValue;
+  },
+
+  trim: function(s) {
+    return s.replace(/^\s+|\s+$/g, '');
   }
 }
