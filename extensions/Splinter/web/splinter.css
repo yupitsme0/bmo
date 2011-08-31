@@ -34,6 +34,11 @@ textarea:focus {
     margin-bottom: 1em;
 }
 
+#attachObsolete {
+    font-weight: bold;
+    color: #c00000;
+}
+
 .attachment-draft .attachment-id, .attachment-draft .attachment-desc {
     font-weight: bold;
 }
