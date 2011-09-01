@@ -67,7 +67,7 @@
 
       [%# display duplicates as history rather than comments %]
       [% IF change.dupe %]
-        html += 'Duplicate: ';
+        html += 'Duplicate of this [% terms.bug %]: ';
       [% ELSE %]
         html += '[% field_descs.${change.fieldname} FILTER js %]: ';
       [% END %]
@@ -101,7 +101,7 @@
               + '<span class="bz_comment_time"> ' + item[1] + ' </span>'
               + '</div>';
     item[4] = [% IF has_cc && (operation.changes.size == 1) %]true[% ELSE %]false[% END %];
-    item[5] = [% IF change.fieldname == 'dupe' %]true[% ELSE %]false[% END %];
+    item[5] = [% IF change.dupe %][% change.added FILTER js %][% ELSE %]0[% END %];
     item[6] = [% IF has_flag %]true[% ELSE %]false[% END %];
     ih_activity[[% loop.index %]] = item;
   [% END %]

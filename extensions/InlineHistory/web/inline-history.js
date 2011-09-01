@@ -35,13 +35,40 @@ var inline_history = {
 
     // remove 'has been marked as a duplicate of this bug' comments
     var reDuplicate = /\*\*\* \S+ \d+ has been marked as a duplicate of this/;
+    var reBugId = /show_bug\.cgi\?id=(\d+)/;
     var comments = Dom.getElementsByClassName("bz_comment", 'div', 'comments');
     for (var i = 1, il = comments.length; i < il; i++) {
       var textDiv = Dom.getElementsByClassName('bz_comment_text', 'pre', comments[i]);
       if (textDiv) {
-        var match = reDuplicate.exec(textDiv[0].textContent);
-        if (match)
-          comments[i].parentNode.removeChild(comments[i]);
+        var match = reDuplicate.exec(textDiv[0].textContent || textDiv[0].innerText);
+        if (match) {
+          // grab the comment and bug number from the element
+          var comment = comments[i];
+          var number = comment.id.substr(1);
+          var time = this.trim(Dom.getElementsByClassName('bz_comment_time', 'span', comment)[0].innerHTML);
+          var dupeId = 0;
+          match = reBugId.exec(Dom.get('comment_text_' + number).innerHTML);
+          if (match)
+            dupeId = match[1];
+          // remove the element
+          comment.parentNode.removeChild(comment);
+          // update the html for the history item to include the comment number
+          if (dupeId == 0)
+            continue;
+          for (var j = 0, jl = ih_activity.length; j < jl; j++) {
+            var item = ih_activity[j];
+            if (item[5] == dupeId && item[1] == time) {
+              // insert comment number and link into the header
+              item[3] = item[3].substr(0, item[3].length - 6) // remove trailing </div>
+                // add comment number
+                + '<span class="bz_comment_number" id="c' + number + '">'
+                + '<a href="#c' + number + '">Comment ' + number + '</a>'
+                + '</span>'
+                + '</div>';
+              break;
+            }
+          }
+        }
       }
     }
 
@@ -59,7 +86,7 @@ var inline_history = {
       // item[2] : change html
       // item[3] : header html
       // item[4] : bool; cc-only
-      // item[5] : bool; is dupe
+      // item[5] : int; dupe bug id (or 0)
       // item[6] : bool; is flag
 
       var reachedEnd = false;
@@ -68,7 +95,8 @@ var inline_history = {
         var mainUser = Dom.getElementsByClassName('email', 'a', commentHead)[0].href.substr(7);
         var user = item[0];
         var time = item[1];
-        var mainTime = commentTimes[j].textContent.trim();
+        var text = commentTimes[j].textContent || commentTimes[j].innerText;
+        var mainTime = this.trim(text);
 
         if (time > mainTime) {
           if (j < commentTimes.length - 1) {
@@ -103,7 +131,7 @@ var inline_history = {
             var parentDiv = commentHead.parentNode;
             var previous = this.previousElementSibling(parentDiv);
             if (previous && previous.className.indexOf("ih_history") >= 0) {
-              currentDiv = parentDiv.previousElementSibling;
+              currentDiv = this.previousElementSibling(parentDiv);
             } else {
               parentDiv.parentNode.insertBefore(currentDiv, parentDiv);
             }
@@ -111,7 +139,7 @@ var inline_history = {
             var parentDiv = commentHead.parentNode;
             var next = this.nextElementSibling(parentDiv);
             if (next && next.className.indexOf("ih_history") >= 0) {
-              currentDiv = parentDiv.nextElementSibling;
+              currentDiv = this.nextElementSibling(parentDiv);
             } else {
               lastCommentDiv.parentNode.insertBefore(currentDiv, lastCommentDiv.nextSibling);
             }
@@ -221,8 +249,8 @@ var inline_history = {
         var match = attachFlags[j].match(/^\s*(<span.+\/span>):([^\?\-\+]+[\?\-\+])([\s\S]*)/);
         if (!match) continue;
         var setterSpan = match[1];
-        var flag = match[2].replace('\u2011', '-', 'g').trim();
-        var requestee = match[3].trim();
+        var flag = this.trim(match[2].replace('\u2011', '-', 'g'));
+        var requestee = this.trim(match[3]);
         var requesteeLogin = '';
 
         match = setterSpan.match(/title="([^"]+)"/);
@@ -258,7 +286,7 @@ var inline_history = {
         }
         if (!found) {
           // something went wrong, insert the flag unlinked
-          html += attachFlags[j];
+          html += attachFlags[j] + '<br>';
         }
       }
 
@@ -284,7 +312,7 @@ var inline_history = {
       var flagLabel = cells[1].getElementsByTagName('label');
       if (!flagLabel.length) continue;
       flagLabel = flagLabel[0];
-      var flagName = flagLabel.innerHTML.trim().replace('\u2011', '-', 'g');
+      var flagName = this.trim(flagLabel.innerHTML).replace('\u2011', '-', 'g');
 
       for (var j = 0, jl = ih_activity_flags.length; j < jl; j++) {
         flagItem = ih_activity_flags[j];
@@ -354,5 +382,9 @@ var inline_history = {
     var e = document.createElement('div');
     e.innerHTML = v;
     return e.childNodes.length == 0 ? '' : e.childNodes[0].nodeValue;
+  },
+
+  trim: function(s) {
+    return s.replace(/^\s+|\s+$/g, '');
   }
 }

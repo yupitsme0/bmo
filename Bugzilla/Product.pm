@@ -779,9 +779,7 @@ sub user_has_access {
 }
 
 sub flag_types {
-    my $self = shift;
-    my $params = shift;
-
+    my ($self, $params) = @_;
     $params ||= {};
 
     return $self->{'flag_types'} if defined $self->{'flag_types'};

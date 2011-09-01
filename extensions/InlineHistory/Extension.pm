@@ -31,7 +31,7 @@ use Bugzilla::User::Setting;
 use Bugzilla::Constants;
 use Bugzilla::Attachment;
 
-our $VERSION = '1.0';
+our $VERSION = '1.3';
 
 sub template_before_process {
     my ($self, $args) = @_;
@@ -119,8 +119,8 @@ sub template_before_process {
                     $flag_change->{removed} = $flags{$flag}{removed};
                     $flag_change->{added} = $flags{$flag}{added};
                     splice(@{$operation->{changes}}, $i, 0, $flag_change);
-                    $i++;
                 }
+                $i--;
             }
         }
     }
@@ -138,14 +138,24 @@ sub _add_duplicates {
     my $sth = $dbh->prepare("
         SELECT profiles.login_name, " .
                $dbh->sql_date_format('bug_when', '%Y.%m.%d %H:%i:%s') . ",
-               extra_data
+               extra_data,
+               thetext
           FROM longdescs
                INNER JOIN profiles ON profiles.userid = longdescs.who
-         WHERE bug_id = ? AND type = ?
+         WHERE bug_id = ?
+               AND (
+                 type = ?
+                 OR thetext LIKE '%has been marked as a duplicate of this%'
+               )
+         ORDER BY bug_when
     ");
     $sth->execute($bug_id, CMT_HAS_DUPE);
 
-    while (my($who, $when, $dupe_id) = $sth->fetchrow_array) {
+    while (my($who, $when, $dupe_id, $the_text) = $sth->fetchrow_array) {
+        if (!$dupe_id) {
+            next unless $the_text =~ / (\d+) has been marked as a duplicate of this/;
+            $dupe_id = $1;
+        }
         my $entry = {
             'when' => $when,
             'who' => $who,

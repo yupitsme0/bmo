@@ -371,9 +371,7 @@ sub default_qa_contact {
 }
 
 sub flag_types {
-    my $self = shift;
-    my $params = shift;
-
+    my ($self, $params) = @_;
     $params ||= {};
 
     if (!defined $self->{'flag_types'}) {

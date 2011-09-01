@@ -2540,6 +2540,9 @@ Splinter.init = function () {
         Dom.get("attachCreator").appendChild(document.createTextNode(Splinter.Bug._formatWho(Splinter.theAttachment.whoName, 
                                                                                              Splinter.theAttachment.whoEmail)));
         Dom.get("attachDate").innerHTML = Splinter.Utils.formatDate(Splinter.theAttachment.date);
+        if (Splinter.theAttachment.isObsolete) {
+            Dom.get("attachObsolete").innerHTML = 'OBSOLETE';
+        }
         Dom.setStyle('attachInfo', 'display', 'block');
 
         Dom.setStyle('quickHelpShow', 'display', 'block');
