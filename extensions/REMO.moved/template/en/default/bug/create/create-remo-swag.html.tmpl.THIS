@@ -216,16 +216,16 @@ function validateAndSubmit() {
   </td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <td><!--spacer-->&nbsp;</td>
   <td><!--spacer-->&nbsp;</td>
 </tr>
 
-<tr class="odd">
+<tr class="even">
   <td colspan="2"><strong>Swag Requested:</strong></td>
 </tr>
 
-<tr class="even">
+<tr class="odd">
   <td><strong>Stickers:</strong></td>
   <td><input type="checkbox" id="stickers" name="stickers" value="1"></td>
 </tr>
