@@ -1,0 +1,158 @@
+[%# 1.0@bugzilla.org %]                                                       
+[%# The contents of this file are subject to the Mozilla Public               
+  # License Version 1.1 (the "License"); you may not use this file            
+  # except in compliance with the License. You may obtain a copy of           
+  # the License at http://www.mozilla.org/MPL/                                
+  #                                                                           
+  # Software distributed under the License is distributed on an "AS           
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or                
+  # implied. See the License for the specific language governing              
+  # rights and limitations under the License.                                 
+  #                                                                           
+  # The Original Code is the Bugzilla Bug Tracking System.                    
+  #                                                                           
+  # The Initial Developer of the Original Code is Netscape Communications     
+  # Corporation. Portions created by Netscape are                             
+  # Copyright (C) 1998 Netscape Communications Corporation. All               
+  # Rights Reserved.                                                          
+  #                                                                           
+  # Contributor(s): Gervase Markham <gerv@gerv.net>                       
+  #                 Ville Skyttä <ville.skytta@iki.fi>
+  #                 John Hoogstrate <hoogstrate@zeelandnet.nl>
+  #%]                                                                         
+                                                                              
+[% PROCESS global/variables.none.tmpl %]                                      
+                                                                              
+[% PROCESS global/header.html.tmpl                                            
+   title = "Mozilla Corporation/Foundation Employee Incident" 
+   javascript_urls = [ 'extensions/BMO/web/js/form_validate.js', 'js/field.js' ]
+   yui = [ 'autocomplete' ]
+   style_urls = [ 'extensions/BMO/web/styles/enter_bug.css' ]
+%]
+                                                                            
+[% USE Bugzilla %]                                                            
+
+<script type="text/javascript">
+<!--
+    var type_desc = new Array();
+    type_desc['safety'] = "If this is an emergency please immediately call your local police or emergency number.";
+    type_desc['stolen'] = "Please report a lost Mozilla laptop or any mobile device that was used to access " + 
+                          "Mozilla email or contained passwords for Mozilla servers, devices, applications, etc.";
+
+    function setType (select) {
+        var selectValue = select.options[select.selectedIndex].value;
+
+        // Set the current description displayed.
+        document.getElementById('type_desc').innerHTML = type_desc[selectValue];
+
+        // Display/hide some additional fields based on type selected
+        var display = 'none';
+        if (selectValue == 'stolen') {
+            display = 'table-row';
+        } 
+        var elements = YAHOO.util.Dom.getElementsByClassName('stolen_row');
+        for (var i = 0; i < elements.length; i++) {
+            YAHOO.util.Dom.setStyle(elements[i], 'display', display);
+        }
+
+        // Alter the product/component/group based on type selected
+        if (selectValue == 'stolen') {
+            document.getElementById('product').value   = 'mozilla.org';
+            document.getElementById('component').value = 'Server Operations: Desktop Issues';
+            document.getElementById('groups').value    = 'infrasec';
+            document.getElementById('cc').value        = '';
+        }
+        else {
+            document.getElementById('product').value   = 'Mozilla Corporation';
+            document.getElementById('component').value = 'Facilities Management';
+            document.getElementById('groups').value    = 'mozilla-corporation-confidential';
+            document.getElementById('cc').value        = 'dcohen@mozilla.com, mcoates@mozilla.com, jvandeven@mozilla.com';
+        }
+    }
+
+    YAHOO.util.Event.onDOMReady(function () {
+        setType(document.getElementById('incident_type'));
+    });
+// -->
+</script>
+
+<p><strong>Please use this form for employee incidents only!</strong></p>
+<p>If you have a [% terms.bug %] to file, go <a href="enter_bug.cgi">here</a>.</p>
+
+<form method="post" action="post_bug.cgi" id="incidentForm" enctype="multipart/form-data">
+  <input type="hidden" id="product" name="product" value="Mozilla Corporation">
+  <input type="hidden" id="component" name="component" value="Facilities Management">
+  <input type="hidden" id="rep_platform" name="rep_platform" value="All">
+  <input type="hidden" id="op_sys" name="op_sys" value="Other">
+  <input type="hidden" id="priority" name="priority" value="--">
+  <input type="hidden" id="version" name="version" value="other">
+  <input type="hidden" id="cc" name="cc" value="dcohen@mozilla.com, mcoates@mozilla.com, jvandeven@mozilla.com">
+  <input type="hidden" id="groups" name="groups" value="mozilla-corporation-confidential">
+  <input type="hidden" id="format" name="format" value="employee-incident">
+
+  <table id="enter-form">
+    <tr class="even">
+      <td align="right" valign="top"><strong>Incident Type:</strong></td>
+      <td>
+        <select id="incident_type" name="incident_type" onchange="setType(this);">
+          <option value="safety" selected>Report a Safety Concern</option>
+          <option value="stolen">My laptop or phone was lost/stolen</option>
+        </select>
+        <div id="type_desc" style="color:red;"></div>
+      </td>
+    </tr>
+      <tr class="odd">
+      <td align="right"><strong>Summary:</strong></td>
+      <td><input name="short_desc" size="60" value="[% short_desc FILTER html %]"></td>
+    </tr>
+    <tr class="even">
+      <td align="right" valign="top"><strong>Description:</strong></td>
+      <td>
+        <textarea name="comment" rows="10" cols="80">
+          [% comment FILTER html %]</textarea>
+      </td>
+    </tr>
+    <tr class="stolen_row odd">
+      <td colspan="2"><strong>Stolen Details:</strong></td>
+    </tr>
+    <tr class="stolen_row even">
+      <td align="right"><input type="checkbox" name="encrypted" id="encrypted" value="1"></td>
+      <td>To your knowledge, was your device encrypted?</td>
+    </tr>
+    <tr class="stolen_row odd">
+      <td align="right"><input type="checkbox" name="userdata" id="userdata" value="1"></td>
+      <td>Did you have any user data on your device?</td>
+    </tr>
+    <tr class="stolen_row even">
+      <td>&nbsp;</td>
+      <td>What sensitive data was stored on your device?</td>
+    </tr>
+    <tr class="stolen_row odd">
+      <td>&nbsp;</td>
+      <td><textarea name="sensitivedata" rows="10" cols="80"></textarea></td>
+    </tr>
+    <tr class="stolen_row even">
+      <td align="right"><input type="checkbox" name="rememberpasswords" id="rememberpasswords" value="1"></td>
+      <td>Was your browser designed to remember passwords?</td>
+    </tr>
+    <tr class="stolen_row odd">
+      <td>&nbsp;</td>
+      <td>If so, which critical sites were included?</td>
+    </tr>
+    <tr class="stolen_row even">
+      <td>&nbsp;</td>
+      <td><textarea name="criticalsites" rows="10" cols="80"></textarea></td>
+    </tr>
+    <tr class="odd"> 
+      <td colspan="2" align="right">
+        <input type="submit" id="commit" value="Submit Request">
+      </td>
+    </tr>
+  </table>
+</form>
+
+<p>
+  Thanks for contacting us. You will be notified by email of any progress made in resolving your request.
+</p>
+
+[% PROCESS global/footer.html.tmpl %]                   
