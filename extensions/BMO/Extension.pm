@@ -450,6 +450,19 @@ sub _link_hg {
     return qq{<a href="https://hg.mozilla.org/$repo/rev/$id">$text</a>};
 }
 
+sub _link_bzr {
+    my $args = shift;
+    my $preamble = html_quote($args->{matches}->[0]);
+    my $url = html_quote($args->{matches}->[1]);
+    my $text = html_quote($args->{matches}->[2]);
+    my $id = html_quote($args->{matches}->[3]);
+
+    $url =~ s/\s+$//;
+    $url =~ s/\/$//;
+
+    return qq{$preamble<a href="http://$url/revision/$id">$text</a>};
+}
+
 sub bug_format_comment {
     my ($self, $args) = @_;
     my $regexes = $args->{'regexes'};
@@ -474,6 +487,13 @@ sub bug_format_comment {
     push (@$regexes, {
         match => qr/\br(\d{4,})\b/,
         replace => \&_link_svn
+    });
+
+    push (@$regexes, {
+        match => qr/\b(Committing\sto:\sbzr\+ssh:\/\/
+                    (?:[^\@]+\@)?(bzr\.mozilla\.org[^\n]+)\n.*?\nCommitted\s)
+                    (revision\s(\d+))\./sx,
+        replace => \&_link_bzr
     });
 
     # Note: for grouping in this regexp, always use non-capturing parentheses.
