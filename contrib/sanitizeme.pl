@@ -97,6 +97,7 @@ sub delete_non_public_products {
     foreach my $product (@products) {
         # if there are any mandatory groups on the product, nuke it and
         # everything associated with it (including the bugs)
+        Bugzilla->params->{'allowbugdeletion'} = 1; # override this in memory for now
         my $mandatorygroups = $dbh->selectcol_arrayref("SELECT group_id FROM group_control_map WHERE product_id = ? AND (membercontrol = $mandatory)", undef, $product->id);
         if (0 < scalar(@$mandatorygroups)) {
             print "Deleting product '" . $product->name . "'...\n";
