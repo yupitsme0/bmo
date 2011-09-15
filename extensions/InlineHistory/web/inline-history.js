@@ -88,17 +88,17 @@ var inline_history = {
       // item[4] : bool; cc-only
       // item[5] : int; dupe bug id (or 0)
       // item[6] : bool; is flag
+      var user = item[0];
+      var time = item[1];
 
       var reachedEnd = false;
       for (var j = 0, jl = commentTimes.length; j < jl; j++) {
         var commentHead = commentTimes[j].parentNode;
         var mainUser = Dom.getElementsByClassName('email', 'a', commentHead)[0].href.substr(7);
-        var user = item[0];
-        var time = item[1];
         var text = commentTimes[j].textContent || commentTimes[j].innerText;
         var mainTime = this.trim(text);
 
-        if (time > mainTime) {
+        if (ih_activity_sort_order == 'oldest_to_newest' ? time > mainTime : time < mainTime) {
           if (j < commentTimes.length - 1) {
             continue;
           } else {

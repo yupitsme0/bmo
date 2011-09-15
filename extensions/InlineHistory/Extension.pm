@@ -31,7 +31,7 @@ use Bugzilla::User::Setting;
 use Bugzilla::Constants;
 use Bugzilla::Attachment;
 
-our $VERSION = '1.3';
+our $VERSION = '1.4';
 
 sub template_before_process {
     my ($self, $args) = @_;
