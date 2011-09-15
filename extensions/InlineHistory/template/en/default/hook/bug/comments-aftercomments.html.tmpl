@@ -33,6 +33,7 @@
 <script>
   var ih_activity = new Array();
   var ih_activity_flags = new Array();
+  var ih_activity_sort_order = '[% user.settings.comment_sort_order.value FILTER js %]';
   [% FOREACH operation = ih_activity %]
     var html = '';
     [% has_cc = 0 %]
