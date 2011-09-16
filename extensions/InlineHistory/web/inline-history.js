@@ -73,9 +73,9 @@ var inline_history = {
     }
 
     // ensure new items are placed immediately after the last comment
-    var lastCommentDiv = Dom.getElementsByClassName('bz_comment', 'div', 'comments');
-    if (!lastCommentDiv) return;
-    lastCommentDiv = lastCommentDiv[lastCommentDiv.length - 1];
+    var commentDivs = Dom.getElementsByClassName('bz_comment', 'div', 'comments');
+    if (!commentDivs.length) return;
+    var lastCommentDiv = commentDivs[commentDivs.length - 1];
 
     // insert activity into the correct location
     var commentTimes = Dom.getElementsByClassName('bz_comment_time', 'span', 'comments');
@@ -92,7 +92,8 @@ var inline_history = {
       var time = item[1];
 
       var reachedEnd = false;
-      for (var j = 0, jl = commentTimes.length; j < jl; j++) {
+      var start_index = ih_activity_sort_order == 'newest_to_oldest_desc_first' ? 1 : 0;
+      for (var j = start_index, jl = commentTimes.length; j < jl; j++) {
         var commentHead = commentTimes[j].parentNode;
         var mainUser = Dom.getElementsByClassName('email', 'a', commentHead)[0].href.substr(7);
         var text = commentTimes[j].textContent || commentTimes[j].innerText;
@@ -145,11 +146,16 @@ var inline_history = {
             }
           }
 
-          currentDiv.innerHTML = currentDiv.innerHTML
-                                 + '<div class="ih_history_item ' + containerClass + '" '
-                                 + 'id="h' + i + '">'
-                                 + item[3] + item[2]
-                                 + '</div>';
+          var itemHtml =  '<div class="ih_history_item ' + containerClass + '" '
+                          + 'id="h' + i + '">'
+                          + item[3] + item[2]
+                          + '</div>';
+
+          if (ih_activity_sort_order == 'oldest_to_newest') {
+            currentDiv.innerHTML = currentDiv.innerHTML + itemHtml;
+          } else {
+            currentDiv.innerHTML = itemHtml + currentDiv.innerHTML;
+          }
           currentDiv.setAttribute("class", "bz_comment ih_history");
           if (item[6])
             this.setFlagChangeID(item, 'h' + i);

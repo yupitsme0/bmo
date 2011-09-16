@@ -59,7 +59,7 @@ sub template_before_process {
 
     # build bug activity
     my ($activity) = Bugzilla::Bug::GetBugActivity($bug_id);
-    _add_duplicates($bug_id, $activity);
+    $activity = _add_duplicates($bug_id, $activity);
 
     # augment and tweak
     foreach my $operation (@$activity) {
@@ -171,6 +171,8 @@ sub _add_duplicates {
         };
         push @$activity, $entry;
     }
+
+    return [ sort { $a->{when} cmp $b->{when} } @$activity ];
 }
 
 sub install_before_final_checks {
