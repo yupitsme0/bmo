@@ -27,8 +27,7 @@
                        'extensions/REMO/web/js/form_validate.js',
                        'js/field.js', 
                        'js/util.js' ]
-   style_urls = [ "extensions/REMO/web/styles/moz_reps.css",  
-                  "skins/custom/calendar.css" ]
+   style_urls = [ "extensions/REMO/web/styles/moz_reps.css" ] 
    yui = [ 'calendar' ]
 %]
 
@@ -150,12 +149,13 @@ function validateAndSubmit() {
 <tr class="odd">
   <td><strong>Ship Before:</strong>
   <td>
-    <input type="text" id="shipdate" name="shipdate" size="10"
-           onchange="updateCalendarFromField(this)">
-    <button type="button" class="calendar_button" id="button_calendar_date"
-            onclick="showCalendar('shipdate')"><span>Calendar</span>
-    </button>
-    <div id="con_calendar_shipdate"></div>
+    [% INCLUDE bug/field.html.tmpl 
+       bug      = default,
+       field    = bug_fields.cf_due_date 
+       value    = default.cf_due_date, 
+       editable = 1, 
+       no_tds   = 1
+    %]
   </td>
 </tr>
 
@@ -297,10 +297,6 @@ function validateAndSubmit() {
   Thanks for contacting us.
    You will be notified by email of any progress made in resolving your request.
 </p>
-
-<script type="text/javascript">
-  createCalendar('shipdate');
-</script>
 
 [% ELSE %]
   <p>Sorry, you do not have access to this page.</p>

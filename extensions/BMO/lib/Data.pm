@@ -139,6 +139,9 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "Mozilla Labs"          => [],
         "mozilla.org"           => [], 
         "Tech Evangelism"       => [],  
+    },
+    qw/^cf_due_date$/ => {
+        "Mozilla Reps" => [],
     }, 
 );
 
