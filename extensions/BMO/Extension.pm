@@ -686,4 +686,61 @@ sub webservice {
     $dispatch->{BMO} = "Bugzilla::Extension::BMO::WebService";
 }
 
+our $search_content_matches;
+BEGIN {
+    $search_content_matches = \&Bugzilla::Search::_content_matches;
+}
+
+sub search_operator_field_override {
+    my ($self, $args) = @_;
+    my $search = $args->{'search'};
+    my $operators = $args->{'operators'};
+
+    my $cgi = Bugzilla->cgi;
+    my @comments = $cgi->param('comments');
+    my $exclude_comments = scalar(@comments) && !grep { $_ eq '1' } @comments;
+
+    if ($cgi->param('query_format') eq 'specific' && $exclude_comments) {
+        # use the non-comment operator
+        $operators->{'content'}->{matches} = \&_short_desc_matches;
+        $operators->{'content'}->{notmatches} = \&_short_desc_matches;
+
+    } else {
+        # restore default content operator
+        $operators->{'content'}->{matches} = $search_content_matches;
+        $operators->{'content'}->{notmatches} = $search_content_matches;
+    }
+}
+
+sub _short_desc_matches {
+    # copy of Bugzilla::Search::_content_matches
+
+    my $self = shift;
+    my %func_args = @_;
+    my ($chartid, $supptables, $term, $groupby, $fields, $t, $v) =
+        @func_args{qw(chartid supptables term groupby fields t v)};
+    my $dbh = Bugzilla->dbh;
+
+    # Add the fulltext table to the query so we can search on it.
+    my $table = "bugs_fulltext_$$chartid";
+    push(@$supptables, "LEFT JOIN bugs_fulltext AS $table " .
+                       "ON bugs.bug_id = $table.bug_id");
+
+    # Create search terms to add to the SELECT and WHERE clauses.
+    my ($term1, $rterm1) = $dbh->sql_fulltext_search("$table.short_desc", $$v, 1);
+    $rterm1 = $term1 if !$rterm1;
+
+    # The term to use in the WHERE clause.
+    $$term = $term1;
+    if ($$t =~ /not/i) {
+        $$term = "NOT($$term)";
+    }
+
+    my $current = Bugzilla::Search::COLUMNS->{'relevance'}->{name};
+    $current = $current ? "$current + " : '';
+    # For NOT searches, we just add 0 to the relevance.
+    my $select_term = $$t =~ /not/ ? 0 : "($current$rterm1)";
+    Bugzilla::Search::COLUMNS->{'relevance'}->{name} = $select_term;
+}
+
 __PACKAGE__->NAME;
