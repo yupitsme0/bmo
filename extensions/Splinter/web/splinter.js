@@ -236,12 +236,23 @@ Splinter.Patch = {
     HUNK_START_RE : /^@@[ \t]+-(\d+),(\d+)[ \t]+\+(\d+),(\d+)[ \t]+@@(.*)\n/mg,
     HUNK_RE       : /((?:[ +\\-].*\n)*)/mg,
 
+    GIT_FILE_RE   : /^diff --git a\/(\S+).*\n(?:(new|deleted) file mode \d+\n)?(?:index.*\n)?GIT binary patch\n(delta )?/mg,
+
     _cleanIntro : function(intro) {
         var m;
 
-        intro = Splinter.Utils.strip(intro);
+        intro = Splinter.Utils.strip(intro) + "\n\n";
 
-        // Git: remove leading 'From <commit_id> <date'
+        // Git: remove binary diffs
+        var binary_re = /^(?:diff --git .*\n|literal \d+\n)(?:.+\n)+\n/mg;
+        m = binary_re.exec(intro);
+        while (m) {
+            intro = intro.substr(m.index + m[0].length);
+            binary_re.lastIndex = 0;
+            m = binary_re.exec(intro);
+        }
+
+        // Git: remove leading 'From <commit_id> <date>'
         m = /^From\s+[a-f0-9]{40}.*\n/.exec(intro);
         if (m) {
             intro = intro.substr(m.index + m[0].length);
@@ -253,7 +264,7 @@ Splinter.Patch = {
             intro = intro.substr(0, m.index);
         }
 
-        return intro;
+        return Splinter.Utils.strip(intro);
     }
 };
 
@@ -470,10 +481,24 @@ Splinter.Patch.Patch.prototype = {
         this.files = [];
 
         var m = Splinter.Patch.FILE_START_RE.exec(text);
-        if (m != null) {
-            this.intro = Splinter.Patch._cleanIntro(text.substring(0, m.index));
-        } else {
+        var bm = Splinter.Patch.GIT_FILE_RE.exec(text);
+        if (m == null && bm == null)
             throw "Not a patch";
+        this.intro = m == null ? '' : Splinter.Patch._cleanIntro(text.substring(0, m.index));
+
+        // show binary files in the intro
+
+        if (bm && this.intro.length)
+            this.intro += "\n\n";
+        while (bm != null) {
+            if (bm[2]) {
+                // added or deleted file
+                this.intro += bm[2].charAt(0).toUpperCase() + bm[2].slice(1) + ' Binary File: ' + bm[1] + "\n";
+            } else {
+                // delta
+                this.intro += 'Modified Binary File: ' + bm[1] + "\n";
+            }
+            bm = Splinter.Patch.GIT_FILE_RE.exec(text);
         }
 
         while (m != null) {
