@@ -1655,6 +1655,7 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
 
     var commentTextArea = new Element(document.createElement('textarea'));
     Dom.setAttribute(commentTextArea, 'id', 'commentTextArea');
+    Dom.setAttribute(commentTextArea, 'tabindex', 1);
     commentTextArea.appendChild(document.createTextNode(previousText));
     commentTextArea.appendTo(commentTextFrame);
     Event.addListener('commentTextArea', 'keydown', function (e) { 
@@ -1676,6 +1677,7 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
     commentCancel.set('id','commentCancel');
     commentCancel.set('type', 'button');
     commentCancel.set('value', 'Cancel');
+    Dom.setAttribute(commentCancel, 'tabindex', 4);
     commentCancel.appendTo(commentEditorLeftButtons);
     Event.addListener('commentCancel', 'click', function () { Splinter.cancelComment(previousText); });
 
@@ -1684,6 +1686,7 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
         commentDelete.set('id','commentDelete');
         commentDelete.set('type', 'button');
         commentDelete.set('value', 'Delete');
+        Dom.setAttribute(commentDelete, 'tabindex', 3);
         commentDelete.appendTo(commentEditorLeftButtons);
         Event.addListener('commentDelete', 'click', Splinter.deleteComment);
     }
@@ -1696,6 +1699,7 @@ Splinter.insertCommentEditor = function (commentArea, file, location, type) {
     commentSave.set('id','commentSave');
     commentSave.set('type', 'button');
     commentSave.set('value', 'Save');
+    Dom.setAttribute(commentSave, 'tabindex', 2);
     commentSave.appendTo(commentEditorRightButtons);
     Event.addListener('commentSave', 'click', Splinter.saveComment);
 
