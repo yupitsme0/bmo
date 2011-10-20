@@ -759,7 +759,7 @@ sub mailer_before_send {
     # to the email as an attachment. Attachment must be content type
     # text/plain and below a certain size. Otherwise the email already 
     # contain a link to the attachment. 
-    if ($email 
+    if (0 && $email # XXX disabled, see bug 689601
         && $email->header('X-Bugzilla-Type') eq 'request'
         && ($email->header('X-Bugzilla-Flag-Requestee') 
             && $email->header('X-Bugzilla-Flag-Requestee') eq $email->header('to'))) 
