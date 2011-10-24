@@ -97,10 +97,12 @@
         <label for="componentac">Request an LDAP/E-mail/etc. account</label><br>
         <input type="radio" name="component" id="componentmvd" onclick="setcompdesc(this)" value="Server Operations: Desktop Issues">
         <label for="componentmvd">Desktop/Laptop/Printer/Phone/Tablet/License problem/order/request</label><br>
-        <input type="radio" name="component" id="componenttbm" onclick="setcompdesc(this)" value="Server Operations: Tinderbox Maintenance">
+        <input type="radio" name="component" id="componenttbm" onclick="setcompdesc(this)" value="Server Operations: RelEng">
         <label for="componenttbm">Report a problem with a tinderbox machine</label><br>
-        <input type="radio" name="component" id="componentwcp" onclick="setcompdesc(this)" value="Server Operations: Web Content Push">
-        <label for="componentwcp">Deploy a change to a production website</label><br>
+        <input type="radio" name="component" id="componentwcp" onclick="setcompdesc(this)" value="Server Operations: Web Operations">
+        <label for="componentwcp">Report a problem with a Mozilla website, or to request a change or push</label><br>
+        <input type="radio" name="component" id="componentacl" onclick="setcompdesc(this)" value="Server Operations: ACL Request">
+        <label for="componentacl">Request a firewall change</label><br>
         <input type="radio" name="component" id="componentso" onclick="setcompdesc(this)" value="Server Operations">
         <label for="componentso">Any other issue</label><br>
         Mailing list requests should be filed <a href="[% ulrbase FILTER none %]enter_bug.cgi?product=mozilla.org&format=mozlist">here</a> instead.

@@ -78,7 +78,6 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "Add-on SDK"            => [],
         "addons.mozilla.org"    => [],
         "AUS"                   => [],
-        "Camino"                => [],
         "Core Graveyard"        => [],
         "Core"                  => [],
         "Directory"             => [],
@@ -118,6 +117,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "Camino"                => [], 
         "Composer"              => [], 
         "Fennec"                => [], 
+        "Fennec Native"         => [], 
         "Firefox"               => [], 
         "Mozilla Localizations" => [], 
         "Mozilla Services"      => [], 
@@ -139,6 +139,9 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "Mozilla Labs"          => [],
         "mozilla.org"           => [], 
         "Tech Evangelism"       => [],  
+    },
+    qw/^cf_due_date$/ => {
+        "Mozilla Reps" => [],
     }, 
 );
 
@@ -163,6 +166,10 @@ our $cf_disabled_flags = [
     'cf_status_seamonkey21',
     'cf_tracking_seamonkey22',
     'cf_status_seamonkey22',
+    'cf_tracking_firefox6',
+    'cf_status_firefox6',
+    'cf_tracking_thunderbird6',
+    'cf_status_thunderbird6',
 ];
 
 # Who to CC on particular bugmails when certain groups are added or removed.

@@ -33,6 +33,9 @@ use Bugzilla::Attachment;
 
 our $VERSION = '1.4';
 
+# don't show inline history for bugs with lots of changes
+use constant MAXIMUM_ACTIVITY_COUNT => 500;
+
 sub template_before_process {
     my ($self, $args) = @_;
     my $file = $args->{'file'};
@@ -59,12 +62,27 @@ sub template_before_process {
 
     # build bug activity
     my ($activity) = Bugzilla::Bug::GetBugActivity($bug_id);
-    _add_duplicates($bug_id, $activity);
+    $activity = _add_duplicates($bug_id, $activity);
 
+    if (scalar @$activity > MAXIMUM_ACTIVITY_COUNT) {
+        $activity = [];
+        $vars->{'ih_activity'} = 0;
+        $vars->{'ih_activity_max'} = 1;
+        return;
+    }
+
+    Bugzilla->request_cache->{ih_user_cache} ||= {};
+    my $user_cache = Bugzilla->request_cache->{ih_user_cache};
+    
     # augment and tweak
     foreach my $operation (@$activity) {
         # make operation.who an object
-        $operation->{who} = Bugzilla::User->new({ name => $operation->{who} });
+        if (!$user_cache->{$operation->{who}}) {
+            $user_cache->{$operation->{who}} 
+                = Bugzilla::User->new({ name => $operation->{who} });
+        }
+        $operation->{who} = $user_cache->{$operation->{who}};
+
         for (my $i = 0; $i < scalar(@{$operation->{changes}}); $i++) {
             my $change = $operation->{changes}->[$i];
 
@@ -90,6 +108,12 @@ sub template_before_process {
                 $change->{removed} = '';
                 $change->{added} = $change->{added} ? 'true' : 'false';
             }
+
+            # identify buglist changes
+            $change->{buglist} = 
+                $change->{fieldname} eq 'blocked' ||
+                $change->{fieldname} eq 'dependson' ||
+                $change->{fieldname} eq 'dupe';
 
             # split multiple flag changes (must be processed last)
             if ($change->{fieldname} eq 'flagtypes.name') {
@@ -171,6 +195,8 @@ sub _add_duplicates {
         };
         push @$activity, $entry;
     }
+
+    return [ sort { $a->{when} cmp $b->{when} } @$activity ];
 }
 
 sub install_before_final_checks {

@@ -34,11 +34,14 @@ use Bugzilla::Util qw(html_quote trick_taint trim datetime_from detaint_natural)
 use Bugzilla::Token;
 use Bugzilla::Error;
 use Bugzilla::Mailer;
+use Bugzilla::Util;
 
 use Scalar::Util qw(blessed);
 use Date::Parse;
 use DateTime;
+use Encode qw(find_encoding);
 
+use Bugzilla::Extension::BMO::Constants;
 use Bugzilla::Extension::BMO::FakeBug;
 use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       $cf_flags
@@ -131,6 +134,11 @@ sub template_before_process {
         # hack to allow the bug entry templates to use check_can_change_field 
         # to see if various field values should be available to the current user.
         $vars->{'default'} = Bugzilla::Extension::BMO::FakeBug->new($vars->{'default'} || {});
+    }
+
+    if ($file =~ /^attachment\/diff-header\./) {
+        my $attachid = $vars->{attachid} ? $vars->{attachid} : $vars->{newid};
+        $vars->{attachment} = Bugzilla::Attachment->new($attachid) if $attachid;
     }
 }
 
@@ -684,6 +692,112 @@ sub webservice {
 
     my $dispatch = $args->{dispatch};
     $dispatch->{BMO} = "Bugzilla::Extension::BMO::WebService";
+}
+
+our $search_content_matches;
+BEGIN {
+    $search_content_matches = \&Bugzilla::Search::_content_matches;
+}
+
+sub search_operator_field_override {
+    my ($self, $args) = @_;
+    my $search = $args->{'search'};
+    my $operators = $args->{'operators'};
+
+    my $cgi = Bugzilla->cgi;
+    my @comments = $cgi->param('comments');
+    my $exclude_comments = scalar(@comments) && !grep { $_ eq '1' } @comments;
+
+    if ($cgi->param('query_format') eq 'specific' && $exclude_comments) {
+        # use the non-comment operator
+        $operators->{'content'}->{matches} = \&_short_desc_matches;
+        $operators->{'content'}->{notmatches} = \&_short_desc_matches;
+
+    } else {
+        # restore default content operator
+        $operators->{'content'}->{matches} = $search_content_matches;
+        $operators->{'content'}->{notmatches} = $search_content_matches;
+    }
+}
+
+sub _short_desc_matches {
+    # copy of Bugzilla::Search::_content_matches
+
+    my $self = shift;
+    my %func_args = @_;
+    my ($chartid, $supptables, $term, $groupby, $fields, $t, $v) =
+        @func_args{qw(chartid supptables term groupby fields t v)};
+    my $dbh = Bugzilla->dbh;
+
+    # Add the fulltext table to the query so we can search on it.
+    my $table = "bugs_fulltext_$$chartid";
+    push(@$supptables, "LEFT JOIN bugs_fulltext AS $table " .
+                       "ON bugs.bug_id = $table.bug_id");
+
+    # Create search terms to add to the SELECT and WHERE clauses.
+    my ($term1, $rterm1) = $dbh->sql_fulltext_search("$table.short_desc", $$v, 1);
+    $rterm1 = $term1 if !$rterm1;
+
+    # The term to use in the WHERE clause.
+    $$term = $term1;
+    if ($$t =~ /not/i) {
+        $$term = "NOT($$term)";
+    }
+
+    my $current = Bugzilla::Search::COLUMNS->{'relevance'}->{name};
+    $current = $current ? "$current + " : '';
+    # For NOT searches, we just add 0 to the relevance.
+    my $select_term = $$t =~ /not/ ? 0 : "($current$rterm1)";
+    Bugzilla::Search::COLUMNS->{'relevance'}->{name} = $select_term;
+}
+
+sub mailer_before_send {
+    my ($self, $args) = @_;
+    my $email = $args->{email};
+ 
+    # If email is a request for a review, add the attachment itself
+    # to the email as an attachment. Attachment must be content type
+    # text/plain and below a certain size. Otherwise the email already 
+    # contain a link to the attachment. 
+    if (0 && $email # XXX disabled, see bug 689601
+        && $email->header('X-Bugzilla-Type') eq 'request'
+        && ($email->header('X-Bugzilla-Flag-Requestee') 
+            && $email->header('X-Bugzilla-Flag-Requestee') eq $email->header('to'))) 
+    {
+        my $body = $email->body;
+
+        if (my ($attach_id) = $body =~ /Attachment\s+(\d+)\s*:/) {
+            my $attachment = Bugzilla::Attachment->new($attach_id);
+            if ($attachment 
+                && $attachment->ispatch 
+                && $attachment->contenttype eq 'text/plain'
+                && $attachment->linecount 
+                && $attachment->linecount < REQUEST_MAX_ATTACH_LINES) 
+            {
+                # Don't send a charset header with attachments, as they might 
+                # not be UTF-8, unless we can properly detect it.
+                my $charset;
+                if (Bugzilla->feature('detect_charset')) {
+                    my $encoding = detect_encoding($attachment->data);
+                    if ($encoding) {
+                        $charset = find_encoding($encoding)->mime_name;
+                    }
+                }
+
+                my $attachment_part = Email::MIME->create(
+                    attributes => {
+                        content_type => $attachment->contenttype,
+                        filename     => $attachment->filename,
+                        disposition  => "attachment",
+                    },
+                    body => $attachment->data,
+                );
+                $attachment_part->charset_set($charset) if $charset;
+
+                $email->parts_add([ $attachment_part ]);
+            }
+        }       
+    }
 }
 
 __PACKAGE__->NAME;
