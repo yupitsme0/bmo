@@ -57,9 +57,12 @@ Do not reply to this email.  You can add comments to this [% terms.bug %] at
 
 [%- IF comment.count %]
 --- Comment #[% comment.count %] from [% comment.author.identity %] [%+ comment.creation_ts FILTER time(undef, to_user.timezone) %] ---
-[%+ urlbase %]show_bug.cgi?id=[% bug.id %]#c[% comment.count %]
 [% END %]
 [%+ comment.body_full({ is_bugmail => 1, wrap => 1 }) %]
+[% END %]
+[%- IF comment.count %]
+
+--> [%+ urlbase %]show_bug.cgi?id=[% bug.id %]#c[% comment.count %]
 [% END %]
 
 -- [%# Protect the trailing space of the signature marker %]
