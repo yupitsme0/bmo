@@ -301,37 +301,6 @@
 
 <div id="bugzilla-body">
 
-[% IF user.id %]
-  <script src="js/yui/cookie/cookie-min.js" type="text/javascript"></script>
-  <script>
-      function setSurveyDiv (read) {
-          var surveyDiv = YAHOO.util.Dom.get("surveyDiv");
-          if (surveyDiv) {
-              if (!read && !YAHOO.util.Cookie.get("surveyRead")) {
-                  surveyDiv.style.display = "block";
-              }   
-              else if (read || YAHOO.util.Cookie.get("surveyRead")) {
-                  surveyDiv.style.display = "none";
-                  YAHOO.util.Cookie.set("surveyRead", 1, {
-                      expires: new Date("January 12, 2025")
-                  });
-              }
-          }
-          else {
-              YAHOO.util.Cookie.remove("surveyRead");
-          }
-      }
-      YAHOO.util.Event.onDOMReady(function(){setSurveyDiv(0);});
-      YAHOO.util.Event.addListener("hideSurveyLink","click",function(){setSurveyDiv(1);return false;});
-      YAHOO.util.Event.addListener("clickThroughLink","click",function(){setSurveyDiv(1);});
-  </script>
-  <div id="surveyDiv" style="display:none;">
-    Mozilla needs your help learning more about your experience as a contributor! Please take the 
-    <a href="http://mzl.la/pCnv4Q" target="_new" id="clickThroughLink">volunteer survey</a> 
-    to help set guidance for future projects (<a href="javascript:void(0);" id="hideSurveyLink">No Thanks</a>).
-  </div>
-[% END %]
-
 [% IF Param('announcehtml') %]
 [% Param('announcehtml') FILTER none %]
 [% END %]
