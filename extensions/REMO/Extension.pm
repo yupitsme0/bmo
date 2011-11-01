@@ -187,7 +187,9 @@ sub post_bug_after_creation {
     my $bug = $vars->{bug};
     my $template = Bugzilla->template;
 
-    if (Bugzilla->input_params->{format} eq 'remo-swag') {
+    if (Bugzilla->input_params->{format}
+        && Bugzilla->input_params->{format} eq 'remo-swag'
+    ) {
         # If the attachment cannot be successfully added to the bug,
         # we notify the user, but we don't interrupt the bug creation process.
         my $error_mode_cache = Bugzilla->error_mode;

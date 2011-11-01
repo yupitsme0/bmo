@@ -60,6 +60,10 @@ Do not reply to this email.  You can add comments to this [% terms.bug %] at
 [% END %]
 [%+ comment.body_full({ is_bugmail => 1, wrap => 1 }) %]
 [% END %]
+[%- IF comment.count %]
+
+--> [%+ urlbase %]show_bug.cgi?id=[% bug.id %]#c[% comment.count %]
+[% END %]
 
 -- [%# Protect the trailing space of the signature marker %]
 Configure [% terms.bug %]mail: [% urlbase %]userprefs.cgi?tab=email
