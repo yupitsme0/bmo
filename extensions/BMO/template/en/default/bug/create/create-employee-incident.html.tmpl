@@ -25,9 +25,6 @@
                                                                               
 [% PROCESS global/header.html.tmpl                                            
    title = "Mozilla Corporation/Foundation Employee Incident" 
-   javascript_urls = [ 'extensions/BMO/web/js/form_validate.js', 'js/field.js' ]
-   yui = [ 'autocomplete' ]
-   style_urls = [ 'extensions/BMO/web/styles/enter_bug.css' ]
 %]
                                                                             
 [% USE Bugzilla %]                                                            
@@ -90,8 +87,8 @@
   <input type="hidden" id="groups" name="groups" value="mozilla-corporation-confidential">
   <input type="hidden" id="format" name="format" value="employee-incident">
 
-  <table id="enter-form">
-    <tr class="even">
+  <table>
+    <tr>
       <td align="right" valign="top"><strong>Incident Type:</strong></td>
       <td>
         <select id="incident_type" name="incident_type" onchange="setType(this);">
@@ -101,50 +98,51 @@
         <div id="type_desc" style="color:red;"></div>
       </td>
     </tr>
-      <tr class="odd">
+      <tr>
       <td align="right"><strong>Summary:</strong></td>
       <td><input name="short_desc" size="60" value="[% short_desc FILTER html %]"></td>
     </tr>
-    <tr class="even">
+    <tr>
       <td align="right" valign="top"><strong>Description:</strong></td>
       <td>
         <textarea name="comment" rows="10" cols="80">
           [% comment FILTER html %]</textarea>
       </td>
     </tr>
-    <tr class="stolen_row odd">
+    <tr class="stolen_row">
       <td colspan="2"><strong>Stolen Details:</strong></td>
     </tr>
-    <tr class="stolen_row even">
+    <tr class="stolen_row">
       <td align="right"><input type="checkbox" name="encrypted" id="encrypted" value="1"></td>
       <td>To your knowledge, was your device encrypted?</td>
     </tr>
-    <tr class="stolen_row odd">
+    <tr class="stolen_row">
       <td align="right"><input type="checkbox" name="userdata" id="userdata" value="1"></td>
       <td>Did you have any user data on your device?</td>
     </tr>
-    <tr class="stolen_row even">
+    <tr class="stolen_row">
       <td>&nbsp;</td>
       <td>What sensitive data was stored on your device?</td>
     </tr>
-    <tr class="stolen_row odd">
+    <tr class="stolen_row">
       <td>&nbsp;</td>
       <td><textarea name="sensitivedata" rows="10" cols="80"></textarea></td>
     </tr>
-    <tr class="stolen_row even">
+    <tr class="stolen_row">
       <td align="right"><input type="checkbox" name="rememberpasswords" id="rememberpasswords" value="1"></td>
       <td>Was your browser designed to remember passwords?</td>
     </tr>
-    <tr class="stolen_row odd">
+    <tr class="stolen_row">
       <td>&nbsp;</td>
       <td>If so, which critical sites were included?</td>
     </tr>
-    <tr class="stolen_row even">
+    <tr class="stolen_row">
       <td>&nbsp;</td>
       <td><textarea name="criticalsites" rows="10" cols="80"></textarea></td>
     </tr>
-    <tr class="odd"> 
-      <td colspan="2" align="right">
+    <tr> 
+      <td>&nbsp;</td>
+      <td>
         <input type="submit" id="commit" value="Submit Request">
       </td>
     </tr>
