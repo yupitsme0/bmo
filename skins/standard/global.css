@@ -377,7 +377,7 @@ input.requestee {
 }
 
 .throw_error {
-    background-color: #ff0000;
+    background-color: #ffcccc;
     color: black;
     font-size: 120%;
     margin: 1em;

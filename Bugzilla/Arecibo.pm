@@ -33,6 +33,7 @@ our @EXPORT = qw(
 );
 
 use Apache2::Log;
+use Apache2::SubProcess;
 use Carp;
 use Email::Date::Format 'email_gmdate';
 use LWP::UserAgent;
@@ -96,7 +97,6 @@ use constant CONFIG => {
 };
 
 our $_arecibo_server;
-our $_apache_server;
 our $_hostname;
 
 sub _arecibo_init {
@@ -109,12 +109,6 @@ sub _arecibo_init {
         $_arecibo_server = CONFIG->{production_server};
     } else {
         $_arecibo_server = CONFIG->{development_server};
-    }
-
-    if ($ENV{MOD_PERL}) {
-        $_apache_server = Apache2::ServerUtil->server;
-    } else {
-        $_apache_server = 0;
     }
 
     $_hostname = hostname();
@@ -161,11 +155,11 @@ sub arecibo_handle_error {
     # log to apache's error_log
     my $message = join(" ", map { trim($_) } grep { $_ ne '' } @message);
     $message .= " [#$id]";
-    if ($_apache_server) {
+    if ($ENV{MOD_PERL}) {
         if ($is_error) {
-            $_apache_server->log_error($message);
+            Apache2::ServerRec::log_error($message);
         } else {
-            $_apache_server->warn($message);
+            Apache2::ServerRec::warn($message);
         }
     } else {
         print STDERR "$message\n";
@@ -209,21 +203,22 @@ sub arecibo_handle_error {
     # fork then post
     $SIG{CHLD} = 'IGNORE';
     my $pid = fork();
-    if ($pid == 0) {
+    if (defined($pid) && $pid == 0) {
         # detach
+        chdir('/');
+        open(STDIN, '</dev/null');
+        open(STDOUT, '>/dev/null');
+        open(STDERR, '>/dev/null');
         setsid();
-        unless ($ENV{MOD_PERL}) {
-            close STDIN;
-            close STDOUT;
-            close STDERR;
-        }
+
         # post to arecibo (ignore any errors)
         my $agent = LWP::UserAgent->new(
             agent   => 'bugzilla.mozilla.org',
             timeout => 10, # seconds
         );
         $agent->post($_arecibo_server, $data);
-        exit;
+
+        CORE::exit(0);
     }
 }
 
