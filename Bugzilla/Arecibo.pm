@@ -40,7 +40,6 @@ use LWP::UserAgent;
 use POSIX 'setsid';
 use Sys::Hostname;
 
-use Bugzilla::Error;
 use Bugzilla::Util;
 
 use constant CONFIG => {
@@ -237,7 +236,7 @@ BEGIN {
     CGI::Carp::set_die_handler(sub {
         return if _in_eval();
         my $message = shift;
-        eval { ThrowTemplateError($message) };
+        eval { Bugzilla::Error::ThrowTemplateError($message) };
         if ($@) {
             print "Content-type: text/html\n\n";
             my $uid = arecibo_generate_id();
