@@ -46,9 +46,9 @@ X-Bugzilla-Changed-Fields: [% changedfields.join(" ") %]
 [%+ threadingmarker %]
 
 [% UNLESS to_user.settings.product_chooser.value == 'full_product_chooser' %]
-Do not reply to this email.  You can add comments to this [% terms.bug %] at
+Do not reply to this email. You can add comments to this [% terms.bug %] at
 [% END %]
-[%+ urlbase %]show_bug.cgi?id=[% bug.id %]
+[%+ urlbase %]show_bug.cgi?id=[% bug.id %][% "#c" _ new_comments.first.count IF new_comments.size > 0 %]
 [%- IF diffs %]
 
 [%+ diffs %]
@@ -59,10 +59,6 @@ Do not reply to this email.  You can add comments to this [% terms.bug %] at
 --- Comment #[% comment.count %] from [% comment.author.identity %] [%+ comment.creation_ts FILTER time(undef, to_user.timezone) %] ---
 [% END %]
 [%+ comment.body_full({ is_bugmail => 1, wrap => 1 }) %]
-[% END %]
-[%- IF comment.count %]
-
---> [%+ urlbase %]show_bug.cgi?id=[% bug.id %]#c[% comment.count %]
 [% END %]
 
 -- [%# Protect the trailing space of the signature marker %]

@@ -228,8 +228,14 @@
             Event.addListener('flag_type-[% flag_type.id FILTER js %]', 'change', 
                               function() { Splinter.flagChanged = 1;        
                                            Splinter.queueUpdateHaveDraft(); });
+            Event.addListener('requestee_type-[% flag_type.id FILTER js %]', 'change',
+                              function() { Splinter.flagChanges = 1;
+                                           Splinter.queueUpdateHaveDraft(); });
             [% FOREACH flag = flag_type.flags %]
               Event.addListener('flag-[% flag.id FILTER js %]', 'change', 
+                                function() { Splinter.flagChanged = 1;
+                                             Splinter.queueUpdateHaveDraft(); });
+              Event.addListener('requestee-[% flag.id FILTER js %]', 'change', 
                                 function() { Splinter.flagChanged = 1;
                                              Splinter.queueUpdateHaveDraft(); });
             [% END %]
