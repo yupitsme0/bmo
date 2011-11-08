@@ -806,86 +806,6 @@ sub post_bug_after_creation {
     my $bug = $vars->{bug};
     my $template = Bugzilla->template;
 
-    # BMO Bug 683031 - Creation of Employee Incident Reporting Form
-    if (Bugzilla->input_params->{format}
-        && Bugzilla->input_params->{format} eq 'employee-incident'
-        && $bug->component eq 'Server Operations: Desktop Issues')
-    {
-        my $error_mode_cache = Bugzilla->error_mode;
-        Bugzilla->error_mode(ERROR_MODE_DIE);
-
-        my $new_bug;
-        eval {
-            my $comment;
-            $template->process('bug/create/comment-employee-incident.txt.tmpl', $vars, \$comment)
-                || ThrowTemplateError($template->error());
-
-            $new_bug = Bugzilla::Bug->create({ 
-                short_desc        => 'Investigate Lost Device',
-                product           => 'mozilla.org',
-                component         => 'Infrastructure Security',
-                status_whiteboard => '[infrasec:incident]',
-                bug_severity      => 'critical',
-                cc                => [ 'mcoates@mozilla.com' ],
-                groups            => [ 'infrasec' ], 
-                comment           => $comment,
-                op_sys            => 'All', 
-                rep_platform      => 'All',
-                version           => 'other',
-                dependson         => $bug->bug_id, 
-            });
-        };
-
-        Bugzilla->error_mode($error_mode_cache);
-    }
-}
-
-sub post_bug_after_creation {
-    my ($self, $args) = @_;
-    my $vars = $args->{vars};
-    my $bug = $vars->{bug};
-    my $template = Bugzilla->template;
-
-    # BMO Bug 683031 - Creation of Employee Incident Reporting Form
-    if (Bugzilla->input_params->{format}
-        && Bugzilla->input_params->{format} eq 'employee-incident'
-        && $bug->component eq 'Server Operations: Desktop Issues')
-    {
-        my $error_mode_cache = Bugzilla->error_mode;
-        Bugzilla->error_mode(ERROR_MODE_DIE);
-
-        my $new_bug;
-        eval {
-            my $comment;
-            $template->process('bug/create/comment-employee-incident.txt.tmpl', $vars, \$comment)
-                || ThrowTemplateError($template->error());
-
-            $new_bug = Bugzilla::Bug->create({ 
-                short_desc        => 'Investigate Lost Device',
-                product           => 'mozilla.org',
-                component         => 'Infrastructure Security',
-                status_whiteboard => '[infrasec:incident]',
-                bug_severity      => 'critical',
-                cc                => [ 'mcoates@mozilla.com' ],
-                groups            => [ 'infrasec' ], 
-                comment           => $comment,
-                op_sys            => 'All', 
-                rep_platform      => 'All',
-                version           => 'other',
-                dependson         => $bug->bug_id, 
-            });
-        };
-
-        Bugzilla->error_mode($error_mode_cache);
-    }
-}
-
-sub post_bug_after_creation {
-    my ($self, $args) = @_;
-    my $vars = $args->{vars};
-    my $bug = $vars->{bug};
-    my $template = Bugzilla->template;
-
     if (Bugzilla->input_params->{format}
         && Bugzilla->input_params->{format} eq 'employee-incident'
         && $bug->component eq 'Server Operations: Desktop Issues')
@@ -928,9 +848,13 @@ sub post_bug_after_creation {
 
             Bugzilla->set_user($old_user);
         };
-        print STDERR $@ if $@;
 
         Bugzilla->error_mode($error_mode_cache);
+
+        if ($@ || !$new_bug) {
+            warn "Failed to create secondary employee-incident bug: $@" if $@;
+            $vars->{'message'} = 'employee_incident_creation_failed';
+        }
     }
 }
 

@@ -1,21 +1,21 @@
-[%# 1.0@bugzilla.org %]                                                       
-[%# The contents of this file are subject to the Mozilla Public               
-  # License Version 1.1 (the "License"); you may not use this file            
-  # except in compliance with the License. You may obtain a copy of           
-  # the License at http://www.mozilla.org/MPL/                                
-  #                                                                           
-  # Software distributed under the License is distributed on an "AS           
-  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or                
-  # implied. See the License for the specific language governing              
-  # rights and limitations under the License.                                 
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
   #
-  # The Original Code is the Bugzilla Bug Tracking System.
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
   #
-  # The Initial Developer of the Original Code is Mozilla Corporation.
-  # Portions created by Mozilla are Copyright (C) 2008 Mozilla
-  # Corporation. All Rights Reserved.
+  # The Original Code is the BMO Bugzilla Extension.
   #
-  # Contributor(s): Dave Lawrence <dkl@mozilla.com>
+  # The Initial Developer of the Original Code is the Mozilla Foundation
+  # Portions created by the Initial Developers are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  #
+  # Contributor(s):
+  #   David Lawrence <dkl@mozilla.com>
   #%]
 
 [% PROCESS global/variables.none.tmpl %]                                      
@@ -30,8 +30,34 @@
 <!--
     var type_desc = new Array();
     type_desc['safety'] = "If this is an emergency please immediately call your local police or emergency number.";
-    type_desc['stolen'] = "Please report a lost Mozilla laptop or any mobile device that was used to access " + 
+    type_desc['stolen'] = "Please report a lost Mozilla laptop or any mobile device that was used to access<br> " + 
                           "Mozilla email or contained passwords for Mozilla servers, devices, applications, etc.";
+
+    function validateAndSubmit() {
+        var alert_text = '';
+        if (!isFilledOut('short_desc')) alert_text += "Please enter a summary.\n";
+
+        var select = YAHOO.util.Dom.get('incident_type');
+        var selectValue = select.options[select.selectedIndex].value;
+        if (selectValue == 'stolen') {
+            if (!isFilledOut('encrypted')) {
+                alert_text += "Please answer whether the device was encrypted.\n";
+            }
+            if (!isFilledOut('userdata')) {
+                alert_text += "Please answer whether the device had user data.\n";
+            }
+            if (!isFilledOut('rememberpasswords')) {
+                alert_text += "Please answer whether the browser was configured to remember passwords.\n";
+            }
+        }
+
+        if (alert_text) {
+            alert(alert_text);
+            return false;
+        }
+
+        return true;
+    }
 
     function setType (select) {
         var selectValue = select.options[select.selectedIndex].value;
@@ -74,6 +100,11 @@
         }
     }
 
+    function isFilledOut(elem_id)  {
+        var str = document.getElementById(elem_id).value; 
+        return str.length > 0 && str != "noneselected"; 
+    } 
+
     YAHOO.util.Event.onDOMReady(function () {
         setType(document.getElementById('incident_type'));
         toggleEnabled('userdata', 'Yes', 'sensitivedata');
@@ -84,8 +115,9 @@
 
 <p><strong>Please use this form for employee incidents only!</strong></p>
 <p>If you have a [% terms.bug %] to file, go <a href="enter_bug.cgi">here</a>.</p>
-
-<form method="post" action="post_bug.cgi" id="incidentForm" enctype="multipart/form-data">
+<p><span style="color: red;">*</span></strong> Required Fields</p>
+<form method="post" action="post_bug.cgi" id="incidentForm" enctype="multipart/form-data"
+      onSubmit="return validateAndSubmit();">
   <input type="hidden" id="product" name="product" value="">
   <input type="hidden" id="component" name="component" value="">
   <input type="hidden" id="rep_platform" name="rep_platform" value="All">
@@ -108,29 +140,51 @@
       </td>
     </tr>
       <tr>
-      <td align="right"><strong>Summary:</strong></td>
-      <td><input name="short_desc" size="60" value="[% short_desc FILTER html %]"></td>
+      <td align="right">
+        <strong><span style="color: red;">*</span> Summary:</strong>
+      </td>
+      <td>
+        <input name="short_desc" id="short_desc" size="60" 
+               value="[% short_desc FILTER html %]">
+      </td>
     </tr>
     <tbody id="stolen" class="bz_default_hidden">
       <tr class="stolen_row">
         <td align="right"><strong>Stolen Details:</strong></td>
         <td>
-          <select name="encrypted" id="encrypted">
-            <option value="No">No</option> 
-            <option value="Yes">Yes</option>
-          </select>
-          <label for="encrypted">To your knowledge, was your device encrypted?</label>
-        </td>
-      </tr>
-      <tr class="stolen_row">
-        <td>&nbsp;</td>
-        <td>
-          <select name="userdata" id="userdata"
-                  onchange="toggleEnabled('userdata', 'Yes', 'sensitivedata');">
-            <option value="No">No</option>  
-            <option value="Yes">Yes</option>
-          </select>
-          <label for="userdata">Did you have any user data on your device?</label>
+          <table>
+          <tr>
+            <td>
+              <label for="encrypted">
+                <strong><span style="color: red;">*</span></strong>
+                To your knowledge,  was your device encrypted?
+              </label>
+            </td>
+            <td>
+              <select name="encrypted" id="encrypted">
+                <option value="">---</option>
+                <option value="No">No</option> 
+                <option value="Yes">Yes</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="userdata">
+                <strong><span style="color: red;">*</span></strong>
+                Did you have any user data on your device?
+              </label>
+            </td>
+            <td>
+              <select name="userdata" id="userdata"
+                      onchange="toggleEnabled('userdata', 'Yes', 'sensitivedata');">
+                <option value="">---</option>
+                <option value="No">No</option>  
+                <option value="Yes">Yes</option>
+              </select>
+            </td> 
+           </tr>
+           </table>
         </td>
       </tr>
       <tr class="stolen_row">
@@ -146,12 +200,16 @@
       <tr class="stolen_row">
         <td>&nbsp;</td>
         <td>
+          <label for="rememberpasswords">
+            <strong><span style="color: red;">*</span></strong>
+            Was your browser configured to remember passwords?
+          </label>
           <select name="rememberpasswords" id="rememberpasswords" 
                   onchange="toggleEnabled('rememberpasswords', 'Yes', 'criticalsites');">
+            <option value="">---</option>
             <option value="No">No</option>  
             <option value="Yes">Yes</option>
           </select>
-          <label for="rememberpasswords">Was your browser configured to remember passwords?</label>
         </td>
       </tr>
       <tr class="stolen_row">
