@@ -394,6 +394,16 @@ sub bug_check_can_change_field {
             push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
         }
 
+    } elsif (
+        ($field eq 'bug_status' && $old_value eq 'VERIFIED')
+        || ($field eq 'dup_id' && $bug->status->name eq 'VERIFIED')
+        || ($field eq 'resolution' && $bug->status->name eq 'VERIFIED')
+    ) {
+        # You need at least editbugs to reopen a resolved/verified bug
+        if (!$user->in_group('editbugs', $bug->{'product_id'})) {
+            push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
+        }
+
     } elsif ($user->in_group('canconfirm', $bug->{'product_id'})) {
         # Canconfirm is really "cantriage"; users with canconfirm can also mark 
         # bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
@@ -708,7 +718,10 @@ sub search_operator_field_override {
     my @comments = $cgi->param('comments');
     my $exclude_comments = scalar(@comments) && !grep { $_ eq '1' } @comments;
 
-    if ($cgi->param('query_format') eq 'specific' && $exclude_comments) {
+    if ($cgi->param('query_format')
+        && $cgi->param('query_format') eq 'specific'
+        && $exclude_comments
+    ) {
         # use the non-comment operator
         $operators->{'content'}->{matches} = \&_short_desc_matches;
         $operators->{'content'}->{notmatches} = \&_short_desc_matches;
@@ -822,9 +835,11 @@ sub post_bug_after_creation {
             # HACK: User needs to be in the editbugs and primary bug's group to allow
             # setting of dependencies.
             $new_user->{'groups'} = [ Bugzilla::Group->new({ name => 'editbugs' }), 
+                                      Bugzilla::Group->new({ name => 'infra' }), 
                                       Bugzilla::Group->new({ name => 'infrasec' }) ];
 
             my $comment;
+            $vars->{no_display_action_needed} = 1;
             $template->process('bug/create/comment-employee-incident.txt.tmpl', $vars, \$comment)
                 || ThrowTemplateError($template->error());
 
