@@ -43,10 +43,6 @@ use Sys::Hostname;
 use Bugzilla::Util;
 
 use constant CONFIG => {
-    # arecibo servers
-    production_server  => 'http://localhost/',
-    development_server => 'http://amckay-arecibo.khan.mozilla.org/v/1/',
-
     # 'types' maps from the error message to types and priorities
     types => [
         {
@@ -93,25 +89,12 @@ use constant CONFIG => {
         template_error
         token_generation_error
     )],
+
+    # any error messages matching these regex's will not be sent to arecibo
+    ignore => [
+        qr/^Software caused connection abort/,
+    ],
 };
-
-our $_arecibo_server;
-our $_hostname;
-
-sub _arecibo_init {
-    return if $_arecibo_server;
-
-    my $urlbase = Bugzilla->params->{urlbase};
-    if ($urlbase eq 'https://bugzilla.mozilla.org/' ||
-        $urlbase eq 'https://bugzilla-stage.mozilla.org'
-    ) {
-        $_arecibo_server = CONFIG->{production_server};
-    } else {
-        $_arecibo_server = CONFIG->{development_server};
-    }
-
-    $_hostname = hostname();
-}
 
 sub arecibo_generate_id {
     return sprintf("%s.%s", (time), $$);
@@ -127,8 +110,6 @@ sub arecibo_handle_error {
     my @message = split(/\n/, shift);
     my $id = shift || arecibo_generate_id();
 
-    _arecibo_init();
-
     my $is_error = $class eq 'error';
     if ($class ne 'error' && $class ne 'warning') {
         # it's a code-error
@@ -141,6 +122,7 @@ sub arecibo_handle_error {
     {
         local $Carp::MaxArgLen  = 256;
         local $Carp::MaxArgNums = 0;
+        local $Carp::CarpInternal{'CGI::Carp'} = 1;
         local $Carp::CarpInternal{'Bugzilla::Error'}   = 1;
         local $Carp::CarpInternal{'Bugzilla::Arecibo'} = 1;
         $traceback = Carp::longmess();
@@ -150,10 +132,28 @@ sub arecibo_handle_error {
     foreach my $line (@message) {
         $line =~ s/^\[[^\]]+\] //;
     }
+    my $message = join(" ", map { trim($_) } grep { $_ ne '' } @message);
+
+    # don't send to arecibo unless configured
+    my $arecibo_server = Bugzilla->params->{arecibo_server};
+    my $send_to_arecibo = $arecibo_server ne '';
+    if ($send_to_arecibo) {
+        # message content filtering
+        foreach my $re (@{CONFIG->{ignore}}) {
+            if ($message =~ $re) {
+                $send_to_arecibo = 0;
+                last;
+            }
+        }
+    }
 
     # log to apache's error_log
-    my $message = join(" ", map { trim($_) } grep { $_ ne '' } @message);
-    $message .= " [#$id]";
+    if ($send_to_arecibo) {
+        $message .= " [#$id]";
+    } else {
+        $traceback =~ s/\n/ /g;
+        $message .= " $traceback";
+    }
     if ($ENV{MOD_PERL}) {
         if ($is_error) {
             Apache2::ServerRec::log_error($message);
@@ -163,6 +163,8 @@ sub arecibo_handle_error {
     } else {
         print STDERR "$message\n";
     }
+
+    return unless $send_to_arecibo;
 
     # set the error type and priority from the message content
     $message = join("\n", grep { $_ ne '' } @message);
@@ -188,7 +190,7 @@ sub arecibo_handle_error {
     my $data = [
         msg        => $message,
         priority   => $priority,
-        server     => $_hostname,
+        server     => hostname(),
         status     => '500',
         timestamp  => email_gmdate(),
         traceback  => $traceback,
@@ -215,7 +217,7 @@ sub arecibo_handle_error {
             agent   => 'bugzilla.mozilla.org',
             timeout => 10, # seconds
         );
-        $agent->post($_arecibo_server, $data);
+        $agent->post($arecibo_server, $data);
 
         CORE::exit(0);
     }
