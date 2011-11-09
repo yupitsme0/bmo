@@ -394,6 +394,16 @@ sub bug_check_can_change_field {
             push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
         }
 
+    } elsif (
+        ($field eq 'bug_status' && $old_value eq 'VERIFIED')
+        || ($field eq 'dup_id' && $bug->status->name eq 'VERIFIED')
+        || ($field eq 'resolution' && $bug->status->name eq 'VERIFIED')
+    ) {
+        # You need at least editbugs to reopen a resolved/verified bug
+        if (!$user->in_group('editbugs', $bug->{'product_id'})) {
+            push (@$priv_results, PRIVILEGES_REQUIRED_EMPOWERED);
+        }
+
     } elsif ($user->in_group('canconfirm', $bug->{'product_id'})) {
         # Canconfirm is really "cantriage"; users with canconfirm can also mark 
         # bugs as DUPLICATE, WORKSFORME, and INCOMPLETE.
