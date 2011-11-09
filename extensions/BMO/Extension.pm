@@ -708,7 +708,10 @@ sub search_operator_field_override {
     my @comments = $cgi->param('comments');
     my $exclude_comments = scalar(@comments) && !grep { $_ eq '1' } @comments;
 
-    if ($cgi->param('query_format') eq 'specific' && $exclude_comments) {
+    if ($cgi->param('query_format')
+        && $cgi->param('query_format') eq 'specific'
+        && $exclude_comments
+    ) {
         # use the non-comment operator
         $operators->{'content'}->{matches} = \&_short_desc_matches;
         $operators->{'content'}->{notmatches} = \&_short_desc_matches;
