@@ -849,7 +849,7 @@ sub post_bug_after_creation {
                 component         => 'Infrastructure Security',
                 status_whiteboard => '[infrasec:incident]',
                 bug_severity      => 'critical',
-                cc                => [ 'mcoates@mozilla.com' ],
+                cc                => [ 'mcoates@mozilla.com', 'jstevensen@mozilla.com' ],
                 groups            => [ 'infrasec' ], 
                 comment           => $comment,
                 op_sys            => 'All', 

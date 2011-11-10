@@ -35,7 +35,12 @@
 
     function validateAndSubmit() {
         var alert_text = '';
-        if (!isFilledOut('short_desc')) alert_text += "Please enter a summary.\n";
+        var typeSelect = YAHOO.util.Dom.get('incident_type');
+        var typeValue  = typeSelect.options[typeSelect.selectedIndex].value;
+
+        if (typeValue != 'stolen' && !isFilledOut('short_desc')) {
+            alert_text += "Please enter a summary.\n";
+        }
 
         var select = YAHOO.util.Dom.get('incident_type');
         var selectValue = select.options[select.selectedIndex].value;
@@ -54,6 +59,11 @@
         if (alert_text) {
             alert(alert_text);
             return false;
+        }
+
+        // Hard code summary if stolen type was chosen
+        if (typeValue == 'stolen') {
+             document.getElementById('short_desc').value = '[Lost Device] Change LDAP Password for [% user.name FILTER js %]';
         }
 
         return true;
@@ -80,9 +90,8 @@
             document.getElementById('product').value      = 'mozilla.org';
             document.getElementById('component').value    = 'Server Operations: Desktop Issues';
             document.getElementById('groups').value       = 'infra';
+            document.getElementById('cc').value           = 'mcoates@mozilla.com, jstevensen@mozilla.com, afowler@mozilla.com';
             document.getElementById('bug_severity').value = 'critical';
-            document.getElementById('cc').value           = 'mcoates@mozilla.com, nmiller@mozilla.com, afowler@mozilla.com';
-            document.getElementById('short_desc').value   = '[Lost Device] Change LDAP Password for [% user.name FILTER js %]';
         }
         else {
             document.getElementById('product').value      = 'Mozilla Corporation';
@@ -123,6 +132,7 @@
 <p><span style="color: red;">*</span></strong> Required Fields</p>
 <form method="post" action="post_bug.cgi" id="incidentForm" enctype="multipart/form-data"
       onSubmit="return validateAndSubmit();">
+  <input type="hidden" name="token" value="[% token FILTER html %]">
   <input type="hidden" id="product" name="product" value="">
   <input type="hidden" id="component" name="component" value="">
   <input type="hidden" id="rep_platform" name="rep_platform" value="All">
