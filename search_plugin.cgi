@@ -33,7 +33,7 @@ print $cgi->header('application/xml');
 
 # Get the contents of favicon.ico
 
-my $filename = "extensions/BMO/web/images/favicon.ico";
+my $filename = bz_locations()->{'libpath'} . "/extensions/BMO/web/images/favicon.ico";
 if (open(IN, $filename)) {
     local $/;
     binmode IN;
