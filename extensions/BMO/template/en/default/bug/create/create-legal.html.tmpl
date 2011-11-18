@@ -42,34 +42,20 @@ employees to the cc list.</p>
 <p><strong>All Submissions, And Information Provided In Response To This Request,
 Are Confidential And Subject To The Attorney-Client Privilege And Work Product Doctrine.</strong></p>
 
-<script type="text/javascript">
-function trySubmit() {
-  var out = 'description\r\n\r\n--- Goal:\r\ngoal\r\n\r\n' + 
-            '--- Business Objective:\r\nbusiness_objective\r\n\r\n--- Other Party:\r\nother_party';
-
-  out = out.replace( /description/, document.getElementById('ncomment').value );
-  out = out.replace( /goal/, document.getElementById('goal').value );
-  out = out.replace( /business_objective/, document.getElementById('busobj').value );
-  out = out.replace( /other_party/, document.getElementById('otherparty').value );
-
-  document.getElementById('comment').value = out;
-
-  return true;
-}
-</script>
-
-<form method="post" action="post_bug.cgi" id="legalRequestForm" enctype="multipart/form-data"
-      onSubmit="return trySubmit();">
- <input type="hidden" name="product" value="Legal">
- <input type="hidden" name="rep_platform" value="All">
- <input type="hidden" name="op_sys" value="Other">
- <input type="hidden" name="version" value="unspecified">
- <input type="hidden" name="comment" id="comment" value="">
+<form method="post" action="post_bug.cgi" id="legalRequestForm" enctype="multipart/form-data">
+  <input type="hidden" name="product" value="Legal">
+  <input type="hidden" name="rep_platform" value="All">
+  <input type="hidden" name="op_sys" value="Other">
+  <input type="hidden" name="version" value="unspecified">
+  <input type="hidden" name="priority" value="--">
+  <input type="hidden" name="bug_severity" value="normal">
+  <input type="hidden" name="format" value="legal">
+  <input type="hidden" name="token" value="[% token FILTER html %]">
 
 <table>
 
 <tr>
-  <td align="right"><strong>Request Type:</strong></td>
+  <td align="right" width="170px"><strong>Request Type:</strong></td>
   <td>
     <select name="component">
       [%- FOREACH c = product.components %]
@@ -84,7 +70,9 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Goal:</strong></td>
+  <td align="right" valign="top">
+    <strong>Goal:</strong>
+  </td>
   <td colspan="3">
     <em>Identify the company goal this request maps to.</em><br>
     <input name="goal" id="goal" size="60" value="[% goal FILTER html %]">
@@ -93,11 +81,10 @@ function trySubmit() {
 
 <tr>
   <td align="right">
-    <strong>Priority:</strong>
+    <strong>Priority to your Team:</strong>
   </td>
   <td>
-    <em>Indicate the priority of this project to your team.</em><br>
-    <select id="priority" name="priority">
+    <select id="teampriority" name="teampriority">
       <option value="P1">High</option>
       <option value="P2">Medium</option>
       <option value="P3" selected="selected">Low</option>
@@ -110,7 +97,7 @@ function trySubmit() {
     <strong>Timeframe for Completion:</strong>
   </td>
   <td>
-    <select id="bug_severity" name="bug_severity">
+    <select id="timeframe" name="timeframe">
       <option value="blocker">2 days</option>
       <option value="critical">a week</option>
       <option value="major">2-4 weeks</option>
@@ -121,7 +108,9 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Summary:</strong></td>
+  <td align="right" valign="top">
+    <strong>Summary:</strong>
+  </td>
   <td colspan="3">
     <em>Include the name of the vendor, partner, product, or other identifier.</em><br>
     <input name="short_desc" size="60" value="[% short_desc FILTER html %]">
@@ -129,7 +118,9 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>CC&nbsp;(optional):</strong></td>
+  <td align="right">
+    <strong>CC&nbsp;(optional):</strong>
+  </td>
   <td colspan="3">
     [% INCLUDE global/userselect.html.tmpl
        id       => "cc"
@@ -142,7 +133,9 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Name of Other Party:</strong></td>
+  <td align="right" valign="top">
+    <strong>Name of Other Party:</strong>
+  </td>
   <td>
     <em>If applicable, include full legal entity name, address, and any other relevant contact information.</em><br>
     <textarea id="otherparty" name="otherparty" rows="3" cols="80"></textarea>
@@ -150,18 +143,22 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Business Objective:</strong></td>
+  <td align="right">
+    <strong>Business Objective:</strong>
+  </td>
   <td>
     <input type="text" name="busobj" id="busobj" value="" size="60" />
   </td>
 </tr>
 
 <tr>
-  <td align="right" valign="top"><strong>Description:</strong></td>
+  <td align="right" valign="top">
+    <strong>Description:</strong>
+  </td>
   <td colspan="3">
-    <em>Describe your question, what you want and/or provide any relevant deal terms, restrictions, 
-    or provisions that are applicable. Also provide context and background.</em>
-    <textarea id="ncomment" name="ncomment" rows="10" cols="80">
+    <em>Describe your question, what you want and/or provide any relevant deal terms, restrictions,<br> 
+    or provisions that are applicable. Also provide context and background.</em><br>
+    <textarea id="comment" name="comment" rows="10" cols="80">
       [% comment FILTER html %]</textarea>
   </td>
 </tr>
@@ -175,16 +172,14 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td colspan=3><br><br></td>
-</tr>
-
-<tr>
   <td></td>
   <td colspan=2><strong>Attachment (this is optional)</strong></td>
 </tr>
 
 <tr>
-  <th><label for="data">File</label>:</th>
+  <td align="right" valign="top">
+    <strong><label for="data">File:</label></strong>
+  </td>
   <td>
     <em>Enter the path to the file on your computer.</em><br>
     <input type="file" id="data" name="data" size="50">
@@ -193,7 +188,9 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <th><label for="description">Description</label>:</th>
+  <td align="right" valign="top">
+    <strong><label for="description">Description:</label></strong>
+  </td>
   <td>
     <em>Describe the attachment briefly.</em><br>
     <input type="text" id="description" name="description" size="60" maxlength="200">
