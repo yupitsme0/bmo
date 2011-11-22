@@ -245,6 +245,7 @@ our %always_fileable_group = (
     'tamarin-security'                  => 1,
     'websites-security'                 => 1,
     'webtools-security'                 => 1,
+    'winqual-data'                      => 1, 
 );
 
 # Mapping of products to their security bits
