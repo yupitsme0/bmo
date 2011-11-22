@@ -51,6 +51,9 @@ Are Confidential And Subject To The Attorney-Client Privilege And Work Product D
   <input type="hidden" name="bug_severity" value="normal">
   <input type="hidden" name="format" value="legal">
   <input type="hidden" name="token" value="[% token FILTER html %]">
+  [% IF user.in_group('canconfirm') %]
+    <input type="hidden" name="bug_status" value="NEW">
+  [% END %]
 
 <table>
 
@@ -85,9 +88,9 @@ Are Confidential And Subject To The Attorney-Client Privilege And Work Product D
   </td>
   <td>
     <select id="teampriority" name="teampriority">
-      <option value="P1">High</option>
-      <option value="P2">Medium</option>
-      <option value="P3" selected="selected">Low</option>
+      <option value="High">High</option>
+      <option value="Medium">Medium</option>
+      <option value="Low" selected="selected">Low</option>
     </select>
   </td>
 </tr>
@@ -98,11 +101,12 @@ Are Confidential And Subject To The Attorney-Client Privilege And Work Product D
   </td>
   <td>
     <select id="timeframe" name="timeframe">
-      <option value="blocker">2 days</option>
-      <option value="critical">a week</option>
-      <option value="major">2-4 weeks</option>
-      <option value="normal">this will take a while, but please get started soon</option>
-      <option value="minor" selected="selected">no rush</option>
+      <option value="2 days">2 days</option>
+      <option value="a week">a week</option>
+      <option value="2-4 weeks">2-4 weeks</option>
+      <option value="this will take a while, but please get started soon">
+        this will take a while, but please get started soon</option>
+      <option value="no rush" selected="selected">no rush</option>
     </select>
   </td>
 </tr>
