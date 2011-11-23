@@ -25,6 +25,7 @@ use base qw(Bugzilla::Auth::Login);
 
 use Bugzilla::Constants;
 use Bugzilla::Util;
+use Bugzilla::Error;
 
 use JSON;
 use LWP::UserAgent;
@@ -59,12 +60,9 @@ sub get_login_info {
         $info = decode_json($response->content());
     };
     
-    # XXX Add 120 secs because 'expires' is currently broken in deployed 
-    # BrowserID server - it returns exact current time, so is immediately
-    # expired! This should be fixed soon.
     if ($info->{'status'} eq "okay" &&
         $info->{'audience'} eq $audience &&
-        (($info->{'expires'} / 1000) + 120) > time())
+        ($info->{'expires'} / 1000) > time())
     {
         my $login_data = {
             'username' => $info->{'email'}
@@ -88,8 +86,9 @@ sub get_login_info {
         my @safe_groups = ('everyone', 'canconfirm', 'editbugs');        
         foreach my $group (@{ $user->groups() }) {
             if (!grep { $group->name eq $_ } @safe_groups) {
-                # XXXdisabled for testing - my account is too powerful
-                return { failure => AUTH_LOGINFAILED };
+                # We use a custom error here, for greater clarity, rather than
+                # returning a failure code.
+                ThrowUserError('browserid_account_too_powerful');
             }
         }
     
