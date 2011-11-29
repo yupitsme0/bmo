@@ -11,7 +11,6 @@
 # rights and limitations under the License.
 #
 # The Original Code is the LimitedEmail Extension.
-
 #
 # The Initial Developer of the Original Code is the Mozilla Foundation
 # Portions created by the Initial Developers are Copyright (C) 2011 the
@@ -24,30 +23,40 @@ package Bugzilla::Extension::LimitedEmail;
 use strict;
 use base qw(Bugzilla::Extension);
 
-our $VERSION = '1';
+our $VERSION = '2';
 
-use Bugzilla::User;
-
-sub bugmail_recipients {
-    my ($self, $args) = @_;
-    foreach my $user_id (keys %{$args->{recipients}}) {
-        my $user = Bugzilla::User->new($user_id);
-        if (!deliver_to($user->email)) {
-            delete $args->{recipients}{$user_id};
-        }
-    }
-}
+use Date::Format;
+use Fcntl ':flock';
+use FileHandle;
 
 sub mailer_before_send {
     my ($self, $args) = @_;
+    return if Bugzilla->params->{'urlbase'} eq 'https://bugzilla.mozilla.org/';
     my $email = $args->{email};
-    if (!deliver_to($email->{header}->header('to'))) {
-        $email->{header}->header_set(to => Bugzilla::Extension::LimitedEmail::BLACK_HOLE);
+    my $header = $email->{header};
+
+    my $blocked = '';
+    if (!deliver_to($header->header('to'))) {
+        $blocked = $header->header('to');
+        $header->header_set(to => '');
+    }
+
+    my $fh = FileHandle->new(Bugzilla::Extension::LimitedEmail::MAIL_LOG, '>>');
+    if (defined $fh) {
+        flock($fh, LOCK_EX);
+        print $fh sprintf(
+            "[%s] %s%s : %s\n",
+            time2str('%D %T', time),
+            ($blocked eq '' ? '' : '(blocked) '),
+            ($blocked eq '' ? $header->header('to') : $blocked),
+            $header->header('subject')
+        );
+        close $fh;
     }
 }
 
 sub deliver_to {
-    my $email = shift;
+    my $email = address_of(shift);
     my $ra_filters = Bugzilla::Extension::LimitedEmail::FILTERS;
     foreach my $re (@$ra_filters) {
         if ($email =~ $re) {
@@ -55,6 +64,12 @@ sub deliver_to {
         }
     }
     return 0;
+}
+
+sub address_of {
+    my $email = shift;
+    return $email unless $email =~ /<([^>]+)>/;
+    return $1;
 }
 
 __PACKAGE__->NAME;

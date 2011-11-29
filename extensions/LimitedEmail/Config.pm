@@ -28,11 +28,11 @@ use constant REQUIRED_MODULES => [ ];
 use constant OPTIONAL_MODULES => [ ];
 
 use constant FILTERS => [
-    qr/^(glob|dkl|justdave)\@mozilla\.com$/i,
+    qr/^(glob|dkl|justdave|dd)\@mozilla\.com$/i,
     qr/^gerv\@mozilla\.org$/i,
     qr/^reed\@reedloden\.com/i,
 ];
 
-use constant BLACK_HOLE => 'nobody@mozilla.org';
+use constant MAIL_LOG   => 'data/mail.log';
 
 __PACKAGE__->NAME;
