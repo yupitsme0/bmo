@@ -25,6 +25,7 @@ use base qw(Bugzilla::Extension);
 
 our $VERSION = '2';
 
+use Bugzilla::Util;
 use Date::Format;
 use Fcntl ':flock';
 use FileHandle;
@@ -41,7 +42,9 @@ sub mailer_before_send {
         $header->header_set(to => '');
     }
 
-    my $fh = FileHandle->new(Bugzilla::Extension::LimitedEmail::MAIL_LOG, '>>');
+    my $filename = Bugzilla::Extension::LimitedEmail::MAIL_LOG;
+    trick_taint($filename);
+    my $fh = FileHandle->new($filename, '>>');
     if (defined $fh) {
         flock($fh, LOCK_EX);
         print $fh sprintf(
