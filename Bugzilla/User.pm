@@ -526,6 +526,11 @@ sub settings {
     return $self->{'settings'};
 }
 
+sub setting {
+    my ($self, $name) = @_;
+    return $self->settings->{$name}->{'value'};
+}
+
 sub timezone {
     my $self = shift;
 
