@@ -92,6 +92,8 @@ sub SETTINGS {
     quicksearch_fulltext => { options => ['on', 'off'], default => 'on' },
     # 2011-06-16 glob@mozilla.com -- Bug 663747
     bugmail_new_prefix => { options => ['on', 'off'], default => 'on' },
+    # 2011-10-11 glob@mozilla.com -- Bug 301656
+    requestee_cc       => { options => ['on', 'off'], default => 'on' },
     }
 };
 
