@@ -48,7 +48,7 @@ X-Bugzilla-Changed-Fields: [% changedfields.join(" ") %]
 [% UNLESS to_user.settings.product_chooser.value == 'full_product_chooser' %]
 Do not reply to this email. You can add comments to this [% terms.bug %] at
 [% END %]
-[%+ urlbase %]show_bug.cgi?id=[% bug.id %][% "#c" _ new_comments.first.count IF new_comments.size > 0 %]
+[%+ urlbase %]show_bug.cgi?id=[% bug.id %]
 [%- IF diffs %]
 
 [%+ diffs %]
