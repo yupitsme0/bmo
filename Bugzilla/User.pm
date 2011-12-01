@@ -83,6 +83,7 @@ use constant DEFAULT_USER => {
     'showmybugslink' => 0,
     'disabledtext'   => '',
     'disable_mail'   => 0,
+    'is_enabled'     => 1, 
 };
 
 use constant DB_TABLE => 'profiles';
@@ -98,6 +99,7 @@ use constant DB_COLUMNS => (
     'profiles.mybugslink AS showmybugslink',
     'profiles.disabledtext',
     'profiles.disable_mail',
+    'profiles.is_enabled', 
 );
 use constant NAME_FIELD => 'login_name';
 use constant ID_FIELD   => 'userid';
@@ -109,6 +111,7 @@ use constant VALIDATORS => {
     disabledtext  => \&_check_disabledtext,
     login_name    => \&check_login_name_for_creation,
     realname      => \&_check_realname,
+    is_enabled    => \&_check_is_enabled,  
 };
 
 sub UPDATE_COLUMNS {
@@ -118,10 +121,17 @@ sub UPDATE_COLUMNS {
         disabledtext
         login_name
         realname
+        is_enabled
     );
     push(@cols, 'cryptpassword') if exists $self->{cryptpassword};
     return @cols;
 };
+
+use constant VALIDATOR_DEPENDENCIES => {
+    is_enabled => ['disabledtext'],  
+};
+
+use constant EXTRA_REQUIRED_FIELDS => qw(is_enabled);
 
 ################################################################################
 # Functions
@@ -170,7 +180,7 @@ sub update {
 
     # XXX Can update profiles_activity here as soon as it understands
     #     field names like login_name.
-
+    
     return $changes;
 }
 
@@ -214,11 +224,25 @@ sub _check_password {
 
 sub _check_realname { return trim($_[1]) || ''; }
 
+sub _check_is_enabled {
+    my ($invocant, $is_enabled, undef, $params) = @_;
+    # is_enabled is set automatically on the backend depending 
+    # on whether disabledtext is empty (enabled) or not empty (disabled)
+    if (ref($invocant) && $invocant->disabledtext) {
+        return 0;
+    }
+    elsif (!ref($invocant) && $params->{disabledtext}) {
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}
+
 ################################################################################
 # Mutators
 ################################################################################
 
-sub set_disabledtext { $_[0]->set('disabledtext', $_[1]); }
 sub set_disable_mail { $_[0]->set('disable_mail', $_[1]); }
 
 sub set_login {
@@ -236,6 +260,10 @@ sub set_name {
 
 sub set_password { $_[0]->set('cryptpassword', $_[1]); }
 
+sub set_disabledtext {
+    $_[0]->set('disabledtext', $_[1]);
+    $_[0]->set('is_enabled', $_[1] ? 0 : 1);
+}
 
 ################################################################################
 # Methods
@@ -246,7 +274,7 @@ sub name  { $_[0]->{realname};   }
 sub login { $_[0]->{login_name}; }
 sub email { $_[0]->login . Bugzilla->params->{'emailsuffix'}; }
 sub disabledtext { $_[0]->{'disabledtext'}; }
-sub is_disabled { $_[0]->disabledtext ? 1 : 0; }
+sub is_enabled { $_[0]->{'is_enabled'} ? 1 : 0; }
 sub showmybugslink { $_[0]->{showmybugslink}; }
 sub email_disabled { $_[0]->{disable_mail}; }
 sub email_enabled { !($_[0]->{disable_mail}); }
@@ -1249,7 +1277,7 @@ sub match {
                       "AND group_id IN(" .
                       join(', ', (-1, @{$user->visible_groups_inherited})) . ") ";
         }
-        $query    .= " AND disabledtext = '' " if $exclude_disabled;
+        $query    .= " AND is_enabled = 1 " if $exclude_disabled;
         $query    .= $dbh->sql_limit($limit) if $limit;
 
         # Execute the query, retrieve the results, and make them into
@@ -1284,7 +1312,7 @@ sub match {
                       " AND group_id IN(" .
                 join(', ', (-1, @{$user->visible_groups_inherited})) . ") ";
         }
-        $query     .= " AND disabledtext = '' " if $exclude_disabled;
+        $query     .= " AND is_enabled = 1 " if $exclude_disabled;
         $query     .= $dbh->sql_limit($limit) if $limit;
         my $user_ids = $dbh->selectcol_arrayref($query, undef, ($str, $str));
         @users = @{Bugzilla::User->new_from_list($user_ids)};
@@ -1702,7 +1730,7 @@ sub get_userlist {
                   "AND group_id IN(" .
                   join(', ', (-1, @{$self->visible_groups_inherited})) . ")";
     }
-    $query    .= " WHERE disabledtext = '' ";
+    $query    .= " WHERE is_enabled = 1 ";
     $query    .= $dbh->sql_group_by('userid', 'login_name, realname');
 
     my $sth = $dbh->prepare($query);

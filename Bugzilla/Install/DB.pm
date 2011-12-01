@@ -636,6 +636,9 @@ sub update_table_definitions {
     # 2009-05-07 ghendricks@novell.com - Bug 77193
     _add_isactive_to_product_fields();
 
+    # 2011-06-15 dkl@mozilla.com - Bug 658929
+    _migrate_disabledtext_boolean();
+
     ################################################################
     # New --TABLE-- changes should go *** A B O V E *** this point #
     ################################################################
@@ -3432,6 +3435,16 @@ sub _add_isactive_to_product_fields {
     if (!$dbh->bz_column_info('milestones', 'isactive')) {
         $dbh->bz_add_column('milestones', 'isactive', 
             {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
+    }
+}
+
+sub _migrate_disabledtext_boolean {
+    my $dbh = Bugzilla->dbh;
+    if (!$dbh->bz_column_info('profiles', 'is_enabled')) {
+        $dbh->bz_add_column("profiles", 'is_enabled',
+                            {TYPE => 'BOOLEAN', NOTNULL => 1, DEFAULT => 'TRUE'});
+        $dbh->do("UPDATE profiles SET is_enabled = 0 
+                  WHERE disabledtext != ''");
     }
 }
 
