@@ -83,7 +83,7 @@ OrangeFactor.orangify = function () {
     var bugid = YAHOO.util.Dom.get('orange-bug-id').value;
     var endday = OrangeFactor.dateString(new Date(Date.now() - 1 * OrangeFactor.dayMs));
     var startday = OrangeFactor.dateString(new Date(Date.now() - (OrangeFactor.limit + 1) * OrangeFactor.dayMs));
-    var url = "http://brasstacks.mozilla.com/orangefactor/api/count?startday=" + encodeURIComponent(startday) +
+    var url = "https://brasstacks.mozilla.com/orangefactor/api/count?startday=" + encodeURIComponent(startday) +
                "&endday=" + encodeURIComponent(endday) + "&bugid=" + encodeURIComponent(bugid) + 
                "&callback=OrangeFactor.getOrangeCount";
     var script = document.createElement('script');
