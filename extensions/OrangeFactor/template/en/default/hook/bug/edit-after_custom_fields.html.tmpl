@@ -1,0 +1,43 @@
+[%# ***** BEGIN LICENSE BLOCK *****
+  # Version: MPL 1.1
+  # 
+  # The contents of this file are subject to the Mozilla Public License Version
+  # 1.1 (the "License"); you may not use this file except in compliance with
+  # the License. You may obtain a copy of the License at
+  # http://www.mozilla.org/MPL/
+  # 
+  # Software distributed under the License is distributed on an "AS IS" basis,
+  # WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  # for the specific language governing rights and limitations under the
+  # License.
+  # 
+  # The Original Code is the OrangeFactor Bugzilla Extension;
+  # 
+  # The Initial Developer of the Original Code is the Mozilla Foundation.
+  # Portions created by the Initial Developer are Copyright (C) 2011 the
+  # Initial Developer. All Rights Reserved.
+  # 
+  # Contributor(s):
+  #   Heather Arthur <harthur@mozilla.com>
+  #   David Lawrence <dkl@mozilla.com>
+  #
+  # ***** END LICENSE BLOCK *****
+  #%]
+
+[% IF orange_factor %]
+  <tr>
+    <td class="" colspan="2">
+      <input type="hidden" id="orange-bug-id" value="[% bug.bug_id FILTER html %]">
+      <a id="orange-box" href="http://brasstacks.mozilla.com/orangefactor/?display=Bug&bugid=[% bug.bug_id FILTER url_quote %]">
+        <div id="orange-label">Orange Factor</div>
+        <div id="orange-bottom-box">
+          <canvas id="orange-graph"></canvas>
+          <div id="orange-count">
+            <span id="orange-failures"></span>
+            <span id="orange-past-day"></span>
+          </div>
+        </div>
+      </a>
+    </td>
+  </tr>
+[% END %]
