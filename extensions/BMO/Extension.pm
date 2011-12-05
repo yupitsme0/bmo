@@ -840,6 +840,7 @@ sub post_bug_after_creation {
 
             my $comment;
             $vars->{no_display_action_needed} = 1;
+            $vars->{original_reporter} = $old_user;
             $template->process('bug/create/comment-employee-incident.txt.tmpl', $vars, \$comment)
                 || ThrowTemplateError($template->error());
 
