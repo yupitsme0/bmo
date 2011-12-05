@@ -20,20 +20,22 @@
   #   byron jones <glob@mozilla.com>
   #%]
 
-<tr>
-  <th>Flag Comments:</th>
-  <td>add text into the comment box when flag is changed to a state</td>
-</tr>
+[% IF ftc_states %]
+  <tr>
+    <th>Flag Comments:</th>
+    <td>add text into the comment box when flag is changed to a state</td>
+  </tr>
 
-[% FOREACH state = ftc_states %]
-<tr>
-  <td>&nbsp;</td>
-  <td>
-    for [% state.state FILTER html %]<br>
-    <textarea
-      id="ftc_text_[% loop.index FILTER none %]"
-      name="ftc_text_[% loop.index FILTER none %]"
-      cols="50" rows="2">[% state.text FILTER html %]</textarea>
-  </td>
-</tr>
+  [% FOREACH state = ftc_states %]
+  <tr>
+    <td>&nbsp;</td>
+    <td>
+      for [% state.state FILTER html %]<br>
+      <textarea
+        id="ftc_text_[% loop.index FILTER none %]"
+        name="ftc_text_[% loop.index FILTER none %]"
+        cols="50" rows="2">[% state.text FILTER html %]</textarea>
+    </td>
+  </tr>
+  [% END %]
 [% END %]
