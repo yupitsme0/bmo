@@ -1,40 +1,5 @@
-#orange-box {
-    display: block;
-    padding: 5px 7px 6px 5px;
-    border: 1px solid #EFD9C4;
-    overflow: auto; 
-    float: left;
-    margin: 7px 0 15px 0;
-    box-shadow: 2px 2px 5px orange; 
-    text-decoration: none;
-}
-
-#orange-label {
-    font-weight: bold; 
-    font-size: 1.1em; 
-    text-align: center; 
-    color: #EC6E00;
-    margin-bottom: 6px;
-}
-
 #orange-graph {
-    width: 150px;
+    width: 180px;
     height: 38px;
-}
-
-#orange-count {
-    float: left;
-    margin-left: 8px;
-}
-
-#orange-failures {
-    font-size: 1.5em;
-}
-
-#orange-past-day {
-    font-size: 0.9em;
-}
-
-#orange-graph {
-    float: left;
+    margin-right: .5em;
 }

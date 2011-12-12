@@ -30,14 +30,14 @@ YAHOO.namespace('OrangeFactor');
 
 var OrangeFactor = YAHOO.OrangeFactor;
 
-OrangeFactor.dayMs = 24 * 60 * 60 * 1000,
-OrangeFactor.limit = 28;
+OrangeFactor.dayMs   = 24 * 60 * 60 * 1000,
+OrangeFactor.limit   = 28;
 
 OrangeFactor.getOrangeCount = function (data) {
     data = data.oranges;
     var total = 0,
         days = [],
-        date = Date.now() - (OrangeFactor.limit + 1) * OrangeFactor.dayMs;
+        date = OrangeFactor.getCurrentDateMs() - (OrangeFactor.limit + 1) * OrangeFactor.dayMs;
     for(var i = 0; i < OrangeFactor.limit; i++) {
         var iso = OrangeFactor.dateString(new Date(date));
         days.push(data[iso] ? data[iso].orangecount : 0);
@@ -51,23 +51,27 @@ OrangeFactor.displayGraph = function (dayCounts) {
     var max = dayCounts.reduce(function(max, count) {
         return count > max ? count : max;
     });
-    var graph = YAHOO.util.Dom.get('orange-graph');
-    YAHOO.util.Dom.setAttribute(graph, 'title',
+    var graphContainer = YAHOO.util.Dom.get('orange-graph');
+    Dom.removeClass(graphContainer, 'bz_default_hidden');
+    YAHOO.util.Dom.setAttribute(graphContainer, 'title',
                                 'failures over the past month, max in a day: ' + max);
     var  opts = {
-        "percentage_lines":[0.25, 0.5, 0.75], "fill_between_percentage_lines":true, 
-        "left_padding":0, "right_padding":0, "top_padding":0, "bottom_padding":0, 
-        "background":"#FFFFFF", "stroke":"#444444", "percentage_color":"#AAAAFF", 
-        "percentage_fill_color":"#CCCCFF"
+        "percentage_lines":[0.25, 0.5, 0.75], 
+        "fill_between_percentage_lines": true, 
+        "left_padding": 0, 
+        "right_padding": 0, 
+        "top_padding": 0,
+        "bottom_padding": 0, 
+        "background": "#D0D0D0", 
+        "stroke": "#000000", 
+        "percentage_fill_color": "#CCCCFF"
     };
     new Sparkline('orange-graph', dayCounts, opts).draw();
 }
 
 OrangeFactor.displayCount = function (count) {
-    var failures = YAHOO.util.Dom.get('orange-failures');
-    failures.appendChild(document.createTextNode(count + ' failures'));
-    var pastDay = YAHOO.util.Dom.get('orange-past-day');
-    pastDay.appendChild(document.createTextNode('in the past day'));
+    var countContainer = YAHOO.util.Dom.get('orange-count');
+    countContainer.innerHTML = encodeURIComponent(count) + ' failures in the past day';
 }
 
 OrangeFactor.dateString = function (date) {
@@ -79,18 +83,26 @@ OrangeFactor.dateString = function (date) {
            + "-" + norm(date.getDate());
 }
 
+OrangeFactor.getCurrentDateMs = function () {
+    var d = new Date;
+    return d.getTime();
+}
+
 OrangeFactor.orangify = function () {
-    var bugid = YAHOO.util.Dom.get('orange-bug-id').value;
-    var endday = OrangeFactor.dateString(new Date(Date.now() - 1 * OrangeFactor.dayMs));
-    var startday = OrangeFactor.dateString(new Date(Date.now() - (OrangeFactor.limit + 1) * OrangeFactor.dayMs));
-    var url = "https://brasstacks.mozilla.com/orangefactor/api/count?startday=" + encodeURIComponent(startday) +
-               "&endday=" + encodeURIComponent(endday) + "&bugid=" + encodeURIComponent(bugid) + 
-               "&callback=OrangeFactor.getOrangeCount";
+    var bugId = document.forms['changeform'].id.value;
+    var endDay = OrangeFactor.dateString(new Date(OrangeFactor.getCurrentDateMs() - 1 * OrangeFactor.dayMs));
+    var startDay = OrangeFactor.dateString(new Date(OrangeFactor.getCurrentDateMs() - (OrangeFactor.limit + 1) * OrangeFactor.dayMs));
+    var url = "https://brasstacks.mozilla.com/orangefactor/api/count?startday=" + encodeURIComponent(startDay) +
+              "&endday=" + encodeURIComponent(endDay) + "&bugid=" + encodeURIComponent(bugId) + 
+              "&callback=OrangeFactor.getOrangeCount";
     var script = document.createElement('script');
     Dom.setAttribute(script, 'src', url);
     Dom.setAttribute(script, 'type', 'text/javascript');
     var head = document.getElementsByTagName('head')[0];
     head.appendChild(script);
+    var countContainer = YAHOO.util.Dom.get('orange-count');
+    Dom.removeClass(countContainer, 'bz_default_hidden');
+    countContainer.innerHTML = 'Loading...';a
 }
 
 YAHOO.util.Event.onDOMReady(OrangeFactor.orangify);

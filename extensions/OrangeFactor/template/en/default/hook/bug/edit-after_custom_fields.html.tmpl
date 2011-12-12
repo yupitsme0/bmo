@@ -23,21 +23,20 @@
   #
   # ***** END LICENSE BLOCK *****
   #%]
+[% USE Bugzilla %]
+[% cgi = Bugzilla.cgi %]
 
 [% IF orange_factor %]
   <tr>
-    <td class="" colspan="2">
-      <input type="hidden" id="orange-bug-id" value="[% bug.bug_id FILTER html %]">
-      <a id="orange-box" href="https://brasstacks.mozilla.com/orangefactor/?display=Bug&bugid=[% bug.bug_id FILTER url_quote %]">
-        <div id="orange-label">Orange Factor</div>
-        <div id="orange-bottom-box">
-          <canvas id="orange-graph"></canvas>
-          <div id="orange-count">
-            <span id="orange-failures"></span>
-            <span id="orange-past-day"></span>
-          </div>
-        </div>
-      </a>
+    <td valign="top">
+      <label><b>Orange Factor:</b></label>
+      (<a href="https://brasstacks.mozilla.com/orangefactor/?display=Bug&bugid=[% bug.bug_id FILTER url_quote %]">link</a>)
+    </td>
+    <td>
+      [% IF cgi.user_agent.match('(?i)gecko') %]
+        <canvas id="orange-graph" class="bz_default_hidden"></canvas>
+        <span id="orange-count"></span>
+      [% END %]
     </td>
   </tr>
 [% END %]

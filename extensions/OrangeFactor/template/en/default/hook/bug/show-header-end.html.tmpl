@@ -28,10 +28,11 @@
   # ***** END LICENSE BLOCK *****
   #%]
 
-[% IF orange_factor %]
+[% USE Bugzilla %]
+[% cgi = Bugzilla.cgi %]
+
+[% IF orange_factor && cgi.user_agent.match('(?i)gecko') %]
   [% style_urls.push('extensions/OrangeFactor/web/style.css') %]
-  [% yui.push('connection') %]
-  [% yui.push('json') %]
   [% javascript_urls.push('extensions/OrangeFactor/web/sparklines.min.js') %]
   [% javascript_urls.push('extensions/OrangeFactor/web/orange_factor.js') %]
 [% END %]

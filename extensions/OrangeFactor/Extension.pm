@@ -41,22 +41,18 @@ sub template_before_process {
     my $vars = $args->{'vars'};
 
     my $user = Bugzilla->user;
-    my $dbh = Bugzilla->dbh;
 
     return unless $user && $user->id && $user->settings;
     return unless $user->settings->{'orange_factor'}->{'value'} eq 'on';
 
     # in the header we just need to set the var, to 
     # ensure the css and javascript get included
-    if ($file eq 'bug/show-header.html.tmpl') {
-        # note: bug/edit.html.tmpl doesn't support multiple bugs
+    if ($file eq 'bug/show-header.html.tmpl'
+        || $file eq 'bug/edit.html.tmpl') {
         my $bug = exists $vars->{'bugs'} ? $vars->{'bugs'}[0] : $vars->{'bug'};
-        if ($bug->status_whiteboard =~ /\[orange\]/) {
+        if ($bug && $bug->status_whiteboard =~ /\[orange\]/) {
             $vars->{'orange_factor'} = 1;
         }
-        return;
-    } elsif ($file ne 'bug/edit.html.tmpl') {
-        return;
     }
 }
 
