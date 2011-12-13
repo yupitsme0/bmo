@@ -1,0 +1,59 @@
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): Myk Melez <myk@mozilla.org>
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% USE Bugzilla %]
+[% cgi = Bugzilla.cgi %]
+
+[% column_headers = {
+  "type"            => "Flag" ,
+  "status"          => "Status" ,
+  "bug_summary"     => "$terms.Bug Summary" ,
+  "bug_id"          => "$terms.Bug ID" ,
+  "attach_summary"  => "Attachment Description" ,
+  "attach_id"       => "Attachment ID" ,
+  "requester"       => "Requester" ,
+  "requestee"       => "Requestee" ,
+  "created"         => "Created" ,
+  "category"        => "Product: Component" } %]
+
+[% DEFAULT display_columns = ["requester", "requestee", "type", "status",
+                              "bug_id", "bug_summary", "attach_id",
+                              "attach_summary", "created", "category"] %]
+
+[% IF requests.size == 0 %]
+No requests.
+[% ELSE %]
+  [% FOREACH column = display_columns %]
+    [% column_headers.$column FILTER csv %][% ',' IF NOT loop.last() %]
+  [% END %]
+
+  [% FOREACH request = requests %]
+      [% FOREACH column = display_columns %]
+          [% IF column == 'created' %]
+              [% request.$column FILTER time %]
+          [% ELSE %]
+              [% request.$column FILTER csv %]
+          [% END %][% ',' IF NOT loop.last() %]
+      [% END %]
+
+  [% END %]
+[% END %]

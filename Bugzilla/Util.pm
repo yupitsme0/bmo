@@ -45,7 +45,7 @@ use base qw(Exporter);
                              bz_crypt generate_random_password
                              validate_email_syntax clean_text
                              get_text template_var disable_utf8
-                             detect_encoding);
+                             detect_encoding make_content_disposition);
 
 use Bugzilla::Constants;
 
@@ -777,6 +777,22 @@ sub _guess_iso {
     return $encoding;
 }
 
+sub make_content_disposition {
+    my ($type, $pre, $ext) = @_;
+
+    my @time = localtime(time());
+    my $date = sprintf "%04d-%02d-%02d", 1900+$time[5], $time[4]+1, $time[3];
+    my $filename = "$pre-$date.$ext";
+    
+    $filename =~ s/\s/_/g; # Remove whitespace to avoid HTTP header tampering
+    $filename =~ s/\\/\\\\/g; # escape backslashes
+    $filename =~ s/"/\\"/g; # escape quotes
+    
+    my $disposition = "$type; filename=\"$filename\"";
+    
+    return $disposition;
+}
+
 1;
 
 __END__
@@ -833,6 +849,9 @@ Bugzilla::Util - Generic utility functions for bugzilla
   on_main_db {
      ... code here ...
   };
+  
+  # Functions for making HTTP headers
+  make_content_disposition($type, $prefix, $extension);
 
 =head1 DESCRIPTION
 
@@ -1159,5 +1178,16 @@ if Bugzilla is currently using the shadowdb or not. Used like:
      my $dbh = Bugzilla->dbh;
      $dbh->do("INSERT ...");
  }
+
+=back
+
+=head2 HTTP Headers
+
+=over
+
+=item C<make_content_disposition>
+
+Generates a date-dependent value suitable for using in the Content Disposition
+header for a downloadable resource.
 
 =back

@@ -46,8 +46,14 @@ my $cgi = Bugzilla->cgi;
 Bugzilla->switch_to_shadow_db;
 my $template = Bugzilla->template;
 my $action = $cgi->param('action') || '';
+my $format = $template->get_format('request/queue', 
+                                   scalar($cgi->param('format')),
+                                   scalar($cgi->param('ctype')));
 
-print $cgi->header();
+my $cd = make_content_disposition("inline", "requests", $format->{extension});
+
+print $cgi->header(-type                => $format->{'ctype'},
+                   -content_disposition => $cd);
 
 ################################################################################
 # Main Body Execution
@@ -84,7 +90,7 @@ else {
     }
     $vars->{'components'} = [ sort { $a cmp $b } keys %components ];
 
-    $template->process('request/queue.html.tmpl', $vars)
+    $template->process($format->{'template'}, $vars)
       || ThrowTemplateError($template->error());
 }
 exit;
@@ -321,7 +327,7 @@ sub queue {
     $vars->{'components'} = [ sort { $a cmp $b } keys %components ];
 
     # Generate and return the UI (HTML page) from the appropriate template.
-    $template->process("request/queue.html.tmpl", $vars)
+    $template->process($format->{'template'}, $vars)
       || ThrowTemplateError($template->error());
 }
 
