@@ -91,6 +91,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "NSS"                   => [],
         "Other Applications"    => [],
         "SeaMonkey"             => [],
+        "Socorro"               => [], 
         "support.mozilla.com"   => [],
         "Tech Evangelism"       => [],
         "Testing"               => [],
@@ -272,6 +273,7 @@ our %product_sec_groups = (
     "Testopia"                     => 'bugzilla-security',
     "Tamarin"                      => 'tamarin-security',
     "Mozilla PR"                   => 'pr-private',
+    "Socorro"                      => 'client-services-security', 
     "_default"                     => 'core-security'
 );
 
