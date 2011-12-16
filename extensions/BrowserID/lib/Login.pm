@@ -26,6 +26,7 @@ use base qw(Bugzilla::Auth::Login);
 use Bugzilla::Constants;
 use Bugzilla::Util;
 use Bugzilla::Error;
+use Bugzilla::Token;
 
 use JSON;
 use LWP::UserAgent;
@@ -37,15 +38,20 @@ sub get_login_info {
     my ($self) = @_;
 
     my $cgi = Bugzilla->cgi;
+
     my $assertion = $cgi->param("browserid_assertion");
     # Avoid the assertion being copied into any 'echoes' of the current URL
     # in the page.
     $cgi->delete('browserid_assertion');
-
+    
     if (!$assertion) {
         return { failure => AUTH_NODATA };
     }
     
+    my $token = $cgi->param("token");
+    $cgi->delete('token');
+    check_hash_token($token, ['login']);
+        
     my $urlbase = new URI(correct_urlbase());
     my $audience = $urlbase->scheme . "://" . $urlbase->host_port;
     
