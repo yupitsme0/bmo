@@ -86,7 +86,7 @@ sub login {
 
     # Make sure the user isn't disabled.
     my $user = $login_info->{user};
-    if ($user->disabledtext) {
+    if (!$user->is_enabled) {
         return $self->_handle_login_result({ failure => AUTH_DISABLED,
                                               user    => $user }, $type);
     }
@@ -207,7 +207,8 @@ sub _handle_login_result {
             # account, but just an email address. So we use the
             # installation's default language for sending the email.
             my $default_settings = Bugzilla::User::Setting::get_defaults();
-            my $template = Bugzilla->template_inner($default_settings->{lang});
+            my $template = Bugzilla->template_inner(
+                               $default_settings->{lang}->{default_value});
             my $vars = {
                 locked_user => $user,
                 attempts    => $attempts,

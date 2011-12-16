@@ -45,7 +45,7 @@ use base qw(Exporter);
                              bz_crypt generate_random_password
                              validate_email_syntax clean_text
                              get_text template_var disable_utf8
-                             detect_encoding);
+                             detect_encoding make_content_disposition);
 
 use Bugzilla::Constants;
 
@@ -56,7 +56,7 @@ use DateTime::TimeZone;
 use Digest;
 use Email::Address;
 use List::Util qw(first);
-use Scalar::Util qw(tainted);
+use Scalar::Util qw(tainted blessed);
 use Template::Filters;
 use Text::Wrap;
 use Encode qw(encode decode resolve_alias);
@@ -307,25 +307,40 @@ sub use_attachbase {
 }
 
 sub diff_arrays {
-    my ($old_ref, $new_ref) = @_;
+    my ($old_ref, $new_ref, $attrib) = @_;
+    $attrib ||= 'name';
 
+    my (%counts, %pos);
+    # We are going to alter the old array.
     my @old = @$old_ref;
-    my @new = @$new_ref;
+    my $i = 0;
 
-    # For each pair of (old, new) entries:
-    # If they're equal, set them to empty. When done, @old contains entries
-    # that were removed; @new contains ones that got added.
-    foreach my $oldv (@old) {
-        foreach my $newv (@new) {
-            next if ($newv eq '');
-            if ($oldv eq $newv) {
-                $newv = $oldv = '';
-            }
+    # $counts{foo}-- means old, $counts{foo}++ means new.
+    # If $counts{foo} becomes positive, then we are adding new items,
+    # else we simply cancel one old existing item. Remaining items
+    # in the old list have been removed.
+    foreach (@old) {
+        next unless defined $_;
+        my $value = blessed($_) ? $_->$attrib : $_;
+        $counts{$value}--;
+        push @{$pos{$value}}, $i++;
+    }
+    my @added;
+    foreach (@$new_ref) {
+        next unless defined $_;
+        my $value = blessed($_) ? $_->$attrib : $_;
+        if (++$counts{$value} > 0) {
+            # Ignore empty strings, but objects having an empty string
+            # as attribute are fine.
+            push(@added, $_) unless ($value eq '' && !blessed($_));
+        }
+        else {
+            my $old_pos = shift @{$pos{$value}};
+            $old[$old_pos] = undef;
         }
     }
-
-    my @removed = grep { $_ ne '' } @old;
-    my @added = grep { $_ ne '' } @new;
+    # Ignore canceled items as well as empty strings.
+    my @removed = grep { defined $_ && $_ ne '' } @old;
     return (\@removed, \@added);
 }
 
@@ -762,6 +777,22 @@ sub _guess_iso {
     return $encoding;
 }
 
+sub make_content_disposition {
+    my ($type, $pre, $ext) = @_;
+
+    my @time = localtime(time());
+    my $date = sprintf "%04d-%02d-%02d", 1900+$time[5], $time[4]+1, $time[3];
+    my $filename = "$pre-$date.$ext";
+    
+    $filename =~ s/\s/_/g; # Remove whitespace to avoid HTTP header tampering
+    $filename =~ s/\\/\\\\/g; # escape backslashes
+    $filename =~ s/"/\\"/g; # escape quotes
+    
+    my $disposition = "$type; filename=\"$filename\"";
+    
+    return $disposition;
+}
+
 1;
 
 __END__
@@ -818,6 +849,9 @@ Bugzilla::Util - Generic utility functions for bugzilla
   on_main_db {
      ... code here ...
   };
+  
+  # Functions for making HTTP headers
+  make_content_disposition($type, $prefix, $extension);
 
 =head1 DESCRIPTION
 
@@ -1144,5 +1178,16 @@ if Bugzilla is currently using the shadowdb or not. Used like:
      my $dbh = Bugzilla->dbh;
      $dbh->do("INSERT ...");
  }
+
+=back
+
+=head2 HTTP Headers
+
+=over
+
+=item C<make_content_disposition>
+
+Generates a date-dependent value suitable for using in the Content Disposition
+header for a downloadable resource.
 
 =back

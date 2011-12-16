@@ -21,6 +21,10 @@
 [% cgi = Bugzilla.cgi %]
 
 [% IF cgi.param('incident_type') == 'stolen' %]
+[% IF original_reporter -%]
+Reporter: [% original_reporter.identity FILTER none %]
+[%- END -%]
+
   [% IF !no_display_action_needed %]
 Action needed: Please immediately reset the LDAP password for this user. 
 The user reported that their mobile or laptop device has been lost or stolen. 

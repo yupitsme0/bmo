@@ -225,7 +225,7 @@ $vars->{'qa_contact_disabled'}  = !$has_editbugs;
 
 $vars->{'cloned_bug_id'}         = $cloned_bug_id;
 
-$vars->{'token'}             = issue_session_token('createbug:');
+$vars->{'token'} = issue_session_token('create_bug');
 
 
 my @enter_bug_fields = grep { $_->enter_bug } Bugzilla->active_custom_fields;
@@ -295,12 +295,13 @@ if ($cloned_bug_id) {
 } # end of cloned bug entry form
 
 else {
-
     $default{'component_'}    = formvalue('component');
     $default{'priority'}      = formvalue('priority', Bugzilla->params->{'defaultpriority'});
     $default{'bug_severity'}  = formvalue('bug_severity', Bugzilla->params->{'defaultseverity'});
-    $default{'rep_platform'}  = detect_platform();
-    $default{'op_sys'}        = detect_op_sys();
+    $default{'rep_platform'}  = formvalue('rep_platform', 
+                                          Bugzilla->params->{'defaultplatform'} || detect_platform());
+    $default{'op_sys'}        = formvalue('op_sys', 
+                                          Bugzilla->params->{'defaultopsys'} || detect_op_sys());
 
     $vars->{'alias'}          = formvalue('alias');
     $vars->{'short_desc'}     = formvalue('short_desc');

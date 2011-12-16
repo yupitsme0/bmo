@@ -42,6 +42,7 @@ use Bugzilla::Component;
 use Bugzilla::Bug;
 use Bugzilla::Attachment;
 use Bugzilla::Token;
+use Bugzilla::Hook;
 
 local our $cgi = Bugzilla->cgi;
 local our $template = Bugzilla->template;
@@ -343,6 +344,8 @@ sub insert {
     # Populate the list of inclusions/exclusions for this flag type.
     validateAndSubmit($id);
 
+    Bugzilla::Hook::process('flagtype_end_of_create', { id => $id });
+
     $dbh->bz_commit_transaction();
 
     $vars->{'name'} = $name;
@@ -393,6 +396,8 @@ sub update {
     
     # Update the list of inclusions/exclusions for this flag type.
     validateAndSubmit($id);
+
+    Bugzilla::Hook::process('flagtype_end_of_update', { id => $id });
 
     $dbh->bz_commit_transaction();
 
@@ -476,6 +481,7 @@ sub deleteType {
     # what was deleted.
     $vars->{'name'} = $flag_type->name;
 
+    Bugzilla::Hook::process('flagtype_before_delete', { id => $id });
     $dbh->do('DELETE FROM flags WHERE type_id = ?', undef, $id);
     $dbh->do('DELETE FROM flaginclusions WHERE type_id = ?', undef, $id);
     $dbh->do('DELETE FROM flagexclusions WHERE type_id = ?', undef, $id);

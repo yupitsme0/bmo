@@ -393,17 +393,10 @@ $params ||= new Bugzilla::CGI($cgi);
 # if available.  We have to do this now, even though we return HTTP headers 
 # at the end, because the fact that there is a remembered query gets 
 # forgotten in the process of retrieving it.
-my @time = localtime(time());
-my $date = sprintf "%04d-%02d-%02d", 1900+$time[5],$time[4]+1,$time[3];
-my $filename = "bugs-$date.$format->{extension}";
+my $cd_prefix = "bugs";
 if ($cmdtype eq "dorem" && $remaction =~ /^run/) {
-    $filename = $cgi->param('namedcmd') . "-$date.$format->{extension}";
-    # Remove white-space from the filename so the user cannot tamper
-    # with the HTTP headers.
-    $filename =~ s/\s/_/g;
+    $cd_prefix = $cgi->param('namedcmd');
 }
-$filename =~ s/\\/\\\\/g; # escape backslashes
-$filename =~ s/"/\\"/g; # escape quotes
 
 # Take appropriate action based on user's request.
 if ($cmdtype eq "dorem") {  
@@ -1207,10 +1200,11 @@ if ($format->{'extension'} eq "csv") {
     $disposition = "attachment";
 }
 
-# Suggest a name for the bug list if the user wants to save it as a file.
-$disposition .= "; filename=\"$filename\"";
+my $cd = make_content_disposition($disposition,  
+                                  $cd_prefix,  
+                                  $format->{'extension'});
 
-_close_standby_message($contenttype, $disposition, $serverpush);
+_close_standby_message($contenttype, $cd, $serverpush);
 
 ################################################################################
 # Content Generation

@@ -773,7 +773,7 @@ sub mailer_before_send {
     # to the email as an attachment. Attachment must be content type
     # text/plain and below a certain size. Otherwise the email already 
     # contain a link to the attachment. 
-    if (0 && $email # XXX disabled, see bug 689601
+    if ($email
         && $email->header('X-Bugzilla-Type') eq 'request'
         && ($email->header('X-Bugzilla-Flag-Requestee') 
             && $email->header('X-Bugzilla-Flag-Requestee') eq $email->header('to'))) 
@@ -841,6 +841,7 @@ sub post_bug_after_creation {
 
             my $comment;
             $vars->{no_display_action_needed} = 1;
+            $vars->{original_reporter} = $old_user;
             $template->process('bug/create/comment-employee-incident.txt.tmpl', $vars, \$comment)
                 || ThrowTemplateError($template->error());
 

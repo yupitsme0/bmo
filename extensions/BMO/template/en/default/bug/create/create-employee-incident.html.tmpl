@@ -132,7 +132,6 @@
 <p><span style="color: red;">*</span></strong> Required Fields</p>
 <form method="post" action="post_bug.cgi" id="incidentForm" enctype="multipart/form-data"
       onSubmit="return validateAndSubmit();">
-  <input type="hidden" name="token" value="[% token FILTER html %]">
   <input type="hidden" id="product" name="product" value="">
   <input type="hidden" id="component" name="component" value="">
   <input type="hidden" id="rep_platform" name="rep_platform" value="All">
@@ -143,6 +142,7 @@
   <input type="hidden" id="groups" name="groups" value="">
   <input type="hidden" id="format" name="format" value="employee-incident">
   <input type="hidden" id="bug_severity" name="bug_severity" value="">
+  <input type="hidden" id="token" name="token" value="[% token FILTER html %]">
 
   <table>
     <tr>

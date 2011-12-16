@@ -60,6 +60,8 @@
               A new password has been set.
             [% ELSIF field == 'disabledtext' %]
               The disable text has been modified.
+            [% ELSIF field == 'is_enabled' %]
+              The user has been [% otheruser.is_enabled ? 'enabled' : 'disabled' %].
             [% ELSIF field == 'disable_mail' %]
               [% IF otheruser.email_disabled %]
                 [% terms.Bug %]mail has been disabled.
@@ -841,6 +843,10 @@
     [% ELSE %]
       No changes made to version <em>[% version.name FILTER html %]</em>.
     [% END %]
+
+  [% ELSIF message_tag == "whine_query_failed" %]
+    The query '[% query_name FILTER html %]' from [% author.login FILTER html %]
+    failed: [% reason FILTER html %]
 
   [% ELSIF message_tag == "workflow_updated" %]
     The workflow has been updated.
