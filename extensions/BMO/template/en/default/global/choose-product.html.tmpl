@@ -132,11 +132,10 @@
         [% class = class _ " group_$gid" %]
       [% END %]
     [% END %]
-    <tr class="[% "group_secure " IF has_entry_groups %][% class FILTER html %]"
-    [% IF has_entry_groups %]title="This product requires one or more
- group memberships in order to enter [% terms.bugs %] in it. You have them, but be
- aware not everyone else does."[% END %]
-    >
+    <tr class="[% "group_secure" IF has_entry_groups +%] [% class FILTER html %]"
+    [%- IF has_entry_groups %] title="This product requires one or more
+ group memberships in order to enter [% terms.bugs %] in it. You have them,  but be
+ aware not everyone else does."[% END %]>
       <th align="right" valign="top">
       [% IF p.name == "Mozilla PR" AND target == "enter_bug.cgi" AND NOT format AND NOT cgi.param("debug") %]
         <a href="[% target FILTER url_quote %]?product=[% p.name FILTER url_quote -%]
