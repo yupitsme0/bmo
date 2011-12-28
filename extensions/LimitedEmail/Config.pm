@@ -31,6 +31,7 @@ use constant FILTERS => [
     qr/^(glob|dkl|justdave|dd)\@mozilla\.com$/i,
     qr/^gerv\@mozilla\.org$/i,
     qr/^reed\@reedloden\.com/i,
+    qr/^nigelbabu\@gmail\.com/i, 
 ];
 
 __PACKAGE__->NAME;
