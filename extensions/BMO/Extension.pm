@@ -790,6 +790,9 @@ sub _short_desc_matches {
 sub mailer_before_send {
     my ($self, $args) = @_;
     my $email = $args->{email};
+
+    # disabled, see bug 714488
+    return;
  
     # If email is a request for a review, add the attachment itself
     # to the email as an attachment. Attachment must be content type
