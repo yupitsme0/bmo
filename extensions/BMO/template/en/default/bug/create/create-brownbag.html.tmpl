@@ -46,32 +46,12 @@ person who submitted the request and any persons designated in the CC line.</p>
 
 <script type="text/javascript">
 function trySubmit() {
-  var out = 'Topic: the_topic\r\nPresenter: the_presenter\r\nDate: the_date\r\nTime: the_time\r\nAudience: the_audience\r\nAir Mozilla: air_mozilla\r\nDial-in: dial_in\r\nArchive: to_archive\r\nMember of IT to help with A/V: it_help\r\nDescription: the_description';
-
   var topic = document.getElementById('topic').value;
-  var presenter = document.getElementById('presenter').value;
   var date = document.getElementById('date').value;
   var time = document.getElementById('time_hour').value + ':' + document.getElementById('time_minute').value + document.getElementById('ampm').value;
-  var shortdesc = 'Brownbag Request - ' + topic + ' (' + date + ' ' + time + ')';
-  var airmozilla = document.getElementById('airmozilla').checked? 'yes' : 'no';
-  var dialin = document.getElementById('dialin').checked? 'yes' : 'no';
-  var archive = document.getElementById('archive').checked? 'yes' : 'no';
-  var ithelp = document.getElementById('ithelp').checked? 'yes' : 'no';
-  
-  out = out.replace( /the_topic/, topic );
-  out = out.replace( /the_presenter/, presenter );
-  out = out.replace( /the_date/, date);
-  out = out.replace( /the_time/, time);
-  out = out.replace( /the_audience/, document.getElementById('audience').value );
-  out = out.replace( /air_mozilla/, airmozilla);
-  out = out.replace( /dial_in/, dialin);
-  out = out.replace( /the_description/, document.getElementById('description').value );
-  out = out.replace( /to_archive/, archive);
-  out = out.replace( /it_help/, ithelp);
-  
-  document.getElementById('comment').value = out;
+  var location = document.getElementById('location').value;
+  var shortdesc = 'Event - (' + date + ' ' + time + ') - ' + location + ' - ' + topic;
   document.getElementById('short_desc').value = shortdesc;
-  
   return true;
 }
 
@@ -79,18 +59,19 @@ function trySubmit() {
 
 <form method="post" action="post_bug.cgi" id="brownbagRequestForm" enctype="multipart/form-data"
       onSubmit="return trySubmit();">
+  <input type="hidden" name="format" value="brownbag">
+  <input type="hidden" name="product" value="Air Mozilla">
+  <input type="hidden" name="component" value="Events">
+  <input type="hidden" name="rep_platform" value="All">
+  <input type="hidden" name="op_sys" value="Other">
+  <input type="hidden" name="priority" value="--">
+  <input type="hidden" name="version" value="other">
+  <input type="hidden" name="bug_severity" id="bug_severity" value="normal">
+  <input type="hidden" name="comment" id="comment" value="">
+  <input type="hidden" name="short_desc" id="short_desc" value="">
+  <input type="hidden" name="groups" value="mozilla-corporation-confidential">
+  <input type="hidden" name="token" value="[% token FILTER html %]">
 
-        <input type="hidden" name="product" value="mozilla.org">
-        <input type="hidden" name="component" value="Server Operations: Desktop Issues">
-        <input type="hidden" name="rep_platform" value="All">
-        <input type="hidden" name="op_sys" value="Other">
-        <input type="hidden" name="priority" value="--">
-        <input type="hidden" name="version" value="other">
-        <input type="hidden" name="bug_severity" id="bug_severity" value="normal">
-        <input type="hidden" name="comment" id="comment" value="">
-        <input type="hidden" name="short_desc" id="short_desc" value="">
-        <input type="hidden" name="groups" value="mozilla-corporation-confidential">
-        <input type="hidden" name="token" value="[% token FILTER html %]">
 <table>
 
 <tr>
@@ -98,7 +79,6 @@ function trySubmit() {
   <td>
     <input type="text" name="presenter" id="presenter" value="" size="60" />
   </td>
-
 </tr>
 
 <tr>
@@ -137,7 +117,8 @@ function trySubmit() {
       <option value="9">9</option>
       <option value="10">10</option>
       <option value="11">11</option>
-    </select>:<select name="time_minute" id="time_minute">
+    </select>:
+    <select name="time_minute" id="time_minute">
       <option value="00" selected>00</option>
       <option value="15">15</option>
       <option value="30">30</option>
@@ -148,6 +129,24 @@ function trySubmit() {
       <option value="PM">PM</option>
     </select>
   </td>					  
+</tr>
+
+<tr>
+  <td align="right"><strong>Duration:</strong></td>
+  <td>
+    <input type="radio" name="duration" id="duration" value="1 Hour">1 Hour<br>
+    <input type="radio" name="duration" id="duration" value="1 Day">1 Day<br>
+    <input type="radio" name="duration" id="duration" value="Other">Other
+    <input type="text" name="duration_other" id="duration_other" value="">
+  </td>
+</tr>  
+
+<tr>
+  <td align="right"><strong>Location:</strong></td>
+  <td>
+    <input type="text" name="location" id="location" 
+           value="[% default.location || 'Ten Forward' %]" size="60" />
+  </td>
 </tr>
 
 <tr>
@@ -172,14 +171,13 @@ function trySubmit() {
 </tr>
 
 <tr>
-<td align="right"><strong>Archive this?</strong></td>
-<td align="left"><input type="checkbox" name="archive" id="archive" value="yes"></td>
+  <td align="right"><strong>Archive this?</strong></td>
+  <td align="left"><input type="checkbox" name="archive" id="archive" value="yes"></td>
 </tr>
 
-
 <tr>
-<td align="right"><strong>Need IT to help run A/V?</strong></td>
-<td align="left"><input type="checkbox" name="ithelp" id="ithelp" value="yes" checked></td>
+  <td align="right"><strong>Need IT to help run A/V?</strong></td>
+  <td align="left"><input type="checkbox" name="ithelp" id="ithelp" value="yes" checked></td>
 </tr>
 
 <tr>
@@ -199,20 +197,19 @@ function trySubmit() {
   <th><label for="description">Description</label>:</th>
   <td>
     <em>Please briefly describe the brownbag and any specific needs you might have.</em><br>
-
     <textarea id="description" name="description" rows="10" cols="80"></textarea>
   </td>
 </tr>
 
-  </table>
+</table>
 
   <br>
   <input type="submit" id="commit" value="Submit Request">
 </form>
 
-<p>Thanks for contacting us.
-   You will be notified by email of any progress made in resolving your request.
-
+<p>
+  Thanks for contacting us.
+  You will be notified by email of any progress made in resolving your request.
 </p>
 
 <script type="text/javascript">
