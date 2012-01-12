@@ -973,9 +973,6 @@ sub _bug_to_hash {
 sub _attachment_to_hash {
     my ($self, $attach, $filters) = @_;
 
-    # Skipping attachment flags for now.
-    delete $attach->{flags};
-
     my $item = filter $filters, {
         creation_time    => $self->type('dateTime', $attach->attached),
         last_change_time => $self->type('dateTime', $attach->modification_time),
@@ -1001,6 +998,33 @@ sub _attachment_to_hash {
 
     if (filter_wants $filters, 'data') {
         $item->{'data'} = $self->type('base64', $attach->data);
+    }
+
+    if (filter_wants $filters, 'flags') {
+        $item->{'flags'} = [ map { $self->_flag_to_hash($_) } @{$attach->flags} ];
+    }
+
+    return $item;
+}
+
+sub _flag_to_hash {
+    my ($self, $flag) = @_;
+
+    my $item = {
+        id                => $self->type('int', $flag->id),
+        name              => $self->type('string', $flag->name),
+        type_id           => $self->type('int', $flag->type_id),
+        bug_id            => $self->type('int', $flag->bug_id),
+        attach_id         => $self->type('string', $flag->attach_id),
+        creation_date     => $self->type('dateTime', $flag->creation_date), 
+        modification_date => $self->type('dateTime', $flag->modification_date), 
+        status            => $self->type('string', $flag->status)
+    };
+
+    foreach my $field (qw(setter requestee)) {
+        my $field_id = $field . "_id";
+        $item->{$field} = $self->type('string', $flag->$field->login)
+            if $flag->$field_id;
     }
 
     return $item;
@@ -1416,6 +1440,55 @@ Also returned as C<attacher>, for backwards-compatibility with older
 Bugzillas. (However, this backwards-compatibility will go away in Bugzilla
 5.0.)
 
+=item C<flags>
+
+An array of hashes containing the information about flags currently set
+for each attachment. Each flag hash contains the following items:
+
+=over
+
+=item C<id> 
+
+C<int> The id of the flag.
+
+=item C<name>
+
+C<string> The name of the flag.
+
+=item C<type_id>
+
+C<int> The type id of the flag.
+
+=item C<bug_id>
+
+C<int> The bug id the attachment for which this flag belongs to.
+
+=item C<attach_id>
+
+C<int> The attachment id for which the flag belongs to. 
+
+=item C<creation_date>
+
+C<dateTime> The timestamp when this flag was originally created.
+
+=item C<modification_date>
+
+C<dateTime> The timestamp when the flag was last modified.
+
+=item C<status>
+
+C<string> The current status of the flag.
+
+=item C<setter>
+
+C<string> The login name of the user who created or last modified the flag.
+
+=item C<requestee>
+
+C<string> The login name of the user this flag has been requested to be granted or denied.
+
+=back
+
 =back
 
 =item B<Errors>
@@ -1448,6 +1521,8 @@ C<summary>.
 =item The C<data> return value was added in Bugzilla B<4.0>.
 
 =back
+
+=item The C<flags> array was added in Bugzilla B<4.4>.
 
 =back
 
