@@ -72,3 +72,8 @@
 .edit_form table td:first-child {
     width: 0px;
 }
+
+#bz_show_bug_column_1, #bz_show_bug_column_2 {
+    width: 50%;
+}
+
