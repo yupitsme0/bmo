@@ -107,6 +107,9 @@
           [% IF user.id %]          
             <tr>
               <td colspan="2">
+                <span style="float:left">
+                  <a href="page.cgi?id=fields.html">What do these fields mean?</a>
+                </span>
                 [% PROCESS commit_button id="_top"%]
               </td>
             </tr>
@@ -865,7 +868,7 @@
   [% show_bug_flags = 0 %]
   [% bug_flags_set = 0 %]
   [% show_more_flags = 0 %]
-  [% FOREACH type = bug.flag_types(is_active=>1) %]
+  [% FOREACH type = bug.flag_types %]
     [% IF (type.flags && type.flags.size > 0) || (user.id && type.is_active) %]
       [% show_bug_flags = 1 %]
     [% END %]
@@ -879,13 +882,10 @@
   [% END %]
   [% IF show_bug_flags %]
     <tr>
-      <td class="field_label flags_label">
+      <td class="field_label">
         <label><b>Flags:</b></label>
       </td>
-      <td></td>
-    </tr>
-    <tr>
-      <td colspan="2">
+      <td>
         [% IF bug.flag_types.size > 0 %]
           [% PROCESS "flag/list.html.tmpl" flag_no_header = 1
                                            flag_types = bug.flag_types

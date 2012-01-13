@@ -82,6 +82,8 @@ use constant DB_COLUMNS => qw(
     type_id
     bug_id
     attach_id
+    creation_date
+    modification_date
     requestee_id
     setter_id
     status
@@ -130,6 +132,14 @@ Returns the ID of the attachment this flag belongs to, if any.
 
 Returns the status '+', '-', '?' of the flag.
 
+=item C<creation_date>
+
+Returns the timestamp when the flag was created.
+
+=item C<modification_date>
+
+Returns the timestamp when the flag was last modified.
+
 =back
 
 =cut
@@ -142,6 +152,8 @@ sub attach_id    { return $_[0]->{'attach_id'};    }
 sub status       { return $_[0]->{'status'};       }
 sub setter_id    { return $_[0]->{'setter_id'};    }
 sub requestee_id { return $_[0]->{'requestee_id'}; }
+sub creation_date     { return $_[0]->{'creation_date'};     }
+sub modification_date { return $_[0]->{'modification_date'}; }
 
 ###############################
 ####       Methods         ####
@@ -448,6 +460,7 @@ sub update {
     if (scalar(keys %$changes)) {
         $dbh->do('UPDATE flags SET modification_date = ? WHERE id = ?',
                  undef, ($timestamp, $self->id));
+        $self->{'modification_date'} = $timestamp;
     }
     return $changes;
 }
