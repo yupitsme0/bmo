@@ -23,7 +23,9 @@
 
 [% PROCESS global/header.html.tmpl
    title = "Mozilla Corporation Brownbag Requests"
-   style_urls = [ 'skins/standard/attachment.css', 'skins/custom/calendar.css' ]
+   style_urls = [ 'skins/custom/calendar.css', 
+                  'skins/standard/enter_bug.css', 
+                  'skins/custom/create_bug.css' ]
    style = ".yui-skin-sam .yui-calcontainer { z-index: 1; }"
    javascript_urls = [ 'js/attachment.js', 'js/field.js', 'js/util.js' ]
    yui = [ 'autocomplete', 'calendar' ]
@@ -57,7 +59,6 @@ function trySubmit() {
   document.getElementById('short_desc').value = shortdesc;
   return true;
 }
-
 </script>
 
 <form method="post" action="post_bug.cgi" id="brownbagRequestForm" enctype="multipart/form-data"
@@ -78,21 +79,27 @@ function trySubmit() {
 <table>
 
 <tr>
-  <td align="right"><strong>Presenter:</strong></td>
+  <th class="field_label">
+    <label for="presenter">Presenter:</label>
+  </th>
   <td>
     <input type="text" name="presenter" id="presenter" value="" size="60" />
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Topic:</strong></td>
+  <th class="field_label">
+    <label for="topic">Topic:</label>
+  </th>
   <td>
     <input type="text" name="topic" id="topic" value="" size="60" />
   </td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Date:</strong></td>
+  <th class="field_label">
+    <label for="date">Date:</label>
+  </th>
   <td>
     <input type="text" name="date" size="10" id="date"
            align="right" value="" maxlength="10"
@@ -105,7 +112,9 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Start Time:</strong></td>
+  <th class="field_label">
+    <label for="time_hour">Start Time:</label>
+  </th>
   <td>
     <select name="time_hour" id="time_hour">
       <option value="12" selected>12</option>
@@ -161,17 +170,25 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Duration:</strong></td>
+  <th class="field_label">
+    <label for="duration_one_hour_radio">Duration:</label>
+  </th>
   <td>
-    <input type="radio" name="duration" id="duration" value="1 Hour">1 Hour<br>
-    <input type="radio" name="duration" id="duration" value="1 Day">1 Day<br>
-    <input type="radio" name="duration" id="duration" value="Other">Other
+    <input type="radio" name="duration" id="duration_one_hour_radio" value="1 Hour" checked="checked">
+    <label for="duration_one_hour_radio">1 Hour</label><br>
+    <input type="radio" name="duration" id="duration_one_day_radio" value="1 Day">
+    <label for="duration_one_day_radio">1 Day</label><br>
+    <input type="radio" name="duration" id="duration_other_radio" value="Other"
+           onclick="YAHOO.util.Dom.get('duration_other').focus();">
+    <label for="duration_other_radio">Other</label>
     <input type="text" name="duration_other" id="duration_other" value="">
   </td>
 </tr>  
 
 <tr>
-  <td align="right"><strong>Location:</strong></td>
+  <th class="field_label">
+    <label for="location">Location:</label>
+  </th>
   <td>
     <input type="text" name="location" id="location" 
            value="[% default.location || 'Ten Forward' %]" size="60" />
@@ -179,7 +196,9 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Intended Audience:</strong></td>
+  <th class="field_label">
+    <label for="audience">Intended Audience:</label>
+  </th>
   <td>
     <select name="audience" id="audience">
       <option value="Public" selected>Open to Public</option>
@@ -190,27 +209,37 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>Air Mozilla Broadcasting?</strong></td>
+  <th class="field_label">
+    <label for="airmozilla">Air Mozilla Broadcasting?</label>
+  </th>
   <td align="left"><input type="checkbox" name="airmozilla" id="airmozilla"></td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Dial In?</strong></td>
+  <th class="field_label">
+    <label for="dialin">Dial In?</label>
+  </th>
   <td align="left"><input type="checkbox" name="dialin" id="dialin"></td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Archive this?</strong></td>
+  <th class="field_label">
+    <label for="archive">Archive this?</label>
+  </th>
   <td align="left"><input type="checkbox" name="archive" id="archive" value="yes"></td>
 </tr>
 
 <tr>
-  <td align="right"><strong>Need IT to help run A/V?</strong></td>
+  <th class="field_label">
+    <label for="ithelp">Need IT to help run A/V?</label>
+  </th>
   <td align="left"><input type="checkbox" name="ithelp" id="ithelp" value="yes" checked></td>
 </tr>
 
 <tr>
-  <td align="right"><strong>CC&nbsp;(optional):</strong></td>
+  <th class="field_label">
+    <label for="cc">CC&nbsp;(optional):</label>
+  </th>
   <td colspan="3">
     [% INCLUDE global/userselect.html.tmpl
        id => "cc"
@@ -223,17 +252,23 @@ function trySubmit() {
 </tr>
 
 <tr>
-  <th><label for="description">Description</label>:</th>
+  <th class="field_label">
+    <label for="description">Description</label>:
+  </th>
   <td>
     <em>Please briefly describe the brownbag and any specific needs you might have.</em><br>
     <textarea id="description" name="description" rows="10" cols="80"></textarea>
   </td>
 </tr>
 
+<tr>
+  <td></td>
+  <td>
+    <input type="submit" id="commit" value="Submit Request">
+  </td>
+</tr>
 </table>
 
-  <br>
-  <input type="submit" id="commit" value="Submit Request">
 </form>
 
 <p>
