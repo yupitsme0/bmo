@@ -23,10 +23,8 @@
 
 [% PROCESS global/header.html.tmpl
    title = "Mozilla Corporation Brownbag Requests"
-   style_urls = [ 'skins/custom/calendar.css', 
-                  'skins/standard/enter_bug.css', 
-                  'skins/custom/create_bug.css' ]
    style = ".yui-skin-sam .yui-calcontainer { z-index: 1; }"
+   style_urls = [ 'skins/standard/enter_bug.css' ]
    javascript_urls = [ 'js/attachment.js', 'js/field.js', 'js/util.js' ]
    yui = [ 'autocomplete', 'calendar' ]
 %]
@@ -61,8 +59,8 @@ function trySubmit() {
 }
 </script>
 
-<form method="post" action="post_bug.cgi" id="brownbagRequestForm" enctype="multipart/form-data"
-      onSubmit="return trySubmit();">
+<form method="post" action="post_bug.cgi" id="brownbagRequestForm" class="enter_bug_form"
+      enctype="multipart/form-data" onSubmit="return trySubmit();">
   <input type="hidden" name="format" value="brownbag">
   <input type="hidden" name="product" value="Air Mozilla">
   <input type="hidden" name="component" value="Events">
