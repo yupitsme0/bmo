@@ -48,7 +48,10 @@ person who submitted the request and any persons designated in the CC line.</p>
 function trySubmit() {
   var topic = document.getElementById('topic').value;
   var date = document.getElementById('date').value;
-  var time = document.getElementById('time_hour').value + ':' + document.getElementById('time_minute').value + document.getElementById('ampm').value;
+  var time = document.getElementById('time_hour').value + ':' + 
+             document.getElementById('time_minute').value + 
+             document.getElementById('ampm').value + " " +
+             document.getElementById('time_zone').value;
   var location = document.getElementById('location').value;
   var shortdesc = 'Event - (' + date + ' ' + time + ') - ' + location + ' - ' + topic;
   document.getElementById('short_desc').value = shortdesc;
@@ -125,8 +128,34 @@ function trySubmit() {
       <option value="45">45</option>
     </select>
     <select name="ampm" id="ampm">
-      <option value="AM" selected>AM</option>
-      <option value="PM">PM</option>
+      <option value="AM">AM</option>
+      <option value="PM" selected>PM</option>
+    </select>
+    <select name="time_zone" id="time_zone">
+      <option value="UTC-11">UTC-11</option>
+      <option value="UTC-10">UTC-10</option>
+      <option value="UTC-9">UTC-9</option>
+      <option value="UTC-8" selected>UTC-8</option>
+      <option value="UTC-7">UTC-7</option>
+      <option value="UTC-6">UTC-6</option>
+      <option value="UTC-5">UTC-5</option>
+      <option value="UTC-4">UTC-4</option>
+      <option value="UTC-3">UTC-3</option>
+      <option value="UTC-2">UTC-2</option>
+      <option value="UTC-1">UTC-1</option>
+      <option value="UTC+0">UTC+0</option>
+      <option value="UTC+1">UTC+1</option>
+      <option value="UTC+2">UTC+2</option>
+      <option value="UTC+3">UTC+3</option>
+      <option value="UTC+4">UTC+4</option>
+      <option value="UTC+5">UTC+5</option>
+      <option value="UTC+6">UTC+6</option>
+      <option value="UTC+7">UTC+7</option>
+      <option value="UTC+8">UTC+8</option>
+      <option value="UTC+9">UTC+9</option>
+      <option value="UTC+10">UTC+10</option>
+      <option value="UTC+11">UTC+11</option>
+      <option value="UTC+12">UTC+11</option>
     </select>
   </td>					  
 </tr>
