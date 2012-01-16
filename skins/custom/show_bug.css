@@ -77,3 +77,11 @@
     width: 50%;
 }
 
+/* fix flag table's vertical alignment */
+
+table#flags {
+    border-collapse: collapse;
+    border-spacing: 0px;
+}
+
+
