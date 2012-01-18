@@ -134,11 +134,8 @@ function serialiseForm() {
   }
 
   Dom.get('q').value = q;
-
-  if(history && history.replaceState ) {
-    history.replaceState(null, '',
-      'page.cgi?id=release_tracking_report.html&q=' + encodeURIComponent(q));
-  }
+  Dom.get('bookmark').href = 'page.cgi?id=release_tracking_report.html&q=' +
+                             encodeURIComponent(q);
 }
 
 function deserialiseForm(q) {

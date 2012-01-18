@@ -90,9 +90,14 @@ var default_query = '[% default_query FILTER js %]';
   <td colspan="2">
     <input type="submit" value="Search">
     <input type="submit" value="Reset" onClick="onFormReset(); return false">
+    <a href="?" id="bookmark">Bookmarkable Link</a>
   </td>
 </tr>
 </table>
 </form>
+
+<p>
+  <i>"fixed" in the status field checks for the "verified" status as well as "fixed".</i>
+</p>
 
 [% INCLUDE global/footer.html.tmpl %]

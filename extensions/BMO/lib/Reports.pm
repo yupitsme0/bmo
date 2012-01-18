@@ -761,6 +761,10 @@ sub release_tracking_report {
         $start_date->add(days => 1);
         $end_date->add(weeks => 6);
     }
+    push @ranges, {
+        value => '*',
+        label => 'Anytime',
+    };
 
     #
     # run report
@@ -772,22 +776,28 @@ sub release_tracking_report {
         my @where;
         my @params;
         my $query = "
-            SELECT a.bug_id
-              FROM bugs_activity a
-                   INNER JOIN flags f ON f.bug_id = a.bug_id
-                   INNER JOIN bugs b ON b.bug_id = a.bug_id
-             WHERE ";
+            SELECT b.bug_id
+              FROM bugs b
+                   INNER JOIN flags f ON f.bug_id = b.bug_id ";
 
-        push @where, "(a.fieldid = ?)";
-        push @params, $q->{field_id};
+        if ($q->{start_date}) {
+            $query .= "INNER JOIN bugs_activity a ON a.bug_id = b.bug_id ";
+        }
 
-        push @where, "(a.bug_when >= ?)";
-        push @params, $q->{start_date} . ' 00:00:00';
-        push @where, "(a.bug_when < ?)";
-        push @params, $q->{end_date} . ' 00:00:00';
+        $query .= "WHERE ";
 
-        push @where, "(a.added LIKE ?)";
-        push @params, '%' . $q->{flag_name} . '?%';
+        if ($q->{start_date}) {
+            push @where, "(a.fieldid = ?)";
+            push @params, $q->{field_id};
+
+            push @where, "(a.bug_when >= ?)";
+            push @params, $q->{start_date} . ' 00:00:00';
+            push @where, "(a.bug_when < ?)";
+            push @params, $q->{end_date} . ' 00:00:00';
+
+            push @where, "(a.added LIKE ?)";
+            push @params, '%' . $q->{flag_name} . '?%';
+        }
 
         push @where, "(f.type_id IN (SELECT id FROM flagtypes WHERE name = ?))";
         push @params, $q->{flag_name};
@@ -803,8 +813,11 @@ sub release_tracking_report {
         if (scalar @{$q->{fields}}) {
             my @fields;
             foreach my $field (@{$q->{fields}}) {
-                my $op = $field->{value} eq '+' ? '=' : '<>';
-                push @fields, "(b.".$field->{name}." $op 'fixed') ";
+                push @fields,
+                    "(" .
+                    ($field->{value} eq '+' ? '' : '!') .
+                    "(b.".$field->{name}." IN ('fixed','verified'))" .
+                    ") ";
             }
             my $join = uc $q->{join};
             push @where, '(' . join(" $join ", @fields) . ')';
@@ -873,10 +886,12 @@ sub _parse_query {
 
     # date_range -> from_ymd to_ymd
     my $date_range = shift @query;
-    $date_range =~ /^(\d\d\d\d)(\d\d)(\d\d)-(\d\d\d\d)(\d\d)(\d\d)$/
-        or ThrowUserError('report_invalid_parameter', { name => 'date_range' });
-    $query->{start_date} = "$1-$2-$3";
-    $query->{end_date} = "$4-$5-$6";
+    if ($date_range ne '*') {
+        $date_range =~ /^(\d\d\d\d)(\d\d)(\d\d)-(\d\d\d\d)(\d\d)(\d\d)$/
+            or ThrowUserError('report_invalid_parameter', { name => 'date_range' });
+        $query->{start_date} = "$1-$2-$3";
+        $query->{end_date} = "$4-$5-$6";
+    }
 
     # product_id
     my $product_id = shift @query;
