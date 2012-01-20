@@ -88,21 +88,21 @@
         var listName = document.getElementById('listName').value;
         var listAdmin = document.getElementById('listAdmin').value;
         var listTypeRadio = document.getElementsByName('listType');
-	var listType = "";
+        var listType = "";
 
-	for (var i = 0; i < listTypeRadio.length; i++) {
-	    if (listTypeRadio[i].checked) {
-		listType = listTypeRadio[i].value;
-	    }
-	}
+        for (var i = 0; i < listTypeRadio.length; i++) {
+            if (listTypeRadio[i].checked) {
+                listType = listTypeRadio[i].value;
+            }
+        }
 
         var alert_text = "";
         var short_desc = "";
 
-	if (listType) {
+        if (listType) {
             if (listType == "lists.mozilla.org") {
                 document.getElementById('component').value = "Discussion Forums";
-	            short_desc = "Discussion Forum: " + listName;
+                short_desc = "Discussion Forum: " + listName;
             } else if (listType == "mozilla.com" ) {
                 document.getElementById('component').value = "Server Operations: Desktop Issues";
                 short_desc = "[Zimbra Distribution List Request] " + listName + "@" + listType;
@@ -112,7 +112,7 @@
             }
         } else {
             alert_text += "Please select a list type\n";
-	}
+        }
 
         if (!isFilledOut('listName')) {
             alert_text += "Please enter the list name\n";
@@ -127,7 +127,7 @@
             return false;
         }
  
-       	document.getElementById('short_desc').value = short_desc;
+        document.getElementById('short_desc').value = short_desc;
 
         return true;
     }
