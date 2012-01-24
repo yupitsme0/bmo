@@ -1,21 +1,9 @@
-# The contents of this file are subject to the Mozilla Public
-# License Version 1.1 (the "License"); you may not use this file
-# except in compliance with the License. You may obtain a copy of
-# the License at http://www.mozilla.org/MPL/
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# Software distributed under the License is distributed on an "AS
-# IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
-# implied. See the License for the specific language governing
-# rights and limitations under the License.
-#
-# The Original Code is the Bugzilla TellUsMore Extension.
-#
-# The Initial Developer of the Original Code is the Mozilla Foundation.
-# Portions created by the Initial Developer are Copyright (C) 2011 the
-# Initial Developer. All Rights Reserved.
-#
-# Contributor(s):
-#   Byron Jones <glob@mozilla.com>
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::Extension::TellUsMore::Constants;
 
@@ -46,6 +34,9 @@ our @EXPORT = qw(
 
     VERSION_SOURCE_PRODUCTS
     VERSION_TARGET_PRODUCT
+
+    RESULT_URL_SUCCESS
+    RESULT_URL_FAILURE
 );
 
 use constant TELL_US_MORE_LOGIN => 'tellusmore@input.bugs';
@@ -91,5 +82,8 @@ use constant TOKEN_EXPIRY_DAYS => 7;
 
 use constant VERSION_SOURCE_PRODUCTS => ('Firefox', 'Fennec');
 use constant VERSION_TARGET_PRODUCT => 'Untriaged Bugs';
+
+use constant RESULT_URL_SUCCESS => 'http://localhost/tellusmore/?bug_id=%s&is_new_user=%s';
+use constant RESULT_URL_FAILURE => 'http://localhost/tellusmore/?error=%s';
 
 1;
