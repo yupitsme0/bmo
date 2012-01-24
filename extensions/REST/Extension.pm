@@ -25,6 +25,7 @@ use base qw(Bugzilla::Extension);
 
 use Bugzilla;
 use Bugzilla::Constants;
+use Bugzilla::Install::Filesystem;
 
 use Bugzilla::Extension::REST::Server;
 
@@ -46,6 +47,34 @@ sub page_before_template {
         $server->version('1.1');
         $server->handle();
         exit;
+    }
+}
+
+sub install_filesystem {
+    my ($self,  $args) = @_;
+    my $files = $args->{'files'};
+
+    my $extensionsdir = bz_locations()->{'extensionsdir'};
+    my $scriptname = $extensionsdir . "/" . __PACKAGE__->NAME . "/bin/rest.cgi";
+ 
+    $files->{$scriptname} = {
+        perms => Bugzilla::Install::Filesystem::WS_EXECUTE
+    };
+
+    # Add rewrite rule to root .htaccess file if not already included
+    my $htaccess = new IO::File(".htaccess", 'r') || die ".htaccess: $!";
+    my $htaccess_data;
+    { local $/; $htaccess_data = <$htaccess>; }
+    $htaccess->close;
+    if ($htaccess_data !~ /RewriteRule rest\//) {
+        print "Repairing .htaccess...\n";
+        if ($htaccess_data !~ /RewriteEngine On/) {
+            $htaccess_data .= "\nRewriteEngine On"; 
+        }
+        $htaccess_data .= "\nRewriteRule rest/(.*)\$ $scriptname/\$1 [NE]";
+        $htaccess = new IO::File(".htaccess", 'w') || die $!;
+        print $htaccess $htaccess_data;
+        $htaccess->close;
     }
 }
 

@@ -73,14 +73,14 @@ sub user_GET {
     my @adjusted_users = map { $self->_fix_user($params, $_) }
                          @{ $result->{users} };
     
-    $self->_bz_response_code(STATUS_OK);
+    $self->bz_response_code(STATUS_OK);
     return { users => \@adjusted_users };
 }
 
 sub one_user_GET {
     my ($self, $params) = @_;
 
-    my $nameid = $self->_bz_regex_matches->[0];
+    my $nameid = $self->bz_regex_matches->[0];
     
     my $param = "names";
     if ($nameid =~ /^\d+$/) {
@@ -92,7 +92,7 @@ sub one_user_GET {
 
     my $adjusted_user = $self->_fix_user($params, $result->{'users'}[0]);
 
-    $self->_bz_response_code(STATUS_OK);
+    $self->bz_response_code(STATUS_OK);
     return $adjusted_user;
 }
 

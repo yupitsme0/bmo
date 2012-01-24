@@ -36,8 +36,8 @@ use constant REQUIRED_MODULES => [
       version => 0,
     },
     {
-      package => 'XML-Twig',
-      module  => 'XML::Twig',
+      package => 'XML-Simple',
+      module  => 'XML::Simple',
       version => 0,
     },
 ];

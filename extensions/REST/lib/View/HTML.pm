@@ -1,4 +1,3 @@
-#!/usr/bin/perl -wT
 # -*- Mode: perl; indent-tabs-mode: nil -*-
 #
 # The contents of this file are subject to the Mozilla Public
@@ -20,13 +19,22 @@
 # Contributor(s):
 #   Dave Lawrence <dkl@mozilla.com>
 
+package Bugzilla::Extension::REST::View::HTML;
+
 use strict;
 
-use lib qw(../../ ../../lib);
+use base qw(Bugzilla::Extension::REST::View);
 
-use Bugzilla;
-use Bugzilla::Hook;
+use Bugzilla::Extension::REST::Util qw(stringify_json_objects);
 
-Bugzilla->login();
+use YAML::Syck;
 
-Bugzilla::Hook::process('page_before_template', { page_id => 'rest.api' });
+sub view {
+    my ($self, $data) = @_;
+    stringify_json_objects($data);
+    my $content = "<html><title>Bugzilla::REST::API</title><body>" .
+                  "<pre>" . Dump($data) . "</pre></body></html>";
+    return $content;
+}
+
+1;

@@ -32,10 +32,10 @@ use Bugzilla::WebService::Constants;
 use Bugzilla::WebService::Util qw(taint_data);
 use Bugzilla::Util qw(correct_urlbase);
 
+use Bugzilla::Extension::REST::View;
 use Bugzilla::Extension::REST::Util;
 use Bugzilla::Extension::REST::Constants;
 
-use Scalar::Util qw(blessed reftype);
 use Data::Dumper; # DEBUG
 
 #####################################
@@ -50,12 +50,12 @@ sub handle {
     $self->_load_resource($self->path_info);
 
     # Stop here if no resource matched 
-    if (!$self->_bz_method_name) {
+    if (!$self->bz_method_name) {
         ThrowUserError("rest_invalid_resource");
     }
 
     # Dispatch to the proper module
-    my $class  = $self->_bz_class_name;
+    my $class  = $self->bz_class_name;
     my ($path) = $class =~ /::([^:]+)$/;
     $self->path_info($path);
     delete $self->{dispatch_path};
@@ -75,7 +75,7 @@ sub handle {
     my $obj = {};
     $obj->{'version'} = "1.1";
     $obj->{'id'}      = correct_urlbase();
-    $obj->{'method'}  = $self->_bz_method_name;
+    $obj->{'method'}  = $self->bz_method_name;
     $obj->{'params'}  = $params;
 
     # Execute the handler
@@ -88,12 +88,12 @@ sub handle {
         && !(ref $result eq 'HASH' && exists $result->{'error'})) 
     {
         return $self->response(
-            $self->response_header($self->_bz_response_code, $result));
+            $self->response_header($self->bz_response_code, $result));
     }
 
     if (ref $result eq 'HASH' && exists $result->{'error'}) {
         $self->error_response_header(
-            $self->response_header($self->_bz_response_code, $result));
+            $self->response_header($self->bz_response_code, $result));
     }
 
     $self->response($self->error_response_header);
@@ -119,18 +119,8 @@ sub response {
     }
 
     # After converting the return data, encode it back into the proper content
-    my $new_content;
-    if ($self->content_type eq 'text/html') { 
-        use YAML::Syck;
-        _stringify_json_objects($result);
-        $new_content = "<html><title>Bugzilla::REST::API</title><body>" . 
-                       "<pre>" . Dump($result) . "</pre></body></html>";
-    } 
-    else {
-        $new_content = $self->json->allow_nonref->encode($result);
-    }
-
-    $response->content($new_content);
+    my $view = Bugzilla::Extension::REST::View->new($self->content_type);
+    $response->content($view->view($result));
 
     $self->SUPER::response($response);
 }
@@ -157,8 +147,8 @@ sub handle_login {
         Bugzilla->request_cache->{auth_no_automatic_login} = 1;
     }
 
-    my $class = $self->_bz_class_name;
-    my $method = $self->_bz_method_name;
+    my $class = $self->bz_class_name;
+    my $method = $self->bz_method_name;
     my $full_method = $class . "." . $method;
     $self->SUPER::handle_login($class, $method, $full_method);
 }
@@ -194,7 +184,7 @@ sub _argument_type_check {
     Bugzilla->input_params($params);
 
     # Now, convert dateTime fields on input.
-    my $method = $self->_bz_method_name;
+    my $method = $self->bz_method_name;
     my $pkg = $self->{dispatch_path}->{$self->path_info};
     my @date_fields = @{ $pkg->DATE_FIELDS->{$method} || [] };
     foreach my $field (@date_fields) {
@@ -234,33 +224,37 @@ sub _argument_type_check {
     return $params;
 }
 
-##########################
-# Private Custom Methods #
-##########################
+###################
+# Utility Methods #
+###################
 
-sub _bz_method_name {
+sub bz_method_name {
     my ($self, $method) = @_;
     $self->{_bz_method_name} = $method if $method;
     return $self->{_bz_method_name}; 
 }
 
-sub _bz_class_name {
+sub bz_class_name {
     my ($self, $class) = @_;
     $self->{_bz_class_name} = $class if $class;
     return $self->{_bz_class_name};
 }
 
-sub _bz_response_code {
+sub bz_response_code {
     my ($self, $value) = @_;
     $self->{_bz_response_code} = $value if $value;
     return $self->{_bz_response_code};
 }
 
-sub _bz_regex_matches {
+sub bz_regex_matches {
     my ($self, $matches) = @_;
     $self->{_bz_regex_matches} = $matches if $matches;
     return $self->{_bz_regex_matches};
 }
+
+##########################
+# Private Custom Methods #
+##########################
 
 sub _retrieve_json_params {
     my $self = shift;
@@ -310,9 +304,9 @@ sub _load_resource {
         foreach my $regex (keys %{ $resources->{$class} }) {
             if (@matches = ($path =~ $regex)) {
                 if ($resources->{$class}{$regex}{$request_method}) {
-                    $self->_bz_class_name($class);
-                    $self->_bz_method_name($resources->{$class}{$regex}{$request_method});
-                    $self->_bz_regex_matches(\@matches);
+                    $self->bz_class_name($class);
+                    $self->bz_method_name($resources->{$class}{$regex}{$request_method});
+                    $self->bz_regex_matches(\@matches);
                     $handler_found = 1;
                 }
             }
@@ -389,22 +383,6 @@ sub _get_content_prefs {
 sub _get_accept_header {
     my $self = shift;
     return $self->cgi->http('accept') || "";
-}
-
-# Stringify all objects in $hash:
-sub _stringify_json_objects {
-    for my $val (@_) {
-        next unless my $ref = reftype $val;
-        if (blessed $val && $val->isa('JSON::XS::Boolean')) { 
-            $val = $val eq "true" ? 1 : 0;
-        }
-        elsif ($ref eq 'ARRAY') { 
-            _stringify_json_objects(@$val) 
-        }
-        elsif ($ref eq 'HASH') { 
-            _stringify_json_objects(values %$val) 
-        }
-    }
 }
 
 1;
