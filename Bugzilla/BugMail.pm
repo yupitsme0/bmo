@@ -289,6 +289,12 @@ sub Send {
     # Skip empty comments.
     @$comments = grep { $_->type || $_->body =~ /\S/ } @$comments;
 
+    # Add Attachment Created to changedfields if one or more 
+    # comments contain information about a new attachment
+    if (grep($_->type == CMT_ATTACHMENT_CREATED, @$comments)) {
+        push(@changedfields, 'Attachment Created');
+    }
+    
     ###########################################################################
     # Start of email filtering code
     ###########################################################################
