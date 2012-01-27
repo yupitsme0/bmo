@@ -783,7 +783,7 @@ sub release_tracking_report {
     # run report
     #
 
-    if ($input->{q}) {
+    if ($input->{q} && !$input->{edit}) {
         my $q = _parse_query($input->{q});
 
         my @where;
@@ -809,7 +809,7 @@ sub release_tracking_report {
             push @params, $q->{end_date} . ' 00:00:00';
 
             push @where, "(a.added LIKE ?)";
-            push @params, '%' . $q->{flag_name} . '?%';
+            push @params, '%' . $q->{flag_name} . $q->{flag_status} . '%';
         }
 
         push @where, "(f.type_id IN (SELECT id FROM flagtypes WHERE name = ?))";
@@ -837,6 +837,16 @@ sub release_tracking_report {
         }
 
         $query .= join("\nAND ", @where);
+
+        if ($input->{debug}) {
+            print "Content-Type: text/plain\n\n";
+            $query =~ s/\?/\000/g;
+            foreach my $param (@params) {
+                $query =~ s/\000/$param/;
+            }
+            print "$query\n";
+            exit;
+        }
 
         my $bugs = $dbh->selectcol_arrayref($query, undef, @params);
         push @$bugs, 0 unless @$bugs;
