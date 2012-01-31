@@ -187,7 +187,7 @@ var product = {
     // grab the product information
     this.details = false;
     this._loaded = productName;
-    YAHOO.util.Connect.setDefaultPostHeader('text/plain; charset=UTF-8');
+    YAHOO.util.Connect.setDefaultPostHeader('application/json; charset=UTF-8');
     YAHOO.util.Connect.asyncRequest(
       'POST',
       'jsonrpc.cgi',
@@ -393,7 +393,7 @@ var dupes = {
       ccObject = { remove: [ guided.currentUser ] };
     }
 
-    YAHOO.util.Connect.setDefaultPostHeader('text/plain; charset=UTF-8');
+    YAHOO.util.Connect.setDefaultPostHeader('application/json; charset=UTF-8');
     YAHOO.util.Connect.asyncRequest(
       'POST',
       'jsonrpc.cgi',
