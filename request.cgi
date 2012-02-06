@@ -72,7 +72,7 @@ unless (defined $cgi->param('requestee')
 Bugzilla::User::match_field($fields);
 
 if ($action eq 'queue') {
-    queue();
+    queue($format);
 }
 else {
     my $flagtypes = get_flag_types();
@@ -100,6 +100,7 @@ exit;
 ################################################################################
 
 sub queue {
+    my $format = shift;
     my $cgi = Bugzilla->cgi;
     my $dbh = Bugzilla->dbh;
     my $template = Bugzilla->template;
