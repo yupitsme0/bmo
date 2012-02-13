@@ -299,9 +299,9 @@ TUI_hide_default('expert_fields');
           </td>
         </tr>
       </table>
-      <input type="hidden" name="bug_severity" value="[% default.bug_severity %]">
-      <input type="hidden" name="rep_platform" value="[% default.rep_platform %]">
-      <input type="hidden" name="op_sys" value="[% default.op_sys %]">
+      <input type="hidden" name="bug_severity" value="[% default.bug_severity FILTER html %]">
+      <input type="hidden" name="rep_platform" value="[% default.rep_platform FILTER html %]">
+      <input type="hidden" name="op_sys" value="[% default.op_sys FILTER html %]">
       <input type="hidden" name="version" value="unspecified">
     </td>
   </tr>
@@ -466,7 +466,7 @@ TUI_hide_default('expert_fields');
     <td colspan="3">
       [% defaultcontent = BLOCK %]
         [% IF cloned_bug_id %]
-+++ This [% terms.bug %] was initially created as a clone of [% terms.Bug %] #[% cloned_bug_id %] +++
++++ This [% terms.bug %] was initially created as a clone of [% terms.Bug %] #[% cloned_bug_id FILTER html %] +++
 
 
         [% END %]
@@ -552,7 +552,7 @@ TUI_hide_default('expert_fields');
       <th>Status Whiteboard:</th>
       <td colspan="3">
         <input id="status_whiteboard" name="status_whiteboard" size="70"
-               value="[% status_whiteboard %]">
+               value="[% status_whiteboard FILTER html %]">
       </td>
     </tr>
     <tr>
@@ -589,10 +589,10 @@ TUI_hide_default('expert_fields');
       <!-- Checkboxes -->
       [% FOREACH g = group %]
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <input type="checkbox" id="bit-[% g.bit %]"
-          name="bit-[% g.bit %]" value="1"
+        <input type="checkbox" id="bit-[% g.bit FILTER html %]"
+          name="bit-[% g.bit FILTER html %]" value="1"
           [% " checked=\"checked\"" IF g.checked %]>
-          <label for="bit-[% g.bit %]">[% g.description FILTER html_light %]</label><br>
+          <label for="bit-[% g.bit FILTER html %]">[% g.description FILTER html_light %]</label><br>
       [% END %]
     </td>
   </tr>

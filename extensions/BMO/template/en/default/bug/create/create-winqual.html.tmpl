@@ -489,7 +489,7 @@ TUI_hide_default('expert_fields');
 
       [% defaultcontent = BLOCK %]
         [% IF cloned_bug_id %]
-+++ This [% terms.bug %] was initially created as a clone of [% terms.Bug %] #[% cloned_bug_id %] +++
++++ This [% terms.bug %] was initially created as a clone of [% terms.Bug %] #[% cloned_bug_id FILTER html %] +++
 
 
         [% END %]

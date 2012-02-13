@@ -200,7 +200,7 @@ function trySubmit() {
   </th>
   <td>
     <input type="text" name="location" id="location" 
-           value="[% default.location || 'Ten Forward' %]" size="60" />
+           value="[% default.location || 'Ten Forward' FILTER html %]" size="60" />
   </td>
 </tr>
 
