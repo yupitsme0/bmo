@@ -925,6 +925,9 @@ sub _bug_to_hash {
         my @see_also = map { $self->type('string', $_) } @{ $bug->see_also };
         $item{'see_also'} = \@see_also;
     }
+    if (filter_wants $params, 'flags') {
+        $item{'flags'} = [ map { $self->_flag_to_hash($_) } @{$bug->flags} ];
+    }
 
     # And now custom fields
     my @custom_fields = Bugzilla->active_custom_fields;
@@ -1014,8 +1017,6 @@ sub _flag_to_hash {
         id                => $self->type('int', $flag->id),
         name              => $self->type('string', $flag->name),
         type_id           => $self->type('int', $flag->type_id),
-        bug_id            => $self->type('int', $flag->bug_id),
-        attach_id         => $self->type('string', $flag->attach_id),
         creation_date     => $self->type('dateTime', $flag->creation_date), 
         modification_date => $self->type('dateTime', $flag->modification_date), 
         status            => $self->type('string', $flag->status)
@@ -1459,14 +1460,6 @@ C<string> The name of the flag.
 
 C<int> The type id of the flag.
 
-=item C<bug_id>
-
-C<int> The bug id the attachment for which this flag belongs to.
-
-=item C<attach_id>
-
-C<int> The attachment id for which the flag belongs to. 
-
 =item C<creation_date>
 
 C<dateTime> The timestamp when this flag was originally created.
@@ -1486,6 +1479,7 @@ C<string> The login name of the user who created or last modified the flag.
 =item C<requestee>
 
 C<string> The login name of the user this flag has been requested to be granted or denied.
+Note, this field is only returned if a requestee is set.
 
 =back
 
@@ -1786,6 +1780,48 @@ take.
 If you are not in the time-tracking group, this field will not be included
 in the return value.
 
+=item C<flags>
+
+An array of hashes containing the information about flags currently set
+for the bug. Each flag hash contains the following items:
+
+=over
+
+=item C<id> 
+
+C<int> The id of the flag.
+
+=item C<name>
+
+C<string> The name of the flag.
+
+=item C<type_id>
+
+C<int> The type id of the flag.
+
+=item C<creation_date>
+
+C<dateTime> The timestamp when this flag was originally created.
+
+=item C<modification_date>
+
+C<dateTime> The timestamp when the flag was last modified.
+
+=item C<status>
+
+C<string> The current status of the flag.
+
+=item C<setter>
+
+C<string> The login name of the user who created or last modified the flag.
+
+=item C<requestee>
+
+C<string> The login name of the user this flag has been requested to be granted or denied.
+Note, this field is only returned if a requestee is set.
+
+=back
+
 =item C<groups>
 
 C<array> of C<string>s. The names of all the groups that this bug is in.
@@ -2013,8 +2049,9 @@ C<op_sys>, C<platform>, C<qa_contact>, C<remaining_time>, C<see_also>,
 C<target_milestone>, C<update_token>, C<url>, C<version>, C<whiteboard>,
 and all custom fields.
 
-=back
+=item The C<flags> array was added in Bugzilla B<4.4>.
 
+=back
 
 =back
 
