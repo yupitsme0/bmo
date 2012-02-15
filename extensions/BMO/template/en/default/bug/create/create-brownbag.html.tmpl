@@ -55,6 +55,18 @@ function trySubmit() {
   var location = document.getElementById('location').value;
   var shortdesc = 'Event - (' + date + ' ' + time + ') - ' + location + ' - ' + topic;
   document.getElementById('short_desc').value = shortdesc;
+
+  // If intended audience is employees only, add mozilla-corporation-confidential group
+  var audience = document.getElementById('audience').value;
+  if (audience == 'Employees Only') {
+    var brownbagRequestForm = document.getElementById('brownbagRequestForm');
+    var groups = document.createElement('input');
+    groups.type = 'hidden';
+    groups.name = 'groups';
+    groups.value = 'mozilla-corporation-confidential';
+    brownbagRequestForm.appendChild(groups);
+  }
+
   return true;
 }
 </script>
@@ -67,11 +79,10 @@ function trySubmit() {
   <input type="hidden" name="rep_platform" value="All">
   <input type="hidden" name="op_sys" value="Other">
   <input type="hidden" name="priority" value="--">
-  <input type="hidden" name="version" value="other">
+  <input type="hidden" name="version" value="unspecified">
   <input type="hidden" name="bug_severity" id="bug_severity" value="normal">
   <input type="hidden" name="comment" id="comment" value="">
   <input type="hidden" name="short_desc" id="short_desc" value="">
-  <input type="hidden" name="groups" value="mozilla-corporation-confidential">
   <input type="hidden" name="token" value="[% token FILTER html %]">
 
 <table>
@@ -164,7 +175,7 @@ function trySubmit() {
       <option value="UTC+11">UTC+11</option>
       <option value="UTC+12">UTC+11</option>
     </select>
-  </td>					  
+  </td>
 </tr>
 
 <tr>
@@ -189,7 +200,7 @@ function trySubmit() {
   </th>
   <td>
     <input type="text" name="location" id="location" 
-           value="[% default.location || 'Ten Forward' %]" size="60" />
+           value="[% default.location || 'Ten Forward' FILTER html %]" size="60" />
   </td>
 </tr>
 

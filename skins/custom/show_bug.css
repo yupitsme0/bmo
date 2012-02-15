@@ -55,7 +55,7 @@
 }
 
 .bz_comment_number {
-	float: right;
+    float: right;
 }
 
 /* style all field labels the same */
@@ -76,4 +76,12 @@
 #bz_show_bug_column_1, #bz_show_bug_column_2 {
     width: 50%;
 }
+
+/* fix flag table's vertical alignment */
+
+table#flags {
+    border-collapse: collapse;
+    border-spacing: 0px;
+}
+
 

@@ -169,7 +169,7 @@ var product = {
     }
 
     // show/hide component selection row
-    if (products[productName].noComponentSelection) {
+    if (products[productName] && products[productName].noComponentSelection) {
       if (!Dom.hasClass('componentTR', 'hidden')) {
         Dom.addClass('componentTR', 'hidden');
         bugForm.toggleOddEven();
@@ -187,7 +187,7 @@ var product = {
     // grab the product information
     this.details = false;
     this._loaded = productName;
-    YAHOO.util.Connect.setDefaultPostHeader('text/plain; charset=UTF-8');
+    YAHOO.util.Connect.setDefaultPostHeader('application/json; charset=UTF-8');
     YAHOO.util.Connect.asyncRequest(
       'POST',
       'jsonrpc.cgi',
@@ -273,6 +273,7 @@ var dupes = {
     this._dataTableColumns = [
       { key: "id", label: labels.id, formatter: this._formatId },
       { key: "summary", label: labels.summary, formatter: "text" },
+      { key: "component", label: labels.component, formatter: "text" },
       { key: "status", label: labels.status, formatter: this._formatStatus },
       { key: "update_token", label: '', formatter: this._formatCc }
     ];
@@ -392,7 +393,7 @@ var dupes = {
       ccObject = { remove: [ guided.currentUser ] };
     }
 
-    YAHOO.util.Connect.setDefaultPostHeader('text/plain; charset=UTF-8');
+    YAHOO.util.Connect.setDefaultPostHeader('application/json; charset=UTF-8');
     YAHOO.util.Connect.asyncRequest(
       'POST',
       'jsonrpc.cgi',
@@ -499,7 +500,7 @@ var dupes = {
       // run the search
       Dom.removeClass(dupes._elList, 'hidden');
 
-	    dupes._dataTable.showTableMessage(
+      dupes._dataTable.showTableMessage(
         'Searching for similar issues...&nbsp;&nbsp;&nbsp;' +
         '<img src="extensions/GuidedBugEntry/web/images/throbber.gif"' + 
         ' width="16" height="11">',
@@ -514,7 +515,7 @@ var dupes = {
               summary: dupes.getSummary(),
               limit: 12,
               include_fields: [ "id", "summary", "status", "resolution",
-                "update_token", "cc" ]
+                "update_token", "cc", "component" ]
           }
       };
 
@@ -616,7 +617,7 @@ var bugForm = {
     // build components
 
     var elComponent = Dom.get('component');
-    if (products[productName].noComponentSelection) {
+    if (products[productName] && products[productName].noComponentSelection) {
 
       elComponent.value = products[productName].defaultComponent; 
       bugForm._mandatoryFields = [ 'short_desc', 'version_select' ];
@@ -626,7 +627,7 @@ var bugForm = {
       bugForm._mandatoryFields = [ 'short_desc', 'component_select', 'version_select' ];
 
       // check for the default component
-      var defaultRegex = products[productName].defaultComponent
+      var defaultRegex = products[productName] && products[productName].defaultComponent
         ? new RegExp('^' + products[productName].defaultComponent + '$', 'i')
         : new RegExp('General', 'i');
       var preselectedComponent = false;

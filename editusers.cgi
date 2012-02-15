@@ -632,6 +632,9 @@ if ($action eq 'search') {
                          $userid, $timestamp);
     }
 
+    # Remove any recent searches from the profile_search table
+    $dbh->do('DELETE FROM profile_search WHERE user_id = ?', undef, $otherUserID);
+
     # Finally, remove the user account itself.
     $dbh->do('DELETE FROM profiles WHERE userid = ?', undef, $otherUserID);
 
@@ -651,8 +654,17 @@ if ($action eq 'search') {
     }
 
 ###########################################################################
-} elsif ($action eq 'activity') {
+} elsif ($action eq 'activity' || $action eq 'admin_activity') {
     my $otherUser = check_user($otherUserID, $otherUserLogin);
+    my $activity_who = "profiles_activity.who";
+    my $activity_userid = "profiles_activity.userid";
+
+    if ($action eq 'admin_activity') {
+        $editusers || ThrowUserError("auth_failure", { group  => "editusers", 
+                                                       action => "admin_activity", 
+                                                       object => "users" });
+        ($activity_userid, $activity_who) = ($activity_who, $activity_userid);
+    }
 
     $vars->{'profile_changes'} = $dbh->selectall_arrayref(
         "SELECT profiles.login_name AS who, " .
@@ -661,14 +673,15 @@ if ($action eq 'search') {
                 profiles_activity.oldvalue AS removed,
                 profiles_activity.newvalue AS added
          FROM profiles_activity
-         INNER JOIN profiles ON profiles_activity.who = profiles.userid
+         INNER JOIN profiles ON $activity_who = profiles.userid
          INNER JOIN fielddefs ON fielddefs.id = profiles_activity.fieldid
-         WHERE profiles_activity.userid = ?
+         WHERE $activity_userid = ?
          ORDER BY profiles_activity.profiles_when",
         {'Slice' => {}},
         $otherUser->id);
 
     $vars->{'otheruser'} = $otherUser;
+    $vars->{'action'} = $action;
 
     $template->process("account/profile-activity.html.tmpl", $vars)
         || ThrowTemplateError($template->error());

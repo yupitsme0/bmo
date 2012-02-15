@@ -529,11 +529,6 @@ sub bug_format_comment {
     });
   
     push (@$regexes, {
-        match => qr/\b((?:CVE|CAN)-\d{4}-\d{4})\b/,
-        replace => \&_link_cve
-    });
-
-    push (@$regexes, {
         match => qr/\br(\d{4,})\b/,
         replace => \&_link_svn
     });
@@ -907,6 +902,15 @@ sub post_bug_after_creation {
             $vars->{'message'} = 'employee_incident_creation_failed';
         }
     }
+}
+
+sub buglist_columns {
+    my ($self, $args) = @_;
+    my $columns = $args->{columns};
+    $columns->{'cc_count'} = {
+        name => '(SELECT COUNT(*) FROM cc WHERE cc.bug_id = bugs.bug_id)',
+        title => 'CC Count',
+    };
 }
 
 __PACKAGE__->NAME;

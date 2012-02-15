@@ -189,6 +189,14 @@ our $cf_disabled_flags = [
     'cf_status_seamonkey25',
     'cf_blocking_191',
     'cf_status_191',
+    'cf_blocking_thunderbird33',
+    'cf_status_thunderbird33',
+    'cf_tracking_firefox9',
+    'cf_status_firefox9',
+    'cf_tracking_thunderbird9',
+    'cf_status_thunderbird9',
+    'cf_tracking_seamonkey26',
+    'cf_status_seamonkey26',
 ];
 
 # Who to CC on particular bugmails when certain groups are added or removed.
@@ -254,6 +262,7 @@ our %always_fileable_group = (
     'marketing-private'                 => 1,
     'mozilla-confidential'              => 1,
     'mozilla-corporation-confidential'  => 1,
+    'mozilla-foundation-confidential'   => 1, 
     'mozilla-messaging-confidential'    => 1,
     'tamarin-security'                  => 1,
     'websites-security'                 => 1,

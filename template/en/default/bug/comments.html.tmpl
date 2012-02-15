@@ -48,11 +48,13 @@
       [% END %]
 
       /* Remove embedded links to attachment details */
-      replytext = replytext.replace(/(attachment\s+\d+)(\s+\[[^\[]+\])+/gi, '$1');
+      replytext = replytext.replace(/(attachment\s+\d+)(\s+\[[^\[\n]+\])+/gi, '$1');
 
       /* <textarea id="comment"> */
       var textarea = document.getElementById('comment');
-      textarea.value += replytext;
+      if (textarea.value != replytext) {
+          textarea.value += replytext;
+      }
 
       textarea.focus();
   } 
