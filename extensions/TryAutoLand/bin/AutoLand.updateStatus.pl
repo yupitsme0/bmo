@@ -21,7 +21,8 @@ my $cookie_jar = new HTTP::Cookies( file => "/tmp/lwp_cookies.dat" );
 
 my $rpc = new XMLRPC::Lite;
 
-$rpc->proxy('http://fedora/autoland/xmlrpc.cgi');
+#$rpc->proxy('http://fedora/autoland/xmlrpc.cgi');
+$rpc->proxy('https://bugzilla-stage-tip.mozilla.org/xmlrpc.cgi');
 
 $rpc->encoding('UTF-8');
 

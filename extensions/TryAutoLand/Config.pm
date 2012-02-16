@@ -5,10 +5,10 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::Extension::AutoLand;
+package Bugzilla::Extension::TryAutoLand;
 use strict;
 
-use constant NAME => 'AutoLand';
+use constant NAME => 'TryAutoLand';
 
 use constant REQUIRED_MODULES => [
 ];

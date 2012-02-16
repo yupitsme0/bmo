@@ -5,7 +5,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::Extension::AutoLand;
+package Bugzilla::Extension::TryAutoLand;
 
 use strict;
 
@@ -16,14 +16,17 @@ use Bugzilla::Attachment;
 use Bugzilla::User;
 use Bugzilla::Util qw(trick_taint diff_arrays);
 
+use Bugzilla::Extension::TryAutoLand::Constants;
+
 our $VERSION = '0.01';
 
 BEGIN {
-    *Bugzilla::Bug::autoland_branches           = \&_autoland_branches;
-    *Bugzilla::Attachment::autoland_checked     = \&_autoland_attachment_checked;
-    *Bugzilla::Attachment::autoland_who         = \&_autoland_attachment_who;
-    *Bugzilla::Attachment::autoland_status      = \&_autoland_attachment_status;
-    *Bugzilla::Attachment::autoland_status_when = \&_autoland_attachment_status_when;
+    *Bugzilla::Bug::autoland_branches             = \&_autoland_branches;
+    *Bugzilla::Attachment::autoland_checked       = \&_autoland_attachment_checked;
+    *Bugzilla::Attachment::autoland_who           = \&_autoland_attachment_who;
+    *Bugzilla::Attachment::autoland_status        = \&_autoland_attachment_status;
+    *Bugzilla::Attachment::autoland_status_when   = \&_autoland_attachment_status_when;
+    *Bugzilla::Attachment::autoland_update_status = \&_autoland_attachment_update_status;
 }
 
 sub db_schema_abstract_schema {
@@ -113,23 +116,42 @@ sub _autoland_attachment_checked {
 
 sub _autoland_attachment_who {
     my $self = shift;
-    my $dbh = Bugzilla->dbh;
     return undef if !$self->autoland_checked;
     return $self->{'autoland_who'};
 }
 
 sub _autoland_attachment_status {
     my $self = shift;
-    my $dbh = Bugzilla->dbh;
     return undef if !$self->autoland_checked;
     return $self->{'autoland_status'};
 }
 
 sub _autoland_attachment_status_when {
     my $self = shift;
-    my $dbh = Bugzilla->dbh;
     return undef if !$self->autoland_checked;
     return $self->{'autoland_status_when'};
+}
+
+sub _autoland_attachment_update_status {
+    my ($self, $status) = @_;
+    my $dbh = Bugzilla->dbh;
+
+    return undef if !$self->autoland_checked;
+
+    grep($_ eq $status, VALID_STATUSES)
+        || ThrowUserError('autoland_invalid_status',
+                          { status => $status });
+
+    if ($self->autoland_status ne $status) {
+        my $timestamp = $dbh->selectrow_array("SELECT LOCALTIMESTAMP(0)");
+        trick_taint($status);
+        $dbh->do("UPDATE autoland_attachments SET status = ?, status_when = ?
+                  WHERE attach_id = ?", undef, $status, $timestamp, $self->id);
+        $self->{'autoland_status'}      = $status;
+        $self->{'autoland_status_when'} = $timestamp;
+    }
+
+    return 1;
 }
 
 sub object_end_of_update {
@@ -212,7 +234,7 @@ sub webservice {
     my ($self, $args) = @_;
 
     my $dispatch = $args->{dispatch};
-    $dispatch->{AutoLand} = "Bugzilla::Extension::AutoLand::WebService";
+    $dispatch->{TryAutoLand} = "Bugzilla::Extension::TryAutoLand::WebService";
 }
 
 __PACKAGE__->NAME;

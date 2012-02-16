@@ -5,7 +5,7 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::Extension::AutoLand::Constants;
+package Bugzilla::Extension::TryAutoLand::Constants;
 
 use strict;
 
@@ -13,6 +13,7 @@ use base qw(Exporter);
 
 our @EXPORT = qw(
     VALID_STATUSES 
+    WEBSERVICE_USER
 );
 
 use constant VALID_STATUSES => qw(
@@ -21,5 +22,7 @@ use constant VALID_STATUSES => qw(
     failed
     success
 );
+
+use constant WEBSERVICE_USER => 'autoland-try@mozilla.bugs';
 
 1;
