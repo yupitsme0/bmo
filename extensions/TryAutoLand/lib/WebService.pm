@@ -31,7 +31,7 @@ sub getBugs {
     my $dbh  = Bugzilla->dbh;
     my %bugs;
 
-    if ($user->login ne 'autoland-try@mozilla.org') {
+    if ($user->login ne 'autoland-try@mozilla.bugs') {
         ThrowUserError("auth_failure", { action => "access",
                                          object => "autoland_patches" });
     }
@@ -91,7 +91,7 @@ sub updateStatus {
     my $user = Bugzilla->user;
     my $dbh  = Bugzilla->dbh;
 
-    if ($user->login ne 'autoland-try@mozilla.org') {
+    if ($user->login ne 'autoland-try@mozilla.bugs') {
         ThrowUserError("auth_failure", { action => "modify",
                                          object => "autoland_patches" });
     }
