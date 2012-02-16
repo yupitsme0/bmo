@@ -17,6 +17,10 @@ use Bugzilla::Util qw(trick_taint);
 
 use Bugzilla::Extension::AutoLand::Constants;
 
+use constant READ_ONLY => qw(
+    getBugs 
+);
+
 # AutoLand.getBugs
 # returns a list of bugs, each being a hash of data needed by the AutoLand polling server
 # [ { bug_id => $bug_id1, attachments => [ $attach_id1, $attach_id2 ] }, branches => $branchListFromTextField ... ]
