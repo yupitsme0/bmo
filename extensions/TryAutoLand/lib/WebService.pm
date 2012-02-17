@@ -108,7 +108,7 @@ sub updateStatus {
     my $status    = delete $params->{'status'};
  
     my $attachment = Bugzilla::Attachment->new($attach_id);
-    ($attachment && !$attachment->isobsolete) 
+    $attachment
         || ThrowUserError('autoland_invalid_attach_id',
                           { attach_id => $attach_id });
    
