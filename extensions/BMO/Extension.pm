@@ -177,6 +177,13 @@ sub page_before_template {
     elsif ($page eq 'release_tracking_report.html') {
         release_tracking_report($vars);
     }
+    elsif ($page eq 'env.html') {
+        Bugzilla->user->in_group('admin')
+            || ThrowUserError('auth_failure', { group  => 'admin',
+                                                action => 'access',
+                                                object => 'administrative_pages' });
+        $vars->{'ENV'} = \%ENV;
+    }
 }
 
 sub _get_field_values_sort_key {
