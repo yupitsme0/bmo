@@ -33,7 +33,7 @@ sub getBugs {
 
     if ($user->login ne WEBSERVICE_USER) {
         ThrowUserError("auth_failure", { action => "access",
-                                         object => "autoland_patches" });
+                                         object => "autoland_attachments" });
     }
 
     my $attachments = $dbh->selectall_arrayref("
@@ -60,10 +60,16 @@ sub getBugs {
 
         $bugs{$bug_id} = {} if !exists $bugs{$bug_id};
 
-        $bugs{$bug_id}{'branches'} 
-            = $dbh->selectrow_array("SELECT branches FROM autoland_branches 
-                                      WHERE bug_id = ?", undef, $bug_id) || '';
-       
+        if (!$bugs{$bug_id}{'branches'}) {
+            my $bug_result = $dbh->selectrow_hashref("SELECT branches, try_syntax
+                                                        FROM autoland_branches 
+                                                       WHERE bug_id = ?", 
+                                                     { Slice => {} }, $bug_id);
+  
+            $bugs{$bug_id}{'branches'}   = $bug_result->{'branches'};
+            $bugs{$bug_id}{'try_syntax'} = $bug_result->{'try_syntax'};
+        }
+      
         $bugs{$bug_id}{'attachments'} = [] if !exists $bugs{$bug_id}{'attachments'};
 
         push(@{$bugs{$bug_id}{'attachments'}}, {
@@ -95,7 +101,7 @@ sub updateStatus {
 
     if ($user->login ne WEBSERVICE_USER) {
         ThrowUserError("auth_failure", { action => "modify",
-                                         object => "autoland_patches" });
+                                         object => "autoland_attachments" });
     }
 
     foreach my $param ('attach_id', 'status') {

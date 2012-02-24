@@ -15,6 +15,7 @@ use Bugzilla::Bug;
 use Bugzilla::Attachment;
 use Bugzilla::User;
 use Bugzilla::Util qw(trick_taint diff_arrays);
+use Bugzilla::Error;
 
 use Bugzilla::Extension::TryAutoLand::Constants;
 
@@ -22,6 +23,7 @@ our $VERSION = '0.01';
 
 BEGIN {
     *Bugzilla::Bug::autoland_branches             = \&_autoland_branches;
+    *Bugzilla::Bug::autoland_try_syntax           = \&_autoland_try_syntax;
     *Bugzilla::Attachment::autoland_checked       = \&_autoland_attachment_checked;
     *Bugzilla::Attachment::autoland_who           = \&_autoland_attachment_who;
     *Bugzilla::Attachment::autoland_status        = \&_autoland_attachment_status;
@@ -47,6 +49,10 @@ sub db_schema_abstract_schema {
                 TYPE    => 'VARCHAR(255)',
                 NOTNULL => 1
             }, 
+            try_syntax => {
+                TYPE    => 'VARCHAR(255)', 
+                NOTNULL => 1
+            }
         ],
     };
 
@@ -84,12 +90,27 @@ sub db_schema_abstract_schema {
 
 sub _autoland_branches {
     my $self = shift;
-    my $dbh = Bugzilla->dbh;
-    return $self->{'autoland_branches'} if $self->{'autoland_branches'};
-    $self->{'autoland_branches'} 
-        = $dbh->selectrow_array("SELECT branches FROM autoland_branches 
-                                 WHERE bug_id = ?", undef, $self->id);
+    return $self->{'autoland_branches'} if exists $self->{'autoland_branches'};
+    _preload_bug_data($self);
     return $self->{'autoland_branches'};
+}
+
+sub _autoland_try_syntax {
+    my $self = shift;
+    return $self->{'autoland_try_syntax'} if exists $self->{'autoland_try_syntax'};
+    _preload_bug_data($self);
+    return $self->{'autoland_try_syntax'};
+}
+
+sub _preload_bug_data {
+    my ($self) = @_;
+    my $dbh = Bugzilla->dbh;
+    my $result = $dbh->selectrow_hashref("SELECT branches, try_syntax FROM autoland_branches 
+                                           WHERE bug_id = ?", { Slice => {} }, $self->id);
+    if ($result) {
+        $self->{'autoland_branches'}   = $result->{'branches'}   || '';
+        $self->{'autoland_try_syntax'} = $result->{'try_syntax'} || '';
+    }
 }
 
 sub _autoland_attachment_checked {
@@ -165,12 +186,32 @@ sub object_end_of_update {
     return if !$user->in_group('hg-try');
 
     if ($object->isa('Bugzilla::Bug')) {
-        # First make any needed changes to the branches field
+        # First make any needed changes to the branches and try_syntax fields
         my $bug_id = $object->bug_id;
-        my $old_branches 
-            = $dbh->selectrow_array("SELECT branches FROM autoland_branches 
-                                     WHERE bug_id = ?", undef, $bug_id);
-        my $new_branches = $cgi->param('autoland_branches') || '';
+        my $bug_result = $dbh->selectrow_hashref("SELECT branches, try_syntax 
+                                                    FROM autoland_branches 
+                                                  WHERE bug_id = ?", 
+                                                 { Slice => {} }, $bug_id);
+
+        my ($old_branches, $old_try_syntax);
+        if ($bug_result) {
+            $old_branches   = $bug_result->{'branches'};
+            $old_try_syntax = $bug_result->{'try_syntax'};
+        }
+
+        my $new_branches   = $params->{'autoland_branches'};
+        my $new_try_syntax = $params->{'autoland_try_syntax'};
+
+        my $set_attachments = ref $params->{'autoland_attachments'}
+                              ? $params->{'autoland_attachments'}
+                              : [ $params->{'autoland_attachments'} ];
+
+        # Check for required values
+        (!$new_branches && @{$set_attachments}) 
+            && ThrowUserError('autoland_empty_branches');     
+        ($new_branches && !$new_try_syntax) 
+            && ThrowUserError('autoland_empty_try_syntax');
+
         trick_taint($new_branches);
         if (!$new_branches && $old_branches) {
             $dbh->do("DELETE FROM autoland_branches WHERE bug_id = ?",
@@ -185,6 +226,12 @@ sub object_end_of_update {
                      undef, $new_branches, $bug_id);
         }
 
+        trick_taint($new_try_syntax);
+        if (($old_try_syntax ne $new_try_syntax) && $new_branches) {
+            $dbh->do("UPDATE autoland_branches SET try_syntax = ? WHERE bug_id = ?",
+                     undef, $new_try_syntax, $bug_id);
+        }
+
         # Next make any changes needed to each of the attachments.
         # 1. If an attachment is checked it has a row in the table, if
         # there is no row in the table it is not checked.
@@ -192,9 +239,6 @@ sub object_end_of_update {
         my $check_attachments = ref $params->{'defined_autoland_attachments'}
                                 ? $params->{'defined_autoland_attachments'}
                                 : [ $params->{'defined_autoland_attachments'} ];
-        my $set_attachments   = ref $params->{'autoland_attachments'}
-                                ? $params->{'autoland_attachments'}
-                                : [ $params->{'autoland_attachments'} ];
         my ($removed_attachments) = diff_arrays($check_attachments, $set_attachments);
         foreach my $attachment (@{$object->attachments}) {
             next if !$attachment->ispatch;
@@ -227,6 +271,10 @@ sub template_before_process {
     # in the header we just need to set the var to ensure the css gets included
     if ($file eq 'bug/show-header.html.tmpl' && Bugzilla->user->in_group('hg-try') ) {
         $vars->{'autoland'} = 1;
+    }
+
+    if ($file eq 'bug/edit.html.tmpl') {
+        $vars->{'autoland_default_try_syntax'} = DEFAULT_TRY_SYNTAX;
     }
 }
 

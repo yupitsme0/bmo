@@ -14,6 +14,7 @@ use base qw(Exporter);
 our @EXPORT = qw(
     VALID_STATUSES 
     WEBSERVICE_USER
+    DEFAULT_TRY_SYNTAX
 );
 
 use constant VALID_STATUSES => qw(
@@ -24,5 +25,7 @@ use constant VALID_STATUSES => qw(
 );
 
 use constant WEBSERVICE_USER => 'autoland-try@mozilla.bugs';
+
+use constant DEFAULT_TRY_SYNTAX => '-b do -p all -u none -t none';
 
 1;

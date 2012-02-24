@@ -7,7 +7,7 @@
   #%]
 
 [% IF user.in_group('hg-try') %]
-  [% autoland_patches = [] %]
+  [% autoland_attachments = [] %]
   [% autoland_waiting = 0 %]
   [% autoland_running = 0 %]
   [% autoland_finished = 0 %]
@@ -15,7 +15,7 @@
     [% NEXT IF attachment.isprivate && !user.is_insider && attachment.attacher.id != user.id %]
     [% NEXT IF attachment.isobsolete %]
     [% NEXT IF !attachment.ispatch %]
-    [% autoland_patches.push(attachment) %]
+    [% autoland_attachments.push(attachment) %]
     [% IF attachment.autoland_checked %]
       [% IF attachment.autoland_status == 'waiting' %]
         [% autoland_waiting = autoland_waiting + 1 %]
@@ -28,7 +28,7 @@
       [% END %]
     [% END %]
   [% END %]
-  [% IF autoland_patches.size %]
+  [% IF autoland_attachments.size %]
     <tr>
       <th class="field_label field_land_autoland">
         <a title="[% help_html.autoland FILTER txt FILTER collapse FILTER html %]"
@@ -38,20 +38,24 @@
       <td>
         <span id="autoland_edit_container">
           (<a href="#" id="autoland_edit_action">edit</a>)
-          Total: [% autoland_patches.size FILTER html %] - 
+          Total: [% autoland_attachments.size FILTER html %] - 
           <span class="autoland_waiting">Waiting:</span> [% autoland_waiting FILTER html %] -
           <span class="autoland_running">Running:</span> [% autoland_running FILTER html %] - 
           <span class="autoland_success">Finished:</span> [% autoland_finished FILTER html %]
         </span>
         <div id="autoland_edit_input">
-          Branches:<br>
+          Branches (required):<br>
           <input type="text" id="autoland_branches" name="autoland_branches" 
                  value="[% bug.autoland_branches FILTER html %]" size="40"
+                 class="text_input"><br>
+          Try Syntax (required): (Default: [% autoland_default_try_syntax FILTER html %])<br>
+          <input type="text" id="autoland_try_syntax" name="autoland_try_syntax" 
+                 value="[% bug.autoland_try_syntax || autoland_default_try_syntax FILTER html %]" size="40"
                  class="text_input"><br>
           Patches:
           <br>
           <table id="autoland_edit_table">
-          [% FOREACH attachment = autoland_patches %]
+          [% FOREACH attachment = autoland_attachments %]
             <tr>
               <td>
                 [% IF attachment.autoland_checked %]
