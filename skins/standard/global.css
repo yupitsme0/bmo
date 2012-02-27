@@ -373,13 +373,13 @@ input.requestee {
 }
 
 #error_msg {
-    font-size: x-large;
+    font-size: large;
 }
 
 .throw_error {
-    background-color: #ff0000;
+    background-color: #ff6666;
     color: black;
-    font-size: 120%;
+    font-size: large;
     margin: 1em;
     padding: 0.5em 1em;
 }
