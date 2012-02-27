@@ -49,10 +49,10 @@ sub db_schema_abstract_schema {
                 TYPE    => 'VARCHAR(255)',
                 NOTNULL => 1
             }, 
-            try_syntax => {
-                TYPE    => 'VARCHAR(255)', 
-                NOTNULL => 1
-            }
+            #try_syntax => {
+            #    TYPE    => 'VARCHAR(255)', 
+            #    NOTNULL => 1
+            #}
         ],
     };
 
@@ -86,6 +86,19 @@ sub db_schema_abstract_schema {
             },
         ],
     };
+}
+
+sub install_update_db {
+    my ($self) = @_;
+    my $dbh = Bugzilla->dbh;
+
+    if (!$dbh->bz_column_info('autoland_branches', 'try_syntax')) {
+        $dbh->bz_add_column('autoland_branches', 'try_syntax', {
+            TYPE    => 'VARCHAR(255)',
+            NOTNULL => 1, 
+            DEFAULT => "'" . DEFAULT_TRY_SYNTAX . "'", 
+        });
+    }
 }
 
 sub _autoland_branches {
