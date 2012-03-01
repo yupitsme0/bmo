@@ -512,6 +512,7 @@ sub CollectSeriesData {
         eval {
             my $search = new Bugzilla::Search('params' => $cgi,
                                               'fields' => ["bug_id"],
+                                              'allow_unlimited' => 1,
                                               'user'   => $user);
             my $sql = $search->getSQL();
             $data = $shadow_dbh->selectall_arrayref($sql);
