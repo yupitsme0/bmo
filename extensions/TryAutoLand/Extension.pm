@@ -49,10 +49,11 @@ sub db_schema_abstract_schema {
                 TYPE    => 'VARCHAR(255)',
                 NOTNULL => 1
             }, 
-            #try_syntax => {
-            #    TYPE    => 'VARCHAR(255)', 
-            #    NOTNULL => 1
-            #}
+            try_syntax => {
+                TYPE    => 'VARCHAR(255)', 
+                NOTNULL => 1, 
+                DEFAULT => "''", 
+            }
         ],
     };
 
@@ -96,7 +97,7 @@ sub install_update_db {
         $dbh->bz_add_column('autoland_branches', 'try_syntax', {
             TYPE    => 'VARCHAR(255)',
             NOTNULL => 1, 
-            DEFAULT => "'" . DEFAULT_TRY_SYNTAX . "'", 
+            DEFAULT => "''", 
         });
     }
 }
@@ -121,8 +122,12 @@ sub _preload_bug_data {
     my $result = $dbh->selectrow_hashref("SELECT branches, try_syntax FROM autoland_branches 
                                            WHERE bug_id = ?", { Slice => {} }, $self->id);
     if ($result) {
-        $self->{'autoland_branches'}   = $result->{'branches'}   || '';
-        $self->{'autoland_try_syntax'} = $result->{'try_syntax'} || '';
+        $self->{'autoland_branches'}   = $result->{'branches'};
+        $self->{'autoland_try_syntax'} = $result->{'try_syntax'};
+    }
+    else {
+        $self->{'autoland_branches'}   = undef;
+        $self->{'autoland_try_syntax'} = undef;
     }
 }
 
@@ -206,18 +211,22 @@ sub object_end_of_update {
                                                   WHERE bug_id = ?", 
                                                  { Slice => {} }, $bug_id);
 
-        my ($old_branches, $old_try_syntax);
+        my $old_branches   = '';
+        my $old_try_syntax = '';
         if ($bug_result) {
             $old_branches   = $bug_result->{'branches'};
             $old_try_syntax = $bug_result->{'try_syntax'};
         }
 
-        my $new_branches   = $params->{'autoland_branches'};
-        my $new_try_syntax = $params->{'autoland_try_syntax'};
+        my $new_branches   = $params->{'autoland_branches'} || '';
+        my $new_try_syntax = $params->{'autoland_try_syntax'} || '';
 
-        my $set_attachments = ref $params->{'autoland_attachments'}
-                              ? $params->{'autoland_attachments'}
-                              : [ $params->{'autoland_attachments'} ];
+        my $set_attachments = [];
+        if (ref $params->{'autoland_attachments'}) {
+            $set_attachments = $params->{'autoland_attachments'};
+        } elsif ($params->{'autoland_attachments'}) {
+            $set_attachments = [ $params->{'autoland_attachments'} ];
+        }
 
         # Check for required values
         (!$new_branches && @{$set_attachments}) 
@@ -299,4 +308,3 @@ sub webservice {
 }
 
 __PACKAGE__->NAME;
-
