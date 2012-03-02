@@ -36,6 +36,27 @@ sub getBugs {
                                          object => "autoland_attachments" });
     }
 
+    use Data::Dumper;
+
+    my $status_where  = "AND status = 'waiting'";
+    my $status_values = [];
+    if (exists $params->{'status'}) {
+        my $statuses = ref $params->{'status'}
+                       ? $params->{'status'}
+                       : [ $params->{'status'} ];
+        foreach my $status (@$statuses) {
+            if (grep($_ eq $status, VALID_STATUSES)) {
+                trick_taint($status);
+                push(@$status_values, $status);
+            }
+        }
+        if (@$status_values) {
+            my @qmarks = ("?") x @$status_values;
+            $status_where = "AND " . $dbh->sql_in('status', \@qmarks);
+        }
+        
+    }
+
     my $attachments = $dbh->selectall_arrayref("
         SELECT attachments.bug_id, 
                attachments.attach_id, 
@@ -43,10 +64,10 @@ sub getBugs {
                autoland_attachments.status,
                autoland_attachments.status_when 
           FROM attachments, autoland_attachments 
-         WHERE attachments.attach_id = autoland_attachments.attach_id 
-      ORDER BY attachments.bug_id");
-
-    use Data::Dumper;
+         WHERE attachments.attach_id = autoland_attachments.attach_id
+               $status_where
+      ORDER BY attachments.bug_id",
+        undef, @$status_values);
 
     foreach my $row (@$attachments) {
         my ($bug_id, $attach_id, $al_who, $al_status, $al_status_when) = @$row;
@@ -67,7 +88,6 @@ sub getBugs {
                                                         FROM autoland_branches 
                                                        WHERE bug_id = ?", 
                                                      undef, $bug_id);
-            print STDERR Dumper $bug_result; 
             $bugs{$bug_id}{'branches'}   = $bug_result->{'branches'};
             $bugs{$bug_id}{'try_syntax'} = $bug_result->{'try_syntax'};
         }
