@@ -46,6 +46,8 @@ sub getBugs {
          WHERE attachments.attach_id = autoland_attachments.attach_id 
       ORDER BY attachments.bug_id");
 
+    use Data::Dumper;
+
     foreach my $row (@$attachments) {
         my ($bug_id, $attach_id, $al_who, $al_status, $al_status_when) = @$row;
 
@@ -64,8 +66,8 @@ sub getBugs {
             my $bug_result = $dbh->selectrow_hashref("SELECT branches, try_syntax
                                                         FROM autoland_branches 
                                                        WHERE bug_id = ?", 
-                                                     { Slice => {} }, $bug_id);
-  
+                                                     undef, $bug_id);
+            print STDERR Dumper $bug_result; 
             $bugs{$bug_id}{'branches'}   = $bug_result->{'branches'};
             $bugs{$bug_id}{'try_syntax'} = $bug_result->{'try_syntax'};
         }
@@ -82,7 +84,8 @@ sub getBugs {
 
     return [ 
         map 
-        { { bug_id => $_, attachments => $bugs{$_}{'attachments'}, branches => $bugs{$_}{'branches'} } }
+        { { bug_id => $_, attachments => $bugs{$_}{'attachments'}, 
+            branches => $bugs{$_}{'branches'}, try_syntax => $bugs{$_}{'try_syntax'} } }
         keys %bugs 
     ];
 }
