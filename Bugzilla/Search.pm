@@ -1052,7 +1052,7 @@ sub init {
     }
     $suppstring .= join('', @supplist);
     
-    if (!@andlist
+    if (!(scalar(@wherepart) || scalar(@andlist))
         && !Bugzilla->params->{'specific_search_allow_empty_words'}
         && !$self->{allow_unlimited})
     {
