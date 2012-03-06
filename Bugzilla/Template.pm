@@ -911,7 +911,15 @@ sub create {
                     { map { $_->name => $_ } Bugzilla->get_fields() };
                 return $cache->{template_bug_fields};
             },
-            
+
+            # A general purpose cache to store rendered templates for reuse.
+            # Make sure to not mix language-specific data.
+            'template_cache' => sub {
+                my $cache = Bugzilla->request_cache->{template_cache} ||= {};
+                $cache->{users} ||= {};
+                return $cache;
+            },
+
             'css_files' => \&css_files,
             yui_resolve_deps => \&yui_resolve_deps,
 
