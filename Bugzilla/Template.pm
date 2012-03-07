@@ -326,20 +326,26 @@ sub get_bug_link {
 
     $bug = blessed($bug) ? $bug : new Bugzilla::Bug($bug);
     return $link_text if $bug->{error};
-    
+
     # Initialize these variables to be "" so that we don't get warnings
     # if we don't change them below (which is highly likely).
     my ($pre, $title, $post) = ("", "", "");
 
-    $title = get_text('get_status', { status => $bug->bug_status });
+    my $status_cache = Bugzilla->request_cache->{status} ||= {};
+    $title = $status_cache->{$bug->bug_status} ||=
+        get_text('get_status', { status => $bug->bug_status });
+
     if ($bug->bug_status eq 'UNCONFIRMED') {
         $pre = "<i>";
         $post = "</i>";
     }
     if ($bug->resolution) {
         $pre .= '<span class="bz_closed">';
-        $title .= ' ' . get_text('get_resolution',
-                                 { resolution => $bug->resolution });
+
+        my $resolution_cache = Bugzilla->request_cache->{resolution} ||= {};
+        my $resolution = $resolution_cache->{$bug->resolution} ||=
+            get_text('get_resolution', { resolution => $bug->resolution });
+        $title .= " $resolution";
         $post .= '</span>';
     }
     if (Bugzilla->user->can_see_bug($bug)) {
