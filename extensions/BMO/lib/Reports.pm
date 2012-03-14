@@ -200,6 +200,13 @@ sub user_activity_report {
 
         my $list = $dbh->selectall_arrayref($query, undef, @params);
 
+        if ($input->{debug}) {
+            while (my $param = shift @params) {
+                $query =~ s/\?/$dbh->quote($param)/e;
+            }
+            $vars->{debug_sql} = $query;
+        }
+
         my @operations;
         my $operation = {};
         my $changes = [];
@@ -244,7 +251,11 @@ sub user_activity_report {
                 if ($order eq 'bug_when') {
                     $is_new_changeset =
                         $operation->{'who'} &&
-                        ($who ne $operation->{'who'} || $when ne $operation->{'when'});
+                        (
+                            $who ne $operation->{'who'}
+                            || $when ne $operation->{'when'}
+                            || $bugid != $operation->{'bug'}
+                        );
                 } else {
                     $is_new_changeset = 
                         $operation->{'bug'} &&
