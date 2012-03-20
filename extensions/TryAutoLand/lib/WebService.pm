@@ -22,7 +22,9 @@ use constant READ_ONLY => qw(
 );
 
 # TryAutoLand.getBugs
-# returns a list of bugs, each being a hash of data needed by the AutoLand polling server
+# Params: status - List of statuses to filter attachments (only 'waiting' is default)
+# Returns: List of bugs, each being a hash of data needed by the AutoLand polling server
+# Params
 # [ { bug_id => $bug_id1, attachments => [ $attach_id1, $attach_id2 ] }, branches => $branchListFromTextField ... ]
 
 sub getBugs { 
@@ -35,8 +37,6 @@ sub getBugs {
         ThrowUserError("auth_failure", { action => "access",
                                          object => "autoland_attachments" });
     }
-
-    use Data::Dumper;
 
     my $status_where  = "AND status = 'waiting'";
     my $status_values = [];
