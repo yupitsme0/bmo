@@ -56,9 +56,10 @@ use Bugzilla::Extension::BMO::Data qw($cf_visible_in_products
                                       %product_sec_groups);
 use Bugzilla::Extension::BMO::Reports qw(user_activity_report
                                          triage_reports
-                                         group_admins
+                                         group_admins_report
                                          email_queue_report
-                                         release_tracking_report);
+                                         release_tracking_report
+                                         group_membership_report);
 
 our $VERSION = '0.1';
 
@@ -169,7 +170,10 @@ sub page_before_template {
         Bugzilla->request_cache->{'bmo_fields_page'} = 1;
     }
     elsif ($page eq 'group_admins.html') {
-        group_admins($vars);
+        group_admins_report($vars);
+    }
+    elsif ($page eq 'group_membership.html' or $page eq 'group_membership.txt') {
+        group_membership_report($page, $vars);
     }
     elsif ($page eq 'email_queue.html') {
         email_queue_report($vars);
@@ -884,7 +888,7 @@ sub post_bug_after_creation {
             $new_bug = Bugzilla::Bug->create({ 
                 short_desc        => 'Investigate Lost Device',
                 product           => 'mozilla.org',
-                component         => 'Infrastructure Security',
+                component         => 'Security Assurance: Incident',
                 status_whiteboard => '[infrasec:incident]',
                 bug_severity      => 'critical',
                 cc                => [ 'mcoates@mozilla.com', 'jstevensen@mozilla.com' ],

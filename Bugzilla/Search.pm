@@ -1052,6 +1052,13 @@ sub init {
     }
     $suppstring .= join('', @supplist);
     
+    if (!(scalar(@wherepart) || scalar(@andlist))
+        && !Bugzilla->params->{'specific_search_allow_empty_words'}
+        && !$self->{allow_unlimited})
+    {
+        ThrowUserError('buglist_parameters_required');
+    }
+
     # Make sure we create a legal SQL query.
     @andlist = ("1 = 1") if !@andlist;
 

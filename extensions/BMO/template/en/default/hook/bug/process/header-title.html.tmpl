@@ -6,8 +6,4 @@
   # defined by the Mozilla Public License, v. 2.0.
   #%]
 
-[% IF ih_activity_max %]
-<p>
-  <i>This [% terms.bug %] contains too many changes to be displayed inline.</i>
-</p>
-[% END %]
+[% title = title.replace('^' _ terms.Bug _ ' ', '') %]

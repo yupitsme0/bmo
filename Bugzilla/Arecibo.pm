@@ -1,24 +1,9 @@
-# ***** BEGIN LICENSE BLOCK *****
-# Version: MPL 1.1
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# The contents of this file are subject to the Mozilla Public License Version
-# 1.1 (the "License"); you may not use this file except in compliance with the
-# License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-#
-# Software distributed under the License is distributed on an "AS IS" basis,
-# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
-# the specific language governing rights and limitations under the License.
-#
-# The Original Code is bugzilla.mozilla.org.
-#
-# The Initial Developer of the Original Code is the Mozilla Foundation.
-# Portions created by the Initial Developer are Copyright (C) 2011 the Initial
-# Developer. All Rights Reserved.
-#
-# Contributor(s):
-#   byron jones <glob@mozilla.com>
-#
-# ***** END LICENSE BLOCK *****
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
 
 package Bugzilla::Arecibo;
 
@@ -113,15 +98,18 @@ sub arecibo_handle_error {
     my $is_error = $class eq 'error';
     if ($class ne 'error' && $class ne 'warning') {
         # it's a code-error
-        return unless arecibo_should_notify($class);
+        return 0 unless arecibo_should_notify($class);
         $is_error = 1;
     }
 
     # build traceback
     my $traceback;
     {
-        local $Carp::MaxArgLen  = 256;
-        local $Carp::MaxArgNums = 0;
+        # for now don't show function arguments, in case they contain
+        # confidential data.  waiting on bug 700683
+        #local $Carp::MaxArgLen  = 256;
+        #local $Carp::MaxArgNums = 0;
+        local $Carp::MaxArgNums = -1;
         local $Carp::CarpInternal{'CGI::Carp'} = 1;
         local $Carp::CarpInternal{'Bugzilla::Error'}   = 1;
         local $Carp::CarpInternal{'Bugzilla::Arecibo'} = 1;
@@ -135,7 +123,7 @@ sub arecibo_handle_error {
     my $message = join(" ", map { trim($_) } grep { $_ ne '' } @message);
 
     # don't send to arecibo unless configured
-    my $arecibo_server = Bugzilla->params->{arecibo_server};
+    my $arecibo_server = Bugzilla->params->{arecibo_server} || '';
     my $send_to_arecibo = $arecibo_server ne '';
     if ($send_to_arecibo) {
         # message content filtering
@@ -154,17 +142,9 @@ sub arecibo_handle_error {
         $traceback =~ s/\n/ /g;
         $message .= " $traceback";
     }
-    if ($ENV{MOD_PERL}) {
-        if ($is_error) {
-            Apache2::ServerRec::log_error($message);
-        } else {
-            Apache2::ServerRec::warn($message);
-        }
-    } else {
-        print STDERR "$message\n";
-    }
+    _write_to_error_log($message, $is_error);
 
-    return unless $send_to_arecibo;
+    return 0 unless $send_to_arecibo;
 
     # set the error type and priority from the message content
     $message = join("\n", grep { $_ ne '' } @message);
@@ -221,6 +201,20 @@ sub arecibo_handle_error {
 
         CORE::exit(0);
     }
+    return 1;
+}
+
+sub _write_to_error_log {
+    my ($message, $is_error) = @_;
+    if ($ENV{MOD_PERL}) {
+        if ($is_error) {
+            Apache2::ServerRec::log_error($message);
+        } else {
+            Apache2::ServerRec::warn($message);
+        }
+    } else {
+        print STDERR "$message\n";
+    }
 }
 
 # lifted from Bugzilla::Error
@@ -228,6 +222,7 @@ sub _in_eval {
     my $in_eval = 0;
     for (my $stack = 1; my $sub = (caller($stack))[3]; $stack++) {
         last if $sub =~ /^ModPerl/;
+        last if $sub =~ /^Bugzilla::Template/;
         $in_eval = 1 if $sub =~ /^\(eval\)/;
     }
     return $in_eval;
@@ -238,20 +233,27 @@ BEGIN {
     CGI::Carp::set_die_handler(sub {
         return if _in_eval();
         my $message = shift;
-        eval { Bugzilla::Error::ThrowTemplateError($message) };
-        if ($@) {
+        my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
+        if (!$is_compilation_failure) {
+            eval { Bugzilla::Error::ThrowTemplateError($message) };
+        }
+        if ($is_compilation_failure || $@) {
             print "Content-type: text/html\n\n";
             my $uid = arecibo_generate_id();
-            arecibo_handle_error('error', $message, $uid);
+            my $notified = arecibo_handle_error('error', $message, $uid);
             my $maintainer = html_quote(Bugzilla->params->{'maintainer'});
             $message = html_quote($message);
             $uid = html_quote($uid);
             print qq(
                 <h1>Bugzilla has suffered an internal error</h1>
                 <pre>$message</pre>
-                The <a href="mailto:$maintainer">Bugzilla maintainers</a> have
-                been notified of this error [#$uid].
             );
+            if ($notified) {
+                print qq(
+                    The <a href="mailto:$maintainer">Bugzilla maintainers</a> have
+                    been notified of this error [#$uid].
+                );
+            };
             exit;
         }
     });

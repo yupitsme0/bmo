@@ -729,6 +729,15 @@ sub in_group_id {
     return grep($_->id == $id, @{ $self->groups }) ? 1 : 0;
 }
 
+# This is a helper to get all groups which have an icon to be displayed
+# besides the name of the commenter.
+sub groups_with_icon {
+    my $self = shift;
+
+    my @groups = grep { $_->icon_url } @{ $self->direct_group_membership };
+    return \@groups;
+}
+
 sub get_products_by_permission {
     my ($self, $group) = @_;
     # Make sure $group exists on a per-product basis.
@@ -974,28 +983,31 @@ sub get_enterable_products {
     }
 
      # All products which the user has "Entry" access to.
-     my @enterable_ids =@{$dbh->selectcol_arrayref(
+     my $enterable_ids = $dbh->selectcol_arrayref(
            'SELECT products.id FROM products
          LEFT JOIN group_control_map
                    ON group_control_map.product_id = products.id
                       AND group_control_map.entry != 0
                       AND group_id NOT IN (' . $self->groups_as_string . ')
             WHERE group_id IS NULL
-                  AND products.isactive = 1') || []};
+                  AND products.isactive = 1');
 
-    if (@enterable_ids) {
+    if (scalar @$enterable_ids) {
         # And all of these products must have at least one component
         # and one version.
-        @enterable_ids = @{$dbh->selectcol_arrayref(
-               'SELECT DISTINCT products.id FROM products
-            INNER JOIN components ON components.product_id = products.id
-            INNER JOIN versions ON versions.product_id = products.id
-                 WHERE products.id IN (' . (join(',', @enterable_ids)) .
-            ')') || []};
+        $enterable_ids = $dbh->selectcol_arrayref(
+            'SELECT DISTINCT products.id FROM products
+              WHERE ' . $dbh->sql_in('products.id', $enterable_ids) .
+              ' AND products.id IN (SELECT DISTINCT components.product_id
+                                      FROM components
+                                     WHERE components.isactive = 1)
+                AND products.id IN (SELECT DISTINCT versions.product_id
+                                      FROM versions
+                                     WHERE versions.isactive = 1)');
     }
 
     $self->{enterable_products} =
-         Bugzilla::Product->new_from_list(\@enterable_ids);
+         Bugzilla::Product->new_from_list($enterable_ids);
     return $self->{enterable_products};
 }
 

@@ -6,8 +6,11 @@
   # defined by the Mozilla Public License, v. 2.0.
   #%]
 
-[% IF ih_activity_max %]
-<p>
-  <i>This [% terms.bug %] contains too many changes to be displayed inline.</i>
-</p>
+[% FOREACH u = users %]
+[% u.user.login FILTER none%]:
+  [% FOREACH g = u.groups %]
+    [% g.name FILTER none %]
+    [% ',' UNLESS loop.last %]
+  [% END %]
+  [% "\n" %]
 [% END %]

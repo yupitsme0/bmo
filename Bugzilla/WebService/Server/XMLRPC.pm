@@ -72,10 +72,21 @@ use XMLRPC::Lite;
 our @ISA = qw(XMLRPC::Deserializer);
 
 use Bugzilla::Error;
+use Bugzilla::WebService::Constants qw(XMLRPC_CONTENT_TYPE_WHITELIST);
 use Scalar::Util qw(tainted);
 
 sub deserialize {
     my $self = shift;
+
+    # Only allow certain content types to protect against CSRF attacks
+    my $content_type = lc($ENV{'CONTENT_TYPE'});
+    # Remove charset, etc, if provided
+    $content_type =~ s/^([^;]+);.*/$1/;
+    if (!grep($_ eq $content_type, XMLRPC_CONTENT_TYPE_WHITELIST)) {
+        ThrowUserError('xmlrpc_illegal_content_type',
+                       { content_type => $ENV{'CONTENT_TYPE'} });
+    }
+
     my ($xml) = @_;
     my $som = $self->SUPER::deserialize(@_);
     if (tainted($xml)) {
