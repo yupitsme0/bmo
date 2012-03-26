@@ -264,7 +264,7 @@ sub _arecibo_die_handler {
         my $uid = arecibo_generate_id();
         my $notified = arecibo_handle_error('error', $message, $uid);
         my $maintainer = html_quote(Bugzilla->params->{'maintainer'});
-        $message =~ s/ at \S+ line \d+\.$//;
+        $message =~ s/ at \S+ line \d+\.[\r\n\s]*$//;
         $message = html_quote($message);
         $uid = html_quote($uid);
         print qq(
