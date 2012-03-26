@@ -228,45 +228,52 @@ sub _in_eval {
     return $in_eval;
 }
 
+sub _arecibo_die_handler {
+    # avoid recursion
+    for (my $stack = 1; my $sub = (caller($stack))[3]; $stack++) {
+        return if $sub =~ /:_arecibo_die_handler$/;
+    }
+
+    return if _in_eval();
+    my $message = shift;
+    $message =~ s/^undef error - //;
+
+    my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
+    my $nested_error = '';
+    if (!$is_compilation_failure) {
+        eval { Bugzilla::Error::ThrowTemplateError($message) };
+        $nested_error = $@ if $@;
+    }
+    if ($is_compilation_failure ||
+        ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
+    ) {
+        print "Content-type: text/html\n\n";
+        $nested_error = html_quote($nested_error);
+        my $uid = arecibo_generate_id();
+        my $notified = arecibo_handle_error('error', $message, $uid);
+        my $maintainer = html_quote(Bugzilla->params->{'maintainer'});
+        $message = html_quote($message);
+        $uid = html_quote($uid);
+        print qq(
+            <h1>Bugzilla has suffered an internal error</h1>
+            <pre>$message</pre>
+            <hr>
+            <pre>$nested_error</pre>
+        );
+        if ($notified) {
+            print qq(
+                The <a href="mailto:$maintainer">Bugzilla maintainers</a> have
+                been notified of this error [#$uid].
+            );
+        };
+    }
+    exit;
+}
+
 BEGIN {
     if ($ENV{SCRIPT_NAME} || $ENV{MOD_PERL}) {
         require CGI::Carp;
-        CGI::Carp::set_die_handler(sub {
-            return if _in_eval();
-            my $message = shift;
-            $message =~ s/^undef error - //;
-
-            my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
-            my $nested_error = '';
-            if (!$is_compilation_failure) {
-                eval { Bugzilla::Error::ThrowTemplateError($message) };
-                $nested_error = $@ if $@;
-            }
-            if ($is_compilation_failure ||
-                ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
-            ) {
-                print "Content-type: text/html\n\n";
-                $nested_error = html_quote($nested_error);
-                my $uid = arecibo_generate_id();
-                my $notified = arecibo_handle_error('error', $message, $uid);
-                my $maintainer = html_quote(Bugzilla->params->{'maintainer'});
-                $message = html_quote($message);
-                $uid = html_quote($uid);
-                print qq(
-                    <h1>Bugzilla has suffered an internal error</h1>
-                    <pre>$message</pre>
-                    <hr>
-                    <pre>$nested_error</pre>
-                );
-                if ($notified) {
-                    print qq(
-                        The <a href="mailto:$maintainer">Bugzilla maintainers</a> have
-                        been notified of this error [#$uid].
-                    );
-                };
-            }
-            exit;
-        });
+        CGI::Carp::set_die_handler(\&_arecibo_die_handler);
         $main::SIG{__WARN__} = sub {
             return if _in_eval();
             arecibo_handle_error('warning', shift);
