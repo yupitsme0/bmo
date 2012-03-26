@@ -28,6 +28,8 @@ use Bugzilla::Object;
 use Bugzilla::User;
 use Bugzilla::Util qw(correct_urlbase trim trick_taint);
 use Bugzilla::Error;
+use Bugzilla::Mailer;
+
 use Crypt::OpenPGP::Armour;
 use Crypt::OpenPGP::KeyRing;
 use Crypt::OpenPGP;
@@ -153,6 +155,7 @@ sub user_preferences {
     my $save    = $args->{'save_changes'};
     my $handled = $args->{'handled'};
     my $vars    = $args->{'vars'};
+    my $params  = Bugzilla->input_params;
     
     return unless $tab eq 'securemail';
 
@@ -161,9 +164,14 @@ sub user_preferences {
     my $user = new Bugzilla::User(Bugzilla->user->id);
     
     if ($save) {
-        my $public_key = Bugzilla->input_params->{'public_key'};
-        $user->set('public_key', $public_key);
+        $user->set('public_key', $params->{'public_key'});
         $user->update();
+
+        # Send user a test email
+        if ($user->{'public_key'}) {
+            _send_test_email($user);
+            $vars->{'test_email_sent'} = 1;
+        }
     }
     
     $vars->{'public_key'} = $user->{'public_key'};
@@ -171,6 +179,21 @@ sub user_preferences {
     # Set the 'handled' scalar reference to true so that the caller
     # knows the panel name is valid and that an extension took care of it.
     $$handled = 1;
+}
+
+sub _send_test_email {
+    my ($user) = @_;
+    my $template = Bugzilla->template_inner($user->settings->{'lang'}->{'value'});
+
+    my $vars = {
+        to_user => $user->email, 
+    };
+
+    my $msg = "";
+    $template->process("account/email/securemail-test.txt.tmpl", $vars, \$msg)
+        || ThrowTemplateError($template->error());
+
+    MessageToMTA($msg);
 }
 
 ##############################################################################
@@ -184,10 +207,12 @@ sub mailer_before_send {
     # Decide whether to make secure.
     # This is a bit of a hack; it would be nice if it were more clear 
     # what sort a particular email is.
-    my $is_bugmail      = $email->header('X-Bugzilla-Status');
+    my $is_bugmail      = $email->header('X-Bugzilla-Status') ||
+                          $email->header('X-Bugzilla-Type') eq 'request';
     my $is_passwordmail = !$is_bugmail && ($email->body =~ /cfmpw.*cxlpw/s);
-    
-    if ($is_bugmail || $is_passwordmail) {
+    my $is_test_email   = $email->header('X-Bugzilla-Type') =~ /securemail-test/ ? 1 : 0;
+
+    if ($is_bugmail || $is_passwordmail || $is_test_email) {
         # Convert the email's To address into a User object
         my $login = $email->header('To');        
         my $emailsuffix = Bugzilla->params->{'emailsuffix'};
@@ -234,40 +259,31 @@ sub mailer_before_send {
 }
 
 sub _make_secure {
-    my ($email, $key, $is_bugmail) = @_;
+    my ($email, $key, $sanitise_subject) = @_;
 
-    my $bug_id = undef;
     my $subject = $email->header('Subject');
+    my ($bug_id) = $subject =~ /^\D+(\d+)/;
 
-    # We only change the subject if it's a bugmail; password mails don't have
-    # confidential information in the subject.
-    if ($is_bugmail) {            
-        $subject =~ /^[^\d]+(\d+)/;
-        $bug_id = $1;
-        
-        my $new_subject = $subject;
-        # This is designed to still work if the admin changes the word
-        # 'bug' to something else. However, it could break if they change
-        # the format of the subject line in another way.
-        $new_subject =~ s/($bug_id\])\s+(.*)$/$1 (Secure bug updated)/;
-        $email->header_set('Subject', $new_subject);
+    my $key_type = 0;
+    if ($key && $key =~ /PUBLIC KEY/) {
+        $key_type = 'PGP';
+    }
+    elsif ($key && $key =~ /BEGIN CERTIFICATE/) {
+        $key_type = 'S/MIME';
     }
 
-    if ($key && $key =~ /PUBLIC KEY/) {
+    if ($key_type && $sanitise_subject) {
+        # Subject gets placed in the body so it can still be read
+        my $body = $email->body_str;
+        $body = "Subject: $subject\015\012\015\012" . $body;
+        $email->body_str_set($body);
+    }
+
+    if ($key_type eq 'PGP') {
         ##################
         # PGP Encryption #
         ##################
 
-        # We need to work with the body as a decoded string as we may
-        # modify it
-        my $body = $email->body_str;
-        if ($is_bugmail) {
-            # Subject gets placed in the body so it can still be read
-            $body = "Subject: $subject\n\n" . $body;
-        }
-        # Crypt::OpenPGP requires an encoded string
-        $body = encode('UTF8', $body);
-        
         my $pubring = new Crypt::OpenPGP::KeyRing(Data => $key);
         my $pgp = new Crypt::OpenPGP(PubRing => $pubring);
         
@@ -277,7 +293,7 @@ sub _make_secure {
         # We use the CAST5 cipher because the Rijndael (AES) module doesn't
         # like us for some reason I don't have time to debug fully.
         # ("key must be an untainted string scalar")
-        my $encrypted = $pgp->encrypt(Data       => $body, 
+        my $encrypted = $pgp->encrypt(Data       => $email->body, 
                                       Recipients => "@", 
                                       Cipher     => 'CAST5',
                                       Armour     => 1);
@@ -288,8 +304,9 @@ sub _make_secure {
         else {
             $email->body_set('Error during Encryption: ' . $pgp->errstr);
         }
+
     }
-    elsif ($key && $key =~ /BEGIN CERTIFICATE/) {
+    elsif ($key_type eq 'S/MIME') {
         #####################
         # S/MIME Encryption #
         #####################
@@ -327,6 +344,14 @@ sub _make_secure {
           || ThrowTemplateError($template->error());
         
         $email->body_set($message);
+    }
+
+    if ($sanitise_subject) {
+        # This is designed to still work if the admin changes the word
+        # 'bug' to something else. However, it could break if they change
+        # the format of the subject line in another way.
+        $subject =~ s/($bug_id\])\s+(.*)$/$1 (Secure bug updated)/;
+        $email->header_set('Subject', $subject);
     }
 }
 
