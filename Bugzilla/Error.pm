@@ -197,6 +197,7 @@ sub ThrowTemplateError {
 
     $vars->{'uid'} = arecibo_generate_id();
     arecibo_handle_error('error', $template_err, $vars->{'uid'});
+    $vars->{'template_error_msg'} =~ s/ at \S+ line \d+\.\s*$//;
 
     my $template = Bugzilla->template;
 

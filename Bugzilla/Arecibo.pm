@@ -240,30 +240,27 @@ sub _arecibo_die_handler {
     }
 
     return if _in_eval();
+    
+    # mod_perl overrides exit to call die with this string
+    exit if $message =~ /\bModPerl::Util::exit\b/;
 
     my $nested_error = '';
     my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
-    my $is_modperl_exit = $message =~ /\bModPerl::Util::exit\b/;
 
     # if we are called via CGI::Carp::die chances are something is seriously
     # wrong, so skip trying to use ThrowTemplateError
-    if (!$in_cgi_carp_die) {
-        if (!$is_compilation_failure && !$is_modperl_exit) {
-            eval { Bugzilla::Error::ThrowTemplateError($message) };
-            $nested_error = $@ if $@;
-        }
+    if (!$in_cgi_carp_die && !$is_compilation_failure) {
+        eval { Bugzilla::Error::ThrowTemplateError($message) };
+        $nested_error = $@ if $@;
     }
 
     # right now it's hard to determine if we've already returned a content-type
     # header, it's better to return two than none
     print "Content-type: text/html\n\n";
 
-    if (!$is_modperl_exit &&
-        (
-            $is_compilation_failure ||
-            $in_cgi_carp_die ||
-            ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
-        )
+    if ($is_compilation_failure ||
+        $in_cgi_carp_die ||
+        ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
     ) {
         $nested_error = html_quote($nested_error);
         my $uid = arecibo_generate_id();
@@ -277,7 +274,6 @@ sub _arecibo_die_handler {
             <pre>$message</pre>
             <hr>
             <pre>$nested_error</pre>
-            <!-- (($message)) -->
         );
         if ($notified) {
             print qq(
