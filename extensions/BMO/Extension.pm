@@ -924,4 +924,14 @@ sub buglist_columns {
     };
 }
 
+sub install_filesystem {
+    my ($self, $args) = @_;
+    my $files = $args->{'files'};
+
+    my $filename = bz_locations()->{'libpath'} . '/error_500.html';
+    $files->{$filename} = {
+        perms => Bugzilla::Install::Filesystem::WS_SERVE
+    };
+}
+
 __PACKAGE__->NAME;
