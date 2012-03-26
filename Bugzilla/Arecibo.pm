@@ -239,6 +239,10 @@ sub _arecibo_die_handler {
         $in_cgi_carp_die = 1 if $sub =~ /CGI::Carp::die$/;
     }
 
+    # right now it's hard to determine if we've already returned a content-type
+    # header, it's better to return two than none
+    print "Content-type: text/html\n\n";
+
     my $nested_error = '';
     my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
 
@@ -256,7 +260,6 @@ sub _arecibo_die_handler {
         $in_cgi_carp_die ||
         ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
     ) {
-        print "Content-type: text/html\n\n";
         $nested_error = html_quote($nested_error);
         my $uid = arecibo_generate_id();
         my $notified = arecibo_handle_error('error', $message, $uid);
