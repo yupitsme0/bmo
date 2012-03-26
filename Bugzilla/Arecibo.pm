@@ -239,10 +239,6 @@ sub _arecibo_die_handler {
         $in_cgi_carp_die = 1 if $sub =~ /CGI::Carp::die$/;
     }
 
-    # right now it's hard to determine if we've already returned a content-type
-    # header, it's better to return two than none
-    print "Content-type: text/html\n\n";
-
     my $nested_error = '';
     my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
 
@@ -251,11 +247,18 @@ sub _arecibo_die_handler {
     # ThrowTemplateError
     if (!$in_cgi_carp_die) {
         return if _in_eval();
-        if (!$is_compilation_failure) {
+        if (!$is_compilation_failure
+            && $message !~ /\bModPerl::Util::exit\b/
+        ) {
             eval { Bugzilla::Error::ThrowTemplateError($message) };
             $nested_error = $@ if $@;
         }
     }
+
+    # right now it's hard to determine if we've already returned a content-type
+    # header, it's better to return two than none
+    print "Content-type: text/html\n\n";
+
     if ($is_compilation_failure ||
         $in_cgi_carp_die ||
         ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
@@ -283,14 +286,19 @@ sub _arecibo_die_handler {
     exit;
 }
 
+sub install_arecibo_handler {
+    require CGI::Carp;
+    CGI::Carp::set_die_handler(\&_arecibo_die_handler);
+    $CGI::Carp::TO_BROWSER = 0;
+    $main::SIG{__WARN__} = sub {
+        return if _in_eval();
+        arecibo_handle_error('warning', shift);
+    };
+}
+
 BEGIN {
     if ($ENV{SCRIPT_NAME} || $ENV{MOD_PERL}) {
-        require CGI::Carp;
-        CGI::Carp::set_die_handler(\&_arecibo_die_handler);
-        $main::SIG{__WARN__} = sub {
-            return if _in_eval();
-            arecibo_handle_error('warning', shift);
-        };
+        install_arecibo_handler();
     }
 }
 
