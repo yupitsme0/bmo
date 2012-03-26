@@ -327,20 +327,6 @@ sub _time_to_datetime {
                    ->truncate(to => 'day');
 }
 
-sub _string_to_datetime {
-    my $input = shift;
-    my $time = _parse_date($input)
-        or ThrowUserError('report_invalid_date', { date => $input });
-    return _time_to_datetime($time);
-}
-
-sub _time_to_datetime {
-    my $time = shift;
-    return DateTime->from_epoch(epoch => $time)
-                   ->set_time_zone('local')
-                   ->truncate(to => 'day');
-}
-
 sub _parse_date {
     my ($str) = @_;
     if ($str =~ /^(-|\+)?(\d+)([hHdDwWmMyY])$/) {
