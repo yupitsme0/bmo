@@ -229,22 +229,31 @@ sub _in_eval {
 }
 
 sub _arecibo_die_handler {
-    # avoid recursion
-    for (my $stack = 1; my $sub = (caller($stack))[3]; $stack++) {
-        return if $sub =~ /:_arecibo_die_handler$/;
-    }
-
-    return if _in_eval();
     my $message = shift;
     $message =~ s/^undef error - //;
 
-    my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
+    # avoid recursion, and check for CGI::Carp::die failures
+    my $in_cgi_carp_die = 0;
+    for (my $stack = 1; my $sub = (caller($stack))[3]; $stack++) {
+        return if $sub =~ /:_arecibo_die_handler$/;
+        $in_cgi_carp_die = 1 if $sub =~ /CGI::Carp::die$/;
+    }
+
     my $nested_error = '';
-    if (!$is_compilation_failure) {
-        eval { Bugzilla::Error::ThrowTemplateError($message) };
-        $nested_error = $@ if $@;
+    my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
+
+    # if we are called via CGI::Carp::die, we always want to display the error
+    # and chances are something is seriously wrong, so skip trying to use
+    # ThrowTemplateError
+    if (!$in_cgi_carp_die) {
+        return if _in_eval();
+        if (!$is_compilation_failure) {
+            eval { Bugzilla::Error::ThrowTemplateError($message) };
+            $nested_error = $@ if $@;
+        }
     }
     if ($is_compilation_failure ||
+        $in_cgi_carp_die ||
         ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
     ) {
         print "Content-type: text/html\n\n";
