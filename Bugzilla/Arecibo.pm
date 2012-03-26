@@ -239,17 +239,16 @@ sub _arecibo_die_handler {
         $in_cgi_carp_die = 1 if $sub =~ /CGI::Carp::die$/;
     }
 
+    return if _in_eval();
+
     my $nested_error = '';
     my $is_compilation_failure = $message =~ /\bcompilation (aborted|failed)\b/i;
+    my $is_modperl_exit = $message =~ /\bModPerl::Util::exit\b/;
 
-    # if we are called via CGI::Carp::die, we always want to display the error
-    # and chances are something is seriously wrong, so skip trying to use
-    # ThrowTemplateError
+    # if we are called via CGI::Carp::die chances are something is seriously
+    # wrong, so skip trying to use ThrowTemplateError
     if (!$in_cgi_carp_die) {
-        return if _in_eval();
-        if (!$is_compilation_failure
-            && $message !~ /\bModPerl::Util::exit\b/
-        ) {
+        if (!$is_compilation_failure && !$is_modperl_exit) {
             eval { Bugzilla::Error::ThrowTemplateError($message) };
             $nested_error = $@ if $@;
         }
@@ -259,15 +258,18 @@ sub _arecibo_die_handler {
     # header, it's better to return two than none
     print "Content-type: text/html\n\n";
 
-    if ($is_compilation_failure ||
-        $in_cgi_carp_die ||
-        ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
+    if (!$is_modperl_exit &&
+        (
+            $is_compilation_failure ||
+            $in_cgi_carp_die ||
+            ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
+        )
     ) {
         $nested_error = html_quote($nested_error);
         my $uid = arecibo_generate_id();
         my $notified = arecibo_handle_error('error', $message, $uid);
         my $maintainer = html_quote(Bugzilla->params->{'maintainer'});
-        $message =~ s/ at \S+ line \d+\.[\r\n\s]*$//;
+        $message =~ s/ at \S+ line \d+\.\s*$//;
         $message = html_quote($message);
         $uid = html_quote($uid);
         print qq(
@@ -275,6 +277,7 @@ sub _arecibo_die_handler {
             <pre>$message</pre>
             <hr>
             <pre>$nested_error</pre>
+            <!-- (($message)) -->
         );
         if ($notified) {
             print qq(
@@ -289,7 +292,6 @@ sub _arecibo_die_handler {
 sub install_arecibo_handler {
     require CGI::Carp;
     CGI::Carp::set_die_handler(\&_arecibo_die_handler);
-    $CGI::Carp::TO_BROWSER = 0;
     $main::SIG{__WARN__} = sub {
         return if _in_eval();
         arecibo_handle_error('warning', shift);
