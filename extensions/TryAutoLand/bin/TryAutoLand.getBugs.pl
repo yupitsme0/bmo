@@ -21,8 +21,7 @@ my $cookie_jar = new HTTP::Cookies( file => "/tmp/lwp_cookies.dat" );
 
 my $rpc = new XMLRPC::Lite;
 
-#$rpc->proxy('http://fedora/autoland/xmlrpc.cgi');
-$rpc->proxy('https://bugzilla-stage-tip.mozilla.org/xmlrpc.cgi');
+$rpc->proxy('http://fedora/726193/xmlrpc.cgi');
 
 $rpc->encoding('UTF-8');
 
@@ -47,11 +46,7 @@ print "Successfully logged in.\n";
 # Main call here                  #
 ###################################
 
-my $attach_id = shift;
-my $status    = shift;
-
-$call = $rpc->call('AutoLand.updateStatus', 
-                   { attach_id => $attach_id, status => $status });
+$call = $rpc->call('TryAutoLand.getBugs', { status => [] });
 
 my $result = "";
 if ( $call->faultstring ) {
