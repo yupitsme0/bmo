@@ -272,13 +272,6 @@ sub _make_secure {
         $key_type = 'S/MIME';
     }
 
-use Bugzilla::Constants;
-if (open(FH, '>' . bz_locations->{'datadir'} . '/email-738732.eml')) {
-    binmode FH;
-    print FH $email->as_string;
-    close FH;
-}
-
     if ($key_type && $sanitise_subject) {
         # Subject gets placed in the body so it can still be read
         my $body = $email->body_str;
