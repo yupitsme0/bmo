@@ -17,7 +17,7 @@ our @EXPORT = qw(
     FLAG_REGEXES 
 );
 
-use constant EMAIL_FROM => 'bugzilla-daemon@mozilla.org';
+use constant EMAIL_FROM => 'bugzilla-admin@mozilla.org';
 
 use constant ENABLED_PRODUCTS => (
     "Core",
