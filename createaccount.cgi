@@ -31,6 +31,7 @@ use lib qw(. lib);
 use Bugzilla;
 use Bugzilla::Constants;
 use Bugzilla::Error;
+use Bugzilla::Token;
 
 # Just in case someone already has an account, let them get the correct footer
 # on an error message. The user is logged out just after the account is
@@ -46,6 +47,11 @@ $user->check_account_creation_enabled;
 my $login = $cgi->param('login');
 
 if (defined($login)) {
+    # Check the hash token to make sure this user actually submitted
+    # the create account form.
+    my $token = $cgi->param('token');
+    check_hash_token($token, ['create_account']);
+
     $user->check_and_send_account_creation_confirmation($login);
     $vars->{'login'} = $login;
 
