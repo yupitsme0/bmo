@@ -27,6 +27,10 @@
     width: auto;
 }
 
+#project-flags {
+    width: auto;
+}
+
 .bz_hidden {
     display: none;
 }

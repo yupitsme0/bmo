@@ -80,22 +80,19 @@ sub get_login_info {
         
         my $user = $result->{'user'};
         
-        # BrowserID logins are currently restricted to less powerful accounts -
-        # the most you can have is 'editbugs'. This is while the technology 
-        # is maturing. So we need to check that the user doesn't have 'too 
-        # many permissions' to log in this way. 
+        # You can restrict people in a particular group from logging in using
+        # BrowserID by making that group a member of a group called
+        # "no-browser-id".
         #
-        # If a newly-created account has too many permissions, this code will
+        # If you have your "createemailregexp" set up in such a way that a
+        # newly-created account is a member of "no-browser-id", this code will
         # create an account for them and then fail their login. Which isn't
         # great, but they can still use normal-Bugzilla-login password 
         # recovery.
-        my @safe_groups = ('everyone', 'canconfirm', 'editbugs');        
-        foreach my $group (@{ $user->groups() }) {
-            if (!grep { $group->name eq $_ } @safe_groups) {
-                # We use a custom error here, for greater clarity, rather than
-                # returning a failure code.
-                ThrowUserError('browserid_account_too_powerful');
-            }
+        if ($user->in_group('no-browser-id')) {
+            # We use a custom error here, for greater clarity, rather than
+            # returning a failure code.
+            ThrowUserError('browserid_account_too_powerful');
         }
     
         $login_data->{'user'} = $user;
