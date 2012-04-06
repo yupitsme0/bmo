@@ -25,9 +25,8 @@
 
 [% tracking_flags = [] %]
 [% project_flags  = [] %]
-[% FOREACH field = Bugzilla.active_custom_fields %]
+[% FOREACH field = Bugzilla.active_custom_fields(product=>bug.product_obj,component=>bug.component_obj,type=>2) %]
   [% NEXT IF NOT user.id AND bug.${field.name} == "---" %]
-  [% NEXT IF cf_hidden_in_product(field.name, bug.product, bug.component, 2) %]
   [% NEXT IF cf_flag_disabled(field.name, bug) %]
   [% IF cf_is_project_flag(field.name) %]
     [% project_flags.push(field) %]

@@ -23,11 +23,8 @@
  * ***** END LICENSE BLOCK *****
  */
 
+#project-flags, 
 #custom-flags {
-    width: auto;
-}
-
-#project-flags {
     width: auto;
 }
 

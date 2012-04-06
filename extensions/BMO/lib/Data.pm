@@ -247,7 +247,7 @@ our $blocking_trusted_setters = {
     qr/^cf_tracking_thunderbird/  => 'thunderbird-drivers',
     qr/^cf_tracking_seamonkey/    => 'seamonkey-council',
     qr/^cf_blocking_seamonkey/    => 'seamonkey-council',
-    qr/^cf_blocking_kilimanjaro/  => 'release-drivers', 
+    qr/^cf_blocking_kilimanjaro/  => 'kilimanjaro-drivers', 
     '_default'                    => 'mozilla-stable-branch-drivers',
 };
 
