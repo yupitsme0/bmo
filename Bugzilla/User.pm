@@ -1547,7 +1547,9 @@ our %names_to_events = (
     'Attachment mime type'   => EVT_ATTACHMENT_DATA,
     'Attachment is patch'    => EVT_ATTACHMENT_DATA,
     'Depends on'             => EVT_DEPEND_BLOCK,
-    'Blocks'                 => EVT_DEPEND_BLOCK);
+    'Blocks'                 => EVT_DEPEND_BLOCK,
+    'Product'                => EVT_COMPONENT,
+    'Component'              => EVT_COMPONENT);
 
 # Returns true if the user wants mail for a given bug change.
 # Note: the "+" signs before the constants suppress bareword quoting.
@@ -1567,7 +1569,7 @@ sub wants_bug_mail {
         }
         else {
             # Catch-all for any change not caught by a more specific event
-            $events{+EVT_OTHER} = 1;            
+            $events{+EVT_OTHER} = 1;
         }
 
         # If the user is in a particular role and the value of that role
