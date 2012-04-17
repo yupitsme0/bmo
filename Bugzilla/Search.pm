@@ -1583,6 +1583,7 @@ sub _cc_nonchanged {
     my ($chartid, $sequence, $f, $ff, $t, $supptables, $term, $v) =
         @func_args{qw(chartid sequence f ff t supptables term v)};
 
+    $$sequence ||= 0;
     my $chartseq = $$chartid;
     if ($$chartid eq "") {
         $chartseq = "CC$$sequence";
