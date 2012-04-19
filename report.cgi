@@ -154,9 +154,9 @@ foreach my $result (@$results) {
     my ($row, $col, $tbl) = @$result;
 
     # handle empty dimension member names
-    my $row = check_value($row_field, $result);
-    my $col = check_value($col_field, $result);
-    my $tbl = check_value($tbl_field, $result);
+    $row = ' ' if (!defined($row) || $row eq '');
+    $col = ' ' if (!defined($col) || $col eq '');
+    $tbl = ' ' if (!defined($tbl) || $tbl eq '');
 
     $row = "" if ($row eq EMPTY_COLUMN);
     $col = "" if ($col eq EMPTY_COLUMN);
@@ -345,21 +345,3 @@ sub get_names {
     
     return \@sorted;
 }
-
-sub check_value {
-    my ($field, $result) = @_;
-
-    my $value;
-    if (!defined $field) {
-        $value = '';
-    }
-    elsif ($field eq '') {
-        $value = ' ';
-    }
-    else {
-        $value = shift @$result;
-        $value = ' ' if (!defined $value || $value eq '');
-    }
-    return $value;
-}
-
