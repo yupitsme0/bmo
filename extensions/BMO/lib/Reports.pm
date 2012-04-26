@@ -372,7 +372,7 @@ sub triage_reports {
     my $input = Bugzilla->input_params;
     my $user = Bugzilla->user;
 
-    if ($input->{'action'} eq 'run' && $input->{'product'}) {
+    if (exists $input->{'action'} && $input->{'action'} eq 'run' && $input->{'product'}) {
 
         # load product and components from input
 
