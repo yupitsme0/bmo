@@ -295,6 +295,13 @@ sub Send {
     # Skip empty comments.
     @$comments = grep { $_->type || $_->body =~ /\S/ } @$comments;
 
+    # Add duplicate bug to referenced bug list
+    foreach my $comment (@$comments) {
+        if ($comment->type == CMT_DUPE_OF || $comment->type == CMT_HAS_DUPE) {
+            push(@referenced_bugs, $comment->extra_data);
+        }
+    }
+
     # Add Attachment Created to changedfields if one or more 
     # comments contain information about a new attachment
     if (grep($_->type == CMT_ATTACHMENT_CREATED, @$comments)) {
