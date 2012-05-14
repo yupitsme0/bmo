@@ -698,7 +698,7 @@ sub email_queue_report {
     my $dbh = Bugzilla->dbh;
     my $user = Bugzilla->user;
 
-    $user->in_group('admin')
+    $user->in_group('admin') || $user->in_group('infra')
         || ThrowUserError('auth_failure', { group  => 'admin', 
                                             action => 'run', 
                                             object => 'email_queue' });
