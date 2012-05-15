@@ -13,8 +13,10 @@ use Bugzilla::Extension::TellUsMore::Constants;
 use Bugzilla::Extension::TellUsMore::VersionMirror qw(update_versions);
 use Bugzilla::Extension::TellUsMore::Process;
 
-use Scalar::Util;
+use Bugzilla::Constants;
 use Bugzilla::Util qw(url_quote);
+use Digest::MD5 qw(md5_hex);
+use Scalar::Util;
 
 our $VERSION = '1';
 
@@ -60,6 +62,12 @@ sub install_before_final_checks {
         return;
     }
     $mirror->refresh();
+}
+
+sub config_add_panels {
+    my ($self, $args) = @_;
+    my $modules = $args->{panel_modules};
+    $modules->{TellUsMore} = "Bugzilla::Extension::TellUsMore::Params";
 }
 
 #
@@ -120,11 +128,25 @@ sub page_before_template {
         if ($bug) {
             $url = sprintf(RESULT_URL_SUCCESS, url_quote($bug->id), ($is_new_user ? '1' : '0'));
         } else {
-            $url = sprintf(RESULT_URL_FAILURE, url_quote($process->error));
+            my $shared_secret = Bugzilla->params->{'tell_us_more_shared_secret'};
+            my $error = clean_error($process->error);
+            my $checksum = md5_hex($shared_secret . $error);
+            $url = sprintf(RESULT_URL_FAILURE, url_quote($error), url_quote($checksum));
         }
+
         print Bugzilla->cgi->redirect($url);
         exit;
     }
+}
+
+# removes stacktrace and "at /some/path ..." from errors
+sub clean_error {
+    my ($error) = @_;
+    foreach my $path (bz_locations->{'extensionsdir'}, '/loader/0x', '/usr/share/perl5/') {
+        $error = $1 if $error =~ /^(.+?) at \Q$path/s;
+    }
+    $error =~ s/(^\s+|\s+$)//g;
+    return $error;
 }
 
 #

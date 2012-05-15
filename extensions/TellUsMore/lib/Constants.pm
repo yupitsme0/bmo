@@ -84,6 +84,6 @@ use constant VERSION_SOURCE_PRODUCTS => ('Firefox', 'Fennec');
 use constant VERSION_TARGET_PRODUCT => 'Untriaged Bugs';
 
 use constant RESULT_URL_SUCCESS => 'http://input.mozilla.org/bug/thanks/?bug_id=%s&is_new_user=%s';
-use constant RESULT_URL_FAILURE => 'http://input.mozilla.org/bug/thanks/?error=%s';
+use constant RESULT_URL_FAILURE => 'http://input.mozilla.org/bug/thanks/?error=%s&cs=%s';
 
 1;
