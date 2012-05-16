@@ -302,6 +302,12 @@ sub Send {
         }
     }
 
+    # Add dependencies to referenced bug list on new bugs
+    if (!$start) {
+        push @referenced_bugs, @{ $bug->dependson };
+        push @referenced_bugs, @{ $bug->blocked };
+    }
+
     # Add Attachment Created to changedfields if one or more 
     # comments contain information about a new attachment
     if (grep($_->type == CMT_ATTACHMENT_CREATED, @$comments)) {
