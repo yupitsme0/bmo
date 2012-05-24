@@ -47,6 +47,7 @@ use Bugzilla::Hook;
 
 use Date::Parse;
 use Date::Format;
+use List::MoreUtils qw(uniq);
 
 use constant FORMAT_TRIPLE => "%19s|%-28s|%-28s";
 use constant FORMAT_3_SIZE => [19,28,28];
@@ -177,6 +178,7 @@ sub Send {
     my $lastwho = "";
     my $fullwho;
     my @changedfields;
+    my @referenced_bugs;
     foreach my $ref (@$diffs) {
         my ($who, $whoname, $what, $when, $old, $new, $attachid, $fieldname, $comment_id) = (@$ref);
         my $diffpart = {};
@@ -206,6 +208,10 @@ sub Send {
             my $comment_num = $comment->count;
             $what =~ s/^(Comment )?/Comment #$comment_num /;
             $diffpart->{'isprivate'} = $new;
+        }
+        if ($fieldname eq 'dependson' || $fieldname eq 'blocked') {
+            push @referenced_bugs, grep { /^\d+$/ } split(/[\s,]+/, $old);
+            push @referenced_bugs, grep { /^\d+$/ } split(/[\s,]+/, $new);
         }
         $difftext = three_columns($what, $old, $new);
         $diffpart->{'header'} = $diffheader;
@@ -288,6 +294,19 @@ sub Send {
     my $comments = $bug->comments({ after => $start, to => $end });
     # Skip empty comments.
     @$comments = grep { $_->type || $_->body =~ /\S/ } @$comments;
+
+    # Add duplicate bug to referenced bug list
+    foreach my $comment (@$comments) {
+        if ($comment->type == CMT_DUPE_OF || $comment->type == CMT_HAS_DUPE) {
+            push(@referenced_bugs, $comment->extra_data);
+        }
+    }
+
+    # Add dependencies to referenced bug list on new bugs
+    if (!$start) {
+        push @referenced_bugs, @{ $bug->dependson };
+        push @referenced_bugs, @{ $bug->blocked };
+    }
 
     # Add Attachment Created to changedfields if one or more 
     # comments contain information about a new attachment
@@ -389,6 +408,9 @@ sub Send {
     my $date = $params->{dep_only} ? $end : $bug->delta_ts;
     $date = format_time($date, '%a, %d %b %Y %T %z', 'UTC');
 
+    # Remove duplicate references, and convert to bug objects
+    @referenced_bugs = @{ Bugzilla::Bug->new_from_list([uniq @referenced_bugs]) };
+
     foreach my $user_id (keys %recipients) {
         my %rels_which_want;
         my $sent_mail = 0;
@@ -439,6 +461,26 @@ sub Send {
                 ($user->login !~ /\.tld$/))
             {
                 # OK, OK, if we must. Email the user.
+
+                # Don't show summaries for bugs the user can't access, and
+                # provide a hook for extensions such as SecureMail to filter
+                # this list.
+                #
+                # We build an array with the short_desc as a separate item to
+                # allow extensions to modify the summary without touching the
+                # bug object.
+                my $referenced_bugs = [];
+                foreach my $ref (@{ $user->visible_bugs(\@referenced_bugs) }) {
+                    push @$referenced_bugs, {
+                        bug         => $ref,
+                        id          => $ref->id,
+                        short_desc  => $ref->short_desc,
+                    };
+                }
+                Bugzilla::Hook::process('bugmail_referenced_bugs', 
+                                        { updated_bug     => $bug,
+                                          referenced_bugs => $referenced_bugs });
+
                 $sent_mail = sendMail(
                     { to       => $user, 
                       fields   => \@fields,
@@ -452,6 +494,7 @@ sub Send {
                       diff_parts      => \@diffparts,
                       rels_which_want => \%rels_which_want,
                       changed_fields  => \@changedfields,
+                      referenced_bugs => $referenced_bugs,
                     });
             }
         }
@@ -485,6 +528,7 @@ sub sendMail {
     my @diffparts   = @{ $params->{diff_parts} };
     my $relRef      = $params->{rels_which_want};
     my @changed_fields = @{ $params->{changed_fields} };
+    my $referenced_bugs = $params->{referenced_bugs};
 
     # Build difftext (the actions) by verifying the user should see them
     my $difftext = "";
@@ -592,6 +636,7 @@ sub sendMail {
         diffs => $diffs,
         new_comments => \@send_comments,
         threadingmarker => build_thread_marker($bug->id, $user->id, $isnew),
+        referenced_bugs => $referenced_bugs,
     };
 
     my $msg;

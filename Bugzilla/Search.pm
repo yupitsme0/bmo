@@ -920,6 +920,7 @@ sub init {
     }
 
     my ($sequence, $chartid);
+    $sequence = 0;
     $row = 0;
     for ($chart=-1 ;
          $chart < 0 || $params->param("field$chart-0-0") ;
@@ -1193,7 +1194,9 @@ sub do_search_function {
 sub _do_operator_function {
     my ($self, $func_args) = @_;
     my $operator = $func_args->{t};
-    my $operator_func = OPERATORS->{$$operator};
+    my $operator_func = OPERATORS->{$$operator}
+      || ThrowCodeError("search_field_operator_unsupported",
+                        { operator => $$operator });
     $self->$operator_func(%$func_args);
 }
 

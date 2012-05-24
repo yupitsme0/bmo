@@ -23,14 +23,16 @@
  * ***** END LICENSE BLOCK *****
  */
 
+#project-flags, 
 #custom-flags {
-    width: auto;
-}
-
-#project-flags {
     width: auto;
 }
 
 .bz_hidden {
     display: none;
 }
+
+.bz_collapse_comment {
+    font-family: monospace;
+}
+

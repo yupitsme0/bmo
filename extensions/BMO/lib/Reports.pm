@@ -112,7 +112,8 @@ sub user_activity_report {
             push @params, ($from_dt, $to_dt);
         }
 
-        my $order = $input->{'sort'} eq 'bug' ? 'bug_id, bug_when' : 'bug_when';
+        my $order = ($input->{'sort'} && $input->{'sort'} eq 'bug')
+                    ? 'bug_id, bug_when' : 'bug_when';
 
         my $comment_filter = '';
         if (!Bugzilla->user->is_insider) {
@@ -371,7 +372,7 @@ sub triage_reports {
     my $input = Bugzilla->input_params;
     my $user = Bugzilla->user;
 
-    if ($input->{'action'} eq 'run' && $input->{'product'}) {
+    if (exists $input->{'action'} && $input->{'action'} eq 'run' && $input->{'product'}) {
 
         # load product and components from input
 
@@ -697,7 +698,7 @@ sub email_queue_report {
     my $dbh = Bugzilla->dbh;
     my $user = Bugzilla->user;
 
-    $user->in_group('admin')
+    $user->in_group('admin') || $user->in_group('infra')
         || ThrowUserError('auth_failure', { group  => 'admin', 
                                             action => 'run', 
                                             object => 'email_queue' });
@@ -728,6 +729,7 @@ sub release_tracking_report {
         approval-mozilla-release
         approval-mozilla-beta
         approval-mozilla-aurora
+        approval-mozilla-central
         approval-comm-release
         approval-comm-beta
         approval-comm-aurora

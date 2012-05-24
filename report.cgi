@@ -154,9 +154,9 @@ foreach my $result (@$results) {
     my ($row, $col, $tbl) = @$result;
 
     # handle empty dimension member names
-    $row = ' ' if ($row eq '');
-    $col = ' ' if ($col eq '');
-    $tbl = ' ' if ($tbl eq '');
+    $row = ' ' if (!defined($row) || $row eq '');
+    $col = ' ' if (!defined($col) || $col eq '');
+    $tbl = ' ' if (!defined($tbl) || $tbl eq '');
 
     $row = "" if ($row eq EMPTY_COLUMN);
     $col = "" if ($col eq EMPTY_COLUMN);

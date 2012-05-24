@@ -2800,7 +2800,7 @@ unsigned)
 
 =item C<SMALLSERIAL>
 
-An auto-increment L</INT1>
+An auto-increment L</INT2>
 
 =item C<MEDIUMSERIAL>
 

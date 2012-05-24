@@ -20,11 +20,12 @@ our @EXPORT = qw(
 use Apache2::Log;
 use Apache2::SubProcess;
 use Carp;
-use Email::Date::Format 'email_gmdate';
+use Email::Date::Format qw(email_gmdate);
 use LWP::UserAgent;
-use POSIX 'setsid';
+use POSIX qw(setsid nice);
 use Sys::Hostname;
 
+use Bugzilla::Constants;
 use Bugzilla::Util;
 
 use constant CONFIG => {
@@ -77,7 +78,8 @@ use constant CONFIG => {
 
     # any error messages matching these regex's will not be sent to arecibo
     ignore => [
-        qr/^Software caused connection abort/,
+        qr/Software caused connection abort/,
+        qr/Could not check out .*\/cvsroot/,
     ],
 };
 
@@ -167,10 +169,18 @@ sub arecibo_handle_error {
     my $username = '';
     eval { $username = Bugzilla->user->login };
 
+    my $request = '';
+    foreach my $name (sort { lc($a) cmp lc($b) } keys %ENV) {
+        $request .= "$name=$ENV{$name}\n";
+    }
+    chomp($request);
+
     my $data = [
+        ip         => remote_ip(),
         msg        => $message,
         priority   => $priority,
         server     => hostname(),
+        request    => $request,
         status     => '500',
         timestamp  => email_gmdate(),
         traceback  => $traceback,
@@ -191,6 +201,7 @@ sub arecibo_handle_error {
         open(STDOUT, '>/dev/null');
         open(STDERR, '>/dev/null');
         setsid();
+        nice(19);
 
         # post to arecibo (ignore any errors)
         my $agent = LWP::UserAgent->new(
@@ -254,21 +265,28 @@ sub _arecibo_die_handler {
         $nested_error = $@ if $@;
     }
 
-    # right now it's hard to determine if we've already returned a content-type
-    # header, it's better to return two than none
-    print "Content-type: text/html\n\n";
-
     if ($is_compilation_failure ||
         $in_cgi_carp_die ||
         ($nested_error && $nested_error !~ /\bModPerl::Util::exit\b/)
     ) {
-        $nested_error = html_quote($nested_error);
         my $uid = arecibo_generate_id();
         my $notified = arecibo_handle_error('error', $message, $uid);
+
+        # if we aren't dying from a web page, let perl deal with it.  this
+        # does the right thing with respect to returning web service errors
+        if (Bugzilla->error_mode != ERROR_MODE_WEBPAGE) {
+            CORE::die($message);
+        }
+
+        # right now it's hard to determine if we've already returned a
+        # content-type header, it's better to return two than none
+        print "Content-type: text/html\n\n";
+
         my $maintainer = html_quote(Bugzilla->params->{'maintainer'});
         $message =~ s/ at \S+ line \d+\.\s*$//;
         $message = html_quote($message);
         $uid = html_quote($uid);
+        $nested_error = html_quote($nested_error);
         print qq(
             <h1>Bugzilla has suffered an internal error</h1>
             <pre>$message</pre>
