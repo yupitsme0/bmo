@@ -234,7 +234,7 @@ sub Send {
         }
 
         my $dependency_diffs = $dbh->selectall_arrayref(
-           "SELECT bugs_activity.bug_id, bugs.short_desc, fielddefs.name, 
+           "SELECT bugs_activity.bug_id, fielddefs.name,
                    fielddefs.description, bugs_activity.removed,
                    bugs_activity.added
               FROM bugs_activity
@@ -255,7 +255,7 @@ sub Send {
         my $lastbug = "";
         my $interestingchange = 0;
         foreach my $dependency_diff (@$dependency_diffs) {
-            my ($depbug, $summary, $fieldname, $what, $old, $new) = @$dependency_diff;
+            my ($depbug, $fieldname, $what, $old, $new) = @$dependency_diff;
 
             if ($depbug ne $lastbug) {
                 if ($interestingchange) {
@@ -264,11 +264,11 @@ sub Send {
                 $lastbug = $depbug;
                 $thisdiff =
                   "\nBug $id depends on bug $depbug, which changed state.\n\n" .
-                  "Bug $depbug Summary: $summary\n" .
                   correct_urlbase() . "show_bug.cgi?id=$depbug\n\n";
                 $thisdiff .= three_columns("What    ", "Old Value", "New Value");
                 $thisdiff .= ('-' x 76) . "\n";
                 $interestingchange = 0;
+                push @referenced_bugs, $depbug;
             }
             $thisdiff .= three_columns($what, $old, $new);
             if ($fieldname eq 'bug_status'
