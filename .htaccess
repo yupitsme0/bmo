@@ -26,13 +26,11 @@
 
 AddType image/x-icon .ico
 
-ErrorDocument 500 /error_500.html
-
-Redirect permanent /queryhelp.cgi https://bugzilla.mozilla.org/query.cgi?format=advanced&help=1
-Redirect permanent /bug_status.html https://bugzilla.mozilla.org/page.cgi?id=fields.html
-Redirect permanent /bugwritinghelp.html https://bugzilla.mozilla.org/page.cgi?id=bug-writing.html
-Redirect permanent /etiquette.html https://bugzilla.mozilla.org/page.cgi?id=etiquette.html
-Redirect permanent /duplicates.html https://bugzilla.mozilla.org/duplicates.cgi
+Redirect permanent /queryhelp.cgi https://bugzilla-stage-tip.mozilla.org/query.cgi?format=advanced&help=1
+Redirect permanent /bug_status.html https://bugzilla-stage-tip.mozilla.org/page.cgi?id=fields.html
+Redirect permanent /bugwritinghelp.html https://bugzilla-stage-tip.mozilla.org/page.cgi?id=bug-writing.html
+Redirect permanent /etiquette.html https://bugzilla-stage-tip.mozilla.org/page.cgi?id=etiquette.html
+Redirect permanent /duplicates.html https://bugzilla-stage-tip.mozilla.org/duplicates.cgi
 
 RewriteEngine On
 RewriteRule ^favicon\.ico$ extensions/BMO/web/images/favicon.ico
@@ -45,4 +43,3 @@ RewriteRule ^form[\.:]reps[\.:]swag$ enter_bug.cgi?product=Mozilla+Reps&format=r
 RewriteRule ^form[\.:]reps[\.:]payment$ page.cgi?id=remo-form-payment.html
 RewriteRule ^form[\.:]employee[\.\-:]incident$ enter_bug.cgi?product=mozilla.org&format=employee-incident
 
-RewriteRule rest/(.*)$ extensions/REST/bin/rest.cgi/$1 [NE]
