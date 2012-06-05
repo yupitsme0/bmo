@@ -260,6 +260,7 @@ sub Send {
             if ($depbug ne $lastbug) {
                 if ($interestingchange) {
                     $deptext .= $thisdiff;
+                    push @referenced_bugs, $lastbug;
                 }
                 $lastbug = $depbug;
                 $thisdiff =
@@ -268,7 +269,6 @@ sub Send {
                 $thisdiff .= three_columns("What    ", "Old Value", "New Value");
                 $thisdiff .= ('-' x 76) . "\n";
                 $interestingchange = 0;
-                push @referenced_bugs, $depbug;
             }
             $thisdiff .= three_columns($what, $old, $new);
             if ($fieldname eq 'bug_status'
@@ -281,6 +281,7 @@ sub Send {
 
         if ($interestingchange) {
             $deptext .= $thisdiff;
+            push @referenced_bugs, $lastbug;
         }
         $deptext = trim($deptext);
 
