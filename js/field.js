@@ -740,6 +740,9 @@ YAHOO.bugzilla.userAutocomplete = {
 
 YAHOO.bugzilla.keywordAutocomplete = {
     dataSource : null,
+    formatEscapedResult : function(oResultData, sQuery, sResultMatch) {
+        return ((sResultMatch) ? _escapeHTML(sResultMatch) : "");
+    },
     init_ds : function(){
         this.dataSource = new YAHOO.util.LocalDataSource( YAHOO.bugzilla.keyword_array );
     },
@@ -749,6 +752,7 @@ YAHOO.bugzilla.keywordAutocomplete = {
         }
         var keywordAutoComp = new YAHOO.widget.AutoComplete(field, container, this.dataSource);
         keywordAutoComp.maxResultsDisplayed = YAHOO.bugzilla.keyword_array.length;
+        keywordAutoComp.formatResult = this.formatEscapedResult;
         keywordAutoComp.minQueryLength = 0;
         keywordAutoComp.useIFrame = true;
         keywordAutoComp.delimChar = [","," "];
