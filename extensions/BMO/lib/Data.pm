@@ -48,7 +48,7 @@ our @EXPORT_OK = qw($cf_visible_in_products
 # IxHash keeps them in insertion order, and so we get regexp priorities right.
 our $cf_visible_in_products;
 tie(%$cf_visible_in_products, "Tie::IxHash", 
-    qw/^cf_blocking_kilimanjaro/ => {
+    qw/^cf_blocking_kilimanjaro|cf_blocking_basecamp/ => {
         "Boot2Gecko"       => [],
         "Core"             => [],
         "Fennec"           => [],
@@ -59,6 +59,7 @@ tie(%$cf_visible_in_products, "Tie::IxHash",
         "Mozilla Services" => [],
         "NSPR"             => [],
         "NSS"              => [],
+        "Socorro"          => [],
         "Testing"          => [],
         "Thunderbird"      => [],
         "Toolkit"          => [],
@@ -176,7 +177,8 @@ our $cf_flags = [
 ];
 
 our $cf_project_flags = [
-    qr/^cf_blocking_kilimanjaro/,
+    'cf_blocking_kilimanjaro',
+    'cf_blocking_basecamp',
 ];
 
 # List of disabled fields.
@@ -235,6 +237,14 @@ our $cf_disabled_flags = [
     'cf_status_thunderbird11',
     'cf_tracking_seamonkey28',
     'cf_status_seamonkey28',
+    'cf_tracking_firefox12',
+    'cf_status_firefox12',
+    'cf_tracking_thunderbird12',
+    'cf_status_thunderbird12',
+    'cf_tracking_seamonkey29',
+    'cf_status_seamonkey29',
+    'cf_blocking_192',
+    'cf_status_192',
 ];
 
 # Who to CC on particular bugmails when certain groups are added or removed.
@@ -260,7 +270,8 @@ our $blocking_trusted_setters = {
     qr/^cf_tracking_thunderbird/  => 'thunderbird-drivers',
     qr/^cf_tracking_seamonkey/    => 'seamonkey-council',
     qr/^cf_blocking_seamonkey/    => 'seamonkey-council',
-    qr/^cf_blocking_kilimanjaro/  => 'kilimanjaro-drivers', 
+    qr/^cf_blocking_kilimanjaro/  => 'kilimanjaro-drivers',
+    qr/^cf_blocking_basecamp/     => 'kilimanjaro-drivers',
     '_default'                    => 'mozilla-stable-branch-drivers',
 };
 
@@ -331,6 +342,7 @@ our %product_sec_groups = (
     "Mozilla Reps"                 => 'mozilla-reps',
     "Mozilla Services"             => 'mozilla-services-security',
     "mozillaignite"                => 'websites-security',
+    "Privacy"                      => 'privacy',
     "quality.mozilla.org"          => 'websites-security',
     "Skywriter"                    => 'websites-security',
     "Socorro"                      => 'client-services-security', 

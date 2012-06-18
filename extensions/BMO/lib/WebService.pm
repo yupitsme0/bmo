@@ -161,6 +161,7 @@ sub prod_comp_search {
         if ($word ne "") {
             my $sql_word = $dbh->quote($word);
             trick_taint($sql_word);
+            # XXX CONCAT_WS is MySQL specific
             my $field = "CONCAT_WS(' ', products.name, components.name, components.description)";
             push(@list, $dbh->sql_iposition($sql_word, $field) . " > 0");
         }
