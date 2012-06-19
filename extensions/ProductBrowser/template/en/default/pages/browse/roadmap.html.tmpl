@@ -1,0 +1,207 @@
+[%# This Source Code Form is subject to the terms of the Mozilla Public
+  # License, v. 2.0. If a copy of the MPL was not distributed with this
+  # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  #
+  # This Source Code Form is "Incompatible With Secondary Licenses", as
+  # defined by the Mozilla Public License, v. 2.0.
+  #%]
+
+<script type="text/javascript">
+<!--
+var column_defs = [
+    { key:"release", label:"Release", sortable:true },
+    { key:"percentage complete", label:"Percentage Complete", sortable:false },
+    { key:"links", label:"Links", sortable:false },
+];
+var fields = [
+    { key:"release" },
+    { key:"percentage complete" },
+    { key:"links" },
+];
+
+addStatListener("bug_releases", "bug_releases_table", column_defs, fields, {});
+-->
+</script>
+
+<div class="yui-skin-sam">
+<div id="bug_releases">
+  <table id="bug_releases_table" border="0" cellspacing="3" cellpadding="0">
+    <thead>
+      <tr>
+        <th>Release</th>
+        <th>Percentage Complete</th>
+        <th>Links</th>
+      </tr>
+    </thead>
+    <tbody>
+      [% FOREACH target_release = by_roadmap %]
+      <tr>
+        <td>[% target_release.release_name FILTER html %]</td>
+        <td width="70%">
+        [% INCLUDE bar_graph count = target_release.closed_bug_release full_bug_count = target_release.total_bug_release %]
+        </td>
+        [% IF target_release.total_bug_release > 0 %]
+          <td><a href="[% target_release.bug_release_link_closed FILTER html %]">
+                [% target_release.closed_bug_release FILTER html %]</a>&nbsp;of&nbsp;
+              <a href="[% target_release.bug_release_link_total FILTER html %]">
+                [% target_release.total_bug_release FILTER html %]</a>&nbsp;bugs have been closed
+          </td>
+        [% ELSE %]
+          <td>No [% terms.bugs %] found</td>
+        [% END %]
+      </tr>
+      [% END %]
+    </tbody>
+    </table>
+  </div>
+</div>
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): Gervase Markham <gerv@gerv.net>
+  #                 Vaskin Kissoyan <vkissoyan@yahoo.com>
+  #                 Max Kanat-Alexander <mkanat@bugzilla.org>
+  #                 Frédéric Buclin <LpSolit@gmail.com>
+  #                 Olav Vitters <olav@bkor.dhs.org>
+  #                 Guy Pyrzak <guy.pyrzak@gmail.com>
+  #                 Elliotte Martin <emartin@everythingsolved.com>
+  #%]
+
+<script type="text/javascript">
+<!--
+var column_defs = [
+    { key:"release", label:"Release", sortable:true },
+    { key:"percentage complete", label:"Percentage Complete", sortable:false },
+    { key:"links", label:"Links", sortable:false },
+];
+var fields = [
+    { key:"release" },
+    { key:"percentage complete" },
+    { key:"links" },
+];
+
+addStatListener("bug_releases", "bug_releases_table", column_defs, fields, {});
+-->
+</script>
+
+<div class="yui-skin-sam">
+<div id="bug_releases">
+  <table id="bug_releases_table" border="0" cellspacing="3" cellpadding="0">
+    <thead>
+      <tr>
+        <th>Release</th>
+        <th>Percentage Complete</th>
+        <th>Links</th>
+      </tr>
+    </thead>
+    <tbody>
+      [% FOREACH target_release = by_roadmap %]
+      <tr>
+        <td>[% target_release.release_name FILTER html %]</td>
+        <td width="70%">
+        [% INCLUDE bar_graph count = target_release.closed_bug_release full_bug_count = target_release.total_bug_release %]
+        </td>
+        [% IF target_release.total_bug_release > 0 %]
+          <td><a href="[% target_release.bug_release_link_closed FILTER html %]">
+                [% target_release.closed_bug_release FILTER html %]</a>&nbsp;of&nbsp;
+              <a href="[% target_release.bug_release_link_total FILTER html %]">
+                [% target_release.total_bug_release FILTER html %]</a>&nbsp;bugs have been closed
+          </td>
+        [% ELSE %]
+          <td>No [% terms.bugs %] found</td>
+        [% END %]
+      </tr>
+      [% END %]
+    </tbody>
+    </table>
+  </div>
+</div>
+[%# The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Bug Tracking System.
+  #
+  # The Initial Developer of the Original Code is Netscape Communications
+  # Corporation. Portions created by Netscape are
+  # Copyright (C) 1998 Netscape Communications Corporation. All
+  # Rights Reserved.
+  #
+  # Contributor(s): Gervase Markham <gerv@gerv.net>
+  #                 Vaskin Kissoyan <vkissoyan@yahoo.com>
+  #                 Max Kanat-Alexander <mkanat@bugzilla.org>
+  #                 Frédéric Buclin <LpSolit@gmail.com>
+  #                 Olav Vitters <olav@bkor.dhs.org>
+  #                 Guy Pyrzak <guy.pyrzak@gmail.com>
+  #                 Elliotte Martin <emartin@everythingsolved.com>
+  #%]
+
+<script type="text/javascript">
+<!--
+var column_defs = [
+    { key:"release", label:"Release", sortable:true },
+    { key:"percentage complete", label:"Percentage Complete", sortable:false },
+    { key:"links", label:"Links", sortable:false },
+];
+var fields = [
+    { key:"release" },
+    { key:"percentage complete" },
+    { key:"links" },
+];
+
+addStatListener("bug_releases", "bug_releases_table", column_defs, fields, {});
+-->
+</script>
+
+<div class="yui-skin-sam">
+<div id="bug_releases">
+  <table id="bug_releases_table" border="0" cellspacing="3" cellpadding="0">
+    <thead>
+      <tr>
+        <th>Release</th>
+        <th>Percentage Complete</th>
+        <th>Links</th>
+      </tr>
+    </thead>
+    <tbody>
+      [% FOREACH target_release = by_roadmap %]
+      <tr>
+        <td>[% target_release.release_name FILTER html %]</td>
+        <td width="70%">
+        [% INCLUDE bar_graph count = target_release.closed_bug_release full_bug_count = target_release.total_bug_release %]
+        </td>
+        [% IF target_release.total_bug_release > 0 %]
+          <td><a href="[% target_release.bug_release_link_closed FILTER html %]">
+                [% target_release.closed_bug_release FILTER html %]</a>&nbsp;of&nbsp;
+              <a href="[% target_release.bug_release_link_total FILTER html %]">
+                [% target_release.total_bug_release FILTER html %]</a>&nbsp;bugs have been closed
+          </td>
+        [% ELSE %]
+          <td>No [% terms.bugs %] found</td>
+        [% END %]
+      </tr>
+      [% END %]
+    </tbody>
+    </table>
+  </div>
+</div>
