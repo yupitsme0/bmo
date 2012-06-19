@@ -1,0 +1,52 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, v. 2.0. */
+
+#frontpage .yui-skin-sam .yui-dt table {
+    width:100%;
+}
+#frontpage #query-links { 
+    display: table; 
+    padding-left: 1ex; 
+    padding-right:1ex;
+}
+#frontpage #links-standard, 
+#frontpage #links-saved, 
+#frontpage #links-special {
+    display: table-row;
+    list-style-type: none;
+}
+#frontpage .label {
+    display: table-cell;
+    white-space: nowrap;
+    vertical-align: top;
+    padding-right: 1ex;
+}
+#frontpage .links {
+    display: table-cell;
+    vertical-align: top;
+}
+#frontpage .separator {
+    color: #000000;
+}
+#frontpage .query_heading { 
+    font-size: 18px;
+    font-weight: strong;
+    color: rgb(72, 72, 72);
+}
+#frontpage .query_description { 
+    font-size: 90%;
+    font-style: italic;
+    padding-bottom: 5px;
+    color: rgb(109, 117, 129);
+}
+#frontpage .bug_list, 
+#frontpage .back_top {
+    font-size: 80%;
+}
+#frontpage table {
+    margin-bottom: 10px;
+}

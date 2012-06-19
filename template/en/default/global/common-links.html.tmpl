@@ -106,6 +106,7 @@
       [% PROCESS "account/auth/login-small.html.tmpl" %]
     [% END %]
   [% END %]
+  [% Hook.process("link-items") %]
 </ul>
 
 [% Hook.process("link-row") %]
