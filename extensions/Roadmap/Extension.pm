@@ -178,8 +178,8 @@ sub page_before_template {
     }
 
     if ($page eq 'roadmap/list.html') {
-	    $can_edit || ThrowUserError("auth_failure", { group  => "editroadmaps",
-                                         		      action => "edit",
+        $can_edit || ThrowUserError("auth_failure", { group  => "editroadmaps",
+                                                      action => "edit",
                                                       object => "roadmaps" });
 
         my $action = $input->{'action'} || "";
@@ -207,10 +207,10 @@ sub page_before_template {
 
         if ($action eq 'new') {
             check_token_data($token, 'create_roadmap');
-  	    
-	        # Do the user matching
-  	        Bugzilla::User::match_field ({ 'owner' => { 'type' => 'single' }});
-  	    
+        
+            # Do the user matching
+            Bugzilla::User::match_field ({ 'owner' => { 'type' => 'single' }});
+        
             my $roadmap = Bugzilla::Extension::Roadmap::Roadmap->create({
                 name        => $input->{'name'},
                 description => $input->{'description'},
@@ -234,7 +234,7 @@ sub page_before_template {
             delete_token($token);
         }
 
-	    $vars->{'roadmap_list'} = Bugzilla::Extension::Roadmap::Roadmap->match();
+        $vars->{'roadmap_list'} = Bugzilla::Extension::Roadmap::Roadmap->match();
 
         print $cgi->header();    
         $template->process("admin/roadmap/list.html.tmpl", $vars)
@@ -247,7 +247,7 @@ sub page_before_template {
                                                       action => "edit",
                                                       object => "roadmaps" });
 
-	    $vars->{'token'} = issue_session_token('create_roadmap');
+        $vars->{'token'} = issue_session_token('create_roadmap');
 
         print $cgi->header();
         $template->process("admin/roadmap/create.html.tmpl", $vars)
@@ -304,7 +304,7 @@ sub page_before_template {
             check_token_data($token,  'edit_roadmap_milestone');
 
             my $milestone = Bugzilla::Extension::Roadmap::Roadmap::Milestone->create({
-		        roadmap_id => $roadmap->id,
+                roadmap_id => $roadmap->id,
                 name       => $input->{'milestone_name'}, 
                 sortkey    => $input->{'milestone_sortkey'}, 
                 deadline   => $input->{'milestone_deadline'},

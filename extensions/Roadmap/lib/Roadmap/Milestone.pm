@@ -118,7 +118,7 @@ sub _check_name {
     my $roadmap_id = $params->{'roadmap_id'};
     $name || ThrowUserError('roadmap_milestone_need_name');
     my $milestone
-	    = Bugzilla::Extension::Roadmap::Roadmap::Milestone->new({ name => $name, 
+        = Bugzilla::Extension::Roadmap::Roadmap::Milestone->new({ name => $name, 
                                                                   roadmap_id => $roadmap_id });
     if ($milestone && (!ref $invocant || $milestone->id != $invocant->id)) {
         ThrowUserError('roadmap_milestone_already_exists', { name => $milestone->name });
@@ -195,7 +195,7 @@ sub stats {
     my $dbh = Bugzilla->dbh;
    
     my $search = Bugzilla::Search->new(
-	    fields   => ['bug_id'],
+        fields   => ['bug_id'],
         params   => Bugzilla::CGI->new($self->query), 
         no_perms => 1
     );
@@ -203,7 +203,7 @@ sub stats {
     my $total_count = scalar @$total_bugs;
 
     $search = Bugzilla::Search->new(
-	    fields   => ['bug_id'],
+        fields   => ['bug_id'],
         params   => Bugzilla::CGI->new($self->query . "&bug_status=__open__"), 
         no_perms => 1
     );
@@ -211,7 +211,7 @@ sub stats {
     my $open_count = scalar @$open_bugs;
 
     $search = Bugzilla::Search->new(
-	    fields   => ['bug_id'],
+        fields   => ['bug_id'],
         params   => Bugzilla::CGI->new($self->query . "&bug_status=__closed__"),
         no_perms => 1
     );

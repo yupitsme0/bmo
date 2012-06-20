@@ -69,8 +69,8 @@ sub configuration_GET {
     # If the 'requirelogin' parameter is on and the user is not
     # authenticated, return empty fields.
     if (Bugzilla->params->{'requirelogin'} && !$user->id) {
-	    $self->_bz_response_code(STATUS_OK);
-	    return $self->_result_from_template();
+        $self->_bz_response_code(STATUS_OK);
+        return $self->_result_from_template();
     }
 
     # Get data from the shadow DB as they don't change very often.

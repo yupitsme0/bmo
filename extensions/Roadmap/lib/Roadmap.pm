@@ -124,7 +124,7 @@ sub _check_name {
     $name = trim($name);
     $name || ThrowUserError('roadmap_need_name');
     my $roadmap 
-	    = Bugzilla::Extension::Roadmap::Roadmap->new({ name => $name });
+        = Bugzilla::Extension::Roadmap::Roadmap->new({ name => $name });
     if ($roadmap && (!ref $invocant || $roadmap->id != $invocant->id)) {
         ThrowUserError('roadmap_already_exists', { name => $roadmap->name });
     }
