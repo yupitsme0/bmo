@@ -24,6 +24,7 @@
     white-space: nowrap;
     vertical-align: top;
     padding-right: 1ex;
+    font-weight: bold;
 }
 #frontpage .links {
     display: table-cell;
@@ -49,4 +50,11 @@
 }
 #frontpage table {
     margin-bottom: 10px;
+}
+#frontpage hr {
+    color: #000;
+    background-color: #000;
+    border: 0;
+    height: 1px;
+    width: 100%;
 }

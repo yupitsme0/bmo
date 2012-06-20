@@ -29,7 +29,7 @@ sub db_schema_abstract_schema {
     
     my $schema = $args->{schema};
 
-    $schema->{'front_page'} = {
+    $schema->{'frontpage'} = {
         FIELDS => [
             namedquery_id => {TYPE => 'INT3', NOTNULL => 1,
                               REFERENCES => {TABLE  => 'namedqueries',
@@ -41,9 +41,9 @@ sub db_schema_abstract_schema {
                                              DELETE => 'CASCADE'}},
         ],
         INDEXES => [
-            front_page_namedquery_id_idx => {FIELDS => [qw(namedquery_id user_id)],
+            frontpage_namedquery_id_idx => {FIELDS => [qw(namedquery_id user_id)],
                                              TYPE   => 'UNIQUE'},
-            front_page_user_id_idx => ['user_id'],
+            frontpage_user_id_idx => ['user_id'],
         ],
     };
 }
@@ -53,17 +53,17 @@ sub db_schema_abstract_schema {
 ###########
 
 BEGIN {
-    *Bugzilla::Search::Saved::in_front_page = \&_in_front_page;
+    *Bugzilla::Search::Saved::in_frontpage = \&_in_frontpage;
 }
 
-sub in_front_page {
+sub _in_frontpage {
     my ($self) = @_;
     my $dbh = Bugzilla->dbh;
-    return $self->{'in_front_page'} if exists $self->{'in_front_page'};
-    $self->{'in_front_page'} = $dbh->selectrow_array("
-        SELECT 1 FROM front_page WHERE namedquery_id = ? AND user_id = ?", 
+    return $self->{'in_frontpage'} if exists $self->{'in_frontpage'};
+    $self->{'in_frontpage'} = $dbh->selectrow_array("
+        SELECT 1 FROM frontpage WHERE namedquery_id = ? AND user_id = ?", 
         undef, $self->id, $self->user->id);
-    return $self->{'in_front_page'};
+    return $self->{'in_frontpage'};
 }
 
 #############
@@ -81,19 +81,21 @@ sub page_before_template {
     # user is right from the start.
     my $user = Bugzilla->login(LOGIN_REQUIRED);
     
-    my $cgi      = Bugzilla->cgi;
-    my $dbh      = Bugzilla->dbh;
-    my $template = Bugzilla->template;
-    
     # Switch to shadow db since we are just reading information
     Bugzilla->switch_to_shadow_db();
-                                                                                                                                 
-    ###############################################################################
-    # Main Body Execution
-    ###############################################################################
-    
-    ### Active product bug counts
-    
+ 
+    _active_product_counts($vars);
+    _standard_saved_queries($vars);
+    _flags_requested($vars);
+
+    $vars->{'severities'} = get_legal_field_values('bug_severity');
+}    
+                                                                                                                                
+sub _active_product_counts {
+    my ($vars) = @_;
+    my $dbh  = Bugzilla->dbh;
+    my $user = Bugzilla->user;
+       
     my @enterable_products = @{$user->get_enterable_products()};
     my @open_states = @{Bugzilla::Status->match({ is_open => 1, isactive => 1 })};
     my @quoted_open_states = map { $dbh->quote($_->name) } @open_states;
@@ -108,6 +110,14 @@ sub page_before_template {
                                      GROUP BY products.name ORDER BY count DESC", { Slice => {} });
     
     $vars->{'products_buffer'} = "&" . join('&', map { "bug_status=" . $_->name } @open_states);
+}
+
+sub _standard_saved_queries {
+    my ($vars) = @_;
+    my $dbh  = Bugzilla->dbh;
+    my $user = Bugzilla->user;
+
+    my @open_states = @{Bugzilla::Status->match({ is_open => 1, isactive => 1 })};
     
     # Default sort order
     my $order = ["bug_id"];
@@ -190,8 +200,7 @@ sub page_before_template {
     ### These are enabled through the userprefs.cgi UI
     
     foreach my $q (@{$user->queries}) {
-        next if !$q->in_front_page;
-    
+        next if !$q->in_frontpage;
         push(@query_defs, { name    => $q->name,
                             heading => $q->name,
                             saved   => 1,
@@ -230,9 +239,16 @@ sub page_before_template {
     }
     
     $vars->{'results'} = \@results;
+}
+
+sub _flags_requested {
+    my ($vars) = @_;
+    my $user = Bugzilla->user;
+    my $dbh  = Bugzilla->dbh;
     
-    ### Flags section
-    
+    my @open_states = @{Bugzilla::Status->match({ is_open => 1, isactive => 1 })};
+    my @quoted_open_states = map { $dbh->quote($_->name) } @open_states;
+
     my $attach_join_clause = "flags.attach_id = attachments.attach_id";
     if (Bugzilla->params->{insidergroup} && !$user->in_group(Bugzilla->params->{insidergroup})) {
         $attach_join_clause .= " AND attachments.isprivate < 1";
@@ -283,24 +299,47 @@ sub page_before_template {
     }
     $query .= ") ";
    
-    # Limit to user as requestee
-    my $requestee_query = $query . " AND requestees.login_name = ? ";
-    
-    # Limit to user as requester
-    my $requester_query = $query . " AND requesters.login_name = ? ";
-    
     # Order the records (within each group).
     my $group_order_by = " GROUP BY flags.bug_id ORDER BY flagtypes.name, flags.creation_date";
     
-    my $requestee_list = $dbh->selectall_arrayref($requestee_query . $group_order_by, 
+    my $requestee_list = $dbh->selectall_arrayref($query . 
+                                                  " AND requestees.login_name = ? " . 
+                                                  $group_order_by, 
                                                   { Slice => {} }, $user->login);
     $vars->{'requestee_list'} = $requestee_list; 
-    my $requester_list = $dbh->selectall_arrayref($requester_query . $group_order_by, 
+    my $requester_list = $dbh->selectall_arrayref($query . 
+                                                  " AND requesters.login_name = ? " . 
+                                                  $group_order_by, 
                                                   { Slice => {} }, $user->login);
     $vars->{'requester_list'} = $requester_list;
-
-    $vars->{'severities'} = get_legal_field_values('bug_severity');
 }
-    
+
+#########
+# Hooks #
+#########
+
+sub user_preferences_saved_searches {
+    my ($self, $args) = @_;
+    my $user   = $args->{'user'} || Bugzilla->user;
+    my $dbh    = Bugzilla->dbh;
+    my $params = Bugzilla->input_params;
+
+    my $sth_insert_fp = $dbh->prepare('INSERT INTO frontpage
+                                       (namedquery_id, user_id)
+                                       VALUES (?, ?)');
+    my $sth_delete_fp = $dbh->prepare('DELETE FROM frontpage
+                                             WHERE namedquery_id = ?
+                                               AND user_id = ?');
+
+    foreach my $q (@{$user->queries}, @{$user->queries_available}) {
+        if (defined $params->{'in_frontpage_' . $q->id}) {
+            $sth_insert_fp->execute($q->id, $q->user->id) if !$q->in_frontpage;
+        }
+        else {
+            $sth_delete_fp->execute($q->id, $q->user->id) if $q->in_frontpage;
+        }
+    }
+}
+   
 __PACKAGE__->NAME;
  

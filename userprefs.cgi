@@ -471,6 +471,9 @@ sub SaveSavedSearches {
         }
     }
 
+    Bugzilla::Hook::process('user_preferences_saved_searches',
+                            { user => $user });
+
     $user->flush_queries_cache;
     
     # Update profiles.mybugslink.

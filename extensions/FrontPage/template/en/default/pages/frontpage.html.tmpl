@@ -11,8 +11,9 @@
 [% PROCESS global/header.html.tmpl
   title = "My Front Page"
   style_urls = [ "skins/standard/buglist.css",
+                 "js/yui/assets/skins/sam/paginator.css", 
                  "extensions/FrontPage/web/styles/frontpage.css" ]
-  yui = [ "datatable" ]
+  yui = [ "datatable", "paginator" ]
   javascript_urls = [ "extensions/FrontPage/web/js/frontpage.js" ]
 %]
 
@@ -40,7 +41,7 @@
   <div class="yui-skin-sam">
     <ul id="query-links">
       <li id="links-standard">
-        <div class="label">Standard Queries</div>
+        <div class="label">Standard Queries:</div>
         <ul class="links">
           [% FOREACH r = standard_results %]
             <li>
@@ -64,7 +65,7 @@
       <li id="links-saved">
         <div class="label">Saved Queries
           (<a title="Click to add/remove saved searches from your front page" 
-              href="[% urlbase FILTER none %]userprefs.cgi?tab=saved-searches">edit</a>)</div>
+              href="[% urlbase FILTER none %]userprefs.cgi?tab=saved-searches">edit</a>):</div>
         <ul class="links">
           [% FOREACH r = saved_results %]
             <li>
@@ -78,6 +79,8 @@
         </ul>
       </li>
     </ul>
+
+    <hr>
 
     <script type="text/javascript">
     <!--
@@ -131,9 +134,15 @@
         { key:"count", parser:"number" },
         { key:"product" }
     ];
-    addStatListener("requestee_container", "requestee_table", requestee_column_defs, requestee_fields, {});
-    addStatListener("requester_container", "requester_table", requester_column_defs, requester_fields, {});
-    addStatListener("activeproducts", "activeproducts_table", product_column_defs, product_fields, {});
+    addStatListener("requestee_container", "requestee_table", requestee_column_defs, requestee_fields, {
+      paginator: new YAHOO.widget.Paginator({ rowsPerPage: 25, alwaysVisible: false })
+    });
+    addStatListener("requester_container", "requester_table", requester_column_defs, requester_fields, {
+      paginator: new YAHOO.widget.Paginator({ rowsPerPage: 25, alwaysVisible: false })
+    });
+    addStatListener("activeproducts", "activeproducts_table", product_column_defs, product_fields, {
+      paginator: new YAHOO.widget.Paginator({ rowsPerPage: 25, alwaysVisible: false })
+    });
     -->
     </script>
   
@@ -179,6 +188,8 @@
       </tbody>
       </table>
     </div>
+
+    <hr>
    
     <div class="query_heading">
       <a name="requester">Open Issues with Flags You Have Requested</a>
@@ -217,6 +228,8 @@
       </tbody>
     </div>
   
+    <hr>
+
     <div class="query_heading">
       <a name="products">Active Products with Open [% terms.Bugs %]</a>
     </div>
@@ -243,7 +256,9 @@
       </tbody>
       </table>
     </div>
-  
+ 
+    <hr> 
+     
     [% FOREACH r = saved_results %]
       [% PROCESS query_results r = r %]
     [% END %]
@@ -255,7 +270,9 @@
 [% BLOCK query_results %]
   <script>
   <!--
-  addStatListener("[% r.name FILTER js %]_container", "[% r.name FILTER js %]_table", query_column_defs, query_fields, {});
+  addStatListener("[% r.name FILTER js %]_container", "[% r.name FILTER js %]_table", query_column_defs, query_fields, {
+    paginator: new YAHOO.widget.Paginator({ rowsPerPage: 25, alwaysVisible: false })
+  });
   -->
   </script>
  
@@ -305,4 +322,5 @@
     </tbody>
     </table>
   </div>
+  <hr>
 [% END %]
