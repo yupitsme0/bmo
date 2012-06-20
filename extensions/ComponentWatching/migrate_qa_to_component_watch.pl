@@ -1,11 +1,11 @@
+#!/usr/bin/perl
+
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
-
-#!/usr/bin/perl
 
 use strict;
 use warnings;
@@ -21,15 +21,22 @@ use Bugzilla;
 use Bugzilla::Constants;
 use Bugzilla::Util;
 
+use constant EXCLUDED_PRODUCTS => (
+    'Bugzilla',
+);
+
 Bugzilla->usage_mode(USAGE_MODE_CMDLINE);
 
 my $dbh = Bugzilla->dbh;
 
+my $excluded = join(',', map { $dbh->quote($_) } EXCLUDED_PRODUCTS);
 my $ra_component_ids = $dbh->selectcol_arrayref(<<EOF);
     SELECT c.id
       FROM components c
            INNER JOIN profiles u ON u.userid = c.initialqacontact
+           INNER JOIN products p ON p.id = c.product_id
      WHERE u.login_name LIKE '%.bugs'
+           AND NOT p.name IN ($excluded)
 EOF
 my $count = scalar @$ra_component_ids;
 
