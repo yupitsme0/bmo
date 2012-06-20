@@ -25,8 +25,8 @@ use base qw(Exporter);
     by_popularity
     recently_opened
     recently_closed
-    total_bug_release
-    bug_release_by_status
+    total_bug_milestone
+    bug_milestone_by_status
 );
 
 use Bugzilla::CGI;
@@ -255,31 +255,35 @@ sub by_status {
                                       ORDER BY COUNT(bugs.bug_id) DESC", undef, $product->id);
 }
 
-sub total_bug_release {
-    my ($product, $release) = @_;
+sub total_bug_milestone {
+    my ($product, $milestone) = @_;
     my $dbh = Bugzilla->dbh;
 
     return $dbh->selectrow_array("SELECT COUNT(bug_id) 
                                     FROM bugs 
-                                   WHERE target_release = '$release' 
-                                     AND product_id = ?", undef, $product->id);
+                                   WHERE target_milestone = ? 
+                                         AND product_id = ?",
+                                 undef, 
+                                 $milestone->name, 
+                                 $product->id);
 
 }
 
-sub bug_release_by_status {
-    my ($product, $release, $bug_status) = @_;
+sub bug_milestone_by_status {
+    my ($product, $milestone, $bug_status) = @_;
     my $dbh = Bugzilla->dbh;
     my $extra;
 
     $extra = "AND bugs.bug_status IN (" . open_states() . ")" if $bug_status eq 'open';
     $extra = "AND bugs.bug_status IN (" . closed_states() . ")" if $bug_status eq 'closed';
 
-
     return $dbh->selectrow_array("SELECT COUNT(bug_id) 
                                     FROM bugs 
-                                   WHERE product_id = ?
-                                     AND target_release = '$release'
-                                      $extra", undef, $product->id);
+                                   WHERE target_milestone = ?
+                                         AND product_id = ? $extra", 
+                                 undef,
+                                 $milestone->name, 
+                                 $product->id);
 
 }
 

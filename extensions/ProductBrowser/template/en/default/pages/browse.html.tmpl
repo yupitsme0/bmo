@@ -61,7 +61,7 @@
       link  => "page.cgi?id=browse.html&amp;product=$url_filtered_product&bug_status=$url_filtered_status&tab=popularity" 
     },
     {
-      name  => "by_roadmap",
+      name  => "roadmap",
       label => "Road Map",
       link  => "page.cgi?id=browse.html&amp;product=$url_filtered_product&bug_status=$url_filtered_status&tab=roadmap"
     }, 
@@ -169,7 +169,7 @@
       [% PROCESS pages/browse/popularity.html.tmpl %]  
     [% END %]
   
-    [% IF current_tab.name == 'roadmap' && Param('usetargetrelease') %]
+    [% IF current_tab.name == 'roadmap' && Param('usetargetmilestone') %]
       [% PROCESS pages/browse/roadmap.html.tmpl %]
     [% END %]
   

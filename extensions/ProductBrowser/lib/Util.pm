@@ -16,9 +16,9 @@ use base qw(Exporter);
     open_states 
     closed_states
     filter_bugs
-    bug_release_link_total
-    bug_release_link_open
-    bug_release_link_closed
+    bug_milestone_link_total
+    bug_milestone_link_open
+    bug_milestone_link_closed
 );
 
 use Bugzilla::Status;
@@ -43,33 +43,36 @@ sub bug_link_all {
 sub bug_link_open {
     my $product = shift;
     
-    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . "&bug_status=__open__";
+    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . 
+        "&bug_status=__open__";
 }
 
 sub bug_link_closed {
     my $product = shift;
     
-    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . "&bug_status=__closed__";
+    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . 
+        "&bug_status=__closed__";
 }
 
-sub bug_release_link_total {
-    my ($product, $release) = @_;
+sub bug_milestone_link_total {
+    my ($product, $milestone) = @_;
 
-    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . "&target_release=$release";
+    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . 
+        "&target_milestone=" . url_quote($milestone->name);
 }
 
-sub bug_release_link_open {
-    my ($product, $release) = @_;
+sub bug_milestone_link_open {
+    my ($product, $milestone) = @_;
 
-    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . "&target_release=$release"
-    . "&bug_status=__open__";
+    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . 
+        "&target_milestone=" . url_quote($milestone->name) . "&bug_status=__open__";
 }
 
-sub bug_release_link_closed {
-    my ($product, $release) = @_;
+sub bug_milestone_link_closed {
+    my ($product, $milestone) = @_;
 
-    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . "&target_release=$release"
-    . "&bug_status=__closed__";
+    return correct_urlbase() . 'buglist.cgi?product=' . url_quote($product->name) . 
+        "&target_milestone=" . url_quote($milestone->name) . "&bug_status=__closed__";
 }
 
 sub filter_bugs {

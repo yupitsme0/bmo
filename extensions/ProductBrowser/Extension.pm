@@ -168,18 +168,16 @@ sub _page_browse {
     }
 
     if ($current_tab_name eq 'roadmap') {
-        my $releases = $product->releases();
-        foreach my $release_obj (@{$releases}){
-            my %release_stats;
-            my $release = $release_obj->{value};
-            $release_stats{'release_name'} = $release;
-            $release_stats{'total_bug_release'} = total_bug_release($product, $release);
-            $release_stats{'open_bug_release'}  = bug_release_by_status($product, $release, 'open');
-            $release_stats{'closed_bug_release'} = bug_release_by_status($product, $release, 'closed'); 
-            $release_stats{'bug_release_link_total'} = bug_release_link_total($product, $release);
-            $release_stats{'bug_release_link_open'} = bug_release_link_open($product, $release);
-            $release_stats{'bug_release_link_closed'} = bug_release_link_closed($product, $release);
-            push (@{$vars->{by_roadmap}}, \%release_stats);             
+        foreach my $milestone (@{$product->milestones}){
+            my %milestone_stats;
+            $milestone_stats{'name'} = $milestone->name;
+            $milestone_stats{'total_bugs'} = total_bug_milestone($product, $milestone);
+            $milestone_stats{'open_bugs'}  = bug_milestone_by_status($product, $milestone, 'open');
+            $milestone_stats{'closed_bugs'} = bug_milestone_by_status($product, $milestone, 'closed'); 
+            $milestone_stats{'link_total'} = bug_milestone_link_total($product, $milestone);
+            $milestone_stats{'link_open'} = bug_milestone_link_open($product, $milestone);
+            $milestone_stats{'link_closed'} = bug_milestone_link_closed($product, $milestone);
+            push (@{$vars->{by_roadmap}}, \%milestone_stats);             
         }
     }
 }
