@@ -59,7 +59,8 @@ function underageWarning (el) {
     Dom.get('submit').disabled = true;
   }
   else {
-    Dom.addClass('underage_warning', 'bz_default_hidden');    
+    Dom.addClass('underage_warning', 'bz_default_hidden');
+    Dom.get('submit').disabled = false;
   }
 }
 
