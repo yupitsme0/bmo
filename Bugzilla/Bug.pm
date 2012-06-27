@@ -697,6 +697,9 @@ sub create {
     Bugzilla::Hook::process('bug_end_of_create', { bug => $bug,
                                                    timestamp => $timestamp,
                                                  });
+    Bugzilla::Hook::process('bug_comment_create', { bug => $bug,
+                                                    timestamp => $timestamp,
+                                                  });
 
     $dbh->bz_commit_transaction();
 
@@ -906,6 +909,9 @@ sub update {
             LogActivityEntry($self->id, "work_time", "", $comment->{work_time},
                 Bugzilla->user->id, $delta_ts);
         }
+        Bugzilla::Hook::process('bug_comment_update', { bug => $self,
+                                                        timestamp => $delta_ts,
+                                                    });
     }
    
     # Comment Privacy 
@@ -916,6 +922,10 @@ sub update {
             = $self->{comment_isprivate}->{$comment_id} ? (0, 1) : (1, 0);
         LogActivityEntry($self->id, "longdescs.isprivate", $from, $to, 
                          Bugzilla->user->id, $delta_ts, $comment_id);
+        Bugzilla::Hook::process('bug_comment_update', { bug => $self,
+                                                        comment_id => $comment_id,
+                                                        timestamp => $delta_ts,
+                                                    });
     }
 
     # Insert the values into the multiselect value tables
