@@ -109,7 +109,7 @@ sub admin_queues {
             $json->shrink(0);
             $json->canonical(1);
             eval {
-                $vars->{json} = $json->pretty->encode($json->decode($message->payload));
+                $vars->{json} = $json->pretty->encode($message->payload_decoded);
             };
         }
     }

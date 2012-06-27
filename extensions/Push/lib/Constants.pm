@@ -36,7 +36,6 @@ sub push_result_to_string {
     return 'UNKNOWN'         if $result == PUSH_RESULT_UNKNOWN;
 }
 
-# for production this should be set to 30 seconds
 use constant POLL_INTERVAL_SECONDS => 30;
 
 1;

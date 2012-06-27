@@ -79,7 +79,8 @@ sub load {
 
     # done, update self
     foreach my $name (keys %$config) {
-        $logger->debug(sprintf("%s: set %s=%s\n", $self->{_name}, $name, $config->{$name}));
+        my $value = $self->option($name)->{type} eq 'password' ? '********' : $config->{$name};
+        $logger->debug(sprintf("%s: set %s=%s\n", $self->{_name}, $name, $value));
         $self->{$name} = $config->{$name};
     }
 }

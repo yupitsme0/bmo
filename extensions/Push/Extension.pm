@@ -328,7 +328,7 @@ sub _to_json {
     } else {
         $json = $cache->{'json'};
     }
-    return : $json->encode($rh);
+    return $json->encode($rh);
 }
 
 #

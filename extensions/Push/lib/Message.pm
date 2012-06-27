@@ -65,10 +65,16 @@ sub message_id  { return $_[0]->id;              }
 sub payload_decoded {
     my ($self) = @_;
     my $payload = $self->{'payload'};
-    if (utf8::is_utf8($payload)) {
+    # kludge; sometimes the payload contains utf8 chars but isn't tagged
+    my $result;
+    eval {
+        $result = decode_json($payload);
+    };
+    if ($@) {
         $payload = encode('utf8', $payload);
+        $result = decode_json($payload);
     }
-    return decode_json($payload);
+    return $result;
 }
 
 #
