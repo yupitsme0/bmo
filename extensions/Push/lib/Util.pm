@@ -10,17 +10,19 @@ package Bugzilla::Extension::Push::Util;
 use strict;
 use warnings;
 
+use Bugzilla;
 use Bugzilla::Constants;
 use Bugzilla::Util qw(datetime_from trim);
 use Data::Dumper;
-use JSON;
+use Encode;
+use JSON ();
 use Scalar::Util qw(blessed);
 use Time::HiRes;
 
 use base qw(Exporter);
 our @EXPORT = qw(
     datetime_to_timestamp
-    debug_dump debug_json
+    debug_dump
     get_first_value
     hash_undef_to_empty
     is_public
@@ -28,6 +30,7 @@ our @EXPORT = qw(
     clean_error
     change_set_id
     canon_email
+    to_json from_json
 );
 
 # returns true if the specified object is public
@@ -103,15 +106,6 @@ sub debug_dump {
     print "<pre>$output</pre>";
 }
 
-sub debug_json {
-    my ($data) = @_;
-    my $json = JSON->new();
-    $json->shrink(0);
-    $json->canonical(1);
-    $data = $json->decode($data) unless ref($data);
-    return $json->pretty->encode($data);
-}
-
 # removes stacktrace and "at /some/path ..." from errors
 sub clean_error {
     my ($error) = @_;
@@ -147,5 +141,22 @@ sub canon_email {
     return $email;
 }
 
+# json helpers
+sub to_json {
+    my ($object, $pretty) = @_;
+    if ($pretty) {
+        return decode('utf8', JSON->new->utf8(1)->pretty(1)->encode($object));
+    } else {
+        return JSON->new->ascii(1)->shrink(1)->encode($object);
+    }
+}
+
+sub from_json {
+    my ($json) = @_;
+    if (utf8::is_utf8($json)) {
+        $json = encode('utf8', $json);
+    }
+    return JSON->new->utf8(1)->decode($json);
+}
 
 1;

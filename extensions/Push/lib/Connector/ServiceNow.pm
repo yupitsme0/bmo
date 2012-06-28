@@ -26,7 +26,6 @@ use Bugzilla::User;
 use Bugzilla::Util qw(trim trick_taint);
 use Email::MIME;
 use FileHandle;
-use JSON;
 use LWP;
 use MIME::Base64;
 use Net::LDAP;
@@ -231,12 +230,14 @@ sub send {
     # add sysparm_action
     $data->{sysparm_action} = 'insert';
 
-    $logger->debugging && $logger->debug(debug_json($data));
+    if ($logger->debugging) {
+        $logger->debug(to_json(ref($data) ? $data : from_json($data), 1));
+    }
 
     # send to service-now
     my $request = HTTP::Request->new(POST => $self->config->{service_now_url});
     $request->content_type('application/json');
-    $request->content(encode_json($data));
+    $request->content(to_json($data));
     $request->authorization_basic($self->config->{service_now_user}, $self->config->{service_now_pass});
 
     $self->{lwp} ||= LWP::UserAgent->new(agent => Bugzilla->params->{urlbase});
@@ -258,12 +259,14 @@ sub send {
     # json errors
     my $result_data;
     eval {
-        $result_data = decode_json($result->content);
+        $result_data = from_json($result->content);
     };
     if ($@) {
         return (PUSH_RESULT_TRANSIENT, clean_error($@));
     }
-    $logger->debugging && $logger->debug(debug_json($result_data));
+    if ($logger->debugging) {
+        $logger->debug(to_json($result_data, 1));
+    }
     if (exists $result_data->{error}) {
         return (PUSH_RESULT_ERROR, $result_data->{error});
     };

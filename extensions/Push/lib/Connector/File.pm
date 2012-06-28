@@ -14,15 +14,12 @@ use base 'Bugzilla::Extension::Push::Connector::Base';
 
 use Bugzilla::Constants;
 use Bugzilla::Extension::Push::Constants;
+use Bugzilla::Extension::Push::Util;
 use Encode;
 use FileHandle;
-use JSON;
 
 sub init {
     my ($self) = @_;
-    $self->{json} = JSON->new();
-    $self->{json}->shrink(1);
-    $self->{json}->canonical(1);
 }
 
 sub options {
@@ -49,15 +46,10 @@ sub should_send {
 
 sub send {
     my ($self, $message) = @_;
-    my $json = $self->{json};
 
     # pretty-format json payload
-    my $payload = $message->payload;
-    if (utf8::is_utf8($payload)) {
-        $payload = encode('utf8', $payload);
-    }
-    my $rh = from_json($payload);
-    $payload = $json->pretty->encode($rh);
+    my $payload = $message->payload_decoded;
+    $payload = to_json($payload, 1);
 
     my $filename = bz_locations()->{'datadir'} . '/' . $self->config->{filename};
     Bugzilla->push_ext->logger->debug("File: Appending to $filename");

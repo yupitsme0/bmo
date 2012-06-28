@@ -14,8 +14,8 @@ use base 'Bugzilla::Object';
 
 use Bugzilla;
 use Bugzilla::Error;
+use Bugzilla::Extension::Push::Util;
 use Encode;
-use JSON;
 
 #
 # initialisation
@@ -64,11 +64,7 @@ sub message_id  { return $_[0]->id;              }
 
 sub payload_decoded {
     my ($self) = @_;
-    my $payload = $self->{'payload'};
-    if (utf8::is_utf8($payload)) {
-        $payload = encode('utf8', $payload);
-    }
-    return decode_json($payload);
+    return from_json($self->{'payload'});
 }
 
 #

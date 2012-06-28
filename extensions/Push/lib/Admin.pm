@@ -14,7 +14,6 @@ use Bugzilla;
 use Bugzilla::Error;
 use Bugzilla::Extension::Push::Util;
 use Bugzilla::Util qw(trim detaint_natural);
-use JSON;
 
 use base qw(Exporter);
 our @EXPORT = qw(
@@ -104,12 +103,8 @@ sub admin_queues {
 
         } else {
             $vars->{message_obj} = $message;
-
-            my $json = JSON->new();
-            $json->shrink(0);
-            $json->canonical(1);
             eval {
-                $vars->{json} = $json->pretty->encode($message->payload_decoded);
+                $vars->{json} = to_json($message->payload_decoded, 1);
             };
         }
     }

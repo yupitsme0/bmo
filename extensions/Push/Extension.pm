@@ -24,7 +24,7 @@ use Bugzilla::Extension::Push::Serialise;
 use Bugzilla::Extension::Push::Util;
 use Bugzilla::Install::Filesystem;
 
-use JSON qw(-convert_blessed_universally);
+use Encode;
 use Scalar::Util 'blessed';
 use Storable 'dclone';
 
@@ -294,7 +294,7 @@ sub _push_object {
 
     # create message object
     my $message = Bugzilla::Extension::Push::Message->new_transient({
-        payload     => $self->_to_json($rh),
+        payload     => to_json($rh),
         change_set  => $change_set,
         routing_key => $rh_event->{'routing_key'},
     });
@@ -311,24 +311,6 @@ sub _push_object {
 
     # insert into push table
     $message->create_from_transient();
-}
-
-#
-# helpers
-#
-
-sub _to_json {
-    my ($self, $rh) = @_;
-    my $cache = Bugzilla->request_cache->{'push'};
-    my $json;
-    if (!exists $cache->{'json'}) {
-        $json = JSON->new();
-        $json->shrink(1);
-        $cache->{'json'} = $json;
-    } else {
-        $json = $cache->{'json'};
-    }
-    return $json->encode($rh);
 }
 
 #

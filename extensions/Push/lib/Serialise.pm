@@ -15,7 +15,7 @@ use Bugzilla::Extension::Push::Util;
 use Bugzilla::Version;
 
 use Scalar::Util 'blessed';
-use JSON;
+use JSON ();
 
 my $_instance;
 sub instance {
