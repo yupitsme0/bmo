@@ -307,6 +307,7 @@ our %always_fileable_group = (
     'client-services-security'          => 1,
     'consulting'                        => 1,
     'core-security'                     => 1,
+    'finance'                           => 1, 
     'infra'                             => 1,
     'infrasec'                          => 1, 
     'marketing-private'                 => 1,
