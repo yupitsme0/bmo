@@ -218,6 +218,7 @@ sub _bug {
 
 sub _user {
     my ($self, $user) = @_;
+    return undef unless $user;
     return {
         id        => _integer($user->id),
         login     => _string($user->login),
