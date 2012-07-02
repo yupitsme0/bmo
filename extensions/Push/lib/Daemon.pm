@@ -68,7 +68,7 @@ sub gd_usage {
 sub gd_redirect_output {
     my $self = shift;
 
-    my $filename = _filename('log');
+    my $filename = bz_locations()->{datadir} . '/' . $self->{gd_progname} . ".log";
     open(STDERR, ">>$filename") or (print "could not open stderr: $!" && exit(1));
     close(STDOUT);
     open(STDOUT, ">&STDERR") or die "redirect STDOUT -> STDERR: $!";
