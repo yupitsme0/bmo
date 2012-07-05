@@ -639,6 +639,9 @@ sub update_table_definitions {
     # 2011-06-15 dkl@mozilla.com - Bug 658929
     _migrate_disabledtext_boolean();
 
+    # 2012-06-11 dkl@mozilla.com - Bug 756953
+    _fix_dependencies_dupes();
+
     ################################################################
     # New --TABLE-- changes should go *** A B O V E *** this point #
     ################################################################
@@ -3449,6 +3452,29 @@ sub _migrate_disabledtext_boolean {
         $dbh->do("UPDATE profiles SET is_enabled = 0 
                   WHERE disabledtext != ''");
     }
+}
+
+sub _fix_dependencies_dupes {
+    my $dbh = Bugzilla->dbh;
+    my $blocked_idx = $dbh->bz_index_info('dependencies', 'dependencies_blocked_idx');
+    if ($blocked_idx && scalar @{$blocked_idx->{'FIELDS'}} < 2) {
+        # Remove duplicated entries
+        my $dupes = $dbh->selectall_arrayref("SELECT blocked, dependson, COUNT(*) AS count
+                                                FROM dependencies 
+                                            GROUP BY blocked, dependson 
+                                              HAVING COUNT(*) > 1", 
+                                         { Slice => {} });
+        foreach my $dupe (@$dupes) {
+            $dbh->do("DELETE FROM dependencies 
+                      WHERE blocked = ? AND dependson = ?",
+                     undef, $dupe->{blocked}, $dupe->{dependson});
+            $dbh->do("INSERT INTO dependencies (blocked, dependson) VALUES (?, ?)",
+                     undef, $dupe->{blocked}, $dupe->{dependson});
+        }
+        $dbh->bz_drop_index('dependencies', 'dependencies_blocked_idx');
+        $dbh->bz_add_index('dependencies', 'dependencies_blocked_idx', 
+                           { FIELDS => [qw(blocked dependson)], TYPE => 'UNIQUE' });
+    }   
 }
 
 1;
