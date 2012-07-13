@@ -820,9 +820,43 @@ sub mailer_before_send {
     my ($self, $args) = @_;
     my $email = $args->{email};
 
-    # disabled, see bug 714488
+    # Add X-Bugzilla-Tracking header
+    if ($email->header('X-Bugzilla-Status') ||
+        ($email->header('X-Bugzilla-Type') 
+         && $email->header('X-Bugzilla-Type') eq 'request'))
+    {
+        # This is also a bit of a hack, but there's no header with the
+        # bug ID in. So we take the first number in the subject.
+        my ($bug_id) = ($email->header('Subject') =~ /\[\D+(\d+)\]/);
+        my $bug = new Bugzilla::Bug($bug_id);
+
+        return if !$bug;
+
+        # The BMO hook in active_custom_fields will filter 
+        # the fields for us based on product and component
+        my @fields = Bugzilla->active_custom_fields({
+            product   => $bug->product_obj, 
+            component => $bug->component_obj,
+            type      => 2,  
+        });
+
+        my @set_values = ();
+        foreach my $field (@fields) {
+            my $field_name = $field->name;
+            next if cf_flag_disabled($field_name, $bug);
+            if ($bug->$field_name && $bug->$field_name ne '---') {
+                push(@set_values, $field->description . ":" . $bug->$field_name);
+            }
+        }
+
+        if (@set_values) {
+            $email->header_set('X-Bugzilla-Tracking' => join(' ', @set_values));
+        } 
+    }
+
+    # attachments disabled, see bug 714488
     return;
- 
+
     # If email is a request for a review, add the attachment itself
     # to the email as an attachment. Attachment must be content type
     # text/plain and below a certain size. Otherwise the email already 
