@@ -29,19 +29,21 @@
 
 [% PROCESS global/variables.none.tmpl %]
 
+[% style_urls = [ "extensions/BMO/web/styles/choose_product.css" ] %] 
+
 [% IF target == "enter_bug.cgi" %]
   [% title = "Enter $terms.Bug" %]
-  [% h2 = BLOCK %]First, you must pick a product on which to enter [% terms.abug %]. [% END %]
-  [% yui = [ 'autocomplete' ] %]
-  [% javascript_urls = [ "js/field.js", "js/create_bug.js", 
-                         "extensions/BMO/web/js/choose_product.js" ] %]
-  [% onload = "YAHOO.util.Dom.get('prod_comp_search').focus();" %]
+  [% h2 = "Which product is affected by the problem you would like to report?" %]
 [% ELSIF target == "describecomponents.cgi" %]
   [% title = "Browse" %]
-  [% h2 = "Please specify the product whose components you want described." %]
+  [% h2 = "Which product would you like to have described?" %]
 [% END %]
 
-[% style_urls = [ "extensions/BMO/web/styles/choose_product.css" ] %]
+[% yui = [ 'autocomplete' ] %]
+[% javascript_urls = [ "js/field.js", "js/create_bug.js", 
+                       "extensions/BMO/web/js/prod_comp_search.js" ] %]
+[% onload = "YAHOO.util.Dom.get('prod_comp_search').focus();" %]
+[% style_urls.push("extensions/BMO/web/styles/prod_comp_search.css") %]
 
 [% DEFAULT title = "Choose a Product" %]
 [% PROCESS global/header.html.tmpl %]
@@ -56,36 +58,16 @@
 </p>
 <hr>
 
-<br>
+<h2>[% h2 FILTER html %]</h2>
+
+[% PROCESS "global/prod-comp-search.html.tmpl" %]
+
+<h2>or choose from the following selections</h2>
+
 [% USE Bugzilla %]
 [% cgi = Bugzilla.cgi %]
 [% SET classification = cgi.param('classification') %]
 [% IF NOT ((cgi.param("full")) OR (user.settings.product_chooser.value == 'full_product_chooser')) %]
-
-[% IF target == 'enter_bug.cgi' %]
-<h2>Which product is affected by the problem you would like to report?</h2>
-<div id="prod_comp_search_main">
-  <div id="prod_comp_search_autocomplete">
-    <div id="prod_comp_search_label">
-      Type to find product and component by name or description:
-      <img id="prod_comp_throbber" src="extensions/BMO/web/images/throbber.gif"
-           class="hidden" width="16" height="11">
-    </div>
-    <input id="prod_comp_search" type="text" size="60">
-    <div id="prod_comp_search_autocomplete_container"></div>
-  </div>
-</div>
-<script type="text/javascript">
-  if(typeof(YAHOO.bugzilla.prodCompSearch) !== 'undefined' 
-     && YAHOO.bugzilla.prodCompSearch != null) 
-  {
-    YAHOO.bugzilla.prodCompSearch.init(
-      "prod_comp_search", "prod_comp_search_autocomplete_container", "[% format FILTER js %]");
-  }
-</script>
-
-<h2>or choose from the following selections</h2>
-[% END %]
 
 <table align="center" border="0" width="600" cellpadding="5" cellspacing="0">
 [% INCLUDE easyproduct
@@ -113,8 +95,8 @@
    icon="seamonkey.png"
 %]
 [% INCLUDE easyproduct
-   name="Fennec Native"
-   icon="fennec.png"
+   name="Firefox for Android"
+   icon="firefox.png"
 %]
 [% INCLUDE easyproduct
    name="Mozilla Localizations"
@@ -129,12 +111,12 @@
    icon="dino.png"
 %]
 <tr>
-   <td><a href="[% target FILTER url_quote i%]?full=1
+   <td><a href="[% target FILTER url_quote %]?full=1
              [%- IF cloned_bug_id %]&amp;cloned_bug_id=[% cloned_bug_id FILTER url_quote %][% END -%]
              [%- IF classification %]&amp;classification=[% classification FILTER url_quote %][% END -%]
              [%- IF format %]&amp;format=[% format FILTER url_quote %][% END %]">
              <img src="extensions/BMO/web/producticons/other.png" height="64" width="64" border="0"></a></td>
-   <td><h2 align="left" style="margin-bottom: 0px;"><a href="[% target FILTER url_quote i%]?full=1
+   <td><h2 align="left" style="margin-bottom: 0px;"><a href="[% target FILTER url_quote %]?full=1
              [%- IF cloned_bug_id %]&amp;cloned_bug_id=[% cloned_bug_id FILTER url_quote %][% END -%]
              [%- IF classification %]&amp;classification=[% classification FILTER url_quote %][% END -%]
              [%- IF format %]&amp;format=[% format FILTER url_quote %][% END %]">
@@ -144,7 +126,6 @@
 </tr>
 </table>
 [% ELSE %]
-<h2>[% h2 FILTER html %]</h2>
 
 <table>
 
