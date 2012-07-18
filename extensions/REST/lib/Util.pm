@@ -30,9 +30,7 @@ use Scalar::Util qw(blessed reftype);
 
 use base qw(Exporter);
 our @EXPORT = qw(
-    inherit_package
     fix_include_exclude
-    adjust_fields
     remove_immutables
     ref_urlbase
     stringify_json_objects
@@ -42,17 +40,6 @@ our @EXPORT = qw(
 # normally required by REST API calls.
 sub ref_urlbase {
     return correct_urlbase() . "rest";
-}
-
-# Add the capabilities of the class
-# to the current instance
-sub inherit_package {
-    my ($self, $pkg) = @_;
-    my $new_class = ref($self) . '::' . $pkg;
-    my $isa_string = 'our @ISA = qw(' . ref($self) . " $pkg)";
-    eval "package $new_class;$isa_string;";
-    bless $self, $new_class;
-    return $self;
 }
 
 sub fix_include_exclude {
@@ -88,39 +75,6 @@ sub remove_immutables {
         delete $bug->{$field};
     }
 }
-
-sub adjust_fields {
-    my ($params, $result, $differences) = @_;
-    
-    # $result can be undef (e.g. if there was an error)
-    return if !$result;
-    
-    $params = fix_include_exclude($params);
-
-    if (!$params->{'include_fields'} && $differences) {
-        $params->{'exclude_fields'} ||= {};
-        push(@{$params->{'exclude_fields'}}, @$differences);
-    }
-
-    # Remove everything that's not an include_field
-    if ($params->{include_fields}) {
-        foreach my $key (keys %$result) {
-            if (!grep($_ eq $key, @{$params->{include_fields}})) {
-                delete $result->{$key};
-            }
-        }
-    }
-      
-    # Remove exclude fields
-    if ($params->{exclude_fields}) {
-        foreach my $exclude (@{$params->{exclude_fields}}) {
-            delete $result->{$exclude};
-        }
-    }   
-
-    return $result;
-}
-
 
 # stringify all objects in data hash:
 sub stringify_json_objects {

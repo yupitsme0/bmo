@@ -1,29 +1,14 @@
-# -*- Mode: perl; indent-tabs-mode: nil -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# The contents of this file are subject to the Mozilla Public
-# License Version 1.1 (the "License"); you may not use this file
-# except in compliance with the License. You may obtain a copy of
-# the License at http://www.mozilla.org/MPL/
-#
-# Software distributed under the License is distributed on an "AS
-# IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
-# implied. See the License for the specific language governing
-# rights and limitations under the License.
-#
-# The Original Code is the REST Bugzilla Extension.
-#
-# The Initial Developer of the Original Code is Mozilla.
-# Portions created by Mozilla are Copyright (C) 2011 Mozilla Corporation.
-# All Rights Reserved.
-#
-# Contributor(s):
-#   Dave Lawrence <dkl@mozilla.com>
-
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
 package Bugzilla::Extension::REST::Resources::Bug;
 
 use strict;
 
-use base qw(Exporter Bugzilla::WebService);
+use base qw(Exporter Bugzilla::WebService Bugzilla::WebService::Bug);
 
 use Bugzilla;
 use Bugzilla::CGI;
@@ -33,7 +18,6 @@ use Bugzilla::User;
 use Bugzilla::Util qw(validate_email_syntax);
 use Bugzilla::Error;
 
-use Bugzilla::WebService::Bug;
 use Bugzilla::WebService::Util qw(filter_wants);
 
 use Bugzilla::Extension::REST::Util;
@@ -43,15 +27,6 @@ use Tie::IxHash;
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
 use Data::Dumper; #DEBUG 
-
-use constant DATE_FIELDS => {
-    comments => ['new_since'], 
-    search   => ['last_change_time',  'creation_time'], 
-};
-
-use constant BASE64_FIELDS => {
-    add_attachment => ['data'], 
-};
 
 #############
 # Resources #
@@ -103,25 +78,21 @@ sub bug_GET {
     my ($self, $params) = @_;
     my $dbh = Bugzilla->dbh;
 
-    my @adjusted_bugs = map { $self->_fix_bug($params, $_) } 
-                        @{ $self->_do_search($params) };
+    my $bugs = $self->_do_search($params);
 
     $self->bz_response_code(STATUS_OK);
-    return { bugs => \@adjusted_bugs };
+    return { bugs => $bugs };
 }
 
 # Return a single bug report
 sub one_bug_GET {
     my ($self, $params) = @_;
 
-    $params->{'ids'} = [ $self->bz_regex_matches->[0] ];
+    $params->{ids} = [ $self->bz_regex_matches->[0] ];
    
-    $params = fix_include_exclude($params);
-
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     my $result = $self->get($params);
 
-    my $adjusted_bug = $self->_fix_bug($params, $result->{'bugs'}[0]);
+    my $adjusted_bug = $self->_fix_bug($params, $result->{bugs}[0]);
 
     $self->bz_response_code(STATUS_OK);
     return $adjusted_bug;
@@ -131,9 +102,8 @@ sub one_bug_GET {
 sub bug_PUT {
     my ($self, $params) = @_;
 
-    $params->{'ids'} = [ $self->bz_regex_matches->[0] ];
+    $params->{ids} = [ $self->bz_regex_matches->[0] ];
 
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     my $result = $self->update($params);
 
     $self->bz_response_code(STATUS_OK);
@@ -148,20 +118,20 @@ sub bug_POST {
     # Downgrade user objects to email addresses
     foreach my $person ('assigned_to', 'reporter', 'qa_contact') {
         if ($params->{$person}) {
-            $params->{$person} = $params->{$person}->{'name'};
+            $params->{$person} = $params->{$person}->{name};
         }
     }
 
-    if ($params->{'cc'}) {
-        my @names = map ( { $_->{'name'} } @{$params->{'cc'}});
-        $params->{'cc'} = \@names;
+    if ($params->{cc}) {
+        my @names = map ( { $_->{name} } @{$params->{cc}});
+        $params->{cc} = \@names;
     }
 
     # For consistency, we take initial comment in comments array
-    delete $params->{'description'};
-    if (ref $params->{'comments'}) {
-        $params->{'description'} = $params->{'comments'}->[0]->{'text'};
-        delete $params->{'comments'};
+    delete $params->{description};
+    if (ref $params->{comments}) {
+        $params->{description} = $params->{comments}->[0]->{text};
+        delete $params->{comments};
     }
 
     # Remove fields the XML-RPC interface will object to
@@ -181,20 +151,19 @@ sub bug_POST {
         }
     }
 
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     my $result = $self->create($params);
 
-    my $bug_id = $result->{'id'};
+    my $bug_id = $result->{id};
     my $ref = ref_urlbase() . "/bug/$bug_id";
 
     # We do a Bug.update if we have any extra fields
     remove_immutables($extra);
 
     # We shouldn't have one of these, but let's not mid-air if they send one
-    delete $extra->{'last_change_time'};
+    delete $extra->{last_change_time};
 
     if (%$extra) {
-        $extra->{'ids'} = [ $bug_id ];
+        $extra->{ids} = [ $bug_id ];
         $self->update($extra);
     }
 
@@ -207,9 +176,8 @@ sub comment_GET {
     my ($self, $params) = @_;
 
     my $bug_id = $self->bz_regex_matches->[0];
-    $params->{'ids'} = [ $bug_id ];
+    $params->{ids} = [ $bug_id ];
     
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     my $result = $self->comments($params);
 
     my @adjusted_comments = map { $self->_fix_comment($params, $_) }
@@ -223,12 +191,11 @@ sub comment_GET {
 sub comment_POST {
     my ($self, $params) = @_;
     my $bug_id = $self->bz_regex_matches->[0];
-    $params->{'id'} = $bug_id;
+    $params->{id} = $bug_id;
 
     # Backwards compat
-    $params->{'comment'} = $params->{'text'} if $params->{'text'};
+    $params->{comment} = $params->{text} if $params->{text};
 
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     my $result = $self->add_comment($params);
 
     $self->bz_response_code(STATUS_OK);
@@ -241,11 +208,8 @@ sub history_GET {
     my ($self, $params) = @_;
 
     my $bug_id = $self->bz_regex_matches->[0];
-    $params->{'ids'} = [ $bug_id ];
+    $params->{ids} = [ $bug_id ];
 
-    $params = fix_include_exclude($params);
-
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     my $result = $self->history($params);
 
     my @adjusted_history;
@@ -263,13 +227,10 @@ sub attachment_GET {
     my ($self, $params) = @_;
 
     my $bug_id = $self->bz_regex_matches->[0];
-    $params->{'ids'} = [ $bug_id ];
-    $params->{'exclude_fields'} = [ 'data' ]
+    $params->{ids} = [ $bug_id ];
+    $params->{exclude_fields} = ['data']
         if !$params->{attachmentdata};
 
-    $params = fix_include_exclude($params);
-
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     my $result = $self->attachments($params);
 
     my @adjusted_attachments = map { $self->_fix_attachment($params, $_) } 
@@ -285,12 +246,9 @@ sub one_attachment_GET {
 
     my $attach_id = $self->bz_regex_matches->[0];
     $params->{attachment_ids} = [ $attach_id ];
-    $params->{'exclude_fields'} = [ 'data' ]
+    $params->{exclude_fields} = ['data']
         if !$params->{attachmentdata};
 
-    $params = fix_include_exclude($params);
-
-    $self = inherit_package($self,  'Bugzilla::WebService::Bug');
     my $result = $self->attachments($params);
 
     my $adjusted_attachment 
@@ -303,7 +261,6 @@ sub one_attachment_GET {
 # Create a new attachment for a given bug
 sub attachment_POST {
     my ($self, $params) = @_;
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     $self->bz_response_code(STATUS_CREATED);
     return $self->attachment($params);
 }
@@ -336,9 +293,9 @@ sub flag_GET {
 sub count {
     my ($self, $params) = @_;
 
-    my $col_field = delete $params->{'x_axis_field'};
-    my $row_field = delete $params->{'y_axis_field'};
-    my $tbl_field = delete $params->{'z_axis_field'};
+    my $col_field = delete $params->{x_axis_field};
+    my $row_field = delete $params->{y_axis_field};
+    my $tbl_field = delete $params->{z_axis_field};
    
     my $dimensions = $col_field ?
                      $row_field ?
@@ -444,11 +401,8 @@ sub comment_id_GET {
     my ($self, $params) = @_;
 
     my $comment_id = $self->bz_regex_matches->[0];
-    $params->{'comment_ids'} = [ $comment_id ];
+    $params->{comment_ids} = [ $comment_id ];
 
-    $params = fix_include_exclude($params);
-
-    $self = inherit_package($self, 'Bugzilla::WebService::Bug');
     my $result = $self->comments($params);
 
     $self->bz_response_code(STATUS_OK);
@@ -461,6 +415,10 @@ sub comment_id_GET {
 
 sub _do_search {
     my ($self, $params) = @_;
+
+    print STDERR Dumper $params;
+
+    $params->{bug_id} = $params->{id} if exists $params->{id};
 
     my $cgi = Bugzilla::CGI->new($params);
 
@@ -478,83 +436,24 @@ sub _do_search {
         ThrowUserError("buglist_parameters_required");
     }
 
-    my $columns = Bugzilla::Search::COLUMNS;
-    my @selectcolumns = grep($_ ne 'short_short_desc', keys(%$columns));
-
-    # Remove the timetracking columns if they are not a part of the group
-    # (happens if a user had access to time tracking and it was revoked/disabled)
-    if (!Bugzilla->user->is_timetracker) {
-        @selectcolumns = grep($_ ne 'estimated_time', @selectcolumns);
-        @selectcolumns = grep($_ ne 'remaining_time', @selectcolumns);
-        @selectcolumns = grep($_ ne 'actual_time', @selectcolumns);
-        @selectcolumns = grep($_ ne 'percentage_complete', @selectcolumns);
-        @selectcolumns = grep($_ ne 'deadline', @selectcolumns);
-    }
-
-    # Remove the relevance column if not doing a fulltext search.
-    @selectcolumns = grep($_ ne 'relevance', @selectcolumns);
-
-    # Make sure that the login_name version of a field is always also
-    # requested if the realname version is requested, so that we can
-    # display the login name when the realname is empty.
-    my @realname_fields = grep(/_realname$/, @selectcolumns);
-    foreach my $item (@realname_fields) {
-        my $login_field = $item;
-        $login_field =~ s/_realname$//;
-        if (!grep($_ eq $login_field, @selectcolumns)) {
-            push(@selectcolumns, $login_field);
-        }
-    }
-
-    my $search = new Bugzilla::Search('fields' => \@selectcolumns,
+    my $search = new Bugzilla::Search('fields' => ['bug_id'],
                                       'params' => $cgi);
     my $query = $search->getSQL(); 
 
     my $dbh = Bugzilla->switch_to_shadow_db();
-    my $buglist_sth = $dbh->prepare($query);
-    $buglist_sth->execute();
+
+    my $bugids = $dbh->selectcol_arrayref($query);
 
     my @bugs;
-    while (my @row = $buglist_sth->fetchrow_array()) {
-        my $bug = {};
-        foreach my $column (@selectcolumns) {
-            $bug->{$column} = shift @row;
-        }
-
-        $bug->{'secure_mode'} = undef;
-        $bug->{'ref'} = ref_urlbase() . "/bug/" . $bug->{'bug_id'};
-
-        push(@bugs, $bug);
+    foreach my $id (@$bugids) {
+        $params->{ids} = [ $id ];
+        my $result = $self->get($params);
+        push(@bugs, $result->{bugs}[0]);
     }
 
-    my %min_membercontrol;
-    if (scalar @bugs) {
-        my $sth = $dbh->prepare(
-            "SELECT DISTINCT bugs.bug_id, MIN(group_control_map.membercontrol) " .
-              "FROM bugs " .
-        "INNER JOIN bug_group_map " .
-                "ON bugs.bug_id = bug_group_map.bug_id " .
-         "LEFT JOIN group_control_map " .
-                "ON group_control_map.product_id = bugs.product_id " .
-               "AND group_control_map.group_id = bug_group_map.group_id " .
-             "WHERE " . $dbh->sql_in('bugs.bug_id', [ map { $_->{'bug_id'} } @bugs ]) .
-            $dbh->sql_group_by('bugs.bug_id'));
-        $sth->execute();
-        while (my ($bug_id, $min_membercontrol) = $sth->fetchrow_array()) {
-            $min_membercontrol{$bug_id} = $min_membercontrol || CONTROLMAPNA;
-        }
-        foreach my $bug (@bugs) {
-            next unless defined($min_membercontrol{$bug->{'bug_id'}});
-            if ($min_membercontrol{$bug->{'bug_id'}} == CONTROLMAPMANDATORY) {
-                $bug->{'secure_mode'} = 'implied';
-            }
-            else {
-                $bug->{'secure_mode'} = 'manual';
-            }
-        }
-    }
+    my @adjusted_bugs = map { $self->_fix_bug($params, $_) } @bugs;
 
-    return \@bugs;
+    return \@adjusted_bugs;
 }
 
 sub _fix_bug {
@@ -565,18 +464,15 @@ sub _fix_bug {
     }
 
     my @tmp_cc;
-    foreach my $cc (@{$bug->{'cc'}}) {
+    foreach my $cc (@{$bug->{cc}}) {
         next if !$cc;
         push(@tmp_cc, $self->_fix_person($cc));
     }
     $bug->{cc} = \@tmp_cc;
 
-    $bug = adjust_fields($params, $bug);
-
     # Add in attachment meta data
     if (filter_wants $params, 'attachments') {
-        my $bug_id = $bug->{id};
-        my $attach_params = { ids => [$bug_id] };
+        my $attach_params = { ids => [ $bug->{id} ] };
         $attach_params->{exclude_fields} = ['data'] 
             unless $params->{attachmentdata};
 
@@ -584,7 +480,7 @@ sub _fix_bug {
 
         $bug->{attachments} 
             = [ map { $self->_fix_attachment($attach_params, $_) } 
-                @{ $attachments->{bugs}{$bug_id} } ];
+                @{ $attachments->{bugs}{$bug->{id}} } ];
     }
 
     $bug->{ref} = ref_urlbase() . "/bug/" . $bug->{id};
@@ -620,8 +516,6 @@ sub _fix_comment {
     delete $comment->{time};
     delete $comment->{attachment_id};
 
-    $comment = adjust_fields($params, $comment);
-
     $comment->{bug_ref} = ref_urlbase() . "/bug/" . $comment->{bug_id};
     $comment->{comment_ref} = ref_urlbase() . "/bug/comment/" . $comment->{id};
                                  
@@ -639,8 +533,6 @@ sub _fix_changeset {
 
     delete $changeset->{who};
     delete $changeset->{when};
-
-    $changeset = adjust_fields($params, $changeset);
 
     $changeset->{bug_ref} = ref_urlbase() . "/bug/" . $changeset->{bug_id};
 
@@ -665,8 +557,6 @@ sub _fix_attachment {
             = [ map { $self->_fix_flag($params, $_) } @{ $attachment->{flags} } ];
     }
 
-    $attachment = adjust_fields($params, $attachment, ["data", "encoding"]);
-
     $attachment->{bug_ref}  = ref_urlbase() . "/bug/" . $attachment->{bug_id};
     $attachment->{ref}      = ref_urlbase() . "/attachment/" . $attachment->{id};
  
@@ -690,8 +580,6 @@ sub _fix_flag {
     delete $flag->{attach_id} if !$flag->{attach_id};
     delete $flag->{setter_id};
     delete $flag->{requestee_id};
-
-    $flag = adjust_fields($params, $flag);
 
     $flag->{bug_ref} = ref_urlbase() . "/bug/" . $flag->{bug_id};
 

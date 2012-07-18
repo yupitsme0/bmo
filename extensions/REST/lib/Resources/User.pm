@@ -1,35 +1,16 @@
-# -*- Mode: perl; indent-tabs-mode: nil -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# The contents of this file are subject to the Mozilla Public
-# License Version 1.1 (the "License"); you may not use this file
-# except in compliance with the License. You may obtain a copy of
-# the License at http://www.mozilla.org/MPL/
-#
-# Software distributed under the License is distributed on an "AS
-# IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
-# implied. See the License for the specific language governing
-# rights and limitations under the License.
-#
-# The Original Code is the REST Bugzilla Extension.
-#
-# The Initial Developer of the Original Code is Mozilla.
-# Portions created by Mozilla are Copyright (C) 2011 Mozilla Corporation.
-# All Rights Reserved.
-#
-# Contributor(s):
-#   Dave Lawrence <dkl@mozilla.com>
-
+# This Source Code Form is "Incompatible With Secondary Licenses", as
+# defined by the Mozilla Public License, v. 2.0.
 package Bugzilla::Extension::REST::Resources::User;
 
 use strict;
 
-use base qw(Exporter Bugzilla::WebService);
+use base qw(Exporter Bugzilla::WebService Bugzilla::WebService::User);
 
-use Bugzilla::WebService::User;
-use Bugzilla::WebService::Util qw(filter filter_wants);
-
-use Bugzilla::Extension::REST::Util qw(inherit_package fix_include_exclude 
-                                       adjust_fields ref_urlbase);
+use Bugzilla::Extension::REST::Util;
 use Bugzilla::Extension::REST::Constants;
 
 use Tie::IxHash;
@@ -66,7 +47,6 @@ sub user_GET {
                       ? $params->{match}
                       : [ $params->{match} ];
 
-    $self = inherit_package($self, 'Bugzilla::WebService::User');
     my $result = $self->get({ match => $match_value, 
                               include_disabled => $include_disabled });
 
@@ -87,10 +67,9 @@ sub one_user_GET {
         $param = "ids";
     }
     
-    $self = inherit_package($self, 'Bugzilla::WebService::User');
     my $result = $self->get({ $param => $nameid });
 
-    my $adjusted_user = $self->_fix_user($params, $result->{'users'}[0]);
+    my $adjusted_user = $self->_fix_user($params, $result->{users}[0]);
 
     $self->bz_response_code(STATUS_OK);
     return $adjusted_user;
@@ -102,8 +81,6 @@ sub one_user_GET {
 
 sub _fix_user {
     my ($self, $params, $user) = @_;
-
-    $user = adjust_fields($params, $user);
 
     $user->{ref} = ref_urlbase() . "/user/" . $user->{id};
 

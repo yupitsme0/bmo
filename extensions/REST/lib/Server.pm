@@ -32,6 +32,7 @@ use Bugzilla::WebService::Constants;
 use Bugzilla::WebService::Util qw(taint_data);
 use Bugzilla::Util qw(correct_urlbase);
 
+use Bugzilla::Extension::REST::CGI;
 use Bugzilla::Extension::REST::View;
 use Bugzilla::Extension::REST::Util;
 use Bugzilla::Extension::REST::Constants;
@@ -42,14 +43,21 @@ use Data::Dumper; # DEBUG
 # Public JSON::RPC Method Overrides #
 #####################################
 
+sub cgi {
+    my $self = shift;
+    Bugzilla->request_cache->{rest_cgi} 
+        ||= new Bugzilla::Extension::REST::CGI();
+    return Bugzilla->request_cache->{rest_cgi};
+}
+
 sub handle {
     my ($self)  = @_;
 
     # Using current path information, decide which class/method to 
     # use to serve the request.
-    $self->_load_resource($self->path_info);
+    $self->_load_resource($self->cgi->path_info);
 
-    # Stop here if no resource matched 
+    # Stop here if no resource matched /
     if (!$self->bz_method_name) {
         ThrowUserError("rest_invalid_resource");
     }
@@ -67,6 +75,9 @@ sub handle {
     $self->_bz_callback($params->{'callback'}) if $params->{'callback'};
 
     $self->_fix_credentials($params);
+
+    # Fix includes/excludes for each call
+    $params = fix_include_exclude($params);
 
     Bugzilla->input_params($params);
 
@@ -161,7 +172,12 @@ sub handle_login {
 # as it determines the method name differently.
 sub _find_procedure {
     my $self = shift;
-    return JSON::RPC::Server::_find_procedure($self, @_);
+    if ($self->isa('JSON::RPC::Server::CGI')) {
+        return JSON::RPC::Server::_find_procedure($self, @_);
+    }
+    else {
+        return JSON::RPC::Legacy::Server::_find_procedure($self, @_);
+    }
 }
 
 # This is a hacky way to do something right before methods are called.
@@ -169,7 +185,14 @@ sub _find_procedure {
 # the method is actually called.
 sub _argument_type_check {
     my $self = shift;
-    my $params = JSON::RPC::Server::_argument_type_check($self, @_);
+    my $params;
+
+    if ($self->isa('JSON::RPC::Server::CGI')) {
+        $params = JSON::RPC::Server::_argument_type_check($self, @_);
+    }
+    else {
+        $params = JSON::RPC::Legacy::Server::_argument_type_check($self, @_);
+    }
 
     # JSON-RPC 1.0 requires all parameters to be passed as an array, so
     # we just pull out the first item and assume it's an object.

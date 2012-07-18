@@ -25,8 +25,18 @@ use strict;
 use lib qw(../../.. ../../../lib);
 
 use Bugzilla;
-use Bugzilla::Hook;
-
-Bugzilla->login();
-
-Bugzilla::Hook::process('page_before_template', { page_id => 'rest.api' });
+use Bugzilla::Constants;
+use Bugzilla::Error;
+use Bugzilla::WebService::Constants;
+BEGIN {
+    if (!Bugzilla->feature('jsonrpc')) {
+        ThrowCodeError('feature_disabled', { feature => 'jsonrpc' });
+    }
+}
+use Bugzilla::Extension::REST::Server;
+Bugzilla->usage_mode(USAGE_MODE_JSON);
+local @INC = (bz_locations()->{extensionsdir}, @INC);
+my $server = Bugzilla::Extension::REST::Server->new;
+$server->version('1.1');
+$server->handle();
+exit;
