@@ -50,15 +50,18 @@ function trySubmit() {
   var date = document.getElementById('date').value;
   var time = document.getElementById('time_hour').value + ':' + 
              document.getElementById('time_minute').value + 
-             document.getElementById('ampm').value + " " +
              document.getElementById('time_zone').value;
   var location = document.getElementById('location').value;
   var shortdesc = 'Event - (' + date + ' ' + time + ') - ' + location + ' - ' + topic;
   document.getElementById('short_desc').value = shortdesc;
 
-  // If intended audience is employees only, add mozilla-corporation-confidential group
-  var audience = document.getElementById('audience').value;
-  if (audience == 'Employees Only') {
+  var public_yes = document.getElementById('public_yes').checked;
+  var public_no = document.getElementById('public_no').checked;
+  if (!public_yes && !public_no) {
+    alert('You must select whether the event is public or not');
+    return false;   
+  }
+  if (public_no) {
     var brownbagRequestForm = document.getElementById('brownbagRequestForm');
     var groups = document.createElement('input');
     groups.type = 'hidden';
@@ -84,6 +87,15 @@ function trySubmit() {
   <input type="hidden" name="comment" id="comment" value="">
   <input type="hidden" name="short_desc" id="short_desc" value="">
   <input type="hidden" name="token" value="[% token FILTER html %]">
+
+[% FOREACH type = product.flag_types.bug %]
+  [% NEXT IF type.name != 'pr-review' %]
+  <input type="hidden" id="flag_type-[% type.id FILTER html %]" 
+         name="flag_type-[% type.id FILTER html %]" value="?">
+  <input type="hidden" id="flag_type-[% type.id FILTER html %]" 
+         name="requestee_type-[% type.id FILTER html %]"
+         value="PRreview@mozilla.com">
+[% END %]
 
 <table>
 
@@ -122,11 +134,11 @@ function trySubmit() {
 
 <tr>
   <th class="field_label">
-    <label for="time_hour">Start Time:</label>
+    <label for="time_hour">Start Time (24 hr clock):</label>
   </th>
   <td>
     <select name="time_hour" id="time_hour">
-      <option value="12" selected>12</option>
+      <option value="0">0</option>
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
@@ -138,16 +150,24 @@ function trySubmit() {
       <option value="9">9</option>
       <option value="10">10</option>
       <option value="11">11</option>
+      <option value="12" selected>12</option>
+      <option value="13">13</option>
+      <option value="14">14</option>
+      <option value="15">15</option>
+      <option value="16">16</option>
+      <option value="17">17</option>
+      <option value="18">18</option>
+      <option value="19">19</option>
+      <option value="20">20</option>
+      <option value="21">21</option>
+      <option value="22">22</option>
+      <option value="23">23</option>
     </select>:
     <select name="time_minute" id="time_minute">
       <option value="00" selected>00</option>
       <option value="15">15</option>
       <option value="30">30</option>
       <option value="45">45</option>
-    </select>
-    <select name="ampm" id="ampm">
-      <option value="AM">AM</option>
-      <option value="PM" selected>PM</option>
     </select>
     <select name="time_zone" id="time_zone">
       <option value="UTC-11">UTC-11</option>
@@ -196,7 +216,7 @@ function trySubmit() {
 
 <tr>
   <th class="field_label">
-    <label for="location">Location:</label>
+    <label for="location">Originating Location:</label>
   </th>
   <td>
     <input type="text" name="location" id="location" 
@@ -206,14 +226,27 @@ function trySubmit() {
 
 <tr>
   <th class="field_label">
-    <label for="audience">Intended Audience:</label>
+    <label for="large_screen_loc_mtv_radio">Show on large screens in<br>these Mozilla Spaces Commons:</label>
   </th>
   <td>
-    <select name="audience" id="audience">
-      <option value="Public" selected>Open to Public</option>
-      <option value="Employees Only">Employees Only</option>
-      <option value="Interns">Interns</option>
-    </select>
+    <input type="radio" name="large_screen_loc" id="large_screen_loc_mtv_radio" value="MTV" checked="checked">
+    <label for="large_screen_loc_mtv_radio">MTV</label><br>
+    <input type="radio" name="large_screen_loc" id="large_screen_loc_sfo_radio" value="SFO">
+    <label for="large_screen_loc_sfo_radio">SFO</label><br>
+    <input type="radio" name="large_screen_loc" id="large_screen_loc_tor_radio" value="TOR">
+    <label for="large_screen_loc_tor_radio">TOR</label><br>
+    <input type="radio" name="large_screen_loc" id="large_screen_loc_lon_radio" value="LON">
+    <label for="large_screen_loc_lon_radio">LON</label><br>
+  </td>
+</tr>  
+
+<tr>
+  <th class="field_label">This event may be<br>viewed by the public:</th>
+  <td>
+    <input type="radio" name="public" id="public_yes" value="Yes">
+    <label for="public_yes">Yes</label><br>
+    <input type="radio" name="public" id="public_no" value="No">
+    <label for="public_no">No</label>
   </td>
 </tr>
 
@@ -222,20 +255,6 @@ function trySubmit() {
     <label for="airmozilla">Air Mozilla Broadcasting?</label>
   </th>
   <td align="left"><input type="checkbox" name="airmozilla" id="airmozilla"></td>
-</tr>
-
-<tr>
-  <th class="field_label">
-    <label for="dialin">Dial In?</label>
-  </th>
-  <td align="left"><input type="checkbox" name="dialin" id="dialin"></td>
-</tr>
-
-<tr>
-  <th class="field_label">
-    <label for="archive">Archive this?</label>
-  </th>
-  <td align="left"><input type="checkbox" name="archive" id="archive" value="yes"></td>
 </tr>
 
 <tr>
@@ -265,8 +284,17 @@ function trySubmit() {
     <label for="description">Description</label>:
   </th>
   <td>
-    <em>Please briefly describe the brownbag and any specific needs you might have.</em><br>
+    <em>Please describe the event the way you would in a program guide listing</em>
     <textarea id="description" name="description" rows="10" cols="80"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <th class="field_label">
+    <label for="special_requirements">Special Requirements:</label>:
+  </th>
+  <td>
+    <textarea id="special_requirements" name="special_requirements" rows="10" cols="80"></textarea>
   </td>
 </tr>
 
