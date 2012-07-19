@@ -20,11 +20,11 @@ use constant REQUIRED_MODULES => [
       module  => 'YAML::Syck',
       version => 0,
     },
-    {
-      package => 'XML-Simple',
-      module  => 'XML::Simple',
-      version => 0,
-    },
+    #{
+    #  package => 'XML-Simple',
+    #  module  => 'XML::Simple',
+    #  version => 0,
+    #},
 ];
 
 __PACKAGE__->NAME;
