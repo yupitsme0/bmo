@@ -22,7 +22,7 @@
 [% PROCESS global/variables.none.tmpl %]
 
 [% PROCESS global/header.html.tmpl
-   title = "Mozilla Corporation Brownbag Requests"
+   title = "Event Request"
    style = ".yui-skin-sam .yui-calcontainer { z-index: 1; }"
    style_urls = [ 'skins/standard/enter_bug.css' ]
    javascript_urls = [ 'js/attachment.js', 'js/field.js', 'js/util.js' ]
@@ -31,26 +31,17 @@
 
 [% USE Bugzilla %]
 
-<div style='text-align: center; width: 98%; font-size: 2em; font-weight: bold; margin: 10px;'>Brownbag Request</div>
-
-<p><strong>Brownbag Request:</strong>  Please use this form if you plan on hosting a brownbag so that IT will be able to properly provide support. </p>
-
-<p>Process:</p>
-
-<ol><li>Complete and submit request below.</li>
-    <li>Your request will be reviewed and assigned to the appropriate person in IT.</li>
-</ol>
- 
-<p>These requests will only be visible internally in all cases and only to the
-person who submitted the request and any persons designated in the CC line.</p>
-
 <script type="text/javascript">
 function trySubmit() {
+  var timeZone = document.getElementById('time_zone').value;
+  if (!timeZone) {
+    alert('You must select an appropriate time zone');
+    return false;    
+  }
   var topic = document.getElementById('topic').value;
   var date = document.getElementById('date').value;
   var time = document.getElementById('time_hour').value + ':' + 
-             document.getElementById('time_minute').value + 
-             document.getElementById('time_zone').value;
+             document.getElementById('time_minute').value + ' ' + timeZone;  
   var location = document.getElementById('location').value;
   var shortdesc = 'Event - (' + date + ' ' + time + ') - ' + location + ' - ' + topic;
   document.getElementById('short_desc').value = shortdesc;
@@ -74,6 +65,18 @@ function trySubmit() {
 }
 </script>
 
+<p>
+  <strong>Event Request:</strong> Please use this form to schedule an event 
+  in any of the Mozilla Common Spaces.</b>
+</p>
+
+<p>Process:</p>
+
+<ol>
+  <li>Complete and submit request below.</li>
+  <li>Your request will be reviewed and assigned to the appropriate person in IT.</li>
+</ol>
+ 
 <form method="post" action="post_bug.cgi" id="brownbagRequestForm" class="enter_bug_form"
       enctype="multipart/form-data" onSubmit="return trySubmit();">
   <input type="hidden" name="format" value="brownbag">
@@ -170,10 +173,11 @@ function trySubmit() {
       <option value="45">45</option>
     </select>
     <select name="time_zone" id="time_zone">
+      <option value="" selected>Select Time Zone</option>
       <option value="UTC-11">UTC-11</option>
       <option value="UTC-10">UTC-10</option>
       <option value="UTC-9">UTC-9</option>
-      <option value="UTC-8" selected>UTC-8</option>
+      <option value="UTC-8">UTC-8</option>
       <option value="UTC-7">UTC-7</option>
       <option value="UTC-6">UTC-6</option>
       <option value="UTC-5">UTC-5</option>
@@ -229,20 +233,22 @@ function trySubmit() {
     <label for="large_screen_loc_mtv_radio">Show on large screens in<br>these Mozilla Spaces Commons:</label>
   </th>
   <td>
-    <input type="radio" name="large_screen_loc" id="large_screen_loc_mtv_radio" value="MTV" checked="checked">
-    <label for="large_screen_loc_mtv_radio">MTV</label><br>
-    <input type="radio" name="large_screen_loc" id="large_screen_loc_sfo_radio" value="SFO">
-    <label for="large_screen_loc_sfo_radio">SFO</label><br>
-    <input type="radio" name="large_screen_loc" id="large_screen_loc_tor_radio" value="TOR">
-    <label for="large_screen_loc_tor_radio">TOR</label><br>
-    <input type="radio" name="large_screen_loc" id="large_screen_loc_lon_radio" value="LON">
-    <label for="large_screen_loc_lon_radio">LON</label><br>
+    <input type="checkbox" name="large_screen_loc" id="large_screen_loc_mtv_checkbox" value="MTV" checked="checked">
+    <label for="large_screen_loc_mtv_checkbox">MTV</label><br>
+    <input type="checkbox" name="large_screen_loc" id="large_screen_loc_sfo_checkbox" value="SFO">
+    <label for="large_screen_loc_sfo_checkbox">SFO</label><br>
+    <input type="checkbox" name="large_screen_loc" id="large_screen_loc_tor_checkbox" value="TOR">
+    <label for="large_screen_loc_tor_checkbox">TOR</label><br>
+    <input type="checkbox" name="large_screen_loc" id="large_screen_loc_lon_checkbox" value="LON">
+    <label for="large_screen_loc_lon_checkbox">LON</label><br>
   </td>
 </tr>  
 
 <tr>
   <th class="field_label">This event may be<br>viewed by the public:</th>
   <td>
+    If <strong>No</strong> is chosen, this request will only be visible internally as well
+    as the reporter and anyone designated in the CC field.<br>
     <input type="radio" name="public" id="public_yes" value="Yes">
     <label for="public_yes">Yes</label><br>
     <input type="radio" name="public" id="public_no" value="No">
