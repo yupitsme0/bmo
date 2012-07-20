@@ -1,0 +1,215 @@
+@namespace url(http://www.w3.org/1999/xhtml);
+
+body {
+    color: #444 !important;
+    font-family: "Helvetica Neue", Arial, Helvetica, sans-serif !important;
+}
+
+a, a:visited {
+    color: #c30 !important;
+}
+
+a:hover {
+    color: #c30 !important;
+    border-bottom: 1px solid #666 !important;
+    text-decoration: none !important;
+}
+
+hr {
+    border: none !important;
+    border-top: 1px solid #ccc !important;
+}
+
+#header {
+    margin: -15px !important;  
+    line-height: 2 !important;
+    position: fixed !important;
+    width: 100% !important;
+    z-index: 1 !important;
+}
+
+#titles {
+    background: #c30 !important;
+    border-radius: 0 !important; 
+    padding: 5px 15px !important;  
+}
+
+#header .subheader {
+    text-align: left !important;
+    padding-left: 10px !important;
+}
+
+#header .links {
+    background: #666 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 5px 15px !important;
+}
+
+.links a {
+    color: #fff !important;
+    margin-right: 8px !important;
+}
+
+
+.separator {
+    display: none !important;
+}
+
+#bugzilla-body {
+    background: none !important;
+    border: none !important;
+    margin-top: 100px !important;
+    margin-bottom: 15px !important;
+    padding: 0 !important;
+}
+
+#quicksearch_main, #quicksearch_top, #quicksearch_bottom, #short_desc {
+    -moz-appearance: searchfield !important;
+}
+
+/* Home */
+
+#page-index td:first-child {
+    text-align: center !important;
+}
+
+#page-index a {
+    background: none !important;
+    display: inline !important;
+    float: none !important;
+    height: auto !important;
+    width: auto !important;
+}
+
+#quicksearch_main {
+    padding-left: 5px !important;
+}
+
+#quicksearch_links {
+    margin-top: 5px !important;
+}
+
+/* Bugs */
+
+u {
+    text-decoration: none !important;
+}
+
+#field_container_see_also br {
+    margin-bottom: 10px !important;
+}
+
+.bz_alias_short_desc_container {
+    background: #eee !important;
+    border-radius: 0 !important;
+    line-height: 22px !important;
+    padding: 10px !important;
+}
+
+.bz_alias_short_desc_container .editme {
+    font-weight: normal !important;
+}
+
+.last_comment_link b {
+    font-weight: normal !important;
+}
+
+.edit_form {
+    padding-bottom: 20px !important;
+    position: relative !important;
+}
+
+.edit_form hr {
+    margin-top: 40px !important;
+}
+
+#bz_show_bug_column_1 tr:last-child span {
+    display: none !important;
+}
+
+#bz_show_bug_column_1 tr:last-child {
+    position: absolute !important;
+    bottom: 40px !important;
+    right: 0 !important;
+}
+
+#project-flags, #custom-flags {
+    border-collapse: collapse !important;
+}
+
+#project-flags td:first-child, #custom-flags td:first-child {
+    display: none !important;
+}
+
+#project-flags label, #custom-flags label {
+    margin-right: 10px !important;
+}
+
+#attachment_table {
+    background: #fafafa !important;
+    border: none !important;
+    border-collapse: collapse !important;
+}
+
+#attachment_table td {
+    border: none !important;
+}
+
+.bz_comment {
+    background: transparent !important;
+}
+
+.bz_comment pre {
+    font: 14px/1.3 "Helvetica Neue", Arial, Helvetica, sans-serif !important;
+}
+
+.bz_first_comment_head, .bz_comment_head {
+    background: #eee !important;
+    margin: -5px -5px 5px !important;
+    padding: 5px !important;   
+}
+
+.ih_history_item:not(.ih_hidden) ~ .ih_history_item:not(.ih_hidden) {
+    margin-top: 10px !important;
+}
+
+.bz_comment_text span.quote {
+    background: #eee !important;
+    color: #444 !important;
+    display: block !important;
+    margin-top: 5px !important;
+    margin-bottom: -15px !important;
+    padding: 5px !important;
+}
+
+#comment {
+    margin-bottom: 20px !important;
+}
+
+.field_label {
+    padding-right: 10px !important;
+}
+
+#footer {
+    display: none !important;
+}
+
+/* Attachments */
+
+#viewFrame {
+    border: 2px solid #444 !important;
+    margin-bottom: 10px !important;
+}
+
+#editFrame, #viewDiffFrame, #viewFrame {
+    margin-left: 0 !important;
+}
+
+#flags label {
+    font-weight: normal !important;
+}
+
+#flags td:first-child {
+    display: none !important;
+}
