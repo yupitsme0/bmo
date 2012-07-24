@@ -969,6 +969,16 @@ while (my @row = $buglist_sth->fetchrow_array()) {
     $time_info->{'actual_time'}    += $bug->{'actual_time'}    if ($actual_time);
 }
 
+# When bugs returned is limited to max_search_results + 1
+# we pop the last bug off the list (the +1) and warn the user
+# that the results have been limited.
+my $max_results = Bugzilla->params->{max_search_results};
+if ($max_results && scalar @bugs == $max_results + 1) {
+    pop @bugs;
+    pop @bugidlist;
+    $vars->{max_search_limited} = 1;
+}
+
 # Check for bug privacy and set $bug->{'secure_mode'} to 'implied' or 'manual'
 # based on whether the privacy is simply product implied (by mandatory groups)
 # or because of human choice

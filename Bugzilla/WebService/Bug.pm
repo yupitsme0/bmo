@@ -451,6 +451,9 @@ sub search {
 
     my $count_only = delete $match_params{count_only};
 
+    my $max_results = Bugzilla->params->{'max_search_results'};
+    $match_params{LIMIT} = $max_results if $max_results;
+
     my $bugs = Bugzilla::Bug->match(\%match_params);
     my $visible = Bugzilla->user->visible_bugs($bugs);
 

@@ -127,8 +127,13 @@ my @axis_fields = ($row_field || EMPTY_COLUMN,
 
 # Clone the params, so that Bugzilla::Search can modify them
 my $params = new Bugzilla::CGI($cgi);
-my $search = new Bugzilla::Search('fields' => \@axis_fields, 
-                                  'params' => $params);
+
+my $search = new Bugzilla::Search(
+    fields => \@axis_fields, 
+    params => $params,
+    allow_unlimited => 1,
+);
+
 my $query = $search->getSQL();
 
 $::SIG{TERM} = 'DEFAULT';
