@@ -107,7 +107,7 @@ sub _object_modified {
         # groups is public.
         my $old_bug = $args->{'old_bug'};
         my $is_public = is_public($object);
-        my $was_public = !@{$old_bug->groups_in};
+        my $was_public = $old_bug ? !@{$old_bug->groups_in} : $is_public;
 
         if (!$is_public && $was_public) {
             # bug is changing from public to private
