@@ -825,17 +825,12 @@ if ($params->param('query_format') eq 'specific') {
 # Generate the basic SQL query that will be used to generate the bug list.
 my $search = new Bugzilla::Search('fields' => \@selectcolumns, 
                                   'params' => $params,
-                                  'order' => \@orderstrings);
+                                  'order' => \@orderstrings,
+                                  'limit' => $cgi->param('limit') || 0);
 my $query = $search->getSQL();
 $vars->{'search_description'} = $search->search_description;
 
-if (defined $cgi->param('limit')) {
-    my $limit = $cgi->param('limit');
-    if (detaint_natural($limit)) {
-        $query .= " " . $dbh->sql_limit($limit);
-    }
-}
-elsif ($fulltext) {
+if ($fulltext) {
     if ($cgi->param('order') && $cgi->param('order') =~ /^relevance/) {
         $vars->{'message'} = 'buglist_sorted_by_relevance';
     }
