@@ -23,22 +23,6 @@
     var value = component.value;
     document.getElementById('compdescription').innerHTML = compdesc[value];
   }
-  function onSubmit() {
-    return true;
-    var error = '';
-    if (!isFilledOut('short_desc')) error += 'Please enter a summary.\n';
-    if (!isFilledOut('attachment')) error += 'Please attach the data set/representative sample.\n';
-    if (!isFilledOut('source'))     error += 'Please enter the data source.\n';
-    if (!isFilledOut('data_desc'))  error += 'Please enter the data description.\n';
-    if (!isFilledOut('release'))    error += 'Please enter the parts of data you want released.\n';
-    if (!isFilledOut('why'))        error += 'Please enter why you want to release this data.\n';
-    if (!isFilledOut('when'))       error += 'Please enter when you would like to release this data.\n';
-    if (error) {
-      alert(error);
-      return false;
-    }
-    return true;
-  }
 [% END %]
 
 [% PROCESS global/header.html.tmpl
@@ -54,7 +38,7 @@
 <h2>Finance</h2>
 
 <form method="post" action="post_bug.cgi" id="bug_form" class="enter_bug_form"
-      enctype="multipart/form-data" onSubmit="return onSubmit()">
+      enctype="multipart/form-data">
 <input type="hidden" name="format" value="finance">
 <input type="hidden" name="product" value="Finance">
 <input type="hidden" name="rep_platform" value="All">
@@ -153,14 +137,55 @@
 
 <tr>
   <th>
-    <label for="desc">Description:</label>
+    <label for="whatpurchase">What is this purchase?</label>
   </th>
   <td>
-    <i>Describe your request, what, why, when you need. What is the alternative 
-      if that is applicable? Also provide context and background.</i>
-    <div>
-      <textarea name="desc" id="desc" rows="5" cols="40"></textarea>
-    </div>
+    <i>
+      Describe your request, what items are we purchasing, including number of 
+      units if available.<br>Also provide context and background.</i><br>
+    <textarea name="whatpurchase" id="whatpurchase" rows="5" cols="40"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <th>
+    <label for="whypurchase">Why is this purchase needed?</label>
+  </th>
+  <td>
+    <i>
+      Why do we need this? What is the work around if this is not approved?</i><br>
+    <textarea name="whypurchase" id="whypurchase" rows="5" cols="40"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <th>
+    <label for="riskpurchase">What is the risk if this is not purchased?</label>
+  </th>
+  <td>
+    <i>
+      What will happen if this is not purchased?</i><br>
+    <textarea name="riskpurchase" id="riskpurchase" rows="5" cols="40"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <th>
+    <label for="alternativepurchase">What is the alternative?</label>
+  </th>
+  <td>
+    <i>
+      How did the team come to this recommendation? Did we get other bids, if so, how many?</i><br>
+    <textarea name="alternativepurchase" id="alternativepurchase" rows="5" cols="40"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <th>
+    <label for="totalcost">Total Cost</label>
+  </th>
+  <td>
+    <input type="text" name="totalcost" id="totalcost" value="" size="60">
   </td>
 </tr>
 
@@ -169,7 +194,7 @@
     <label for="attachment">Attachment:</label>
   </th>
   <td>
-    <i>Upload document that needs to be signed. If this is a Purchase Request form, 
+    <i>Upload document that needs to be signed. If this is a Purchase Request form,<br> 
       also upload any supporting document such as draft SOW, quote, order form, etc.</i>
     <div>
       <input type="file" id="attachment" name="data" size="50">
