@@ -23,6 +23,39 @@
     var value = component.value;
     document.getElementById('compdescription').innerHTML = compdesc[value];
   }
+
+  function onSubmit() {
+    var alert_text = '';
+    if (!isFilledOut('component'))
+      alert_text += "Please select a value for request type.\n";
+    if (!isFilledOut('short_desc'))
+      alert_text += "Please enter a value for the summary.\n";
+    if (!isFilledOut('team_priority'))
+      alert_text += "Please select a value for team priority.\n";
+    if (!isFilledOut('signature_time'))
+      alert_text += "Please enter a value for signture timeframe.\n";
+    if (!isFilledOut('other_party'))
+      alert_text += "Please enter a value for the name of other party.\n";
+    if (!isFilledOut('business_obj'))
+      alert_text += "Please enter a value for business objective.\n";
+    if (!isFilledOut('whatpurchase'))
+      alert_text += "Please enter a value for what you are purchasing.\n";
+    if (!isFilledOut('whypurchase'))
+      alert_text += "Please enter a value for why the purchase is needed.\n";
+    if (!isFilledOut('riskpurchase'))
+      alert_text += "Please enter a value for the risk if not purchased.\n";
+    if (!isFilledOut('alternativepurchase'))
+      alert_text += "Please enter a value for the purchase alternative.\n";
+    if (!isFilledOut('totalcost'))
+      alert_text += "Please enter a value for total cost.\n";
+
+    if (alert_text != '') {
+      alert(alert_text);
+      return false;
+    }
+
+    return true;
+  }
 [% END %]
 
 [% PROCESS global/header.html.tmpl
@@ -38,7 +71,7 @@
 <h2>Finance</h2>
 
 <form method="post" action="post_bug.cgi" id="bug_form" class="enter_bug_form"
-      enctype="multipart/form-data">
+      enctype="multipart/form-data" onsubmit="return onSubmit();">
 <input type="hidden" name="format" value="finance">
 <input type="hidden" name="product" value="Finance">
 <input type="hidden" name="rep_platform" value="All">
@@ -128,9 +161,11 @@
 
 <tr>
   <th>
-    <label for="business_objective">Business Objective:</label>
+    <label for="business_obj">Business Objective:</label>
   </th>
   <td>
+    <i>
+      Which Initiative or Overall goal this purchase is for. i.e. B2G, Data Center, Network, etc.</i><br>
     <textarea id="business_obj" name="business_obj" rows="5" cols="40"></textarea>
   </td>
 <tr>
