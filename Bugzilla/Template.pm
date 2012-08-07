@@ -61,6 +61,10 @@ use Scalar::Util qw(blessed);
 
 use base qw(Template);
 
+# Use a per-process provider to cache compiled templates in memory across
+# requests.
+our $shared_provider;
+
 # Convert the constants in the Bugzilla::Constants module into a hash we can
 # pass to the template object for reflection into its "constants" namespace
 # (which is like its "variables" namespace, but for constants).  To do so, we
@@ -609,6 +613,10 @@ sub create {
 
         COMPILE_DIR => bz_locations()->{'datadir'} . "/template",
 
+        # Don't check for a template update until 1 hour has passed since the
+        # last check.
+        STAT_TTL    => 60 * 60,
+
         # Initialize templates (f.e. by loading plugins like Hook).
         PRE_PROCESS => ["global/initialize.none.tmpl"],
 
@@ -970,6 +978,8 @@ sub create {
             },
         },
     };
+    $shared_provider ||= Template::Provider->new($config);
+    $config->{LOAD_TEMPLATES} = [ $shared_provider ];
 
     local $Template::Config::CONTEXT = 'Bugzilla::Template::Context';
 
