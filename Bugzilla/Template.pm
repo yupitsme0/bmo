@@ -63,7 +63,7 @@ use base qw(Template);
 
 # Use a per-process provider to cache compiled templates in memory across
 # requests.
-our $shared_provider;
+our %shared_providers;
 
 # Convert the constants in the Bugzilla::Constants module into a hash we can
 # pass to the template object for reflection into its "constants" namespace
@@ -978,8 +978,9 @@ sub create {
             },
         },
     };
-    $shared_provider ||= Template::Provider->new($config);
-    $config->{LOAD_TEMPLATES} = [ $shared_provider ];
+    my $provider_key = join(':', @{ $config->{INCLUDE_PATH} });
+    $shared_providers{$provider_key} ||= Template::Provider->new($config);
+    $config->{LOAD_TEMPLATES} = [ $shared_providers{$provider_key} ];
 
     local $Template::Config::CONTEXT = 'Bugzilla::Template::Context';
 
@@ -1040,6 +1041,9 @@ sub precompile_templates {
             # effect of writing the compiled version to disk.
             $template->context->template($file);
         }
+
+        # Clear out the cached Provider object
+        undef %shared_providers;
     }
 
     # Under mod_perl, we look for templates using the absolute path of the
