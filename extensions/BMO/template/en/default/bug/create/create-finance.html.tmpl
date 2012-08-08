@@ -21,7 +21,7 @@
   [% END %]
   function showCompDesc(component) {
     var value = component.value;
-    document.getElementById('compdescription').innerHTML = compdesc[value];
+    document.getElementById('comp_description').innerHTML = compdesc[value];
   }
 
   function onSubmit() {
@@ -38,16 +38,18 @@
       alert_text += "Please enter a value for the name of other party.\n";
     if (!isFilledOut('business_obj'))
       alert_text += "Please enter a value for business objective.\n";
-    if (!isFilledOut('whatpurchase'))
+    if (!isFilledOut('what_purchase'))
       alert_text += "Please enter a value for what you are purchasing.\n";
-    if (!isFilledOut('whypurchase'))
+    if (!isFilledOut('why_purchase'))
       alert_text += "Please enter a value for why the purchase is needed.\n";
-    if (!isFilledOut('riskpurchase'))
+    if (!isFilledOut('risk_purchase'))
       alert_text += "Please enter a value for the risk if not purchased.\n";
-    if (!isFilledOut('alternativepurchase'))
+    if (!isFilledOut('alternative_purchase'))
       alert_text += "Please enter a value for the purchase alternative.\n";
-    if (!isFilledOut('totalcost'))
+    if (!isFilledOut('total_cost'))
       alert_text += "Please enter a value for total cost.\n";
+    if (!isFilledOut('attachment'))
+      alert_text += "Please enter an attachment.\n";
 
     if (alert_text != '') {
       alert(alert_text);
@@ -69,6 +71,8 @@
 %]
 
 <h2>Finance</h2>
+
+<p>All fields are mandatory</p>
 
 <form method="post" action="post_bug.cgi" id="bug_form" class="enter_bug_form"
       enctype="multipart/form-data" onsubmit="return onSubmit();">
@@ -107,12 +111,12 @@
 
 <tr>
   <td></td>
-  <td id="compdescription" align="left" style="color: green; padding-left: 1em"></td>
+  <td id="comp_description" align="left" style="color: green; padding-left: 1em"></td>
 </tr>
 
 <tr>
   <th>
-    <label for="short_desc">Summary:</label>
+    <label for="short_desc">Description:</label>
   </th>
   <td>
     <i>Short description of what is being asked to sign</i><br>
@@ -172,55 +176,56 @@
 
 <tr>
   <th>
-    <label for="whatpurchase">What is this purchase?</label>
+    <label for="what_purchase">If this is a purchase order,<br>what are we purchasing?</label>
   </th>
   <td>
     <i>
       Describe your request, what items are we purchasing, including number of 
-      units if available.<br>Also provide context and background.</i><br>
-    <textarea name="whatpurchase" id="whatpurchase" rows="5" cols="40"></textarea>
+      units if available.<br>Also provide context and background. Enter No if not
+      a purchase order.</i><br>
+    <textarea name="what_purchase" id="what_purchase" rows="5" cols="40"></textarea>
   </td>
 </tr>
 
 <tr>
   <th>
-    <label for="whypurchase">Why is this purchase needed?</label>
+    <label for="why_purchase">Why is this purchase needed?</label>
   </th>
   <td>
     <i>
       Why do we need this? What is the work around if this is not approved?</i><br>
-    <textarea name="whypurchase" id="whypurchase" rows="5" cols="40"></textarea>
+    <textarea name="why_purchase" id="why_purchase" rows="5" cols="40"></textarea>
   </td>
 </tr>
 
 <tr>
   <th>
-    <label for="riskpurchase">What is the risk if this is not purchased?</label>
+    <label for="risk_purchase">What is the risk if<br>this is not purchased?</label>
   </th>
   <td>
     <i>
       What will happen if this is not purchased?</i><br>
-    <textarea name="riskpurchase" id="riskpurchase" rows="5" cols="40"></textarea>
+    <textarea name="risk_purchase" id="risk_purchase" rows="5" cols="40"></textarea>
   </td>
 </tr>
 
 <tr>
   <th>
-    <label for="alternativepurchase">What is the alternative?</label>
+    <label for="alternative_purchase">What is the alternative?</label>
   </th>
   <td>
     <i>
       How did the team come to this recommendation? Did we get other bids, if so, how many?</i><br>
-    <textarea name="alternativepurchase" id="alternativepurchase" rows="5" cols="40"></textarea>
+    <textarea name="alternative_purchase" id="alternative_purchase" rows="5" cols="40"></textarea>
   </td>
 </tr>
 
 <tr>
   <th>
-    <label for="totalcost">Total Cost</label>
+    <label for="total_cost">Total Cost</label>
   </th>
   <td>
-    <input type="text" name="totalcost" id="totalcost" value="" size="60">
+    <input type="text" name="total_cost" id="total_cost" value="" size="60">
   </td>
 </tr>
 
