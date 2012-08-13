@@ -825,17 +825,12 @@ if ($params->param('query_format') eq 'specific') {
 # Generate the basic SQL query that will be used to generate the bug list.
 my $search = new Bugzilla::Search('fields' => \@selectcolumns, 
                                   'params' => $params,
-                                  'order' => \@orderstrings);
+                                  'order' => \@orderstrings,
+                                  'limit' => $cgi->param('limit') || 0);
 my $query = $search->getSQL();
 $vars->{'search_description'} = $search->search_description;
 
-if (defined $cgi->param('limit')) {
-    my $limit = $cgi->param('limit');
-    if (detaint_natural($limit)) {
-        $query .= " " . $dbh->sql_limit($limit);
-    }
-}
-elsif ($fulltext) {
+if ($fulltext) {
     if ($cgi->param('order') && $cgi->param('order') =~ /^relevance/) {
         $vars->{'message'} = 'buglist_sorted_by_relevance';
     }
@@ -967,6 +962,16 @@ while (my @row = $buglist_sth->fetchrow_array()) {
     $time_info->{'estimated_time'} += $bug->{'estimated_time'} if ($estimated_time);
     $time_info->{'remaining_time'} += $bug->{'remaining_time'} if ($remaining_time);
     $time_info->{'actual_time'}    += $bug->{'actual_time'}    if ($actual_time);
+}
+
+# When bugs returned is limited to max_search_results + 1
+# we pop the last bug off the list (the +1) and warn the user
+# that the results have been limited.
+my $max_results = Bugzilla->params->{max_search_results};
+if ($max_results && scalar @bugs == $max_results + 1) {
+    pop @bugs;
+    pop @bugidlist;
+    $vars->{max_search_limited} = 1;
 }
 
 # Check for bug privacy and set $bug->{'secure_mode'} to 'implied' or 'manual'

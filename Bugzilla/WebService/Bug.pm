@@ -451,6 +451,9 @@ sub search {
 
     my $count_only = delete $match_params{count_only};
 
+    my $max_results = Bugzilla->params->{'max_search_results'};
+    $match_params{LIMIT} = $max_results if $max_results;
+
     my $bugs = Bugzilla::Bug->match(\%match_params);
     my $visible = Bugzilla->user->visible_bugs($bugs);
 
@@ -2375,8 +2378,9 @@ B<STABLE>
 =item B<Description>
 
 This allows you to create a new bug in Bugzilla. If you specify any
-invalid fields, they will be ignored. If you specify any fields you
-are not allowed to set, they will just be set to their defaults or ignored.
+invalid fields, an error will be thrown stating which field is invalid.
+If you specify any fields you are not allowed to set, they will just be
+set to their defaults or ignored.
 
 You cannot currently set all the items here that you can set on enter_bug.cgi.
 

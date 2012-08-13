@@ -1142,6 +1142,15 @@ sub init {
         $query .= " ORDER BY " . join(',', @orderby);
     }
 
+    if ($self->{limit} && detaint_natural($self->{limit})) {
+        $query .= " " . $dbh->sql_limit($self->{limit});
+    } else {
+        my $max_results = Bugzilla->params->{'max_search_results'};
+        if ($max_results && !$self->{allow_unlimited}) {
+            $query .= " " . $dbh->sql_limit($max_results + 1);
+        }
+    }
+
     $self->{'sql'} = $query;
 }
 

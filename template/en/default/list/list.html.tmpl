@@ -114,9 +114,7 @@
 [%############################################################################%]
 
 [% IF bugs.size > 9 %]
-  <span class="bz_result_count">
-    [% bugs.size %] [%+ terms.bugs %] found.
-  </span>
+  [% PROCESS num_results %]
 [% END %]
 
 [%############################################################################%]
@@ -138,15 +136,7 @@
 [%# Succeeding Status Line                                                   #%]
 [%############################################################################%]
 
-<span class="bz_result_count">
-  [% IF bugs.size == 0 %]
-    <span class="zero_results">[% terms.zeroSearchResults %].</span>
-  [% ELSIF bugs.size == 1 %]
-    One [% terms.bug %] found.
-  [% ELSE %]
-    [% bugs.size %] [%+ terms.bugs %] found.
-  [% END %]
-</span>
+[% PROCESS num_results %]
 
 [% IF bugs.size == 0 %]
   <ul class="zero_result_links">
@@ -295,3 +285,20 @@
      in the "[% one_product.name FILTER html %]" product
    [% END %]</a>
 [% END %]
+
+[% BLOCK num_results %]
+  <span class="bz_result_count">
+    [% IF bugs.size == 0 %]
+      <span class="zero_results">[% terms.zeroSearchResults %].</span>
+    [% ELSIF max_search_limited %]
+      This result was limited to [% Param('max_search_results') FILTER html %]
+      [%+ terms.bugs %]. Please refine your search criteria to narrow the results.
+    [% ELSIF bugs.size == 1 %]
+      One [% terms.bug %] found.
+    [% ELSE %]
+      [% bugs.size %] [%+ terms.bugs %] found.
+    [% END %]
+  </span>
+[% END %]
+
+

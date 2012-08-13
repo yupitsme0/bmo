@@ -61,6 +61,10 @@ use Scalar::Util qw(blessed);
 
 use base qw(Template);
 
+# Use a per-process provider to cache compiled templates in memory across
+# requests.
+our %shared_providers;
+
 # Convert the constants in the Bugzilla::Constants module into a hash we can
 # pass to the template object for reflection into its "constants" namespace
 # (which is like its "variables" namespace, but for constants).  To do so, we
@@ -271,13 +275,16 @@ sub quoteUrls {
 sub get_attachment_link {
     my ($attachid, $link_text) = @_;
     my $dbh = Bugzilla->dbh;
+    my $user = Bugzilla->user;
 
     my $attachment = new Bugzilla::Attachment($attachid);
 
     if ($attachment) {
         my $title = "";
         my $className = "";
-        if (Bugzilla->user->can_see_bug($attachment->bug_id)) {
+        if ($user->can_see_bug($attachment->bug_id)
+            && (!$attachment->isprivate || $user->is_insider))
+        {
             $title = $attachment->description;
         }
         if ($attachment->isobsolete) {
@@ -605,6 +612,10 @@ sub create {
         RELATIVE => $ENV{MOD_PERL} ? 0 : 1,
 
         COMPILE_DIR => bz_locations()->{'datadir'} . "/template",
+
+        # Don't check for a template update until 1 hour has passed since the
+        # last check.
+        STAT_TTL    => 60 * 60,
 
         # Initialize templates (f.e. by loading plugins like Hook).
         PRE_PROCESS => ["global/initialize.none.tmpl"],
@@ -967,6 +978,9 @@ sub create {
             },
         },
     };
+    my $provider_key = join(':', @{ $config->{INCLUDE_PATH} });
+    $shared_providers{$provider_key} ||= Template::Provider->new($config);
+    $config->{LOAD_TEMPLATES} = [ $shared_providers{$provider_key} ];
 
     local $Template::Config::CONTEXT = 'Bugzilla::Template::Context';
 
@@ -1027,6 +1041,9 @@ sub precompile_templates {
             # effect of writing the compiled version to disk.
             $template->context->template($file);
         }
+
+        # Clear out the cached Provider object
+        undef %shared_providers;
     }
 
     # Under mod_perl, we look for templates using the absolute path of the
