@@ -175,8 +175,8 @@ sub end_lines {
 
 sub _init_state {
   my $this = shift;
-  $this->{SECTION_STATE}{minus_lines} ||= 0;
-  $this->{SECTION_STATE}{plus_lines} ||= 0;
+  #$this->{SECTION_STATE}{minus_lines} ||= 0;
+  #$this->{SECTION_STATE}{plus_lines} ||= 0;
 }
 
 sub _maybe_start_file {
