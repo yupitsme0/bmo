@@ -49,7 +49,7 @@ sub next_section {
   my $this = shift;
   my ($section) = @_;
 
-  #return unless $section->{old_start} || $section->{new_start};
+  return unless $section->{old_start} || $section->{new_start};
   my $fh = $this->{OUTFILE};
   print $fh "@@ -$section->{old_start},$section->{old_lines} +$section->{new_start},$section->{new_lines} @@ $section->{func_info}\n";
   foreach my $line (@{$section->{lines}}) {
