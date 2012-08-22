@@ -254,50 +254,55 @@
   #%]
 
 <div id="header">
+  <div class="wrapper">
+    <table border="0" cellspacing="0" cellpadding="0" id="titles">
+    <tr>
+      <td id="title">
+        <p>
+          <a href="./" title="Home">
+            [% terms.BugzillaTitle %]</a>
+          [% " &ndash; $header" IF header %]
+        </p>
+      </td>
+      [% IF subheader %]
+        <td id="subtitle">
+          <p class="subheader">[% subheader %]</p>
+        </td>
+      [% END %]
+      [% IF header_addl_info %]
+        <td id="information">
+          <p class="header_addl_info">[% header_addl_info %]</p>
+        </td>
+      [% END %]
+      <td id="languages">
+        [% IF Bugzilla.languages.size > 1 %]
+          <ul class="links">
+          [% FOREACH lang = Bugzilla.languages.sort %]
+            <li>[% IF NOT loop.first %]<span class="separator"> | </span>[% END %]
+            [% IF lang == current_language %]
+              <span class="lang_current">[% lang FILTER html FILTER upper %]</span>
+            [% ELSE %]
+              <a href="#" onclick="set_language('[% lang FILTER none %]');">
+                [%- lang FILTER html FILTER upper %]</a>
+            [% END %]
+            </li>
+          [% END %]
+          </ul>
+        [% END %]
+      </td>
+      <td id="quicksearch">
+        <form action="buglist.cgi" method="get"
+              onsubmit="if (this.quicksearch.value == '') { alert('Please enter one or more search terms first.'); return false;">
+          <input class="txt" type="text" id="quicksearch_top" name="quicksearch" value="" placeholder="Search bugs">
+        </form>
+      </td>
+    </tr>
+    </table>
 
-[% INCLUDE global/banner.html.tmpl %]
+    [% PROCESS "global/common-links.html.tmpl" qs_suffix = "_top" %]
 
-<table border="0" cellspacing="0" cellpadding="0" id="titles">
-<tr>
-    <td id="title">
-      <p>[% terms.BugzillaTitle %]
-      [% " &ndash; $header" IF header %]</p>
-    </td>
-
-  [% IF subheader %]
-    <td id="subtitle">
-      <p class="subheader">[% subheader %]</p>
-    </td>
-  [% END %]
-
-  [% IF header_addl_info %]
-    <td id="information">
-      <p class="header_addl_info">[% header_addl_info %]</p>
-    </td>
-  [% END %]
-</tr>
-</table>
-
-<table id="lang_links_container" cellpadding="0" cellspacing="0"
-       class="bz_default_hidden"><tr><td>
-[% IF Bugzilla.languages.size > 1 %]
-  <ul class="links">
-  [% FOREACH lang = Bugzilla.languages.sort %]
-    <li>[% IF NOT loop.first %]<span class="separator"> | </span>[% END %]
-    [% IF lang == current_language %]
-      <span class="lang_current">[% lang FILTER html FILTER upper %]</span>
-    [% ELSE %]
-      <a href="#" onclick="set_language('[% lang FILTER none %]');">
-       [%- lang FILTER html FILTER upper %]</a>
-    [% END %]
-    </li>
-  [% END %]
-  </ul>
-[% END %]
-</td></tr></table>
-
-[% PROCESS "global/common-links.html.tmpl" qs_suffix = "_top" %]
-</div> [%# header %]
+  </div>
+</div>
 
 <div id="bugzilla-body">
 

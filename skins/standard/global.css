@@ -115,6 +115,7 @@
         margin: 0;
         padding: 0.5em;
         vertical-align: bottom;
+        text-decoration: none;
     }
 
     #titles a {
