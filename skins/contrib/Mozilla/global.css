@@ -30,6 +30,10 @@ textarea, input[type=text], .text_input {
     padding: 5px;
 }
 
+.bz_comment_table {
+    width: 75%;
+}
+
 hr {
     display: none;
 }
@@ -170,7 +174,7 @@ hr {
     color: #404040;
     margin: 100px auto 15px;
     padding: 0;
-    width: 990px;
+    width: 90%;
 }
 
 /* Home */
@@ -328,7 +332,12 @@ table.edit_form hr {
     border: none;
     margin: 0 0 30px;
     padding: 0;
-    width: 674px;
+    width: auto;
+    min-width: 55em;
+}
+
+.bz_collapse_expand_comments {
+    white-space: nowrap;
 }
 
 .bz_comment pre {
