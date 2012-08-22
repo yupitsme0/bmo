@@ -471,6 +471,10 @@ table.edit_form hr {
     padding: 48px 15px;
 }
 
+#footer .separator {
+    display: none;
+}
+
 #footer #useful-links {
     background: url(footer-mozilla.png) no-repeat;
     min-height: 24px;
@@ -481,6 +485,14 @@ table.edit_form hr {
     margin-left: auto;
     padding: 0 0 0 320px !important;
     width: 670px;
+}
+
+#footer .links a {
+    padding-right: 10px;
+}
+
+#footer .links {
+    margin-bottom: 2ex;
 }
 
 #footer .form {
