@@ -471,8 +471,14 @@ table.edit_form hr {
     padding: 48px 15px;
 }
 
+#header .separator, 
 #footer .separator {
     display: none;
+}
+
+#header .links a, 
+#footer .links a {
+    padding-right: 10px;
 }
 
 #footer #useful-links {
@@ -487,11 +493,8 @@ table.edit_form hr {
     width: 670px;
 }
 
-#footer .links a {
-    padding-right: 10px;
-}
-
 #footer .links {
+    font-size: 90%;
     margin-bottom: 2ex;
 }
 
