@@ -6,9 +6,6 @@
  * defined by the Mozilla Public License, v. 2.0. */
 
 function getPreSelectedIndex(el) {
-    // kludge for IE breakage
-    if (YAHOO.env.ua.ie > 0)
-        return -1;
     var options = el.options;
     for (var i = 0, l = options.length; i < l; i++) {
         var attributes = options[i].attributes;
@@ -35,7 +32,7 @@ YAHOO.util.Event.onDOMReady(function() {
                     el.selectedIndex = preSelectedIndex;
             }
             YAHOO.util.Event.on(el, "change", function(e) {
-                var el = e.target;
+                var el = e.target || e.srcElement;
                 var preSelectedIndex = getPreSelectedIndex(el);
                 if (preSelectedIndex != -1)
                     document.getElementById(el.name + '_dirty').value = preSelectedIndex == el.selectedIndex ? '' : '1';
