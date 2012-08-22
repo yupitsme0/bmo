@@ -36,6 +36,11 @@ use constant REQUIRED_MODULES => [
         module  => 'Crypt::SMIME',
         version => 0,
     },
+    {
+        package => 'HTML-Tree', 
+        module  => 'HTML::Tree', 
+        version => 0, 
+    }
 ];
 
 __PACKAGE__->NAME;

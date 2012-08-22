@@ -254,6 +254,10 @@ div#docslinks {
     margin: 0;
 }
 
+.bz_bug_link {
+    font-style: italic;
+}
+
 .bz_obsolete {
     text-decoration: line-through;
 }

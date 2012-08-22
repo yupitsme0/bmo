@@ -65,6 +65,11 @@ use base qw(Template);
 # requests.
 our %shared_providers;
 
+use constant FORMAT_TRIPLE => '%19s|%-28s|%-28s'; 
+use constant FORMAT_3_SIZE => [19, 28, 28]; 
+use constant FORMAT_DOUBLE => '%19s %-55s'; 
+use constant FORMAT_2_SIZE => [19, 55]; 
+
 # Convert the constants in the Bugzilla::Constants module into a hash we can
 # pass to the template object for reflection into its "constants" namespace
 # (which is like its "variables" namespace, but for constants).  To do so, we
@@ -146,8 +151,9 @@ sub get_format {
 # If you want to modify this routine, read the comments carefully
 
 sub quoteUrls {
-    my ($text, $bug, $comment) = (@_);
+    my ($text, $bug, $comment, $user) = @_;
     return $text unless $text;
+    $user ||= Bugzilla->user;
 
     # We use /g for speed, but uris can have other things inside them
     # (http://foo/bug#3 for example). Filtering that out filters valid
@@ -177,7 +183,7 @@ sub quoteUrls {
     my @hook_regexes;
     Bugzilla::Hook::process('bug_format_comment',
         { text => \$text, bug => $bug, regexes => \@hook_regexes,
-          comment => $comment });
+          comment => $comment, user => $user });
 
     foreach my $re (@hook_regexes) {
         my ($match, $replace) = @$re{qw(match replace)};
@@ -199,7 +205,7 @@ sub quoteUrls {
         map { qr/$_/ } grep($_, Bugzilla->params->{'urlbase'}, 
                             Bugzilla->params->{'sslbase'})) . ')';
     $text =~ s~\b(${urlbase_re}\Qshow_bug.cgi?id=\E([0-9]+)(\#c([0-9]+))?)\b
-              ~($things[$count++] = get_bug_link($3, $1, { comment_num => $5 })) &&
+              ~($things[$count++] = get_bug_link($3, $1, { comment_num => $5, user => $user })) &&
                ("\0\0" . ($count-1) . "\0\0")
               ~egox;
 
@@ -233,7 +239,7 @@ sub quoteUrls {
     # attachment links
     # BMO: Bug 652332 dkl@mozilla.com 2011-07-20
     $text =~ s~\b(attachment\s*\#?\s*(\d+)(?:\s+\[diff\])?(?:\s+\[details\])?)
-              ~($things[$count++] = get_attachment_link($2, $1)) &&
+              ~($things[$count++] = get_attachment_link($2, $1, $user)) &&
                ("\0\0" . ($count-1) . "\0\0")
               ~egmxi;
 
@@ -250,7 +256,7 @@ sub quoteUrls {
     $text =~ s~\b($bug_re(?:\s*,?\s*$comment_re)?|$comment_re)
               ~ # We have several choices. $1 here is the link, and $2-4 are set
                 # depending on which part matched
-               (defined($2) ? get_bug_link($2, $1, { comment_num => $3 }) :
+               (defined($2) ? get_bug_link($2, $1, { comment_num => $3, user => $user }) :
                               "<a href=\"$current_bugurl#c$4\">$1</a>")
               ~egox;
 
@@ -259,7 +265,7 @@ sub quoteUrls {
     $text =~ s~(?<=^\*\*\*\ This\ bug\ has\ been\ marked\ as\ a\ duplicate\ of\ )
                (\d+)
                (?=\ \*\*\*\Z)
-              ~get_bug_link($1, $1)
+              ~get_bug_link($1, $1, { user => $user })
               ~egmx;
 
     # Now remove the encoding hacks in reverse order
@@ -273,9 +279,9 @@ sub quoteUrls {
 
 # Creates a link to an attachment, including its title.
 sub get_attachment_link {
-    my ($attachid, $link_text) = @_;
+    my ($attachid, $link_text, $user) = @_;
     my $dbh = Bugzilla->dbh;
-    my $user = Bugzilla->user;
+    $user ||= Bugzilla->user;
 
     my $attachment = new Bugzilla::Attachment($attachid);
 
@@ -325,6 +331,8 @@ sub get_attachment_link {
 
 sub get_bug_link {
     my ($bug, $link_text, $options) = @_;
+    $options ||= {};
+    $options->{user} ||= Bugzilla->user;
     my $dbh = Bugzilla->dbh;
 
     if (!$bug) {
@@ -355,7 +363,7 @@ sub get_bug_link {
         $title .= " $resolution";
         $post .= '</span>';
     }
-    if (Bugzilla->user->can_see_bug($bug)) {
+    if ($options->{user}->can_see_bug($bug)) {
         $title .= " - " . $bug->short_desc;
         if ($options->{use_alias} && $link_text =~ /^\d+$/ && $bug->alias) {
             $link_text = $bug->alias;
@@ -363,12 +371,46 @@ sub get_bug_link {
     }
     # Prevent code injection in the title.
     $title = html_quote(clean_text($title));
-
     my $linkval = "show_bug.cgi?id=" . $bug->id;
+    
+    if ($options->{full_url}) {
+        $linkval = correct_urlbase() . $linkval;
+    }
+    
     if (defined $options->{comment_num}) {
         $linkval .= "#c" . $options->{comment_num};
     }
-    return qq{$pre<a href="$linkval" title="$title">$link_text</a>$post};
+    return qq{$pre<a class="bz_bug_link" href="$linkval" title="$title">$link_text</a>$post};
+}
+
+# We use this instead of format because format doesn't deal well with
+# multi-byte languages.
+sub multiline_sprintf {
+    my ($format, $args, $sizes) = @_;
+    my @parts;
+    my @my_sizes = @$sizes; # Copy this so we don't modify the input array.
+    foreach my $string (@$args) {
+        my $size = shift @my_sizes;
+        my @pieces = split("\n", wrap_hard($string, $size));
+        push(@parts, \@pieces);
+    }
+
+    my $formatted;
+    while (1) {
+        # Get the first item of each part.
+        my @line = map { shift @$_ } @parts;
+        # If they're all undef, we're done.
+        last if !grep { defined $_ } @line;
+        # Make any single undef item into ''
+        @line = map { defined $_ ? $_ : '' } @line;
+        # And append a formatted line
+        $formatted .= sprintf($format, @line);
+        # Remove trailing spaces, or they become lots of =20's in
+        # quoted-printable emails.
+        $formatted =~ s/\s+$//;
+        $formatted .= "\n";
+    }
+    return $formatted;
 }
 
 #####################
@@ -712,10 +754,10 @@ sub create {
             clean_text => \&Bugzilla::Util::clean_text ,
 
             quoteUrls => [ sub {
-                               my ($context, $bug, $comment) = @_;
+                               my ($context, $bug, $comment, $user) = @_;
                                return sub {
                                    my $text = shift;
-                                   return quoteUrls($text, $bug, $comment);
+                                   return quoteUrls($text, $bug, $comment, $user);
                                };
                            },
                            1
@@ -731,10 +773,9 @@ sub create {
                           1
                         ],
 
-            bug_list_link => sub
-            {
-                my $buglist = shift;
-                return join(", ", map(get_bug_link($_, $_), split(/ *, */, $buglist)));
+            bug_list_link => sub {
+                my ($buglist, $options) = @_;
+                return join(", ", map(get_bug_link($_, $_, $options), split(/ *, */, $buglist)));
             },
 
             # In CSV, quotes are doubled, and any value containing a quote or a
@@ -871,6 +912,14 @@ sub create {
 
             # Function to create date strings
             'time2str' => \&Date::Format::time2str,
+
+            # Fixed size column formatting for bugmail.
+            'format_columns' => sub {
+                my $cols = shift;
+                my $format = ($cols == 3) ? FORMAT_TRIPLE : FORMAT_DOUBLE;
+                my $col_size = ($cols == 3) ? FORMAT_3_SIZE : FORMAT_2_SIZE;
+                return multiline_sprintf($format, \@_, $col_size);
+            },
 
             # Generic linear search function
             'lsearch' => sub {

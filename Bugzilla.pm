@@ -81,7 +81,7 @@ use constant SHUTDOWNHTML_EXIT_SILENTLY => qw(
 # Global Code
 #####################################################################
 
-# $::SIG{__DIE__} = i_am_cgi() ? \&CGI::Carp::confess : \&Carp::confess;
+$::SIG{__DIE__} = i_am_cgi() ? \&CGI::Carp::confess : \&Carp::confess;
 
 # Note that this is a raw subroutine, not a method, so $class isn't available.
 sub init_page {
