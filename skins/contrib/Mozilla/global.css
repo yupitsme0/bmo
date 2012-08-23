@@ -1,10 +1,9 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,600,700|Droid+Sans+Mono);
+@import url(//fonts.googleapis.com/css?family=Open+Sans:400,600,700|Droid+Sans+Mono);
 
 body {
     background: #f6f4ec;
     background-image: url(grain.png), -moz-linear-gradient(top, #d7d3c8, #f6f4ec 400px);
     color: #404040;
-    min-width: 990px;
 }
 
 body, td, th, input {
@@ -75,10 +74,11 @@ hr {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     /*background: url(http://dl.dropbox.com/u/28610/bugzilla-prototype/logo.png) no-repeat;*/
-    margin: 5px auto;
+    margin: 0px auto;
     /*min-height: 50px;*/
     /*padding-left: 144px;*/
-    width: 990px;
+    /*width: 990px;*/
+    width: 99%;
 }
 
 #header .wrapper:after {
@@ -89,6 +89,11 @@ hr {
     visibility: hidden;
 }
 
+#titles #information {
+    width: 100%;
+    text-align: left;
+    padding-left: 2em;
+}
 
 #header .links {
     background: transparent;
@@ -174,7 +179,7 @@ hr {
     color: #404040;
     margin: 100px auto 15px;
     padding: 0;
-    width: 90%;
+    width: 99%;
 }
 
 /* Home */
@@ -260,12 +265,13 @@ table.edit_form hr {
 
 .field_label {
     font-weight: normal !important;
-    padding-right: 20px;
+    padding-right: 0.5em;
+    white-space: nowrap;
 }
 
 .field_label a, .field_label b {
     color: #000;
-    font-weight: normal;
+    font-weight: normal !important;
 }
 
 .field_value .text_input {
@@ -332,7 +338,7 @@ table.edit_form hr {
     border: none;
     margin: 0 0 30px;
     padding: 0;
-    width: auto;
+    width: auto !important;
     min-width: 55em;
 }
 
@@ -471,15 +477,17 @@ table.edit_form hr {
     padding: 48px 15px;
 }
 
-#header .separator, 
+/*
+#header .separator,
 #footer .separator {
     display: none;
 }
 
-#header .links a, 
+#header .links a,
 #footer .links a {
     padding-right: 10px;
 }
+*/
 
 #footer #useful-links {
     background: url(footer-mozilla.png) no-repeat;
