@@ -55,6 +55,9 @@ sub _replace_profanity {
 sub mailer_before_send {
     my ($self, $args) = @_;
     my $email = $args->{'email'};
+
+    # XXX disabled, see bug 785309
+    return;
     
     my $author    = $email->header("X-Bugzilla-Who");
     my $recipient = $email->header("To");
