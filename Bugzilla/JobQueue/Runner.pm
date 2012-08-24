@@ -27,6 +27,7 @@
 package Bugzilla::JobQueue::Runner;
 
 use strict;
+use Carp;
 use Cwd qw(abs_path);
 use File::Basename;
 use File::Copy;
@@ -199,6 +200,7 @@ sub gd_setup_signals {
 sub gd_run {
     my $self = shift;
 
+    $SIG{__DIE__} = \&Carp::confess if $self->{debug};
     my $jq = Bugzilla->job_queue();
     $jq->set_verbose($self->{debug});
     foreach my $module (values %{ Bugzilla::JobQueue::JOB_MAP() }) {
