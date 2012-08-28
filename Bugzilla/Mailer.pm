@@ -49,6 +49,7 @@ use Encode::MIME::Header;
 use Email::Address;
 use Email::MIME;
 use Email::Send;
+use Sys::Hostname;
 
 sub MessageToMTA {
     my ($msg, $send_now) = (@_);
@@ -143,6 +144,10 @@ sub MessageToMTA {
             $email->header_set('Date', time2str("%a, %d %b %Y %T %z", time()));
         }
     }
+
+    # For tracking/diagnostic purposes, add our hostname
+    my $generated_by = $email->header('X-Generated-By') || '';
+    $email->header_set('X-Generated-By' => $generated_by . '/' . hostname());
 
     if ($method eq "SMTP") {
         push @args, Host  => Bugzilla->params->{"smtpserver"},
