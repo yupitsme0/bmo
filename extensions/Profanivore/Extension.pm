@@ -142,16 +142,6 @@ sub _filter_html {
 sub _filter_html_node {
     my $node = shift;
     my $content = [ $node->content_list ];
-    #for (my $i = 0; $i < @$content; ++$i) {
-    #    if (ref $content->[$i]) {
-    #        # It's a child node, process it recursively:
-    #        _filter_html_node($content->[$i]);
-    #    }
-    #    else {
-    #        # It's text:
-    #        $node->splice_content($i, 1, _filter_text($content->[$i]));
-    #    }
-    #}
     foreach my $item_r ($node->content_refs_list) {
         if (ref $$item_r) {
             _filter_html_node($$item_r);
