@@ -49,6 +49,7 @@ use Encode::MIME::Header;
 use Email::Address;
 use Email::MIME;
 use Email::Send;
+use Sys::Hostname;
 
 sub MessageToMTA {
     my ($msg, $send_now) = (@_);
@@ -82,31 +83,12 @@ sub MessageToMTA {
     # *always* be the same for this Bugzilla, in every email,
     # even if the admin changes the "ssl_redirect" parameter some day.
     $email->header_set('X-Bugzilla-URL', Bugzilla->params->{'urlbase'});
-    
+
     # We add this header to mark the mail as "auto-generated" and
     # thus to hopefully avoid auto replies.
     $email->header_set('Auto-Submitted', 'auto-generated');
 
     return if $email->header('to') eq '';
-
-    $email->walk_parts(sub {
-        my ($part) = @_;
-        return if $part->parts > 1; # Top-level
-        my $content_type = $part->content_type || '';
-        if ($content_type !~ /;/) {
-            my $body = $part->body;
-            if (Bugzilla->params->{'utf8'}) {
-                $part->charset_set('UTF-8');
-                # encoding_set works only with bytes, not with utf8 strings.
-                my $raw = $part->body_raw;
-                if (utf8::is_utf8($raw)) {
-                    utf8::encode($raw);
-                    $part->body_set($raw);
-                }
-            }
-            $part->encoding_set('quoted-printable') if !is_7bit_clean($body);
-        }
-    });
 
     # MIME-Version must be set otherwise some mailsystems ignore the charset
     $email->header_set('MIME-Version', '1.0') if !$email->header('MIME-Version');
@@ -156,12 +138,16 @@ sub MessageToMTA {
         $hostname = $1;
         $from .= "\@$hostname" if $from !~ /@/;
         $email->header_set('From', $from);
-        
+
         # Sendmail adds a Date: header also, but others may not.
         if (!defined $email->header('Date')) {
             $email->header_set('Date', time2str("%a, %d %b %Y %T %z", time()));
         }
     }
+
+    # For tracking/diagnostic purposes, add our hostname
+    my $generated_by = $email->header('X-Generated-By') || '';
+    $email->header_set('X-Generated-By' => $generated_by . '/' . hostname());
 
     if ($method eq "SMTP") {
         push @args, Host  => Bugzilla->params->{"smtpserver"},
@@ -173,6 +159,29 @@ sub MessageToMTA {
 
     Bugzilla::Hook::process('mailer_before_send', 
                             { email => $email, mailer_args => \@args });
+
+    $email->walk_parts(sub {
+        my ($part) = @_;
+        return if $part->parts > 1; # Top-level
+        my $content_type = $part->content_type || '';
+        $content_type =~ /charset=['"](.+)['"]/;
+        # If no charset is defined or is the default us-ascii, 
+        # then we encode the email to UTF-8 if Bugzilla has utf8 enabled.
+        # XXX - This is a hack to workaround bug 723944.
+        if (!$1 || $1 eq 'us-ascii') {
+            my $body = $part->body;
+            if (Bugzilla->params->{'utf8'}) {
+                $part->charset_set('UTF-8');
+                # encoding_set works only with bytes, not with utf8 strings.
+                my $raw = $part->body_raw;
+                if (utf8::is_utf8($raw)) {
+                    utf8::encode($raw);
+                    $part->body_set($raw);
+                }
+            }
+            $part->encoding_set('quoted-printable') if !is_7bit_clean($body);
+        }
+    });
 
     return if $email->header('to') eq '';
 

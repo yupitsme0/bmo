@@ -1178,7 +1178,9 @@ sub send_changes {
         if (is_open_state($old_status) ne is_open_state($new_status)) {
             my $params = { forced   => { changer => $user },
                            type     => 'dep',
-                           dep_only => 1 };
+                           dep_only => 1,
+                           blocker  => $self,
+                           changes  => $changes };
 
             foreach my $id (@{ $self->blocked }) {
                 $params->{id} = $id;
