@@ -458,10 +458,7 @@ sub _generate_bugmail {
             body => $msg_text,
         )
     );
-    if ($user->setting('email_format') eq 'html'
-        # debugging code to bypass the disabled html bugmail
-        || $user->login eq 'glob@mozilla.com'
-        || $user->login eq 'dkl@mozilla.com') {
+    if ($user->setting('email_format') eq 'html') {
         $template->process("email/bugmail.html.tmpl", $vars, \$msg_html)
             || ThrowTemplateError($template->error());
         push @parts, Email::MIME->create(
