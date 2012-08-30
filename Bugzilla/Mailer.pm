@@ -147,7 +147,7 @@ sub MessageToMTA {
 
     # For tracking/diagnostic purposes, add our hostname
     my $generated_by = $email->header('X-Generated-By') || '';
-    $email->header_set('X-Generated-By' => $generated_by . '/' . hostname());
+    $email->header_set('X-Generated-By' => $generated_by . '/' . hostname() . "($$)");
 
     if ($method eq "SMTP") {
         push @args, Host  => Bugzilla->params->{"smtpserver"},
