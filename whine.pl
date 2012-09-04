@@ -35,7 +35,6 @@ use Bugzilla::User;
 use Bugzilla::Mailer;
 use Bugzilla::Util;
 use Bugzilla::Group;
-use Bugzilla::Hook;
 
 # create some handles that we'll need
 my $template = Bugzilla->template;
@@ -364,8 +363,6 @@ sub mail {
     my $addressee = $args->{recipient};
     # Don't send mail to someone whose bugmail notification is disabled.
     return if $addressee->email_disabled;
-
-    Bugzilla::Hook::process('whine_before_send', { params => $args });
 
     my $template = Bugzilla->template_inner($addressee->settings->{'lang'}->{'value'});
     my $msg = ''; # it's a temporary variable to hold the template output
