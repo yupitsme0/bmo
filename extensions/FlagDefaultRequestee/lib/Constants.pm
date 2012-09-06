@@ -5,9 +5,21 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::Extension::OrangeFactor;
+package Bugzilla::Extension::FlagDefaultRequestee::Constants;
+
 use strict;
 
-use constant NAME => 'OrangeFactor';
+use base qw(Exporter);
 
-__PACKAGE__->NAME;
+our @EXPORT = qw(
+    FLAGTYPE_TEMPLATES
+);
+
+use constant FLAGTYPE_TEMPLATES => (
+    "attachment/edit.html.tmpl", 
+    "attachment/createformcontents.html.tmpl", 
+    "bug/edit.html.tmpl", 
+    "bug/create/create.html.tmpl"
+);
+
+1;
