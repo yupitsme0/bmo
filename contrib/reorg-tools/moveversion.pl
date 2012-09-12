@@ -1,27 +1,8 @@
-#!/usr/bin/perl -w
-# -*- Mode: perl; indent-tabs-mode: nil -*-
+# License,  v. 2.0. If a copy of the MPL was not distributed with this
+# file,  You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-# The contents of this file are subject to the Mozilla Public
-# License Version 1.1 (the "License"); you may not use this file
-# except in compliance with the License. You may obtain a copy of
-# the License at http://www.mozilla.org/MPL/
-#
-# Software distributed under the License is distributed on an "AS
-# IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
-# implied. See the License for the specific language governing
-# rights and limitations under the License.
-#
-# The Original Code is the Bugzilla Bug Tracking System.
-#
-# The Initial Developer of the Original Code is Netscape Communications
-# Corporation. Portions created by Netscape are
-# Copyright (C) 1998 Netscape Communications Corporation. All
-# Rights Reserved.
-#
-# Contributor(s): Gervase Markham <gerv@gerv.net>
-
-# See also https://bugzilla.mozilla.org/show_bug.cgi?id=119569
-#
+# This Source Code Form is "Incompatible With Secondary Licenses",  as
+# defined by the Mozilla Public License,  v. 2.0.
 
 use strict;
 
@@ -39,9 +20,9 @@ use Bugzilla::Util;
 
 sub usage() {
     print <<USAGE;
-Usage: moveversion.pl <oldproduct> <oldversion> <newproduct> <newversion> <doit>
+Usage: moveversion.pl <product> <oldversion> <newversion> <doit>
 
-E.g.: moveversion.pl ReplicationEngine 1.0 ReplicationEngine 2.0 doit
+E.g.: moveversion.pl ReplicationEngine 1.0 2.0 doit
 will move the version "1.0" from the product "ReplicationEngine"
 to the version "2.0".
 
@@ -63,51 +44,42 @@ if (scalar @ARGV < 3) {
     exit();
 }
 
-my ($oldproduct, $oldversion, $newproduct, $newversion, $doit) = @ARGV;
+my ($product, $oldversion, $newversion, $doit) = @ARGV;
+
+if ($oldversion eq $newversion) {
+    print "Versions are the same. Why are you running this script again?\n";
+    exit(1);
+}
 
 my $dbh = Bugzilla->dbh;
 
 $dbh->{'AutoCommit'} = 0 unless $doit; # Turn off autocommit by default
 
 # Find product IDs
-my $oldprodid = $dbh->selectrow_array("SELECT id FROM products WHERE name = ?",
-                                      undef, $oldproduct);
-if (!$oldprodid) {
-    print "Can't find product ID for '$oldproduct'.\n";
-    exit(1);
-}
-
-my $newprodid = $dbh->selectrow_array("SELECT id FROM products WHERE name = ?",
-                                      undef, $newproduct);
-if (!$newprodid) {
-    print "Can't find product ID for '$newproduct'.\n";
+my $prodid = $dbh->selectrow_array("SELECT id FROM products WHERE name = ?",
+                                      undef, $product);
+if (!$prodid) {
+    print "Can't find product ID for '$product'.\n";
     exit(1);
 }
 
 # Verify old version
 my $oldver = $dbh->selectrow_array("SELECT value FROM versions
                                     WHERE value = ? AND product_id = ?",
-                                   undef, $oldversion, $oldprodid);
+                                   undef, $oldversion, $prodid);
 if (!$oldver) {
     print "Can't find version for '$oldversion' in product " .
-          "'$oldproduct'.\n";
-    exit(1);
+          "'$product'.\n";
+#    exit(1);
 }
 
 # Verify new version
 my $newver = $dbh->selectrow_array("SELECT value FROM versions
                                     WHERE value = ? AND product_id = ?",
-                                   undef, $newversion, $newprodid);
+                                   undef, $newversion, $prodid);
 if (!$newver) {
     print "Can't find version for '$newversion' in product " .
-          "'$newproduct'.\n";
-    exit(1);
-}
-
-my $prodfieldid = $dbh->selectrow_array("SELECT id FROM fielddefs 
-                                          WHERE name = 'product'");
-if (!$prodfieldid) {
-    print "Can't find field ID for 'product' field!\n";
+          "'$product'.\n";
     exit(1);
 }
 
@@ -127,45 +99,36 @@ $user_id
 # Build affected bug list
 my $bugs = $dbh->selectcol_arrayref(
     "SELECT bug_id FROM bugs WHERE product_id = ? AND version = ?",
-    undef, $oldprodid, $oldversion);
+    undef, $prodid, $oldversion);
 my $bug_count = scalar @$bugs;
 $bug_count
-    or die "No bugs were found in '$oldproduct / $oldversion'\n";
+    or die "No bugs were found in '$product / $oldversion'\n";
 
 # confirmation
 print <<EOF;
 About to move the version from 
-From '$oldproduct / $oldversion'
-To '$newproduct / $newversion'
+From '$product / $oldversion'
+To '$product / $newversion'
 for $bug_count bugs ...
 
 Press <Ctrl-C> to stop or <Enter> to continue...
 EOF
 getc();
 
-print "Moving version from '$oldproduct / $oldversion to '$newproduct / $newversion' ...\n\n";
+print "Moving version from '$product / $oldversion to '$product / $newversion' ...\n\n";
 $dbh->bz_start_transaction() if $doit;
 
 my $where_sql = 'bug_id IN (' . join(',', @$bugs) . ')';
 
-# Update bugs
-$dbh->do(
-    "UPDATE bugs SET product_id = ?, version = ? WHERE $where_sql",
-    undef, $newprodid, $newversion);
+# update bugs
+$dbh->do("UPDATE bugs SET version = ? WHERE $where_sql",
+         undef, $newversion);
 
 # touch bugs
 $dbh->do("UPDATE bugs SET delta_ts = NOW() WHERE $where_sql");
 $dbh->do("UPDATE bugs SET lastdiffed = NOW() WHERE $where_sql");
 
 # update bugs_activity
-if ($newproduct ne $oldproduct) {
-    $dbh->do(
-        "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, removed, added)
-              SELECT bug_id, ?, delta_ts, ?, ?, ?  FROM bugs WHERE $where_sql",
-        undef,
-        ($user_id, $prodfieldid, $oldproduct, $newproduct));
-}
-
 $dbh->do(
     "INSERT INTO bugs_activity (bug_id, who, bug_when, fieldid, removed, added) 
           SELECT bug_id, ?, delta_ts, ?, ?, ?  FROM bugs WHERE $where_sql",
