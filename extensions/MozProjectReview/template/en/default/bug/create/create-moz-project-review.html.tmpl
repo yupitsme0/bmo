@@ -1,0 +1,799 @@
+[% PROCESS global/variables.none.tmpl %]
+
+[% PROCESS global/header.html.tmpl
+   title = "Mozilla Project Review"
+%]
+
+[% USE Bugzilla %]
+
+<style>
+.header {
+  border-bottom: 1px solid rgb(116,126,147);
+  font-size: 1.5em;
+  color: rgb(102,100,88);
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  margin-top: 12px;
+}
+em {
+  color: rgb(102,100,88);
+}
+</style>
+
+<script type="text/javascript">
+  function toggleSections () {
+    var mozilla_data_select = YAHOO.util.Dom.get('mozilla_data');
+    var data_access_select  = YAHOO.util.Dom.get('data_access');
+    var vendor_cost_select  = YAHOO.util.Dom.get('vendor_cost');
+
+    if (mozilla_data_select.value == 'Yes') {
+      YAHOO.util.Dom.removeClass('legal_questions','bz_default_hidden');
+      YAHOO.util.Dom.removeClass('privacy_policy_project_questions','bz_default_hidden');
+      YAHOO.util.Dom.removeClass('data_safety_questions', 'bz_default_hidden');
+      YAHOO.util.Dom.removeClass('sec_review_questions', 'bz_default_hidden');
+    }
+    else {
+      YAHOO.util.Dom.addClass('legal_questions','bz_default_hidden');
+      YAHOO.util.Dom.addClass('privacy_policy_project_questions','bz_default_hidden');
+      YAHOO.util.Dom.addClass('data_safety_questions', 'bz_default_hidden');
+      YAHOO.util.Dom.addClass('sec_review_questions', 'bz_default_hidden');
+    }
+
+    if (data_access_select.value == 'Yes' || mozilla_data_select.value == 'Yes') {
+      YAHOO.util.Dom.removeClass('sec_review_questions', 'bz_default_hidden');
+    }
+    else {
+      YAHOO.util.Dom.addClass('sec_review_questions', 'bz_default_hidden');
+    }
+
+    if (data_access_select.value == 'Yes') {
+      YAHOO.util.Dom.removeClass('privacy_policy_vendor_questions', 'bz_default_hidden');
+    }
+    else {
+      YAHOO.util.Dom.addClass('privacy_policy_vendor_questions', 'bz_default_hidden');
+    }
+
+    if (vendor_cost_select.value == '> $25,000') {
+      YAHOO.util.Dom.removeClass('finance_questions','bz_default_hidden');
+    }
+    else {
+      YAHOO.util.Dom.addClass('finance_questions','bz_default_hidden');
+    }
+  }
+
+  function toggleQuestion (select, value, container) {
+    if (select.value == value) {
+      YAHOO.util.Dom.removeClass(container, 'bz_default_hidden');
+    }
+    else {
+      YAHOO.util.Dom.addClass(container, 'bz_default_hidden');
+    }
+  }
+</script>
+
+<p>
+  <strong>Please use this form for submitting a Mozilla Project Review</strong>
+</p>
+<p>
+  If you have a [% terms.bug %] to file, go <a href="enter_bug.cgi">here</a>.
+</p>
+
+<form method="post" action="post_bug.cgi" id="incidentForm" enctype="multipart/form-data"
+      onSubmit="return validateAndSubmit();">
+  <input type="hidden" id="product" name="product" value="mozilla.org">
+  <input type="hidden" id="component" name="component" value="Project Review">
+  <input type="hidden" id="rep_platform" name="rep_platform" value="All">
+  <input type="hidden" id="op_sys" name="op_sys" value="All">
+  <input type="hidden" id="priority" name="priority" value="--">
+  <input type="hidden" id="version" name="version" value="other">
+  <input type="hidden" id="cc" name="cc" value="">
+  <input type="hidden" id="groups" name="groups" value="">
+  <input type="hidden" id="format" name="format" value="moz-project-review">
+  <input type="hidden" id="bug_severity" name="bug_severity" value="normal">
+  <input type="hidden" id="token" name="token" value="[% token FILTER html %]">
+
+  <table>
+  <tbody id="initial_questions">
+  <tr>
+    <td colspan="2"> 
+      <div class="header">Initial Questions</div>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Summary:</th>
+    <td>
+      <input type="text" name="short_desc" id="short_desc" size="60" maxsize="255">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Tracking [% terms.Bug %] ID:</th>
+    <td>
+      <em>Master tracking bug number (if it exists)?</em>
+      <br>
+      <input type="text" name="tracking_id" id="tracking_id" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Points of Contact:</th>
+    <td>
+      <em>Who are the points of contact for this review?</em>
+      <br>
+      <input type="text" name="contacts" id="contacts" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Description:</th>
+    <td>
+      <em>Please provide a short description of the feature / application / project / 
+        business relationship (e.g. problem solved, use cases, etc.)</em>
+      <br>
+      <textarea name="description" id="description" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Additional Information:</th>
+    <td>
+      <em>Please provide links to additional information (e.g. feature page, wiki)
+        if available and not yet included in feature description.)</em>
+      <br>
+      <textarea name="additional" id="additional" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Urgency:</th>
+    <td>
+      <em>What is the urgency of this project?</em>
+      <br>
+      <input type="text" name="urgency" id="urgency" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Current Goal:</th>
+    <td>
+      <em>Does it support a current goal (if so, which one)?</em>
+      <br>
+      <input type="text" name="goal" id="goal" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Release Date:</th>
+    <td>
+      <em>What are your key release / launch dates?</em>
+      <br>
+      <input type="text" name="release_date" id="release_date" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Project Status:</th>
+    <td>
+      <em>What is the current state of your project?</em>
+      <br>
+      <select name="project_status" id="project_status">
+        <option value="">Select One</option>
+        <option value="future">Future project under discussion</option>
+        <option value="active">Active planning</option>
+        <option value="development">Development</option>
+        <option value="ready">Ready to launch/commit</option>
+        <option value="launched">Already launched/committed</option>
+      </select><br>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Mozilla Data:</th>
+    <td>
+      <em>Does this product/service/project access, interact with, or store Mozilla 
+        (customer, contributor, user, employee) data? Example of such data includes
+        email addresses, first and last name, addresses, phone numbers, credit card data.)</em>
+      <br>
+      <select name="mozilla_data" id="mozilla_data"
+              onchange="toggleSections();">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+   </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">New or Change:</th>
+    <td>
+      <em>Is this a NEW product, service, project, feature, or functionality, 
+        a change to an EXISTING one, or neither?</em>
+      <br>
+      <select name="new_or_change" id="new_or_change" 
+              onchange="toggleQuestion(this,'Existing','mozilla_project_row');">
+        <option value="">Select One</option>
+        <option value="New">New</option>
+        <option value="Existing">Existing</option>
+        <option value="Neither">Neither</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr id="mozilla_project_row" class="bz_default_hidden">
+    <th class="field_label">Mozilla Project:</th>
+    <td>
+      <em>What product/service/project does this pertain to?</em>
+      <br>
+      <select name="mozilla_project" id="mozilla_project">
+        <option value="none">None</option>
+        <option value="FirefoxOS">FirefoxOS</option>
+        <option value="Marketplace">Marketplace</option>
+        <option value="Persona">Persona</option>
+        <option value="Marketing Initiative">Marketing Initiative</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Mozilla Related:</th>
+    <td>
+      <em>What Mozilla products/services/projects does this product/service/project 
+        integrate with or relate to?</em>
+      <br>
+      <input type="text" name="mozilla_related" id="mozilla_related" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Separate Party:</th>
+    <td>
+      <em>Does this project involve a relationship with another party (such as a third 
+        party vendor, hosted service provider, consultant or strategic partner (business deals))? 
+        This includes NDAs, click to accept, API agreements, open source licenses, renewals, 
+        additional services or goods, and any other agreements.</em>
+      <br>
+      <select name="separate_party" id="separate_party"
+              onchange="toggleQuestion(this,'Yes','separate_party_extra_questions');">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tbody id="separate_party_extra_questions" class="bz_default_hidden">
+  <tr>
+    <th class="field_label">Type of Relationship:</th>
+    <td>
+      <em>What type of relationship?</em>
+      <br>
+      <select name="relationship_type" id="relationship_type"
+              onchange="toggleQuestion(this,'Vendor/Services','legal_sow_details_row');">
+        <option value="">Select One</option>
+        <option value="Vendor/Services">Vendor/Services</option>
+        <option value="Distribution/Bundling">Distribution/Bundling</option>
+        <option value="Search">Search</option>
+        <option value="NDA">NDA</option>
+        <option value="Other">Other</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Data Access:</th>
+    <td>
+      <em>Will the other party have access to Mozilla (customer, contributor, user,
+        employee) data? (If this is for an NDA, choose no)</em>
+      <br>
+      <select name="data_access" id="data_access"
+              onchange="toggleSections();">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Privacy Policy:</th>
+    <td>
+      <em>What is the url for their privacy policy?</em>
+      <br>
+      <input type="text" name="privacy_policy" id="privacy_policy" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Vendor Cost:</th>
+    <td>
+      <em>What is the anticipated cost of the vendor relationship?</em>
+      <br>
+      <select name="vendor_cost" id="vendor_cost"
+              onchange="toggleSections();">
+        <option value="">Select One</option>
+        <option value="N/A">N/A</option>
+        <option value="<= $25,000">&lt;= $25,000</option>
+        <option value="> $25,000">&gt; $25,000</option>
+      </select>
+    </td>
+  </tr>
+  </tbody>
+  </tbody>
+
+  <tbody id="sec_review_questions" class="bz_default_hidden">
+  <tr>
+    <td colspan="2">
+      <div class="header">Security Review</div>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Affects Products:</th>
+    <td>
+      <em>Does this feature or code change affect Firefox, Thunderbird or any 
+        product or service the Mozilla ships to end users?</em>
+      <br>
+      <select name="sec_affects_products" id="sec_affects_products">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Review Due Date:</th>
+    <td>
+      <em>When would you like the review to be completed?
+        (<a href="https://mail.mozilla.com/home/ckoenig@mozilla.com/Security%20Review.html">more info</a>)
+        and whom to invite.</em>
+      <br>
+      <input type="text" name="sec_review_date" id="sec_review_date" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Review Invitees:</th>
+    <td>
+      <em>Whom should be invited to the review?</em>
+      <br>
+      <input type="text" name="sec_review_invitees" id="sec_review_invitees" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Extra Information:</th>
+    <td>
+      <em>If you feel something is missing here or you would like to provide other 
+        kind of feedback, feel free to do so here?</em>
+      <br>
+      <textarea name="sec_review_extra" id="sec_review_extra" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+  </tbody>
+
+  <tbody id="privacy_policy_project_questions" class="bz_default_hidden">
+  <tr>
+    <td colspan="2">
+      <div class="header">Privacy (Policy/Project)</div>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Privacy Policy:</th>
+    <td>
+      <em>Do you currently have a privacy policy for your project / site / product?</em>
+      <br>
+      <select name="privacy_policy_project" id="privacy_policy_project"
+              onchange="toggleQuestion(this,'Yes','privacy_policy_project_link_row');">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr id="privacy_policy_project_link_row" class="bz_default_hidden">
+    <th class="field_label">Privacy Policy Link:</th>
+    <td>
+      <em>Please provide link to policy</em>
+      <br>
+      <input type="text" name="privacy_policy_project_link" id="privacy_policy_project_link" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">User Data:</th>
+    <td>
+      <em>Do you currently have a privacy policy for your project / site / product?</em>
+      <br>
+      <select name="privacy_policy_user_data" id="privacy_policy_user_data"
+              onchange="toggleQuestion(this,'Yes','privacy_policy_user_data_bug_row');">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr id="privacy_policy_user_data_bug_row" class="bz_default_hidden">
+    <th class="field_label">Data Safety Bug ID:</th>
+    <td>
+      <em>Please provide link to Data Safety bug</em>
+      <br>
+      <input type="text" name="privacy_policy_user_data_bug" id="privacy_policy_user_data_bug" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Legal Bug:</th>
+    <td>
+      <em>For reference, please provide link to related Legal bug</em>
+      <br>
+      <input type="text" name="privacy_policy_legal_bug" id="privacy_policy_legal_bug" size="60">
+    </td>
+  </tr>
+  </tbody>
+
+  <tbody id="privacy_policy_vendor_questions" class="bz_default_hidden">
+  <tr>
+    <td colspan="2">
+      <div class="header">Privacy (Policy/Vendor)</div>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Privacy Policy:</th>
+    <td>
+      <em>Will the vendor have access to Mozilla (customer, contributor, user, employee) data?</em>
+      <br>
+      <select name="privacy_policy_vendor_user_data" id="privacy_policy_vendor_user_data"
+              onchange="toggleQuestion(this,'Yes','privacy_policy_vendor_extra_questions');">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tbody id="privacy_policy_vendor_extra_questions" class="bz_default_hidden">
+  <tr>
+    <th class="field_label">Vendor's Privacy Policy:</th>
+    <td>
+      <em>Please provide link to vendor's privacy policy</em>
+      <br>
+      <input type="text" name="privacy_policy_vendor_link" id="privacy_policy_vendor_link" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Privacy Questionnaire:</th>
+    <td>
+      <em>Has vendor completed Mozilla Vendor Privacy Questionnaire?</em>
+      <br>
+      <select name="privacy_policy_vendor_questionnaire" id="privacy_policy_vendor_questionnaire">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+  </tbody>
+  </tbody>
+
+  <tbody id="legal_questions" class="bz_default_hidden">
+  <tr>
+    <td colspan="2">
+      <div class="header">Legal</div>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Priority:</th>
+    <td>
+      <em>Priority to your team</em>
+      <br>
+      <select name="legal_priority" id="legal_priority">
+        <option value="">Select One</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Timeframe:</th>
+    <td>
+      <em>Timeframe for completion</em>
+      <br>
+      <select name="legal_timeframe" id="legal_timeframe">
+        <option value="">Select One</option>
+        <option value="2 days">2 days</option>
+        <option value="a week">a week</option>
+        <option value="2-4 weeks">2-4 weeks</option>
+        <option value="greater 2-4 weeks">This will take a while but please get started soon</option>
+        <option value="no rush">no rush</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Cc:</th>
+    <td>
+      <input type="text" name="legal_cc" id="legal_cc" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Other Party:</th>
+    <td>
+      <em>Name of other party involved</em>
+      <br>
+      <input type="text" name="legal_other_party" id="legal_other_party" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Business Objective:</th>
+    <td>
+      <textarea name="legal_business_objective" id="legal_business_objective" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">URL:</th>
+    <td>
+      <input type="text" name="legal_url" id="legal_url" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Description:</th>
+    <td>
+      <em>Description (Describe your project in more detail and/or provide any 
+        relevant deal terms. Also provide context and background.)</em>
+      <br>
+      <textarea name="legal_decscription" id="legal_description" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr id="legal_sow_details_row" class="bz_default_hidden">
+    <th class="field_label">SOW Details:</th>
+    <td>
+      <textarea name="legal_sow_details" id="legal_sow_details" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+  </tbody>
+
+  <tbody id="finance_questions" class="bz_default_hidden">
+  <tr>
+    <td colspan="2">
+      <div class="header">Finance</div>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">What is the purchase for?:</th>
+    <td>
+      <textarea name="finance_purchase_what" id="finance_purchase_what" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Why is the purchase needed?:</th>
+    <td>
+      <textarea name="finance_purchase_why" id="finance_purchase_why" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">What is the risk<br>if not purchased?:</th>
+    <td>
+      <textarea name="finance_purchase_risk" id="finance_purchase_risk" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">What is the alternative?:</th>
+    <td>
+      <textarea name="finance_purchase_alternative" id="finance_purchase_alternative" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Total Cost:</th>
+    <td>
+      <input type="text" name="finance_purchase_cost" id="finance_purchase_cost" size="60">
+    </td>
+  </tr>
+  </tbody>
+
+  <tbody id="data_safety_questions" class="bz_default_hidden">
+  <tr>
+    <td colspan="2">
+      <div class="header">Data Safety</div>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">User Data:</th>
+    <td>
+      <em>Does your project collect data from users?</em>
+      <br>
+      <select name="data_safety_user_data" id="data_safety_user_data"
+        onchange="toggleQuestion(this,'Yes','data_safety_extra_questions');">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tbody id="data_safety_extra_questions" class="bz_default_hidden">
+  <tr>
+    <th class="field_label">How many involved?:</th>
+    <td>
+      <em>How many users are currently involved?</em>
+      <br>
+      <input type="text" name="data_safety_user_count" id="data_safety_user_count" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">How many antcipated?:</th>
+    <td>
+      <em>How many users do you anticipate to be involved?</em>
+      <br>
+      <input type="text" name="data_safety_user_count_anticipated" id="data_safety_user_count_anticipated" size="60">
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Type of Data:</th>
+    <td>
+      <em>Please provide examples of the types of user data you collect.</em>
+      <br>
+      <textarea name="data_safety_data_type" id="data_safety_data_type" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Data Reason:</th>
+    <td>
+      <em>Why do you need to collect user data?</em>
+      <br>
+      <textarea name="data_safety_data_reason" id="data_safety_data_reason" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Community Benefit:</th>
+    <td>
+      <em>What community benefits are derived from the collection of user data for your project?</em>
+      <br>
+      <textarea name="data_safety_community_benefit" id="data_safety_community_benefit" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Data Collection:</th>
+    <td>
+      <em>How is the data being collected? (e.g., forms on web site, provided directly by user,
+        observed data collection, etc.) (Consider that you may be collecting data unintentionally 
+        such as automatic logging by web servers)</em>
+      <br>
+      <textarea name="data_safety_community_collection" id="data_safety_community_collection" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Data Retention:</th>
+    <td>
+      <em>Will your project / team members need to retain user data?</em>
+      <br>
+      <select name="data_safety_retention" id="data_safety_retention"
+              onchange="toggleQuestion(this,'Yes','data_safety_retention_length');">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr id="data_safety_retention_length_row" class="bz_default_hidden">
+    <th class="field_label">Data Retention Length:</th>
+    <td>
+      <em>If the data is being retained, for how long?</em>
+      <br>
+      <input type="text" name="data_safety_retention_length" id="data_safety_retention_length" size="60"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Separate Party:</th>
+    <td>
+      <em>Will any user data be shared or accessed by third party partners, customers or providers?</em>
+      <br>
+      <select name="data_safety_separate_party" id="data_safety_separate_party"
+              onchange="toggleQuestion(this,'Yes','data_safety_separate_party_extra_questions');">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <!-- <tbody id="data_safety_separate_party_extra_questions" class="bz_default_hidden"> -->
+  <tr>
+    <th class="field_label">Separate Party Data Type:</th>
+    <td>
+      <em>What is the data being shared or accessed?</em>
+      <br>
+      <textarea name="data_safety_separate_party_data" id="data_safety_community_separate_party_data" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Separate Party<br>Data Communication:</th>
+    <td>
+      <em>How would the data be communicated / transferred to the third parties?</em>
+      <br>
+      <textarea name="data_safety_separate_party_data_communication" id="data_safety_separate_party_data_communication" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr>
+    <th class="field_label">Who are the separate parties?:</th>
+    <td>
+      <em>Who are the third party vendors and in what countries are they based?</em>
+      <br>
+      <textarea name="data_safety_separate_party_who" id="data_safety_separate_party_who" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+  <!--- </tbody> -->
+
+  <tr>
+    <th class="field_label">Community Visibility and Input:</th>
+    <td>
+      <em>Has your proposal been shared publicly, including requirements for Mozilla to collect and host user data?</em>
+      <br>
+      <select name="data_safety_community_visibility" id="data_safety_community_visibility"
+              onchange="toggleQuestion(this,'Yes','data_safety_communication_channels_row');toggleQuestion(this,'No','data_safety_communication_plan_row');">
+        <option value="">Select One</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </td>
+  </tr>
+
+  <tr id="data_safety_communication_channels_row" class="bz_default_hidden">
+    <th class="field_label">Communication Channels:</th>
+    <td>
+      <em>What communication channels are you using and what kind of input have you received thus far?</em>
+      <br>
+      <textarea name="data_safety_communication_channels" id="data_safety_communication_channels" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+
+  <tr id="data_safety_communication_plan_row" class="bz_default_hidden">
+    <th class="field_label">Public Communication Plan:</th>
+    <td>
+      <em>Data Safety discussion needed. Provide your plan for publicly sharing your proposal.</em>
+      <br>
+      <textarea name="data_safety_communication_plan" id="data_safety_communication_plan" rows="10" cols="80"></textarea>
+    </td>
+  </tr>
+  </tbody>
+  </tbody>
+  </table>
+
+  <input type="submit" id="commit" value="Submit Review">
+</form>
+
+<p>
+  Thanks for contacting us. You will be notified by email of any progress made in resolving your request.
+</p>
+
+[% PROCESS global/footer.html.tmpl %]
