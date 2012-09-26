@@ -35,7 +35,7 @@
 [% header = "$terms.Bug&nbsp;$bug.bug_id" %]
 [% header_addl_info = "Last modified: $filtered_timestamp" %]
 [% yui = ['autocomplete', 'calendar'] %]
-[% javascript_urls = [ "js/util.js", "js/field.js", "js/show_bug.js" ] %]
+[% javascript_urls = [ "js/util.js", "js/field.js" ] %]
 [% IF bug %]
   [% unfiltered_title = "$terms.Bug $bug.bug_id – $bug.short_desc" %]
   [% javascript =  BLOCK %]
@@ -45,6 +45,9 @@
                          "show_bug.cgi?id=[% bug.bug_id FILTER js %]" );
       document.title = "[% unfiltered_title FILTER js %]";
     }
+    YAHOO.util.Event.onDOMReady(function() {
+      initDirtyFieldTracking();
+    });
     [% javascript FILTER none %]
   [% END %]
 [% END %]
