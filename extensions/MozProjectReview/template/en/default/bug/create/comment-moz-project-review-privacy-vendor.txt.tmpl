@@ -11,10 +11,6 @@
 
 [% PROCESS "bug/create/comment-moz-project-review.txt.tmpl" %]
 
-Security Review Questions:
-
-Affects Products: [% cgi.param('sec_affects_products') %]
-Review Due Date: [% cgi.param('sec_review_date') %]
-Review Invitees: [% cgi.param('sec_review_invitees') %]
-Extra Information:
-[%+ cgi.param('sec_review_extra') %]
+Privacy Policy: [% cgi.param('privacy_policy_vendor_user_data') %]
+Vendor's Privacy Policy: [% cgi.param('privacy_policy_vendor_link') %]
+Privacy Questionnaire: [% cgi.param('privacy_policy_vendor_questionnaire') %]

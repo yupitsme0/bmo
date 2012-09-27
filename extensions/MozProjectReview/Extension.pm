@@ -10,95 +10,235 @@ use strict;
 
 use base qw(Bugzilla::Extension);
 
+use Bugzilla::Error;
 use Bugzilla::Constants;
 
 our $VERSION = '0.01';
 
 sub post_bug_after_creation {
     my ($self, $args) = @_;
-    my $vars = $args->{vars};
-    my $bug = $vars->{bug};
+    my $vars   = $args->{vars};
+    my $bug    = $vars->{bug};
 
-    if (Bugzilla->input_params->{format}
-        && Bugzilla->input_params->{format} eq 'moz-project-review'
-        && $bug->component eq '')
-    {
-        my $error_mode_cache = Bugzilla->error_mode;
-        Bugzilla->error_mode(ERROR_MODE_DIE);
+    my $user     = Bugzilla->user;
+    my $params   = Bugzilla->input_params;
+    my $template = Bugzilla->template;
 
-        my $template = Bugzilla->template;
-        my $cgi = Bugzilla->cgi;
+    return if !($params->{format}
+                && $params->{format} eq 'moz-project-review'
+                && $bug->component eq 'Project Review');
 
-        my ($investigate_bug, $ssh_key_bug);
-        my $old_user = Bugzilla->user;
-        eval {
-            Bugzilla->set_user(Bugzilla::User->new({ name => 'nobody@mozilla.org' }));
-            my $new_user = Bugzilla->user;
+    my $error_mode_cache = Bugzilla->error_mode;
+    Bugzilla->error_mode(ERROR_MODE_DIE);
 
-            # HACK: User needs to be in the editbugs and primary bug's group to allow
-            # setting of dependencies.
-            $new_user->{'groups'} = [ Bugzilla::Group->new({ name => 'editbugs' }), 
-                                      Bugzilla::Group->new({ name => 'infra' }), 
-                                      Bugzilla::Group->new({ name => 'infrasec' }) ];
+    my ($do_sec_review, $do_legal, $do_finance, $do_privacy_vendor,
+        $do_data_safety, $do_privacy_tech, $do_privacy_policy);
 
-            my $recipients = { changer => $new_user };
-            $vars->{original_reporter} = $old_user;
-
-            my $comment;
-            $cgi->param('display_action', '');
-            $template->process('bug/create/comment-employee-incident.txt.tmpl', $vars, \$comment)
-                || ThrowTemplateError($template->error());
-
-            $investigate_bug = Bugzilla::Bug->create({ 
-                short_desc        => 'Investigate Lost Device',
-                product           => 'mozilla.org',
-                component         => 'Security Assurance: Incident',
-                status_whiteboard => '[infrasec:incident]',
-                bug_severity      => 'critical',
-                cc                => [ 'mcoates@mozilla.com', 'jstevensen@mozilla.com' ],
-                groups            => [ 'infrasec' ], 
-                comment           => $comment,
-                op_sys            => 'All', 
-                rep_platform      => 'All',
-                version           => 'other',
-                dependson         => $bug->bug_id, 
-            });
-            $bug->set_all({ blocked => { add => [ $investigate_bug->bug_id ] }});
-            Bugzilla::BugMail::Send($investigate_bug->id, $recipients);
-
-            Bugzilla->set_user($old_user);
-            $vars->{original_reporter} = '';
-            $comment = '';
-            $cgi->param('display_action', 'ssh');
-            $template->process('bug/create/comment-moz-project-review.txt.tmpl', $vars, \$comment)
-                || ThrowTemplateError($template->error());
-
-            $ssh_key_bug = Bugzilla::Bug->create({ 
-                short_desc        => 'Disable/Regenerate SSH Key',
-                product           => $bug->product,
-                component         => $bug->component,
-                bug_severity      => 'critical',
-                cc                => $bug->cc,
-                groups            => [ map { $_->{name} } @{ $bug->groups } ],
-                comment           => $comment,
-                op_sys            => 'All', 
-                rep_platform      => 'All',
-                version           => 'other',
-                dependson         => $bug->bug_id, 
-            });
-            $bug->set_all({ blocked => { add => [ $ssh_key_bug->bug_id ] }});
-            Bugzilla::BugMail::Send($ssh_key_bug->id, $recipients);
-        };
-        my $error = $@;
-
-        Bugzilla->set_user($old_user);
-        Bugzilla->error_mode($error_mode_cache);
-
-        if ($error || !$investigate_bug || !$ssh_key_bug) {
-            warn "Failed to create additional moz-project-review bug: $error" if $error;
-            $vars->{'message'} = 'moz_project_review_creation_failed';
-        }
+    if ($params->{mozilla_data} eq 'Yes') {
+        $do_data_safety = 1;
+        $do_legal = 1;
+        $do_privacy_policy = 1;
+        $do_privacy_tech = 1;
+        $do_sec_review = 1;
     }
+
+    if ($params->{new_or_change} eq 'New') {
+        $do_legal = 1;
+        $do_privacy_policy = 1;
+    }
+    elsif ($params->{new_or_change} eq 'Existing') {
+        $do_legal = 1;
+    }
+
+    if ($params->{separate_party} eq 'Yes') {
+        $do_legal = 1;
+    }
+
+    if ($params->{data_access} eq 'Yes') {
+        $do_privacy_policy = 1;
+        $do_privacy_vendor = 1;
+        $do_sec_review = 1;
+    }
+
+    if ($params->{vendor_cost} eq '> $25,000') {
+        $do_finance = 1;
+    }
+
+    my ($sec_review_bug, $legal_bug, $finance_bug, $privacy_vendor_bug,
+        $data_safety_bug, $privacy_tech_bug, $privacy_policy_bug);
+
+    eval {
+        if ($do_sec_review) {
+            my $bug_data = {
+                short_desc   => 'Security Review for ' . $bug->short_desc,
+                product      => 'mozilla.org',
+                component    => 'Security Assurance: Review Request',
+                bug_severity => 'normal',
+                groups       => [ 'mozilla-corporation-confidential' ],
+                keywords     => 'sec-review-needed',
+                op_sys       => 'All',
+                rep_platform => 'All',
+                version      => 'other',
+                blocked      => $bug->bug_id,
+            };
+            $sec_review_bug = _file_child_bug($bug, $vars, 'sec-review', $bug_data);
+        }
+
+#        if ($do_legal) {
+#            my $component;
+#            if ($params->{new_or_change} eq 'New') {
+#                $component = 'General';
+#            }
+#            elsif ($params->{new_or_change} eq 'Existing') {
+#                $component = $params->{mozilla_project};
+#            }
+#
+#            if ($params->{separate_party} eq 'Yes'
+#                && $params->{relationship_type}) 
+#            {
+#                $component = $params->{relationship_type} eq 'unspecified'
+#                             ? 'General'
+#                             : $params->{relationship_type};
+#            }
+#
+#            if ($component) {
+#                # HACK: User needs to be in the legal group to create legal bugs
+#                my $old_user = Bugzilla->user;
+#                my $new_user = Bugzilla::User->new({ name => $user->login });
+#                $new_user->{groups} = [ Bugzilla::Group->new({ name => 'legal' }) ];
+#                Bugzilla->set_user($new_user);
+#
+#                my $bug_data = {
+#                    short_desc        => 'Complete Legal Review for ' . $bug->short_desc,
+#                    product           => 'Legal', 
+#                    component         => $component,
+#                    bug_severity      => 'normal',
+#                    priority          => '--',
+#                    groups            => [ 'legal' ],
+#                    op_sys            => 'All',
+#                    rep_platform      => 'All',
+#                    version           => 'unspecified',
+#                    blocked         => $bug->bug_id,
+#                };
+#                $legal_bug = _file_child_bug($bug, $vars, 'legal', $bug_data);
+#
+#                # Remove temporary legal group
+#                Bugzilla->set_user($old_user);
+#            }
+#        }
+
+        if ($do_finance) {
+            my $bug_data = {
+                short_desc   => 'Complete Finance Review for ' . $bug->short_desc,
+                product      => 'Finance',
+                component    => 'Purchase Request Form',
+                bug_severity => 'normal',
+                priority     => '--',
+                groups       => [ 'finance' ],
+                op_sys       => 'All',
+                rep_platform => 'All',
+                version      => 'unspecified',
+                blocked      => $bug->bug_id,
+            };
+            $finance_bug = _file_child_bug($bug, $vars, 'finance', $bug_data);
+        }
+
+        if ($do_data_safety) {
+            my $bug_data = {
+                short_desc   => 'Data Safety Review for ' . $bug->short_desc,
+                product      => 'Data Safety',
+                component    => 'General',
+                bug_severity => 'normal',
+                priority     => '--',
+                op_sys       => 'All',
+                rep_platform => 'All',
+                version      => 'unspecified',
+                blocked      => $bug->bug_id,
+            };
+            $data_safety_bug = _file_child_bug($bug, $vars, 'data-safety', $bug_data);
+        }
+
+        if ($do_privacy_tech) {
+            my $bug_data = {
+                short_desc   => 'Complete Privacy-Technical Review for ' . $bug->short_desc,
+                product      => 'mozilla.org',
+                component    => 'Security Assurance: Review Request',
+                bug_severity => 'normal',
+                priority     => '--',
+                keywords     => 'privacy-review-needed',
+                groups       => [ 'mozilla-corporation-confidential' ],
+                op_sys       => 'All',
+                rep_platform => 'All',
+                version      => 'other',
+                blocked      => $bug->bug_id,
+            };
+            $privacy_tech_bug = _file_child_bug($bug, $vars, 'privacy-tech', $bug_data);
+        }
+
+        if ($do_privacy_policy) {
+            my $bug_data = {
+                short_desc   => 'Complete Privacy-Policy Review for ' . $bug->short_desc,
+                product      => 'Privacy',
+                component    => 'Privacy Review',
+                bug_severity => 'normal',
+                priority     => '--',
+                op_sys       => 'All',
+                rep_platform => 'All',
+                version      => 'unspecified',
+                blocked      => $bug->bug_id,
+            };
+            $privacy_policy_bug = _file_child_bug($bug, $vars, 'privacy-policy', $bug_data);
+        }
+
+        if ($do_privacy_vendor) {
+            my $bug_data = {
+                short_desc   => 'Complete Privacy / Vendor Review for ' . $bug->short_desc,
+                product      => 'Privacy',
+                component    => 'Vendor Review',
+                bug_severity => 'normal',
+                priority     => '--',
+                op_sys       => 'All',
+                rep_platform => 'All',
+                version      => 'unspecified',
+                blocked      => $bug->bug_id,
+            };
+            $privacy_vendor_bug = _file_child_bug($bug, $vars, 'privacy-vendor', $bug_data);
+        }
+    };
+
+    my $error = $@;
+    Bugzilla->error_mode($error_mode_cache);
+
+    if ($error
+        || ($do_legal && !$legal_bug)
+        || ($do_sec_review && !$sec_review_bug)
+        || ($do_finance && !$finance_bug)
+        || ($do_data_safety && !$data_safety_bug)
+        || ($do_privacy_tech && !$privacy_tech_bug)
+        || ($do_privacy_policy && !$privacy_policy_bug)
+        || ($do_privacy_vendor && !$privacy_vendor_bug))
+    {
+        warn "Failed to create additional moz-project-review bugs: $error" if $error;
+        $vars->{'message'} = 'moz_project_review_creation_failed';
+    }
+}
+
+sub _file_child_bug {
+    my ($parent_bug, $vars, $template_suffix, $bug_data) = @_;
+    my $template = Bugzilla->template;
+    my $comment  = "";
+
+    my $full_template = "bug/create/comment-moz-project-review-$template_suffix.txt.tmpl";
+    $template->process($full_template, $vars, \$comment)
+        || ThrowTemplateError($template->error());
+
+    $bug_data->{comment} = $comment;
+    my $new_bug = Bugzilla::Bug->create($bug_data);
+
+    $parent_bug->set_all({ dependson => { add => [ $new_bug->bug_id ] }});
+    Bugzilla::BugMail::Send($new_bug->id, { changer => Bugzilla->user });
+
+    return $new_bug;
 }
 
 __PACKAGE__->NAME;

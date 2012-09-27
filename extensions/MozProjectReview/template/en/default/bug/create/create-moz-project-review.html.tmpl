@@ -10,101 +10,18 @@
 
 [% PROCESS global/header.html.tmpl
    title = "Mozilla Project Review"
+   style_urls = [ 'extensions/MozProjectReview/web/style/moz_project_review.css' ]
+   javascript_urls = [ 'extensions/MozProjectReview/web/js/moz_project_review.js' ]
 %]
-
-[% USE Bugzilla %]
-
-<style>
-.header {
-  width:95%;
-  border-bottom: 1px solid rgb(116,126,147);
-  font-size: 1.5em;
-  color: rgb(102,100,88);
-  padding-bottom: 5px;
-  margin-bottom: 5px;
-  margin-top: 12px;
-}
-.field_row {
-  width:100%;
-  min-width:700px;
-}
-.field_label {
-  float:left;
-  width:20%;
-}
-.field_data {
-  float:left;
-  width:75%;
-  margin-left:5px;
-  margin-bottom:5px;
-}
-.field_description {
-  font-style:italic;
-  font-size:90%;
-  color: rgb(102,100,88);
-}
-</style>
-
-<script type="text/javascript">
-  function toggleSpecialSections () {
-    var mozilla_data_select = YAHOO.util.Dom.get('mozilla_data');
-    var data_access_select  = YAHOO.util.Dom.get('data_access');
-    var vendor_cost_select  = YAHOO.util.Dom.get('vendor_cost');
-
-    if (mozilla_data_select.value == 'Yes') {
-      YAHOO.util.Dom.removeClass('legal_questions','bz_default_hidden');
-      YAHOO.util.Dom.removeClass('privacy_policy_project_questions','bz_default_hidden');
-      YAHOO.util.Dom.removeClass('data_safety_questions', 'bz_default_hidden');
-      YAHOO.util.Dom.removeClass('sec_review_questions', 'bz_default_hidden');
-    }
-    else {
-      YAHOO.util.Dom.addClass('legal_questions','bz_default_hidden');
-      YAHOO.util.Dom.addClass('privacy_policy_project_questions','bz_default_hidden');
-      YAHOO.util.Dom.addClass('data_safety_questions', 'bz_default_hidden');
-      YAHOO.util.Dom.addClass('sec_review_questions', 'bz_default_hidden');
-    }
-
-    if (data_access_select.value == 'Yes' || mozilla_data_select.value == 'Yes') {
-      YAHOO.util.Dom.removeClass('sec_review_questions', 'bz_default_hidden');
-    }
-    else {
-      YAHOO.util.Dom.addClass('sec_review_questions', 'bz_default_hidden');
-    }
-
-    if (data_access_select.value == 'Yes') {
-      YAHOO.util.Dom.removeClass('privacy_policy_vendor_questions', 'bz_default_hidden');
-    }
-    else {
-      YAHOO.util.Dom.addClass('privacy_policy_vendor_questions', 'bz_default_hidden');
-    }
-
-    if (vendor_cost_select.value == '> $25,000') {
-      YAHOO.util.Dom.removeClass('finance_questions','bz_default_hidden');
-    }
-    else {
-      YAHOO.util.Dom.addClass('finance_questions','bz_default_hidden');
-    }
-  }
-
-  function toggleVisibleById () {
-    var args   = Array.prototype.slice.call(arguments);
-    var select = args.shift();
-    var value  = args.shift();
-    var ids    = args;
-    for (var i = 0; i < ids.length; i++) {
-      if (select.value == value) {
-        YAHOO.util.Dom.removeClass(ids[i], 'bz_default_hidden');
-      }
-      else {
-        YAHOO.util.Dom.addClass(ids[i], 'bz_default_hidden');
-      }
-    }
-  }
-</script>
 
 <p>
   <strong>Please use this form for submitting a Mozilla Project Review</strong>
   If you have a [% terms.bug %] to file, go <a href="enter_bug.cgi">here</a>.
+</p>
+
+<p>
+  (<span class="required_star">*</span> =
+  <span class="required_explanation">Required Field</span>)
 </p>
 
 <form method="post" action="post_bug.cgi" id="incidentForm" enctype="multipart/form-data"
@@ -116,7 +33,6 @@
   <input type="hidden" id="priority" name="priority" value="--">
   <input type="hidden" id="version" name="version" value="other">
   <input type="hidden" id="cc" name="cc" value="">
-  <input type="hidden" id="groups" name="groups" value="">
   <input type="hidden" id="format" name="format" value="moz-project-review">
   <input type="hidden" id="bug_severity" name="bug_severity" value="normal">
   <input type="hidden" id="token" name="token" value="[% token FILTER html %]">
@@ -125,7 +41,7 @@
     <div class="header">Initial Questions</div>
 
     <div id="project_feature_summary_row" class="field_row">
-      <span class="field_label">Project/Feature Name:</span>
+      <span class="field_label required">Project/Feature Name:</span>
       <span class="field_data">
         <input type="text" name="short_desc" id="short_desc" size="60" maxsize="255">
       </span>
@@ -134,7 +50,7 @@
     <div id="tracking_id_row" class="field_row">
       <span class="field_label">Tracking [% terms.Bug %] ID:</span>
       <span class="field_data">
-        <div class="field_description">Master tracking bug number (if it exists)?</div>
+        <div class="field_description">Master tracking [% terms.bug %] number (if it exists)?</div>
         <input type="text" name="tracking_id" id="tracking_id" size="60">
       </span>
     </div>
@@ -148,7 +64,7 @@
     </div>
 
     <div id="description_row" class="field_row">
-      <span class="field_label">Description:</span>
+      <span class="field_label required">Description:</span>
       <span class="field_data">
         <div class="field_description">Please provide a short description of the feature / application / project / 
           business relationship (e.g. problem solved, use cases, etc.)</div>
@@ -166,7 +82,7 @@
     </div>
 
     <div id="urgency_row" class="field_row">
-      <span class="field_label">Urgency:</span>
+      <span class="field_label required">Urgency:</span>
       <span class="field_data">
         <div class="field_description">What is the urgency of this project?</div>
         <input type="text" name="urgency" id="urgency" size="60">
@@ -182,7 +98,7 @@
     </div>
 
     <div id="release_date_row" class="field_row">
-      <span class="field_label">Release Date:</span>
+      <span class="field_label required">Release Date:</span>
       <span class="field_data">
         <div class="field_description">What are your key release / launch dates?</div>
         <input type="text" name="release_date" id="release_date" size="60">
@@ -190,7 +106,7 @@
     </div>
 
     <div id="project_status_row" class="field_row">
-      <span class="field_label">Project Status:</span>
+      <span class="field_label required">Project Status:</span>
       <span class="field_data">
         <div class="field_description">What is the current state of your project?</div>
         <select name="project_status" id="project_status">
@@ -200,11 +116,12 @@
           <option value="development">Development</option>
           <option value="ready">Ready to launch/commit</option>
           <option value="launched">Already launched/committed</option>
-        </select>      </span>
+        </select>
+      </span>
     </div>
 
     <div id="mozilla_data_row" class="field_row">
-      <span class="field_label">Mozilla Data:</span>
+      <span class="field_label required">Mozilla Data:</span>
       <span class="field_data">
         <div class="field_description">Does this product/service/project access, interact with, or store Mozilla 
           (customer, contributor, user, employee) data? Example of such data includes
@@ -219,7 +136,7 @@
     </div>
 
     <div id="new_or_change_row" class="field_row">
-      <span class="field_label">New or Change:</span>
+      <span class="field_label required">New or Change:</span>
       <span class="field_data">
         <div class="field_description">Is this a NEW product, service, project, feature, or functionality, 
           a change to an EXISTING one, or neither?</div>
@@ -248,7 +165,7 @@
     </div>
 
     <div id="mozilla_related_row" class="field_row">
-      <span class="field_label">Mozilla Related:</span>
+      <span class="field_label required">Mozilla Related:</span>
       <span class="field_data">
         <div class="field_description">What Mozilla products/services/projects does this product/service/project 
           integrate with or relate to?</div>
@@ -257,7 +174,7 @@
     </div>
 
     <div id="separate_party_row" class="field_row">
-      <span class="field_label">Separate Party:</span>
+      <span class="field_label required">Separate Party:</span>
       <span class="field_data">
         <div class="field_description">Does this project involve a relationship with another party (such as a third 
           party vendor, hosted service provider, consultant or strategic partner (business deals))? 
@@ -347,8 +264,7 @@
       <span class="field_label">Review Due Date:</span>
       <span class="field_data">
         <div class="field_description">When would you like the review to be completed?
-          (<a href="https://mail.mozilla.com/home/ckoenig@mozilla.com/Security%20Review.html">more info</a>)
-          and whom to invite.</div>
+          (<a href="https://mail.mozilla.com/home/ckoenig@mozilla.com/Security%20Review.html">more info</a>)</div>
         <input type="text" name="sec_review_date" id="sec_review_date" size="60">
       </span>
     </div>
@@ -409,18 +325,18 @@
     </div>
 
     <div id="privacy_policy_project_user_data_bug_row" class="bz_default_hidden">
-      <span class="field_label">Data Safety Bug ID:</span>
+      <span class="field_label">Data Safety [% terms.Bug %] ID:</span>
       <span class="field_data">
-        <div class="field_description">Please provide link to Data Safety bug</div>
+        <div class="field_description">Please provide link to Data Safety [% terms.bug %]</div>
         <input type="text" name="privacy_policy_user_data_bug" id="privacy_policy_user_data_bug" size="60">
       </span>
     </div>
 
     <div id="privacy_policy_project_legal_bug_row" class="field_row">
-      <span class="field_label">Legal Bug:</span>
+      <span class="field_label">Legal [% terms.Bug %]:</span>
       <span class="field_data">
-          <div class="field_description">For reference, please provide link to related Legal bug or enter 
-            "not filed" if a legal bug has not yet been filed.</div>
+          <div class="field_description">For reference, please provide link to related Legal [% terms.bug %] or enter 
+            "not filed" if a legal [% terms.bug %] has not yet been filed.</div>
         <input type="text" name="privacy_policy_legal_bug" id="privacy_policy_legal_bug" size="60">
       </span>
     </div>
