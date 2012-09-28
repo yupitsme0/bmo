@@ -10,6 +10,7 @@ use strict;
 
 use base qw(Bugzilla::Extension);
 
+use Bugzilla::User;
 use Bugzilla::Group;
 use Bugzilla::Error;
 use Bugzilla::Constants;
@@ -104,25 +105,26 @@ sub post_bug_after_creation {
 
             if ($component) {
                 # HACK: User needs to be in the legal group to create legal bugs
-                my $old_groups = $user->groups;
-                $user->{groups} = [ Bugzilla::Group->new({ name => 'legal' }) ];
+                my $old_user = Bugzilla->user;
+                my $new_user = Bugzilla::User->new({ name => $old_user->login });
+                $new_user->{groups} = [ Bugzilla::Group->new({ name => 'legal' }) ];
 
                 my $bug_data = {
-                    short_desc        => 'Complete Legal Review for ' . $bug->short_desc,
-                    product           => 'Legal', 
-                    component         => $component,
-                    bug_severity      => 'normal',
-                    priority          => '--',
-                    groups            => [ 'legal' ],
-                    op_sys            => 'All',
-                    rep_platform      => 'All',
-                    version           => 'unspecified',
-                    blocked         => $bug->bug_id,
+                    short_desc   => 'Complete Legal Review for ' . $bug->short_desc,
+                    product      => 'Legal', 
+                    component    => $component,
+                    bug_severity => 'normal',
+                    priority     => '--',
+                    groups       => [ 'legal' ],
+                    op_sys       => 'All',
+                    rep_platform => 'All',
+                    version      => 'unspecified',
+                    blocked      => $bug->bug_id,
                 };
                 $legal_bug = _file_child_bug($bug, $vars, 'legal', $bug_data);
 
                 # Remove temporary legal group
-                $user->{groups} = $old_groups;
+                Bugzilla->set_user($old_user);
             }
         }
 
