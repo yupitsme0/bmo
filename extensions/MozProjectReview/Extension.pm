@@ -10,6 +10,7 @@ use strict;
 
 use base qw(Bugzilla::Extension);
 
+use Bugzilla::Group;
 use Bugzilla::Error;
 use Bugzilla::Constants;
 
@@ -84,48 +85,46 @@ sub post_bug_after_creation {
             $sec_review_bug = _file_child_bug($bug, $vars, 'sec-review', $bug_data);
         }
 
-#        if ($do_legal) {
-#            my $component;
-#            if ($params->{new_or_change} eq 'New') {
-#                $component = 'General';
-#            }
-#            elsif ($params->{new_or_change} eq 'Existing') {
-#                $component = $params->{mozilla_project};
-#            }
-#
-#            if ($params->{separate_party} eq 'Yes'
-#                && $params->{relationship_type}) 
-#            {
-#                $component = $params->{relationship_type} eq 'unspecified'
-#                             ? 'General'
-#                             : $params->{relationship_type};
-#            }
-#
-#            if ($component) {
-#                # HACK: User needs to be in the legal group to create legal bugs
-#                my $old_user = Bugzilla->user;
-#                my $new_user = Bugzilla::User->new({ name => $user->login });
-#                $new_user->{groups} = [ Bugzilla::Group->new({ name => 'legal' }) ];
-#                Bugzilla->set_user($new_user);
-#
-#                my $bug_data = {
-#                    short_desc        => 'Complete Legal Review for ' . $bug->short_desc,
-#                    product           => 'Legal', 
-#                    component         => $component,
-#                    bug_severity      => 'normal',
-#                    priority          => '--',
-#                    groups            => [ 'legal' ],
-#                    op_sys            => 'All',
-#                    rep_platform      => 'All',
-#                    version           => 'unspecified',
-#                    blocked         => $bug->bug_id,
-#                };
-#                $legal_bug = _file_child_bug($bug, $vars, 'legal', $bug_data);
-#
-#                # Remove temporary legal group
-#                Bugzilla->set_user($old_user);
-#            }
-#        }
+        if ($do_legal) {
+            my $component;
+            if ($params->{new_or_change} eq 'New') {
+                $component = 'General';
+            }
+            elsif ($params->{new_or_change} eq 'Existing') {
+                $component = $params->{mozilla_project};
+            }
+
+            if ($params->{separate_party} eq 'Yes'
+                && $params->{relationship_type}) 
+            {
+                $component = $params->{relationship_type} eq 'unspecified'
+                             ? 'General'
+                             : $params->{relationship_type};
+            }
+
+            if ($component) {
+                # HACK: User needs to be in the legal group to create legal bugs
+                my $old_groups = $user->groups;
+                $user->{groups} = [ Bugzilla::Group->new({ name => 'legal' }) ];
+
+                my $bug_data = {
+                    short_desc        => 'Complete Legal Review for ' . $bug->short_desc,
+                    product           => 'Legal', 
+                    component         => $component,
+                    bug_severity      => 'normal',
+                    priority          => '--',
+                    groups            => [ 'legal' ],
+                    op_sys            => 'All',
+                    rep_platform      => 'All',
+                    version           => 'unspecified',
+                    blocked         => $bug->bug_id,
+                };
+                $legal_bug = _file_child_bug($bug, $vars, 'legal', $bug_data);
+
+                # Remove temporary legal group
+                $user->{groups} = $old_groups;
+            }
+        }
 
         if ($do_finance) {
             my $bug_data = {
