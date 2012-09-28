@@ -186,7 +186,7 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>What will you be doing at the event? <span style="color: red;">*</span></strong></td>
+  <td align="right"><strong>What will you be doing at the event?: <span style="color: red;">*</span></strong></td>
   <td>
     <input type="checkbox" id="doing-booth" name="doing" value="Booth or Table"><label for="doing-booth">Booth/Table</label><br />
     <input type="checkbox" id="doing-speaking" name="doing" value="Speaking Opportunity"><label for="doing-speaking">Speaking Opportunity</label><br />
@@ -201,7 +201,7 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>How many attendees will be at the event?</strong></td>
+  <td align="right"><strong>How many attendees will be at the event?:</strong></td>
   <td>
     <select name="attendees" id="attendees">
       <option value="--Please Select--" selected>--Please Select--</option>
@@ -226,12 +226,36 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <td align="right"><strong>How will you measure the<br />success of your event? <span style="color: red;">*</span></strong></td>
+  <td align="right"><strong>How will you measure the<br>success of your event?: <span style="color: red;">*</span></strong></td>
   <td>
     <textarea id="successmeasure" name="successmeasure" rows="5" cols="50"></textarea>
   </td>
 </tr>
 
+<tr>
+  <td align="right"><strong>Are you requesting gear for your event?:</strong></td>
+  <td>
+    <select name="gear_request" id="gear_request">
+      <option value="--Please Select--" selected>--Please Select--</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+  </td>
+</tr>
+
+<tr>
+  <td align="right"><strong>If yes, what specific gear are you requesting?</strong></td>
+  <td>
+    <textarea id="gear" name="gear" rows="5" cols="50"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <td align="right"><strong>Gear Shipping Information:</strong></td>
+  <td>
+    <textarea id="gear_shipping" name="gear_shipping" rows="5" cols="50"></textarea>
+  </td>
+</tr>
 
   </table>
   <br>

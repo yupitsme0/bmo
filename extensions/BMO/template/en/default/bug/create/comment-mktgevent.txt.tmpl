@@ -44,5 +44,11 @@ We'll be doing: [% cgi.param("doing").join(", ") %][% IF cgi.param('doing-other-
 Success will be measured by:
 [%+ cgi.param('successmeasure') %]
 
+Are you requesting gear for your event?: [% cgi.param('gear_request') %]
+What specific gear are you requesting?:
+[%+ cgi.param('gear') %]
+Gearship to information:
+[%+ cgi.param('gear_shipping') %]
+
 [%+ cgi.param("comment") IF cgi.param("comment") %]
 
