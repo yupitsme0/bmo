@@ -108,6 +108,7 @@ sub post_bug_after_creation {
                 my $old_user = Bugzilla->user;
                 my $new_user = Bugzilla::User->new({ name => $old_user->login });
                 $new_user->{groups} = [ Bugzilla::Group->new({ name => 'legal' }) ];
+                Bugzilla->set_user($new_user);
 
                 my $bug_data = {
                     short_desc   => 'Complete Legal Review for ' . $bug->short_desc,
