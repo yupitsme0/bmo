@@ -219,7 +219,8 @@ sub post_bug_after_creation {
         || ($do_privacy_vendor && !$privacy_vendor_bug))
     {
         warn "Failed to create additional moz-project-review bugs: $error" if $error;
-        $vars->{'message'} = 'moz_project_review_creation_failed';
+        $vars->{message} = 'moz_project_review_creation_failed';
+        $vars->{message_error} = $error;
     }
 }
 
