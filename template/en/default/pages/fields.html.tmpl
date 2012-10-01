@@ -100,6 +100,8 @@
           either marked <b>[% display_value("bug_status", "ASSIGNED") FILTER html %]</b> or
           <b>[% display_value("bug_status", "RESOLVED") FILTER html %]</b>.
         </dd>
+
+        [% Hook.process('open-status') %]
       </dl>
     </td>
 
@@ -135,6 +137,8 @@
           Any zombie [% terms.bugs %] who choose to walk the earth again must 
           do so by becoming <b>[% display_value("bug_status", "REOPENED") FILTER html %]</b>.
         </dd>
+
+        [% Hook.process('closed-status') %]
       </dl>
     </td>
 

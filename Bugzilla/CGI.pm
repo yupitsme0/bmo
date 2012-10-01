@@ -306,6 +306,14 @@ sub header {
         unshift(@_, '-x_frame_options' => 'SAMEORIGIN');
     }
 
+    # Add X-XSS-Protection header to prevent simple XSS attacks
+    # and enforce the blocking (rather than the rewriting) mode.
+    unshift(@_, '-x_xss_protection' => '1; mode=block');
+
+    # Add X-Content-Type-Options header to prevent browsers sniffing
+    # the MIME type away from the declared Content-Type.
+    unshift(@_, '-x_content_type_options' => 'nosniff');
+
     return $self->SUPER::header(@_) || "";
 }
 
