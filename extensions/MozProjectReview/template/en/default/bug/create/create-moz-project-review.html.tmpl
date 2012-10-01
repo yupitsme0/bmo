@@ -12,6 +12,7 @@
    title = "Mozilla Project Review"
    style_urls = [ 'extensions/MozProjectReview/web/style/moz_project_review.css' ]
    javascript_urls = [ 'extensions/MozProjectReview/web/js/moz_project_review.js' ]
+   onload = "toggleSpecialSections();"
 %]
 
 <p>
@@ -56,7 +57,7 @@
     </div>
 
     <div id="contacts_row" class="field_row">
-      <span class="field_label">Points of Contact:</span>
+      <span class="field_label required">Points of Contact:</span>
       <span class="field_data">
         <div class="field_description">Who are the points of contact for this review?</div>
         <input type="text" name="contacts" id="contacts" size="60">
@@ -165,7 +166,7 @@
     </div>
 
     <div id="mozilla_related_row" class="field_row">
-      <span class="field_label required">Mozilla Related:</span>
+      <span class="field_label">Mozilla Related:</span>
       <span class="field_data">
         <div class="field_description">What Mozilla products/services/projects does this product/service/project 
           integrate with or relate to?</div>
@@ -191,7 +192,7 @@
 
     <div id="initial_separate_party_questions" class="bz_default_hidden">
       <div id="relation_type_row" class="field_row">
-        <span class="field_label">Type of Relationship:</span>
+        <span class="field_label required">Type of Relationship:</span>
         <span class="field_data">
           <div class="field_description">What type of relationship?</div>
           <select name="relationship_type" id="relationship_type"
@@ -207,7 +208,7 @@
       </div>
 
       <div id="data_access_row" class="field_row">
-        <span class="field_label">Data Access:</span>
+        <span class="field_label required">Data Access:</span>
         <span class="field_data">
           <div class="field_description">Will the other party have access to Mozilla (customer, contributor, user,
             employee) data? (If this is for an NDA, choose no)</div>
@@ -229,7 +230,7 @@
       </div>
 
       <div id="vendor_cost_row" class="field_row">
-        <span class="field_label">Vendor Cost:</span>
+        <span class="field_label required">Vendor Cost:</span>
         <span class="field_data">
           <div class="field_description">What is the anticipated cost of the vendor relationship?</div>
           <select name="vendor_cost" id="vendor_cost"

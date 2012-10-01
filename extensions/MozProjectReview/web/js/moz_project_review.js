@@ -51,21 +51,11 @@ function toggleVisibleById () {
     var select = args.shift();
     var value  = args.shift();
     var ids    = args;
-    for (var i = 0; i < ids.length; i++) {
-        if (select.value == value) {
-            YAHOO.util.Dom.removeClass(ids[i], 'bz_default_hidden');
-        }
-        else {
-            YAHOO.util.Dom.addClass(ids[i], 'bz_default_hidden');
-        }
-    }
-}
 
-function toggleVisibleById () {
-    var args   = Array.prototype.slice.call(arguments);
-    var select = args.shift();
-    var value  = args.shift();
-    var ids    = args;
+    if (typeof select == 'string') {
+        select = YAHOO.util.Dom.get(select);
+    }
+
     for (var i = 0; i < ids.length; i++) {
         if (select.value == value) {
             YAHOO.util.Dom.removeClass(ids[i], 'bz_default_hidden');
@@ -78,15 +68,21 @@ function toggleVisibleById () {
 
 function validateAndSubmit () {
     var alert_text = '';
-    if(!isFilledOut('short_desc')) alert_text += "Please enter a value for project or feature name\n";
-    if(!isFilledOut('description')) alert_text += "Please enter a value for description\n";
-    if(!isFilledOut('urgency')) alert_text += "Please enter a value for urgency\n";
-    if(!isFilledOut('release_date')) alert_text += "Please enter a value for release date\n";
-    if(!isFilledOut('project_status')) alert_text += "Please select a value for project status\n";
-    if(!isFilledOut('mozilla_data')) alert_text += "Please select a value for mozilla data\n";
-    if(!isFilledOut('new_or_change')) alert_text += "Please select a value for new or change to existing project\n";
-    if(!isFilledOut('mozilla_related')) alert_text += "Please enter a value for Mozilla related\n";
-    if(!isFilledOut('separate_party')) alert_text += "Please select a value for separate party\n";
+    if (!isFilledOut('short_desc')) alert_text += "Please enter a value for project or feature name\n";
+    if (!isFilledOut('contacts')) alert_text += "Please enter a value for points of contact\n";
+    if (!isFilledOut('description')) alert_text += "Please enter a value for description\n";
+    if (!isFilledOut('urgency')) alert_text += "Please enter a value for urgency\n";
+    if (!isFilledOut('release_date')) alert_text += "Please enter a value for release date\n";
+    if (!isFilledOut('project_status')) alert_text += "Please select a value for project status\n";
+    if (!isFilledOut('mozilla_data')) alert_text += "Please select a value for mozilla data\n";
+    if (!isFilledOut('new_or_change')) alert_text += "Please select a value for new or change to existing project\n";
+    if (!isFilledOut('separate_party')) alert_text += "Please select a value for separate party\n";
+
+    if (YAHOO.util.Dom.get('separate_party').value == 'Yes') {
+        if (!isFilledOut('relationship_type')) alert_text += "Please select a value for type of relationship\n";
+        if (!isFilledOut('data_access')) alert_text += "Please select a value for data access\n";
+        if (!isFilledOut('vendor_cost')) alert_text += "Please select a value for vendor cost\n";
+    }
 
     if(alert_text == '') {
         return true;
@@ -95,6 +91,22 @@ function validateAndSubmit () {
     alert(alert_text);
     return false;
 }
+
+YAHOO.util.Event.onDOMReady(function() {
+    toggleSpecialSections();
+    toggleVisibleById('new_or_change','Existing','mozilla_project_row');
+    toggleVisibleById('separate_party','Yes','initial_separate_party_questions');
+    toggleVisibleById('relationship_type','Vendor/Services','legal_sow_details_row');
+    toggleVisibleById('vendor_cost','> $25,000','finance_questions');
+    toggleVisibleById('privacy_policy_project','Yes','privacy_policy_project_link_row');
+    toggleVisibleById('privacy_policy_user_data','Yes','privacy_policy_project_user_data_bug_row');
+    toggleVisibleById('privacy_policy_vendor_user_data','Yes','privacy_policy_vendor_extra');
+    toggleVisibleById('data_safety_user_data','Yes','data_safety_extra_questions');
+    toggleVisibleById('data_safety_retention','Yes','data_safety_retention_length_row');
+    toggleVisibleById('data_safety_separate_party','Yes','data_safety_separate_party_data_row');
+    toggleVisibleById('data_safety_community_visibility','Yes','data_safety_communication_channels_row');
+    toggleVisibleById('data_safety_community_visibility','No','data_safety_communication_plan_row');
+});
 
 /**
  * Some Form Validation and Interaction
