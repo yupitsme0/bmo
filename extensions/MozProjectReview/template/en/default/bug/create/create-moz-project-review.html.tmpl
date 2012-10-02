@@ -12,7 +12,6 @@
    title = "Mozilla Project Review"
    style_urls = [ 'extensions/MozProjectReview/web/style/moz_project_review.css' ]
    javascript_urls = [ 'extensions/MozProjectReview/web/js/moz_project_review.js' ]
-   onload = "toggleSpecialSections();"
 %]
 
 <p>
@@ -237,8 +236,8 @@
                   onchange="toggleVisibleById(this,'> $25,000','finance_questions');">
             <option value="">Select One</option>
             <option value="N/A">N/A</option>
-            <option value="<= $25,000">&lt;= $25,000</option>
-            <option value="> $25,000">&gt; $25,000</option>
+            <option value="&lt= $25,000">&lt;= $25,000</option>
+            <option value="&gt $25,000">&gt; $25,000</option>
           </select>
         </span>
       </div>
@@ -265,7 +264,8 @@
       <span class="field_label">Review Due Date:</span>
       <span class="field_data">
         <div class="field_description">When would you like the review to be completed?
-          (<a href="https://mail.mozilla.com/home/ckoenig@mozilla.com/Security%20Review.html">more info</a>)</div>
+          (<a href="https://mail.mozilla.com/home/ckoenig@mozilla.com/Security%20Review.html"
+              target="_blank">more info</a>)</div>
         <input type="text" name="sec_review_date" id="sec_review_date" size="60">
       </span>
     </div>

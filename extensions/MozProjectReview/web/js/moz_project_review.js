@@ -12,14 +12,14 @@ function toggleSpecialSections () {
     var vendor_cost_select  = YAHOO.util.Dom.get('vendor_cost');
 
     if (mozilla_data_select.value == 'Yes') {
-        YAHOO.util.Dom.removeClass('legal_questions','bz_default_hidden');
-        YAHOO.util.Dom.removeClass('privacy_policy_project_questions','bz_default_hidden');
+        YAHOO.util.Dom.removeClass('legal_questions', 'bz_default_hidden');
+        YAHOO.util.Dom.removeClass('privacy_policy_project_questions', 'bz_default_hidden');
         YAHOO.util.Dom.removeClass('data_safety_questions', 'bz_default_hidden');
         YAHOO.util.Dom.removeClass('sec_review_questions', 'bz_default_hidden');
     }
     else {
-        YAHOO.util.Dom.addClass('legal_questions','bz_default_hidden');
-        YAHOO.util.Dom.addClass('privacy_policy_project_questions','bz_default_hidden');
+        YAHOO.util.Dom.addClass('legal_questions', 'bz_default_hidden');
+        YAHOO.util.Dom.addClass('privacy_policy_project_questions', 'bz_default_hidden');
         YAHOO.util.Dom.addClass('data_safety_questions', 'bz_default_hidden');
         YAHOO.util.Dom.addClass('sec_review_questions', 'bz_default_hidden');
     }
@@ -39,10 +39,10 @@ function toggleSpecialSections () {
     }
 
     if (vendor_cost_select.value == '> $25,000') {
-        YAHOO.util.Dom.removeClass('finance_questions','bz_default_hidden');
+        YAHOO.util.Dom.removeClass('finance_questions', 'bz_default_hidden');
     }
     else {
-        YAHOO.util.Dom.addClass('finance_questions','bz_default_hidden');
+        YAHOO.util.Dom.addClass('finance_questions', 'bz_default_hidden');
     }
 }
 
@@ -84,7 +84,7 @@ function validateAndSubmit () {
         if (!isFilledOut('vendor_cost')) alert_text += "Please select a value for vendor cost\n";
     }
 
-    if(alert_text == '') {
+    if (alert_text == '') {
         return true;
     }
 
@@ -94,23 +94,19 @@ function validateAndSubmit () {
 
 YAHOO.util.Event.onDOMReady(function() {
     toggleSpecialSections();
-    toggleVisibleById('new_or_change','Existing','mozilla_project_row');
-    toggleVisibleById('separate_party','Yes','initial_separate_party_questions');
-    toggleVisibleById('relationship_type','Vendor/Services','legal_sow_details_row');
-    toggleVisibleById('vendor_cost','> $25,000','finance_questions');
-    toggleVisibleById('privacy_policy_project','Yes','privacy_policy_project_link_row');
-    toggleVisibleById('privacy_policy_user_data','Yes','privacy_policy_project_user_data_bug_row');
-    toggleVisibleById('privacy_policy_vendor_user_data','Yes','privacy_policy_vendor_extra');
-    toggleVisibleById('data_safety_user_data','Yes','data_safety_extra_questions');
-    toggleVisibleById('data_safety_retention','Yes','data_safety_retention_length_row');
-    toggleVisibleById('data_safety_separate_party','Yes','data_safety_separate_party_data_row');
-    toggleVisibleById('data_safety_community_visibility','Yes','data_safety_communication_channels_row');
-    toggleVisibleById('data_safety_community_visibility','No','data_safety_communication_plan_row');
+    toggleVisibleById('new_or_change', 'Existing', 'mozilla_project_row');
+    toggleVisibleById('separate_party', 'Yes', 'initial_separate_party_questions');
+    toggleVisibleById('relationship_type', 'Vendor/Services', 'legal_sow_details_row');
+    toggleVisibleById('vendor_cost', '> $25,000', 'finance_questions');
+    toggleVisibleById('privacy_policy_project', 'Yes', 'privacy_policy_project_link_row');
+    toggleVisibleById('privacy_policy_user_data', 'Yes', 'privacy_policy_project_user_data_bug_row');
+    toggleVisibleById('privacy_policy_vendor_user_data', 'Yes', 'privacy_policy_vendor_extra');
+    toggleVisibleById('data_safety_user_data', 'Yes', 'data_safety_extra_questions');
+    toggleVisibleById('data_safety_retention', 'Yes', 'data_safety_retention_length_row');
+    toggleVisibleById('data_safety_separate_party', 'Yes', 'data_safety_separate_party_data_row');
+    toggleVisibleById('data_safety_community_visibility', 'Yes', 'data_safety_communication_channels_row');
+    toggleVisibleById('data_safety_community_visibility', 'No', 'data_safety_communication_plan_row');
 });
-
-/**
- * Some Form Validation and Interaction
- **/
 
 //Makes sure that there is an '@' in the address with a '.' 
 //somewhere after it (and at least one character in between them
@@ -123,9 +119,5 @@ function isValidEmail(email) {
 //Takes a DOM element id and makes sure that it is filled out
 function isFilledOut(elem_id)  {
     var str = document.getElementById(elem_id).value;
-    return str.length>0 && str!="noneselected";
-}
-
-function isChecked(elem_id) {
-    return document.getElementById(elem_id).checked;
+    return str.length > 0 && str != "noneselected";
 }

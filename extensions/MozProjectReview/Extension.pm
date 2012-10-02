@@ -104,12 +104,6 @@ sub post_bug_after_creation {
             }
 
             if ($component) {
-                # HACK: User needs to be in the legal group to create legal bugs
-                my $old_user = Bugzilla->user;
-                my $new_user = Bugzilla::User->new({ name => $old_user->login });
-                $new_user->{groups} = [ Bugzilla::Group->new({ name => 'legal' }) ];
-                Bugzilla->set_user($new_user);
-
                 my $bug_data = {
                     short_desc   => 'Complete Legal Review for ' . $bug->short_desc,
                     product      => 'Legal', 
@@ -122,10 +116,6 @@ sub post_bug_after_creation {
                     version      => 'unspecified',
                     blocked      => $bug->bug_id,
                 };
-                $legal_bug = _file_child_bug($bug, $vars, 'legal', $bug_data);
-
-                # Remove temporary legal group
-                Bugzilla->set_user($old_user);
             }
         }
 
