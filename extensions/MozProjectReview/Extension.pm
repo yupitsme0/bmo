@@ -103,20 +103,20 @@ sub post_bug_after_creation {
                              : $params->{relationship_type};
             }
 
-            if ($component) {
-                my $bug_data = {
-                    short_desc   => 'Complete Legal Review for ' . $bug->short_desc,
-                    product      => 'Legal', 
-                    component    => $component,
-                    bug_severity => 'normal',
-                    priority     => '--',
-                    groups       => [ 'legal' ],
-                    op_sys       => 'All',
-                    rep_platform => 'All',
-                    version      => 'unspecified',
-                    blocked      => $bug->bug_id,
-                };
-            }
+            my $bug_data = {
+                short_desc   => 'Complete Legal Review for ' . $bug->short_desc,
+                product      => 'Legal', 
+                component    => $component,
+                bug_severity => 'normal',
+                priority     => '--',
+                groups       => [ 'legal' ],
+                op_sys       => 'All',
+                rep_platform => 'All',
+                version      => 'unspecified',
+                blocked      => $bug->bug_id,
+            };
+            $legal_bug = _file_child_bug($bug, $vars, 'legal', $bug_data);
+
         }
 
         if ($do_finance) {

@@ -231,7 +231,8 @@
       <div id="vendor_cost_row" class="field_row">
         <span class="field_label required">Vendor Cost:</span>
         <span class="field_data">
-          <div class="field_description">What is the anticipated cost of the vendor relationship?</div>
+          <div class="field_description">What is the anticipated cost of the vendor relationship?
+            (Entire Contract Cost, not monthly cost)</div>
           <select name="vendor_cost" id="vendor_cost"
                   onchange="toggleVisibleById(this,'> $25,000','finance_questions');">
             <option value="">Select One</option>
@@ -447,7 +448,7 @@
       <span class="field_data">
         <div class="field_description">Description (Describe your project in more detail and/or provide any 
           relevant deal terms. Also provide context and background.)</div>
-        <textarea name="legal_decscription" id="legal_description" rows="10" cols="80"></textarea>
+        <textarea name="legal_description" id="legal_description" rows="10" cols="80"></textarea>
       </span>
     </div>
 
@@ -487,6 +488,29 @@
       <span class="field_label">What is the alternative?:</span>
       <span class="field_data">
         <textarea name="finance_purchase_alternative" id="finance_purchase_alternative" rows="10" cols="80"></textarea>
+      </span>
+    </div>
+
+    <div id="finance_purchase_inbudget_row" class="field_row">
+      <span class="field_label">Is this line item in budget?:</span>
+      <span class="field_data">
+        <select name="finance_purchase_inbudget" id="finance_purchase_inbudget">
+          <option value="">Select One</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </span>
+    </div>
+
+    <div id="finance_purchase_urgency_row" class="field_row">
+      <span class="field_label">What is the urgency?:</span>
+      <span class="field_data">
+        <select name="finance_purchase_urgency" id="finance_purchase_urgency">
+          <option value="within 24 hours">within 24 hours</option>
+          <option value="1 to 3 days">1 to 3 days</option>
+          <option value="a week">a week</option>
+          <option value="no rush" selected>no rush</option>
+        </select>
       </span>
     </div>
 
