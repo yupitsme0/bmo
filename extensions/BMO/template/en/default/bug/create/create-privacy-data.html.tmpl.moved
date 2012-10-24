@@ -174,12 +174,6 @@
 </tr>
 
 <tr>
-  <td colspan="2">
-    Expect to discover that you've missed a few of things, so plan for a couple weeks to get them corrected.
-  </td>
-</tr>
-
-<tr>
   <td>&nbsp;</td>
   <td>
     <input type="submit" id="commit" value="Submit Request">
@@ -188,6 +182,10 @@
 </table>
 
 </form>
+
+<p>
+Expect to discover that you've missed a couple of things, so plan for a couple weeks to get them corrected.
+</p>
 
 <script type="text/javascript">
 function trySubmit() {

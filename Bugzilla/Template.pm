@@ -61,10 +61,6 @@ use Scalar::Util qw(blessed);
 
 use base qw(Template);
 
-# Use a per-process provider to cache compiled templates in memory across
-# requests.
-our %shared_providers;
-
 use constant FORMAT_TRIPLE => '%19s|%-28s|%-28s'; 
 use constant FORMAT_3_SIZE => [19, 28, 28]; 
 use constant FORMAT_DOUBLE => '%19s %-55s'; 
@@ -1027,9 +1023,12 @@ sub create {
             },
         },
     };
+    # Use a per-process provider to cache compiled templates in memory across
+    # requests.
     my $provider_key = join(':', @{ $config->{INCLUDE_PATH} });
-    $shared_providers{$provider_key} ||= Template::Provider->new($config);
-    $config->{LOAD_TEMPLATES} = [ $shared_providers{$provider_key} ];
+    my $shared_providers = Bugzilla->process_cache->{shared_providers} ||= {};
+    $shared_providers->{$provider_key} ||= Template::Provider->new($config);
+    $config->{LOAD_TEMPLATES} = [ $shared_providers->{$provider_key} ];
 
     local $Template::Config::CONTEXT = 'Bugzilla::Template::Context';
 
@@ -1092,7 +1091,7 @@ sub precompile_templates {
         }
 
         # Clear out the cached Provider object
-        undef %shared_providers;
+        Bugzilla->process_cache->{shared_providers} = undef;
     }
 
     # Under mod_perl, we look for templates using the absolute path of the
