@@ -33,6 +33,11 @@ sub post_bug_after_creation {
     my $error_mode_cache = Bugzilla->error_mode;
     Bugzilla->error_mode(ERROR_MODE_DIE);
 
+    # do a match if applicable
+    Bugzilla::User::match_field({
+        'legal_cc' => { 'type' => 'multi' }
+    });
+
     my ($do_sec_review, $do_legal, $do_finance, $do_privacy_vendor,
         $do_data_safety, $do_privacy_tech, $do_privacy_policy);
 
@@ -114,6 +119,7 @@ sub post_bug_after_creation {
                 rep_platform => 'All',
                 version      => 'unspecified',
                 blocked      => $bug->bug_id,
+                cc           => $params->{'legal_cc'},
             };
             $legal_bug = _file_child_bug($bug, $vars, 'legal', $bug_data);
 

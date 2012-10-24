@@ -11,7 +11,9 @@
 [% PROCESS global/header.html.tmpl
    title = "Mozilla Project Review"
    style_urls = [ 'extensions/MozProjectReview/web/style/moz_project_review.css' ]
-   javascript_urls = [ 'extensions/MozProjectReview/web/js/moz_project_review.js' ]
+   javascript_urls = [ 'js/field.js', 'js/util.js',
+                       'extensions/MozProjectReview/web/js/moz_project_review.js' ]
+   yui = [ 'autocomplete', 'calendar' ]
 %]
 
 <p>
@@ -25,14 +27,13 @@
 </p>
 
 <form method="post" action="post_bug.cgi" id="incidentForm" enctype="multipart/form-data"
-      onSubmit="return validateAndSubmit();">
+      onSubmit="return MPR.validateAndSubmit();">
   <input type="hidden" id="product" name="product" value="mozilla.org">
   <input type="hidden" id="component" name="component" value="Project Review">
   <input type="hidden" id="rep_platform" name="rep_platform" value="All">
   <input type="hidden" id="op_sys" name="op_sys" value="All">
   <input type="hidden" id="priority" name="priority" value="--">
   <input type="hidden" id="version" name="version" value="other">
-  <input type="hidden" id="cc" name="cc" value="">
   <input type="hidden" id="format" name="format" value="moz-project-review">
   <input type="hidden" id="bug_severity" name="bug_severity" value="normal">
   <input type="hidden" id="token" name="token" value="[% token FILTER html %]">
@@ -59,7 +60,14 @@
       <span class="field_label required">Points of Contact:</span>
       <span class="field_data">
         <div class="field_description">Who are the points of contact for this review?</div>
-        <input type="text" name="contacts" id="contacts" size="60">
+        [% INCLUDE global/userselect.html.tmpl
+           id       => "cc"
+           name     => "cc"
+           value    => ""
+           size     => 60
+           classes  => ["bz_userfield"]
+           multiple => 5
+        %]
       </span>
     </div>
 
@@ -85,14 +93,20 @@
       <span class="field_label required">Urgency:</span>
       <span class="field_data">
         <div class="field_description">What is the urgency of this project?</div>
-        <input type="text" name="urgency" id="urgency" size="60">
+        <select id="urgency" name="urgency">
+          <option value="">Select One</option>
+          <option value="2 days">2 days</option>
+          <option value="a week">a week</option>
+          <option value="2-4 weeks">2-4 weeks</option>
+          <option value="no rush">no rush</option>
+        </select>
       </span>
     </div>
 
     <div id="goal_row" class="field_row">
       <span class="field_label">Current Goal:</span>
       <span class="field_data">
-        <div class="field_description">Does it support a current goal (if so, which one)?</div>
+        <div class="field_description">Does it support a current Mozilla goal (if so, which one)?</div>
         <input type="text" name="goal" id="goal" size="60">
       </span>
     </div>
@@ -100,8 +114,18 @@
     <div id="release_date_row" class="field_row">
       <span class="field_label required">Release Date:</span>
       <span class="field_data">
-        <div class="field_description">What are your key release / launch dates?</div>
-        <input type="text" name="release_date" id="release_date" size="60">
+        <div class="field_description">What is your key release / launch date?</div>
+        <input name="release_date" size="20" id="release_date" value=""
+               onchange="updateCalendarFromField(this)">
+        <button type="button" class="calendar_button"
+                id="button_calendar_release_date"
+                onclick="showCalendar('release_date')">
+        <span>Calendar</span>
+      </button>
+      <div id="con_calendar_release_date"></div>
+      <script type="text/javascript">
+        createCalendar('release_date')
+      </script>
       </span>
     </div>
 
@@ -127,7 +151,7 @@
           (customer, contributor, user, employee) data? Example of such data includes
           email addresses, first and last name, addresses, phone numbers, credit card data.)</div>
         <select name="mozilla_data" id="mozilla_data"
-                onchange="toggleSpecialSections();">
+                onchange="MPR.toggleSpecialSections();">
           <option value="">Select One</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
@@ -141,7 +165,7 @@
         <div class="field_description">Is this a NEW product, service, project, feature, or functionality, 
           a change to an EXISTING one, or neither?</div>
         <select name="new_or_change" id="new_or_change" 
-                onchange="toggleVisibleById(this,'Existing','mozilla_project_row');">
+                onchange="MPR.toggleVisibleById(this,'Existing','mozilla_project_row');">
           <option value="">Select One</option>
           <option value="New">New</option>
           <option value="Existing">Existing</option>
@@ -181,7 +205,7 @@
           This includes NDAs, click to accept, API agreements, open source licenses, renewals, 
           additional services or goods, and any other agreements.</div>
         <select name="separate_party" id="separate_party"
-                onchange="toggleVisibleById(this,'Yes','initial_separate_party_questions');">
+                onchange="MPR.toggleVisibleById(this,'Yes','initial_separate_party_questions');">
           <option value="">Select One</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
@@ -195,7 +219,7 @@
         <span class="field_data">
           <div class="field_description">What type of relationship?</div>
           <select name="relationship_type" id="relationship_type"
-                  onchange="toggleVisibleById(this,'Vendor/Services','legal_sow_details_row');">
+                  onchange="MPR.toggleVisibleById(this,'Vendor/Services','legal_sow_details_row');">
             <option value="">Select One</option>
             <option value="Vendor/Services">Vendor/Services</option>
             <option value="Distribution/Bundling">Distribution/Bundling</option>
@@ -212,7 +236,7 @@
           <div class="field_description">Will the other party have access to Mozilla (customer, contributor, user,
             employee) data? (If this is for an NDA, choose no)</div>
           <select name="data_access" id="data_access"
-                  onchange="toggleSpecialSections();">
+                  onchange="MPR.toggleSpecialSections();">
             <option value="">Select One</option>
             <option value="Yes">Yes</option>
             <option value="No">No</option>
@@ -234,7 +258,7 @@
           <div class="field_description">What is the anticipated cost of the vendor relationship?
             (Entire Contract Cost, not monthly cost)</div>
           <select name="vendor_cost" id="vendor_cost"
-                  onchange="toggleVisibleById(this,'> $25,000','finance_questions');">
+                  onchange="MPR.toggleVisibleById(this,'> $25,000','finance_questions');">
             <option value="">Select One</option>
             <option value="N/A">N/A</option>
             <option value="&lt= $25,000">&lt;= $25,000</option>
@@ -267,7 +291,17 @@
         <div class="field_description">When would you like the review to be completed?
           (<a href="https://mail.mozilla.com/home/ckoenig@mozilla.com/Security%20Review.html"
               target="_blank">more info</a>)</div>
-        <input type="text" name="sec_review_date" id="sec_review_date" size="60">
+        <input name="sec_review_date" size="20" id="sec_review_date" value=""
+               onchange="updateCalendarFromField(this)">
+        <button type="button" class="calendar_button"
+                id="button_calendar_sec_review_date"
+                onclick="showCalendar('sec_review_date')">
+        <span>Calendar</span>
+      </button>
+      <div id="con_calendar_sec_review_date"></div>
+      <script type="text/javascript">
+        createCalendar('sec_review_date')
+      </script>
       </span>
     </div>
 
@@ -297,7 +331,7 @@
       <span class="field_data">
         <div class="field_description">Do you currently have a privacy policy for your project / site / product?</div>
         <select name="privacy_policy_project" id="privacy_policy_project"
-                onchange="toggleVisibleById(this,'Yes','privacy_policy_project_link_row');">
+                onchange="MPR.toggleVisibleById(this,'Yes','privacy_policy_project_link_row');">
           <option value="">Select One</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
@@ -318,7 +352,7 @@
       <span class="field_data">
         <div class="field_description">Does your product/service/project collect, use or maintain any user data?</div>
         <select name="privacy_policy_user_data" id="privacy_policy_user_data"
-                onchange="toggleVisibleById(this,'Yes','privacy_policy_project_user_data_bug_row');">
+                onchange="MPR.toggleVisibleById(this,'Yes','privacy_policy_project_user_data_bug_row');">
           <option value="">Select One</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
@@ -352,7 +386,7 @@
       <span class="field_data">
         <div class="field_description">Will the vendor have access to Mozilla (customer, contributor, user, employee) data?</div>
         <select name="privacy_policy_vendor_user_data" id="privacy_policy_vendor_user_data"
-                onchange="toggleVisibleById(this,'Yes','privacy_policy_vendor_extra');">
+                onchange="MPR.toggleVisibleById(this,'Yes','privacy_policy_vendor_extra');">
           <option value="">Select One</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
@@ -387,7 +421,7 @@
     <div class="header">Legal</div>
 
     <div id="legal_priority_row" class="field_row">
-      <span class="field_label">Priority:</span>
+      <span class="field_label required">Priority:</span>
       <span class="field_data">
         <div class="field_description">Priority to your team</div>
         <select name="legal_priority" id="legal_priority">
@@ -399,25 +433,17 @@
       </span>
     </div>
 
-    <div id="legal_timeframe_row" class="field_row">
-      <span class="field_label">Timeframe:</span>
-      <span class="field_data">
-        <div class="field_description">Timeframe for completion</div>
-        <select name="legal_timeframe" id="legal_timeframe">
-          <option value="">Select One</option>
-          <option value="2 days">2 days</option>
-          <option value="a week">a week</option>
-          <option value="2-4 weeks">2-4 weeks</option>
-          <option value="greater 2-4 weeks">This will take a while but please get started soon</option>
-          <option value="no rush">no rush</option>
-        </select>
-      </span>
-    </div>
-
     <div id="legal_cc_row" class="field_row">
       <span class="field_label">Cc:</span>
       <span class="field_data">
-        <input type="text" name="legal_cc" id="legal_cc" size="60">
+        [% INCLUDE global/userselect.html.tmpl
+           id       => "legal_cc"
+           name     => "legal_cc"
+           value    => ""
+           size     => 60
+           classes  => ["bz_userfield"]
+           multiple => 5
+        %]
       </span>
     </div>
 
@@ -436,25 +462,10 @@
       </span>
     </div>
 
-    <div id="legal_url_row" class="field_row">
-      <span class="field_label">URL:</span>
-      <span class="field_data">
-        <input type="text" name="legal_url" id="legal_url" size="60">
-      </span>
-    </div>
-
-    <div id="legal_description_row" class="field_row">
-      <span class="field_label">Description:</span>
-      <span class="field_data">
-        <div class="field_description">Description (Describe your project in more detail and/or provide any 
-          relevant deal terms. Also provide context and background.)</div>
-        <textarea name="legal_description" id="legal_description" rows="10" cols="80"></textarea>
-      </span>
-    </div>
-
     <div id="legal_sow_details_row" class="class_row bz_default_hidden">
       <span class="field_label">SOW Details:</span>
       <span class="field_data">
+        <div class="field_description">If applicable</div>
         <textarea name="legal_sow_details" id="legal_sow_details" rows="10" cols="80"></textarea>
       </span>
     </div>
@@ -464,35 +475,35 @@
     <div class="header">Finance</div>
 
     <div id="finance_purchase_what_row" class="field_row">
-      <span class="field_label">What is the purchase for?:</span>
+      <span class="field_label required">What is the purchase for?:</span>
       <span class="field_data">
         <textarea name="finance_purchase_what" id="finance_purchase_what" rows="10" cols="80"></textarea>
       </span>
     </div>
 
     <div id="finance_purchase_why_row" class="field_row">
-      <span class="field_label">Why is the purchase needed?:</span>
+      <span class="field_label required">Why is the purchase needed?:</span>
       <span class="field_data">
         <textarea name="finance_purchase_why" id="finance_purchase_why" rows="10" cols="80"></textarea>
       </span>
     </div>
 
     <div id="finance_purchase_risk_row" class="field_row">
-      <span class="field_label">What is the risk<br>if not purchased?:</span>
+      <span class="field_label required">What is the risk<br>if not purchased?:</span>
       <span class="field_data">
         <textarea name="finance_purchase_risk" id="finance_purchase_risk" rows="10" cols="80"></textarea>
       </span>
     </div>
 
     <div id="finance_purchase_alternative_row" class="field_row">
-      <span class="field_label">What is the alternative?:</span>
+      <span class="field_label required">What is the alternative?:</span>
       <span class="field_data">
         <textarea name="finance_purchase_alternative" id="finance_purchase_alternative" rows="10" cols="80"></textarea>
       </span>
     </div>
 
     <div id="finance_purchase_inbudget_row" class="field_row">
-      <span class="field_label">Is this line item in budget?:</span>
+      <span class="field_label required">Is this line item in budget?:</span>
       <span class="field_data">
         <select name="finance_purchase_inbudget" id="finance_purchase_inbudget">
           <option value="">Select One</option>
@@ -503,7 +514,7 @@
     </div>
 
     <div id="finance_purchase_urgency_row" class="field_row">
-      <span class="field_label">What is the urgency?:</span>
+      <span class="field_label required">What is the urgency?:</span>
       <span class="field_data">
         <select name="finance_purchase_urgency" id="finance_purchase_urgency">
           <option value="within 24 hours">within 24 hours</option>
@@ -515,7 +526,7 @@
     </div>
 
     <div id="finance_purchase_cost_row" class="field_row">
-      <span class="field_label">Total Cost:</span>
+      <span class="field_label required">Total Cost:</span>
       <span class="field_data">
         <input type="text" name="finance_purchase_cost" id="finance_purchase_cost" size="60">
       </span>
@@ -530,7 +541,7 @@
       <span class="field_data">
         <div class="field_description">Does your project collect data from users?</div>
         <select name="data_safety_user_data" id="data_safety_user_data"
-            onchange="toggleVisibleById(this,'Yes','data_safety_extra_questions');">
+            onchange="MPR.toggleVisibleById(this,'Yes','data_safety_extra_questions');">
           <option value="">Select One</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
@@ -594,7 +605,7 @@
         <span class="field_data">
           <div class="field_description">Will your project / team members need to retain user data?</div>
           <select name="data_safety_retention" id="data_safety_retention"
-                  onchange="toggleVisibleById(this,'Yes','data_safety_retention_length_row');">
+                  onchange="MPR.toggleVisibleById(this,'Yes','data_safety_retention_length_row');">
             <option value="">Select One</option>
             <option value="Yes">Yes</option>
             <option value="No">No</option>
@@ -615,7 +626,7 @@
         <span class="field_data">
           <div class="field_description">Will any user data be shared or accessed by third party partners, customers or providers?</div>
           <select name="data_safety_separate_party" id="data_safety_separate_party"
-                  onchange="toggleVisibleById(this,'Yes','data_safety_separate_party_data_row');">
+                  onchange="MPR.toggleVisibleById(this,'Yes','data_safety_separate_party_data_row');">
             <option value="">Select One</option>
             <option value="Yes">Yes</option>
             <option value="No">No</option>
@@ -654,8 +665,8 @@
         <span class="field_data">
           <div class="field_description">Has your proposal been shared publicly, including requirements for Mozilla to collect and host user data?</div>
           <select name="data_safety_community_visibility" id="data_safety_community_visibility"
-                  onchange="toggleVisibleById(this,'Yes','data_safety_communication_channels_row');
-                            toggleVisibleById(this,'No','data_safety_communication_plan_row');">
+                  onchange="MPR.toggleVisibleById(this,'Yes','data_safety_communication_channels_row');
+                            MPR.toggleVisibleById(this,'No','data_safety_communication_plan_row');">
             <option value="">Select One</option>
             <option value="Yes">Yes</option>
             <option value="No">No</option>
