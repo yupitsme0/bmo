@@ -42,11 +42,16 @@ sub post_bug_after_creation {
         $do_data_safety, $do_privacy_tech, $do_privacy_policy);
 
     if ($params->{mozilla_data} eq 'Yes') {
-        $do_data_safety = 1;
         $do_legal = 1;
         $do_privacy_policy = 1;
         $do_privacy_tech = 1;
         $do_sec_review = 1;
+    }
+
+    if ($params->{mozilla_data} eq 'Yes'
+        && $params->{data_safety_user_data} eq 'Yes')
+    {
+        $do_data_safety = 1;
     }
 
     if ($params->{new_or_change} eq 'New') {
@@ -63,8 +68,13 @@ sub post_bug_after_creation {
 
     if ($params->{data_access} eq 'Yes') {
         $do_privacy_policy = 1;
-        $do_privacy_vendor = 1;
         $do_sec_review = 1;
+    }
+
+    if ($params->{data_access} eq 'Yes'
+        && $params->{'privacy_policy_vendor_user_data'} eq 'Yes') 
+    {
+        $do_privacy_vendor = 1;
     }
 
     if ($params->{vendor_cost} eq '> $25,000') {
