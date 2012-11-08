@@ -10,6 +10,7 @@ package Bugzilla::Extension::Push::Logger;
 use strict;
 use warnings;
 
+use Apache2::Log;
 use Bugzilla::Extension::Push::Constants;
 use Bugzilla::Extension::Push::LogEntry;
 
@@ -33,7 +34,13 @@ sub _log_it {
     my ($self, $method, $message) = @_;
     return if $method eq 'DEBUG' && !$self->debugging;
     chomp $message;
-    print '[' . localtime(time) ."] $method: $message\n";
+    if ($ENV{MOD_PERL}) {
+        Apache2::ServerRec::warn("Push $method: $message");
+    } elsif ($ENV{SCRIPT_FILENAME}) {
+        print STDERR "Push $method: $message\n";
+    } else {
+        print STDERR '[' . localtime(time) ."] $method: $message\n";
+    }
 }
 
 sub result {

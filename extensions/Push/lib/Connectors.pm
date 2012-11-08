@@ -52,6 +52,8 @@ sub _load {
         my $package = "Bugzilla::Extension::Push::Connector::$name";
 
         $logger->debug("Loading connector '$name'");
+        my $old_error_mode = Bugzilla->error_mode;
+        Bugzilla->error_mode(ERROR_MODE_DIE);
         eval {
             my $connector = $package->new();
             $connector->load_config();
@@ -60,6 +62,7 @@ sub _load {
         if ($@) {
             $logger->error("Connector '$name' failed to load: " . clean_error($@));
         }
+        Bugzilla->error_mode($old_error_mode);
     }
 }
 

@@ -26,7 +26,16 @@ sub new {
     my ($class) = @_;
     my $self = {};
     bless($self, $class);
+    $self->{is_daemon} = 0;
     return $self;
+}
+
+sub is_daemon {
+    my ($self, $value) = @_;
+    if (defined $value) {
+        $self->{is_daemon} = $value ? 1 : 0;
+    }
+    return $self->{is_daemon};
 }
 
 sub start {

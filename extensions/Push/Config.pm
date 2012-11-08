@@ -40,10 +40,20 @@ use constant REQUIRED_MODULES => [
 ];
 
 use constant OPTIONAL_MODULES => [
-    # this is required on the system which runs the daemon
+    # connectors need the ability to extend this
     {
         package => 'Net--RabbitMQ',
         module  => 'Net::RabbitMQ',
+        version => '0'
+    },
+    {
+        package => 'Net-SFTP',
+        module  => 'Net::SFTP',
+        version => '0'
+    },
+    {
+        package => 'XML-Simple',
+        module  => 'XML::Simple',
         version => '0'
     },
 ];

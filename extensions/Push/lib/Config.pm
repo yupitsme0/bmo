@@ -73,7 +73,7 @@ sub load {
     }
 
     # validate when running from the daemon
-    if (Bugzilla->error_mode == ERROR_MODE_DIE) {
+    if (Bugzilla->push_ext->is_daemon) {
         $self->_validate_config($config);
     }
 

@@ -89,6 +89,7 @@ sub gd_run {
     $::SIG{__DIE__} = \&Carp::confess if $self->{debug};
     my $push = Bugzilla->push_ext;
     $push->logger->{debug} = $self->{debug};
+    $push->is_daemon(1);
     $push->start();
 }
 
