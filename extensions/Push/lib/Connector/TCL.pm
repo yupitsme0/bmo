@@ -201,20 +201,20 @@ sub send {
         password => $self->config->{sftp_pass},
     );
 
-    $logger->debug("Uploading $local_dir/$filename.add");
-    $sftp->put("$local_dir/$filename.add", "$remote_dir$filename.add")
-        or return (PUSH_RESULT_ERROR, "Failed to upload $local_dir/$filename.add");
+    $logger->debug("Uploading $local_dir/$filename.sync");
+    $sftp->put("$local_dir/$filename.sync", "$remote_dir$filename.sync")
+        or return (PUSH_RESULT_ERROR, "Failed to upload $local_dir/$filename.sync");
 
-    $logger->debug("Uploading $local_dir/$filename.add.check");
-    $sftp->put("$local_dir/$filename.add.check", "$remote_dir$filename.add.check")
-        or return (PUSH_RESULT_ERROR, "Failed to upload $local_dir/$filename.add.check");
+    $logger->debug("Uploading $local_dir/$filename.sync.check");
+    $sftp->put("$local_dir/$filename.sync.check", "$remote_dir$filename.sync.check")
+        or return (PUSH_RESULT_ERROR, "Failed to upload $local_dir/$filename.sync.check");
 
     $logger->debug("Uploading $local_dir/$filename.done");
     $sftp->put("$local_dir/$filename.done", "$remote_dir$filename.done")
         or return (PUSH_RESULT_ERROR, "Failed to upload $local_dir/$filename.done");
 
     # success
-    return (PUSH_RESULT_OK, "uploaded $filename.add");
+    return (PUSH_RESULT_OK, "uploaded $filename.sync");
 }
 
 sub _get_bug_data {
