@@ -101,7 +101,7 @@ sub options {
             required => 1,
             help     => "Must start with https:// and end with ?JSON",
             validate => sub {
-                $_[0] =~ m#^https://[^\.]+\.service-now\.com\/#
+                $_[0] =~ m#^https://[^\.\/]+\.service-now\.com\/#
                     || die "Invalid Service Now JSON URL\n";
                 $_[0] =~ m#\?JSON$#
                     || die "Invalid Service Now JSON URL (must end with ?JSON)\n";
@@ -306,7 +306,7 @@ sub _get_bug_data {
 }
 
 sub _flatten {
-    # service-now expects a flag json object
+    # service-now expects a flat json object
     my ($self, $data) = @_;
 
     my $target = $data->{event}->{target};
@@ -331,31 +331,6 @@ sub _flatten_hash {
         }
         delete $hash->{$key};
     }
-}
-
-sub _build_mail {
-    my ($self, $data, $bug) = @_;
-
-    my $email = Email::MIME->create(
-        header => [
-            From    => Bugzilla->params->{'mailfrom'},
-            Subject => sprintf("Bug %s: %s", $bug->id, $bug->short_desc),
-        ],
-        parts => [
-            Email::MIME->create(
-                attributes => {
-                    charset      => 'utf8',
-                    content_type => 'application/json',
-                    encoding     => 'quoted-printable',
-                    filename     => $data->{event}->{change_set} . '.txt',
-                    name         => $data->{event}->{change_set} . '.txt',
-                },
-                body => encode_json($data),
-            ),
-        ],
-    );
-
-    return $email->as_string;
 }
 
 sub _add_ldap_logins {
