@@ -158,12 +158,16 @@ sub quicksearch {
         my @words = splitString($searchstring);
         _handle_status_and_resolution(\@words);
 
+        my $index = 0;
         foreach my $qsword (@words) {
             # --comment and ++comment disable or enable fulltext searching
-            if ($qsword =~ /^(--|\+\+)comments?$/i) {
+            # (splitString returns ++ as +%2B)
+            if ($qsword =~ /^(--|\+\%2B)comments?$/i) {
                 $fulltext = $1 eq '--' ? 0 : 1;
+                splice(@words, $index, 1);
                 last;
             }
+            $index++;
         }
 
         my (@unknownFields, %ambiguous_fields);

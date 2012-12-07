@@ -46,4 +46,6 @@ RewriteRule ^form[\.:]brownbag$ enter_bug.cgi?product=Air\ Mozilla&format=brownb
 RewriteRule ^form[\.:]privacy[\.\-:]data$ enter_bug.cgi?product=mozilla.org&format=privacy-data
 RewriteRule ^form[\.:]finance$ enter_bug.cgi?product=Finance&format=finance
 RewriteRule ^form[\.:]privacy[\.\-:]data$ enter_bug.cgi?product=Privacy&format=privacy-data
+RewriteRule ^form[\.:]moz[\.\-:]project[\.\-:]review$ enter_bug.cgi?product=mozilla.org&format=moz-project-review
+
 RewriteRule rest/(.*)$ ./extensions/REST/bin/rest.cgi/$1 [NE]

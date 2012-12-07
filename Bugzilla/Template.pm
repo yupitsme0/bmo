@@ -279,7 +279,7 @@ sub get_attachment_link {
     my $dbh = Bugzilla->dbh;
     $user ||= Bugzilla->user;
 
-    my $attachment = new Bugzilla::Attachment($attachid);
+    my $attachment = new Bugzilla::Attachment({ id => $attachid, cache => 1 });
 
     if ($attachment) {
         my $title = "";
@@ -335,7 +335,7 @@ sub get_bug_link {
         return html_quote('<missing bug number>');
     }
 
-    $bug = blessed($bug) ? $bug : new Bugzilla::Bug($bug);
+    $bug = blessed($bug) ? $bug : new Bugzilla::Bug({ id => $bug, cache => 1 });
     return $link_text if $bug->{error};
 
     # Initialize these variables to be "" so that we don't get warnings

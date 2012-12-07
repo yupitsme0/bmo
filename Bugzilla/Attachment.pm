@@ -157,7 +157,7 @@ sub bug {
     my $self = shift;
 
     require Bugzilla::Bug;
-    $self->{bug} ||= Bugzilla::Bug->new($self->bug_id);
+    $self->{bug} ||= Bugzilla::Bug->new({ id => $self->bug_id, cache => 1 });
     return $self->{bug};
 }
 
@@ -836,11 +836,8 @@ sub validate_obsolete {
         $attachment->validate_can_edit($bug->product_id)
           || ThrowUserError('illegal_attachment_edit', { attach_id => $attachment->id });
 
-        $vars->{'description'} = $attachment->description;
-
         if ($attachment->bug_id != $bug->bug_id) {
             $vars->{'my_bug_id'} = $bug->bug_id;
-            $vars->{'attach_bug_id'} = $attachment->bug_id;
             ThrowCodeError('mismatched_bug_ids_on_obsolete', $vars);
         }
 

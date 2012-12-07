@@ -180,8 +180,7 @@
         <script type="text/javascript">
         <!--
           initHidingOptionsForIE('[% field.name FILTER js %]');
-          [%+ INCLUDE "bug/field-events.js.tmpl"
-                      field = field, product = bug.product_obj %]
+          [%+ INCLUDE "bug/field-events.js.tmpl" field = field product = bug.product_obj %]
         //-->
         </script>
 
