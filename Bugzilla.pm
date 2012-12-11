@@ -22,8 +22,6 @@
 #                 A. Karl Kornel <karl@kornel.name>
 #                 Marc Schumann <wurblzap@gmail.com>
 
-# Adding line to trigger bugzilla-stage-tip update 
-
 package Bugzilla;
 
 use strict;
