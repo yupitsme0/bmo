@@ -649,6 +649,18 @@ sub request_cache {
     return $_request_cache;
 }
 
+sub clear_request_cache {
+    $_request_cache = {};
+    if ($ENV{MOD_PERL}) {
+        require Apache2::RequestUtil;
+        my $request = eval { Apache2::RequestUtil->request };
+        if ($request) {
+            my $pnotes = $request->pnotes;
+            delete @$pnotes{(keys %$pnotes)};
+        }
+    }
+}
+
 # This is a per-process cache.  Under mod_cgi it's identical to the
 # request_cache.  When using mod_perl, items in this cache live until the
 # worker process is terminated.
@@ -670,7 +682,7 @@ sub _cleanup {
         $dbh->bz_rollback_transaction() if $dbh->bz_in_transaction;
         $dbh->disconnect;
     }
-    undef $_request_cache;
+    clear_request_cache();
 }
 
 sub END {
