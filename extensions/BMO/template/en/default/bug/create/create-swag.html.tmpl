@@ -26,8 +26,8 @@ function validateAndSubmit() {
   if (!isFilledOut('firstname')) alert_text += "Please enter your first name.\n";
   if (!isFilledOut('lastname')) alert_text += "Please enter your last name.\n";
   if (!isValidEmail(Dom.get('email').value)) alert_text += "Please enter a valid email address.\n";
-  if (!isFilledOut('mozspace')) alert_text += "Please enter your MozSpace.\n";
-  if (!isFilledOut('teamcode')) alert_text += "Please enter your Team + Department Code.\n";
+  if (!isFilledOut('mozspace')) alert_text += "Please select your MozSpace.\n";
+  if (!isFilledOut('teamcode')) alert_text += "Please select your Team + Department Code.\n";
   if (!isFilledOut('purpose')) {
     alert_text += "Please select the Purpose for this Gear.\n";
   } else {
@@ -81,11 +81,10 @@ function onPurposeChange() {
 [% END %]
 
 [% PROCESS global/header.html.tmpl
-   title = "Swag Request Form"
+   title = "Gear Request Form"
    style = inline_style
    javascript = inline_javascript
-   javascript_urls = [ 'extensions/BMO/web/js/swag.js',
-                       'extensions/BMO/web/js/form_validate.js',
+   javascript_urls = [ 'extensions/BMO/web/js/form_validate.js',
                        'js/field.js' ]
    yui = [ 'autocomplete' ]
 %]
@@ -108,9 +107,8 @@ function onPurposeChange() {
   <li>Complete and submit the request below.</li>
   <li>Requests are reviewed by the Gear Coordinator every Monday.</li>
   <li>If approved, your order will be sent to Staples for processing and
-  shipment. You will receive an email confirming your order was approved.</li>
-  <li>If your order is not approved, you will receive an email with an
-  explanation why it was not approved or a request for more information.</li>
+  shipment. If your order is not approved, you will receive an explanation why
+  it was not approved or a request for more information.</li>
 </ol>
 
 <p>
@@ -165,12 +163,28 @@ function onPurposeChange() {
 
 <tr>
   <th>My MozSpace [% mandatory FILTER none %]</th>
-  <td><input name="mozspace" id="mozspace" size="50" maxlength="50"></td>
+  <td>
+    <select name="mozspace" id="mozspace">
+      <option value="">Please select..</option>
+      <option value="Mountain View">Mountain View</option>
+      <option value="San Francisco">San Francisco</option>
+      <option value="Toronto">Toronto</option>
+      <option value="Vancouver">Vancouver</option>
+      <option value="London">London</option>
+      <option value="Paris">Paris</option>
+      <option value="Berlin">Berlin</option>
+      <option value="n/a">n/a</option>
+    </select>
 </tr>
 
 <tr>
   <th>Team + Department Code [% mandatory FILTER none %]</th>
-  <td><input name="teamcode" id="teamcode" size="50" maxlength="50"></td>
+  <td>
+    <select name="teamcode" id="teamcode">
+      <option value="">Please select..</option>
+      <option value="placeholder">placeholder</option>
+    </select>
+  </td>
 </tr>
 
 <tr>
@@ -279,11 +293,6 @@ function onPurposeChange() {
 
 <p>
   [% mandatory FILTER none %] - Required Field
-</p>
-
-<p>
-  Thanks for contacting us.  You will be notified by email of any progress made
-  in resolving your request.
 </p>
 
 <p>
