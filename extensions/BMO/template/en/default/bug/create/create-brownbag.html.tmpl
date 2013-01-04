@@ -269,7 +269,8 @@ function trySubmit() {
 <tr>
   <th class="field_label">This event may be seen by:</th>
   <td>
-    Event requests with either Mozillians or Staff Only set should be marked MoCo confidential in [% terms.Bugzilla %]<br>
+    If anything other than <strong>The Public</strong> is chosen, this request will only be 
+    visible internally as well as the reporter and anyone designated in the CC field.<br>
     <select name="public" id="public">
       <option value="">Select One</option>
       <option value="The Public">The Public</option>
