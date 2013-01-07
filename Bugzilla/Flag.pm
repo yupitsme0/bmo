@@ -75,7 +75,7 @@ use base qw(Bugzilla::Object Exporter);
 use constant DB_TABLE => 'flags';
 use constant LIST_ORDER => 'id';
 
-use constant SKIP_REQUESTEE_ON_ERROR => 0;
+use constant SKIP_REQUESTEE_ON_ERROR => 1;
 
 use constant DB_COLUMNS => qw(
     id
