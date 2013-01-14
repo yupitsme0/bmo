@@ -49,7 +49,7 @@ our @EXPORT_OK = qw($cf_visible_in_products
 # IxHash keeps them in insertion order, and so we get regexp priorities right.
 our $cf_visible_in_products;
 tie(%$cf_visible_in_products, "Tie::IxHash", 
-    qw/^cf_blocking_kilimanjaro|cf_blocking_basecamp/ => {
+    qw/^cf_blocking_kilimanjaro|cf_blocking_basecamp|cf_blocking_b2g/ => {
         "Boot2Gecko"          => [],
         "Core"                => [],
         "Fennec"              => [],
@@ -188,6 +188,7 @@ our $cf_flags = [
 
 our $cf_project_flags = [
     'cf_blocking_kilimanjaro',
+    'cf_blocking_b2g',
     'cf_blocking_basecamp',
 ];
 
@@ -197,6 +198,7 @@ our $cf_project_flags = [
 our $cf_disabled_flags = [
     'cf_blocking_20',
     'cf_status_20',
+    'cf_blocking_basecamp',
     'cf_tracking_firefox5',
     'cf_status_firefox5',
     'cf_blocking_thunderbird32',
@@ -280,6 +282,12 @@ our $cf_disabled_flags = [
     'cf_status_thunderbird16',
     'cf_tracking_seamonkey213',
     'cf_status_seamonkey213',
+    'cf_tracking_firefox17',
+    'cf_status_firefox17',
+    'cf_tracking_thunderbird17',
+    'cf_status_thunderbird17',
+    'cf_tracking_seamonkey214',
+    'cf_status_seamonkey214',
 ];
 
 # Who to CC on particular bugmails when certain groups are added or removed.
@@ -308,6 +316,8 @@ our $blocking_trusted_setters = {
     qr/^cf_blocking_seamonkey/    => 'seamonkey-council',
     qr/^cf_blocking_kilimanjaro/  => 'kilimanjaro-drivers',
     qr/^cf_blocking_basecamp/     => 'kilimanjaro-drivers',
+    qr/^cf_tracking_b2g/          => 'kilimanjaro-drivers',
+    qr/^cf_blocking_b2g/          => 'kilimanjaro-drivers',
     '_default'                    => 'mozilla-stable-branch-drivers',
 };
 
@@ -367,6 +377,7 @@ our %product_sec_groups = (
     "Bugzilla"                     => 'bugzilla-security',
     "bugzilla.mozilla.org"         => 'bugzilla-security',
     "Community Tools"              => 'websites-security',
+    "Developer Documentation"      => 'websites-security',
     "Finance"                      => 'finance',
     "Input"                        => 'websites-security',
     "L20n"                         => 'l20n-security',
