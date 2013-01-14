@@ -21,32 +21,80 @@
 [% inline_javascript = BLOCK %]
 var Dom = YAHOO.util.Dom;
 
+[%# implemented this way to allow for dynamic updating of mandatory fields #%]
+var fields = [
+  { id: 'firstname',       mandatory: true  },
+  { id: 'lastname',        mandatory: true  },
+  { id: 'email',           mandatory: true  },
+  { id: 'mozillian',       mandatory: false },
+  { id: 'cc',              mandatory: false },
+  { id: 'mozspace',        mandatory: false },
+  { id: 'teamcode',        mandatory: true  },
+  { id: 'purpose',         mandatory: true  },
+  { id: 'purpose_other',   mandatory: false },
+  { id: 'date_required',   mandatory: false },
+  { id: 'gear',            mandatory: true  },
+  { id: 'shiptofirstname', mandatory: true  },
+  { id: 'shiptolastname',  mandatory: true  },
+  { id: 'shiptoemail',     mandatory: true  },
+  { id: 'shiptoaddress1',  mandatory: true  },
+  { id: 'shiptoaddress2',  mandatory: false },
+  { id: 'shiptocity',      mandatory: true  },
+  { id: 'shiptostate',     mandatory: true  },
+  { id: 'shiptocountry',   mandatory: true  },
+  { id: 'shiptopostcode',  mandatory: true  },
+  { id: 'shiptophone',     mandatory: true  },
+  { id: 'shiptoidrut',     mandatory: false },
+  { id: 'comment',         mandatory: false }
+];
+
+function initFields() {
+  [%# find fields in the form, and update the fields array #%]
+  var rows = Dom.get('gear_form').getElementsByTagName('TR');
+  for (var i = 0, l = rows.length; i < l; i++) {
+    var row = rows[i];
+    var field = firstChild(row, 'INPUT') || firstChild(row, 'SELECT') || firstChild(row, 'TEXTAREA');
+    if (!field || field.type == 'submit') continue;
+    var id = field.id;
+    var label = firstChild(row, 'TH');
+    for (var j = 0, m = fields.length; j < m; j++) {
+      if (fields[j].id == id) {
+        fields[j].field = field;
+        fields[j].label = label;
+        fields[j].caption = label.textContent;
+        break;
+      }
+    }
+  }
+  createCalendar('date_required');
+}
+
+function tagMandatoryFields() {
+  [%# add or remove the "* mandatory" marker from fields #%]
+  for (var i = 0, l = fields.length; i < l; i++) {
+    var f = fields[i];
+    var caption = f.caption;
+    if (f.mandatory)
+      caption = caption + '&nbsp;<span class="mandatory">*</span>';
+    f.label.innerHTML = caption;
+  }
+}
+
 function validateAndSubmit() {
   var alert_text = '';
-  if (!isFilledOut('firstname')) alert_text += "Please enter your first name.\n";
-  if (!isFilledOut('lastname')) alert_text += "Please enter your last name.\n";
-  if (!isValidEmail(Dom.get('email').value)) alert_text += "Please enter a valid email address.\n";
-  if (!isFilledOut('mozspace')) alert_text += "Please select your MozSpace.\n";
-  if (!isFilledOut('teamcode')) alert_text += "Please select your Team + Department Code.\n";
-  if (!isFilledOut('purpose')) {
-    alert_text += "Please select the Purpose for this Gear.\n";
-  } else {
-    if (Dom.get('purpose').value.match(/:$/) && !isFilledOut('purpose_other'))
-      alert_text += "Please enter the Purpose for this Gear.\n";
+  for(var i = 0, l = fields.length; i < l; i++) {
+    var f = fields[i];
+    if (f.mandatory && !isFilledOut(f.id))
+      if (f.field.nodeName == 'SELECT') {
+        alert_text += 'Please select the ' + f.caption + ".\n";
+      } else {
+        alert_text += 'Please enter the ' + f.caption + ".\n";
+      }
   }
-  if (!isFilledOut('gear')) alert_text += "Please enter the Gear Needed.\n";
-  if (!isFilledOut('shiptofirstname')
-    || !isFilledOut('shiptolastname')
-    || !isFilledOut('shiptoaddress1')
-    || !isFilledOut('shiptoaddress2')
-    || !isFilledOut('shiptocity')
-    || !isFilledOut('shiptostate')
-    || !isFilledOut('shiptocountry')
-    || !isFilledOut('shiptopostcode')
-    || !isFilledOut('shiptophone'))
-  {
-    alert_text += "Please enter all the Ship to Information.\n";
-  }
+  if (isFilledOut('email') && !isValidEmail(Dom.get('email').value))
+    alert_text += "Please enter a valid Email Address.\n";
+  if (isFilledOut('shiptoemail') && !isValidEmail(Dom.get('shiptoemail').value))
+    alert_text += "Please enter a valid Shipping Email Address.\n";
 
   if (alert_text != '') {
     alert(alert_text);
@@ -58,26 +106,69 @@ function validateAndSubmit() {
 }
 
 function onPurposeChange() {
-  var purpose = Dom.get('purpose');
+  var value = Dom.get('purpose').value;
   var other = Dom.get('purpose_other');
-  var value = purpose.value;
-  if (value.match(/^Event/)) {
-    other.placeholder = 'link to wiki'
-    Dom.removeClass(other, 'bz_default_hidden');
-  } else if (value.match(/^Gear closet/)) {
-    other.placeholder = 'indicate space'
-    Dom.removeClass(other, 'bz_default_hidden');
-  } else if (value == 'Other:') {
-    other.placeholder = 'more information';
-    Dom.removeClass(other, 'bz_default_hidden');
-  } else {
-    Dom.addClass(other, 'bz_default_hidden');
-  }
-}
-[% END %]
 
-[% mandatory = BLOCK %]
-  &nbsp;<span class="mandatory">*</span>
+  if (value == 'Event:') {
+    getField('purpose_other').mandatory = true;
+    other.placeholder = 'link to wiki'
+    Dom.removeClass('purpose_other_row', 'bz_default_hidden');
+    Dom.addClass('recognition_row', 'bz_default_hidden');
+
+  } else if (value == 'Gear closet at a MozSpace:') {
+    getField('purpose_other').mandatory = true;
+    other.placeholder = 'indicate space'
+    Dom.removeClass('purpose_other_row', 'bz_default_hidden');
+    Dom.addClass('recognition_row', 'bz_default_hidden');
+
+  } else if (value == 'Other:') {
+    getField('purpose_other').mandatory = true;
+    other.placeholder = 'more information';
+    Dom.removeClass('purpose_other_row', 'bz_default_hidden');
+    Dom.addClass('recognition_row', 'bz_default_hidden');
+
+  } else if (value == 'Mozillian Recognition') {
+    getField('purpose_other').mandatory = false;
+    Dom.addClass('purpose_other_row', 'bz_default_hidden');
+    Dom.removeClass('recognition_row', 'bz_default_hidden');
+    onRecognitionChange();
+
+  } else {
+    getField('purpose_other').mandatory = false;
+    Dom.addClass('purpose_other_row', 'bz_default_hidden');
+    Dom.addClass('recognition_row', 'bz_default_hidden');
+  }
+
+  onRecognitionChange();
+}
+
+function onRecognitionChange() {
+  var mandatory = Dom.get('purpose').value != 'Mozillian Recognition'
+                  || !Dom.get('recognition_shipping').checked;
+  getField('shiptofirstname').mandatory = mandatory;
+  getField('shiptolastname').mandatory = mandatory;
+  getField('shiptoemail').mandatory = mandatory;
+  getField('shiptoaddress1').mandatory = mandatory;
+  getField('shiptocity').mandatory = mandatory;
+  getField('shiptostate').mandatory = mandatory;
+  getField('shiptocountry').mandatory = mandatory;
+  getField('shiptopostcode').mandatory = mandatory;
+  getField('shiptophone').mandatory = mandatory;
+  tagMandatoryFields();
+}
+
+function firstChild(parent, name) {
+  var a = parent.getElementsByTagName(name);
+  return a.length == 0 ? false : a[0];
+}
+
+function getField(id) {
+  for(var i = 0, l = fields.length; i < l; i++) {
+    if (fields[i].id == id)
+      return fields[i];
+  }
+  return false;
+}
 [% END %]
 
 [% PROCESS global/header.html.tmpl
@@ -85,8 +176,8 @@ function onPurposeChange() {
    style = inline_style
    javascript = inline_javascript
    javascript_urls = [ 'extensions/BMO/web/js/form_validate.js',
-                       'js/field.js' ]
-   yui = [ 'autocomplete' ]
+                       'js/field.js', 'js/util.js' ]
+   yui = [ 'autocomplete', 'calendar' ]
 %]
 
 <h1>Gear Request Form</h1>
@@ -114,7 +205,8 @@ function onPurposeChange() {
 <p>
   Requests will only be visible to the person who submitted it, any persons
   designated in the CC line, and authorized members of the Mozilla Engagement
-  team.
+  team. We do this to help protect the personal identifying information in this
+  [% terms.bug %].
 </p>
 
 <form method="post" action="post_bug.cgi" id="swagRequestForm" enctype="multipart/form-data"
@@ -134,18 +226,23 @@ function onPurposeChange() {
 <table id="gear_form">
 
 <tr>
-  <th>First Name [% mandatory FILTER none %]</th>
+  <th>First Name</th>
   <td><input name="firsrname" id="firstname" size="50" maxlength="30"></td>
 </tr>
 
 <tr>
-  <th>Last Name [% mandatory FILTER none %]</th>
+  <th>Last Name</th>
   <td><input name="lastname" id="lastname" size="50" maxlength="30"></td>
 </tr>
 
 <tr>
-  <th>Email Address [% mandatory FILTER none %]</th>
+  <th>Email Address</th>
   <td><input name="email" id="email" size="50" maxlength="50"></td>
+</tr>
+
+<tr>
+  <th>Mozillian Profile</th>
+  <td><input name="mozillian" id="mozillian" size="50"></td>
 </tr>
 
 <tr>
@@ -162,7 +259,7 @@ function onPurposeChange() {
 </tr>
 
 <tr>
-  <th>My MozSpace [% mandatory FILTER none %]</th>
+  <th>My MozSpace</th>
   <td>
     <select name="mozspace" id="mozspace">
       <option value="">Please select..</option>
@@ -173,12 +270,12 @@ function onPurposeChange() {
       <option value="London">London</option>
       <option value="Paris">Paris</option>
       <option value="Berlin">Berlin</option>
-      <option value="n/a">n/a</option>
     </select>
+    (if applicable)
 </tr>
 
 <tr>
-  <th>Team + Department Code [% mandatory FILTER none %]</th>
+  <th>Team + Department Code</th>
   <td>
     <select name="teamcode" id="teamcode">
       <option value="">Please select..</option>
@@ -246,7 +343,7 @@ function onPurposeChange() {
 </tr>
 
 <tr>
-  <th>Purpose of Gear [% mandatory FILTER none %]</th>
+  <th>Purpose of Gear</th>
   <td>
     <select name="purpose" id="purpose" onchange="onPurposeChange()">
       <option value="">Please select..</option>
@@ -256,16 +353,49 @@ function onPurposeChange() {
       <option value="Mozillian Recognition">Mozillian Recognition</option>
       <option value="Onboarding">Onboarding</option>
       <option value="Press">Press</option>
-      <option value="VIP">VIP</option>
       <option value="Recruiting">Recruiting</option>
+      <option value="VIP">VIP</option>
       <option value="Other:">Other:</option>
-    </select><br>
-    <input name="purpose_other" id="purpose_other" size="50" class="bz_default_hidden">
+    </select>
+  </td>
+</tr>
+
+<tr id="purpose_other_row" class="bz_default_hidden">
+  <th>Purpose Text</th>
+  <td>
+    <input name="purpose_other" id="purpose_other" size="50">
+  </td>
+</tr>
+
+<tr id="recognition_row" class="bz_default_hidden">
+  <th>&nbsp;</td>
+  <td>
+    <input type="checkbox" name="recognition_shipping" id="recognition_shipping" value="Yes"
+            onclick="onRecognitionChange()">
+    <label for="recognition_shipping">
+      This [% terms.bug %] needs recipient shipping information
+    </label><br>
+    <input type="checkbox" name="recognition_sizing" id="recognition_sizing" value="Yes">
+    <label for="recognition_sizing">
+      This [% terms.bug %] needs recipient size information
+    </label><br>
+    </div>
   </td>
 </tr>
 
 <tr>
-  <th>Gear Needed [% mandatory FILTER none %]</th>
+  <th>Date Required</th>
+  <td>
+    <input name="date_required" id="date_required" size="25"
+           onchange="updateCalendarFromField(this)">
+    <button type="button" class="calendar_button" id="button_calendar_date_required"
+            onclick="showCalendar('date_required')"><span>cal</span></button>
+    <div id="con_calendar_date_required"></div>
+  </td>
+</tr>
+
+<tr>
+  <th>Gear Needed</th>
   <td>
     Include item #, item name, color, size, &amp; quantity.<br>
     <textarea id="gear" name="gear" rows="5" cols="50"></textarea>
@@ -277,47 +407,50 @@ function onPurposeChange() {
 </tr>
 
 <tr>
-  <th>Ship to Information</th>
-</tr>
-
-<tr>
-  <th>First Name [% mandatory FILTER none %]</th>
+  <th>Shipping First Name</th>
   <td><input name="shiptofirstname" id="shiptofirstname" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Last Name [% mandatory FILTER none %]</th>
+  <th>Shipping Last Name</th>
   <td><input name="shiptolastname" id="shiptolastname" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Address [% mandatory FILTER none %]</th>
+  <th>Shipping Email Address</th>
+  <td><input name="shiptoemail" id="shiptoemail" size="50" maxlength="50"></td>
+</tr>
+<tr>
+  <th>Shipping Address</th>
   <td><input name="shiptoaddress1" id="shiptoaddress1" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Address 2</th>
+  <th>Shipping Address 2</th>
   <td><input name="shiptoaddress2" id="shiptoaddress2" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>City [% mandatory FILTER none %]</th>
+  <th>Shipping City</th>
   <td><input name="shiptocity" id="shiptocity" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>State [% mandatory FILTER none %]</th>
+  <th>Shipping State</th>
   <td><input name="shiptostate" id="shiptostate" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Country [% mandatory FILTER none %]</th>
+  <th>Shipping Country</th>
   <td><input name="shiptocountry" id="shiptocountry" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Postal Code [% mandatory FILTER none %]</th>
+  <th>Shipping Postal Code</th>
   <td><input name="shiptopostcode" id="shiptopostcode" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Telephone [% mandatory FILTER none %]</th>
-  <td><input name="shiptophone" id="shiptophone" size="50" maxlength="50"></td>
+  <th>Shipping Telephone</th>
+  <td>
+    <input name="shiptophone" id="shiptophone" size="50" maxlength="50">
+    <i>(include country code if ordering from outside of the US)</i>
+  </td>
 </tr>
 <tr>
-  <th>Personal ID/RUT</th>
+  <th>Shipping Personal ID/RUT</th>
   <td>
     <input name="shiptoidrut" id="shiptoidrut" size="50" maxlength="50">
     <i>(if your country requires this)</i>
@@ -346,7 +479,7 @@ function onPurposeChange() {
 </form>
 
 <p>
-  [% mandatory FILTER none %] - Required Field
+  <span class="mandatory">*</span> - Required Field
 </p>
 
 <p>
@@ -355,7 +488,9 @@ function onPurposeChange() {
 </p>
 
 <script>
+  initFields();
   onPurposeChange();
+  tagMandatoryFields();
 </script>
 
 [% PROCESS global/footer.html.tmpl %]
