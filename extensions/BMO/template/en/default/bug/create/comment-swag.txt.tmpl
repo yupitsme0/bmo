@@ -9,39 +9,41 @@
 [% USE Bugzilla %]
 [% cgi = Bugzilla.cgi +%]
 [% PROCESS global/variables.none.tmpl +%]
-Gear Request:
+:: Gear Requested
 
-            Requester: [% cgi.param('firstname') %] [% cgi.param('lastname') %]
-                Email: [% cgi.param('email') %]
-    Mozillian Profile: [% cgi.param('mozillian') || "-" %]
-             MozSpace: [% cgi.param('mozspace') || "-" %]
-Team + Deparment Code: [% cgi.param('teamcode') %]
-      Purpose of Gear: [% cgi.param("purpose") %] [%+ cgi.param("purpose_other") %]
-        Date Required: [% cgi.param("date_required") || "-" %]
-
-Gear Needed:
+ Purpose of Gear: [% cgi.param("purpose") %] [%+ cgi.param("purpose_other") %]
+   Date Required: [% cgi.param("date_required") || "-" %]
 
 [%+ cgi.param("gear") %]
+
+:: Requester
+
+            Name: [% cgi.param('firstname') %] [% cgi.param('lastname') %]
+           Email: [% cgi.param('email') %]
+   Mozilla Space: [% cgi.param('mozspace') || "-" %]
+ Team/Department: [% cgi.param('teamcode') %]
+
+:: Recipient
 
 [% IF cgi.param("purpose") == "Mozillian Recognition" %]
 This [% terms.bug %] needs recipient shipping information: [% cgi.param("recognition_shipping") ? "Yes" : "No" %]
 This [% terms.bug %] needs recipient size information: [% cgi.param("recognition_sizing") ? "Yes" : "No" %]
 [% END %]
 
-[% IF cgi.param("shiptofirstname") %]
-Ship to:
-    [%+ cgi.param("shiptofirstname") +%] [%+ cgi.param("shiptolastname") +%]
-    [%+ cgi.param("shiptoemail") +%]
+            Name: [%+ cgi.param("shiptofirstname") +%] [%+ cgi.param("shiptolastname") +%]
+           Email: [%+ cgi.param("shiptoemail") +%]
+[% IF cgi.param("shiptoaddress1") %]
+         Address:
     [%+ cgi.param("shiptoaddress1") +%]
     [%+ cgi.param("shiptoaddress2") +%]
     [%+ cgi.param("shiptocity") +%] [%+ cgi.param("shiptostate") +%] [%+ cgi.param("shiptopostcode") +%]
     [%+ cgi.param("shiptocountry") %]
-Phone: [% cgi.param("shiptophone") %]
-Personal ID/RUT: [% cgi.param("shiptoidrut") || "-" %]
+           Phone: [% cgi.param("shiptophone") %]
+ Personal ID/RUT: [% cgi.param("shiptoidrut") || "-" %]
 [% END %]
 
 [% IF cgi.param("comment") %]
-Additional comments:
+:: Comments
 
 [%+ cgi.param("comment") %]
 [% END %]

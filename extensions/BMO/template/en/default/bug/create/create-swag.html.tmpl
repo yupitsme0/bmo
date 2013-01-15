@@ -11,6 +11,13 @@
 [% inline_style = BLOCK %]
 #gear_form th {
   text-align: right;
+  font-weight: normal;
+}
+
+#gear_form .heading {
+  text-align: left;
+  font-weight: bold;
+  border-top: 2px dotted #969696;
 }
 
 .mandatory {
@@ -26,8 +33,6 @@ var fields = [
   { id: 'firstname',       mandatory: true  },
   { id: 'lastname',        mandatory: true  },
   { id: 'email',           mandatory: true  },
-  { id: 'mozillian',       mandatory: false },
-  { id: 'cc',              mandatory: false },
   { id: 'mozspace',        mandatory: false },
   { id: 'teamcode',        mandatory: true  },
   { id: 'purpose',         mandatory: true  },
@@ -101,7 +106,7 @@ function validateAndSubmit() {
     return false;
   }
 
-  Dom.get('short_desc').value = 'Gear Request - ' + Dom.get('firstname').value + ' ' + Dom.get('lastname').value;
+  Dom.get('short_desc').value = 'Mozilla Gear - ' + Dom.get('firstname').value + ' ' + Dom.get('lastname').value;
   return true;
 }
 
@@ -145,9 +150,6 @@ function onPurposeChange() {
 function onRecognitionChange() {
   var mandatory = Dom.get('purpose').value != 'Mozillian Recognition'
                   || !Dom.get('recognition_shipping').checked;
-  getField('shiptofirstname').mandatory = mandatory;
-  getField('shiptolastname').mandatory = mandatory;
-  getField('shiptoemail').mandatory = mandatory;
   getField('shiptoaddress1').mandatory = mandatory;
   getField('shiptocity').mandatory = mandatory;
   getField('shiptostate').mandatory = mandatory;
@@ -172,7 +174,7 @@ function getField(id) {
 [% END %]
 
 [% PROCESS global/header.html.tmpl
-   title = "Gear Request Form"
+   title = "Mozilla Gear"
    style = inline_style
    javascript = inline_javascript
    javascript_urls = [ 'extensions/BMO/web/js/form_validate.js',
@@ -180,33 +182,23 @@ function getField(id) {
    yui = [ 'autocomplete', 'calendar' ]
 %]
 
-<h1>Gear Request Form</h1>
+<h1>Mozilla Gear</h1>
 
 <p>
-  <b>Gear Request:</b> Please use this form to file a request for gear.
-</p>
-
-<p>
-  Review
-  <a href="https://wiki.mozilla.org/GearStore" target="_blank">https://wiki.mozilla.org/GearStore</a>
-  before ordering your gear. You will find guidelines for gear usage plus
-  information about what gear is available.
-</p>
-
-<ol>
-  <li>Choose what items you would like to request.</li>
-  <li>Complete and submit the request below.</li>
-  <li>Requests are reviewed by the Gear Coordinator every Monday.</li>
-  <li>If approved, your order will be sent to Staples for processing and
-  shipment. If your order is not approved, you will receive an explanation why
-  it was not approved or a request for more information.</li>
-</ol>
-
-<p>
-  Requests will only be visible to the person who submitted it, any persons
-  designated in the CC line, and authorized members of the Mozilla Engagement
-  team. We do this to help protect the personal identifying information in this
-  [% terms.bug %].
+  Want gear? Here's what to do:
+  <ul>
+    <li>
+      Follow the steps below and click submit.  (If this is an emergency,
+      you'll want to <a href="https://wiki.mozilla.org/GearStore/SpaceRequests">start here</a>
+      instead.
+    </li>
+    <li>
+      Requests are reviewed every Monday. If approved, we'll let you know and
+      then send your order to our gear partner, Staples, for processing and
+      shipment; if it can't be approved,  we'll email you with details (or
+      possibly ask for more information).
+    </li>
+  </ul>
 </p>
 
 <form method="post" action="post_bug.cgi" id="swagRequestForm" enctype="multipart/form-data"
@@ -226,6 +218,82 @@ function getField(id) {
 <table id="gear_form">
 
 <tr>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <th class="heading" colspan="2">Tell Us What You Want</th>
+</tr>
+
+<tr>
+  <th>Purpose of Gear</th>
+  <td>
+    <select name="purpose" id="purpose" onchange="onPurposeChange()">
+      <option value="">Please select..</option>
+      <option value="Campaign">Campaign</option>
+      <option value="Event:">Event:</option>
+      <option value="Gear closet at a MozSpace:">Gear closet at a MozSpace:</option>
+      <option value="Mozillian Recognition">Mozillian Recognition</option>
+      <option value="Onboarding">Onboarding</option>
+      <option value="Press">Press</option>
+      <option value="Recruiting">Recruiting</option>
+      <option value="VIP">VIP</option>
+      <option value="Other:">Other:</option>
+    </select>
+  </td>
+</tr>
+
+<tr id="purpose_other_row" class="bz_default_hidden">
+  <th>Purpose Text</th>
+  <td>
+    <input name="purpose_other" id="purpose_other" size="50">
+  </td>
+</tr>
+
+<tr id="recognition_row" class="bz_default_hidden">
+  <th>&nbsp;</td>
+  <td>
+    <input type="checkbox" name="recognition_shipping" id="recognition_shipping" value="Yes"
+            onclick="onRecognitionChange()">
+    <label for="recognition_shipping">
+      This [% terms.bug %] needs recipient shipping information
+    </label><br>
+    <input type="checkbox" name="recognition_sizing" id="recognition_sizing" value="Yes">
+    <label for="recognition_sizing">
+      This [% terms.bug %] needs recipient size information
+    </label><br>
+    </div>
+  </td>
+</tr>
+
+<tr>
+  <th>Date Required</th>
+  <td>
+    <input name="date_required" id="date_required" size="25"
+           onchange="updateCalendarFromField(this)">
+    <button type="button" class="calendar_button" id="button_calendar_date_required"
+            onclick="showCalendar('date_required')"><span>cal</span></button>
+    <div id="con_calendar_date_required"></div>
+  </td>
+</tr>
+
+<tr>
+  <th>Gear Needed</th>
+  <td>
+    Include item #, item name, color, size, &amp; quantity.<br>
+    <a href="https://wiki.mozilla.org/GearStore/Gearavailable" target="_blank">
+    View the current inventory.</a><br>
+    <textarea id="gear" name="gear" rows="5" cols="50"></textarea>
+  </td>
+</tr>
+
+<tr>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <th class="heading" colspan="2">Tell Us About You</th>
+</tr>
+
+<tr>
   <th>First Name</th>
   <td><input name="firsrname" id="firstname" size="50" maxlength="30"></td>
 </tr>
@@ -241,25 +309,7 @@ function getField(id) {
 </tr>
 
 <tr>
-  <th>Mozillian Profile</th>
-  <td><input name="mozillian" id="mozillian" size="50"></td>
-</tr>
-
-<tr>
-  <th>CC</th>
-  <td>
-    [% INCLUDE global/userselect.html.tmpl
-       id => "cc"
-       name => "cc"
-       value => cc
-       size => 50
-       multiple => 5
-    %]
-  </td>
-</tr>
-
-<tr>
-  <th>My MozSpace</th>
+  <th>My Mozilla Space</th>
   <td>
     <select name="mozspace" id="mozspace">
       <option value="">Please select..</option>
@@ -339,71 +389,10 @@ function getField(id) {
 </tr>
 
 <tr>
-  <td><hr></td>
+  <td>&nbsp;</td>
 </tr>
-
 <tr>
-  <th>Purpose of Gear</th>
-  <td>
-    <select name="purpose" id="purpose" onchange="onPurposeChange()">
-      <option value="">Please select..</option>
-      <option value="Campaign">Campaign</option>
-      <option value="Event:">Event:</option>
-      <option value="Gear closet at a MozSpace:">Gear closet at a MozSpace:</option>
-      <option value="Mozillian Recognition">Mozillian Recognition</option>
-      <option value="Onboarding">Onboarding</option>
-      <option value="Press">Press</option>
-      <option value="Recruiting">Recruiting</option>
-      <option value="VIP">VIP</option>
-      <option value="Other:">Other:</option>
-    </select>
-  </td>
-</tr>
-
-<tr id="purpose_other_row" class="bz_default_hidden">
-  <th>Purpose Text</th>
-  <td>
-    <input name="purpose_other" id="purpose_other" size="50">
-  </td>
-</tr>
-
-<tr id="recognition_row" class="bz_default_hidden">
-  <th>&nbsp;</td>
-  <td>
-    <input type="checkbox" name="recognition_shipping" id="recognition_shipping" value="Yes"
-            onclick="onRecognitionChange()">
-    <label for="recognition_shipping">
-      This [% terms.bug %] needs recipient shipping information
-    </label><br>
-    <input type="checkbox" name="recognition_sizing" id="recognition_sizing" value="Yes">
-    <label for="recognition_sizing">
-      This [% terms.bug %] needs recipient size information
-    </label><br>
-    </div>
-  </td>
-</tr>
-
-<tr>
-  <th>Date Required</th>
-  <td>
-    <input name="date_required" id="date_required" size="25"
-           onchange="updateCalendarFromField(this)">
-    <button type="button" class="calendar_button" id="button_calendar_date_required"
-            onclick="showCalendar('date_required')"><span>cal</span></button>
-    <div id="con_calendar_date_required"></div>
-  </td>
-</tr>
-
-<tr>
-  <th>Gear Needed</th>
-  <td>
-    Include item #, item name, color, size, &amp; quantity.<br>
-    <textarea id="gear" name="gear" rows="5" cols="50"></textarea>
-  </td>
-</tr>
-
-<tr>
-  <td><hr></td>
+  <th class="heading" colspan="2">Tell Us Where To Send It</th>
 </tr>
 
 <tr>
@@ -458,7 +447,10 @@ function getField(id) {
 </tr>
 
 <tr>
-  <td><hr></td>
+  <td>&nbsp;</td>
+</tr>
+<tr>
+  <th class="heading" colspan="2">Tell Us Anything Else</th>
 </tr>
 
 <tr>
@@ -483,8 +475,9 @@ function getField(id) {
 </p>
 
 <p>
-  If this is a time-sensitive request, please place a space request. More information can be found at
-  <a href="https://wiki.mozilla.org/GearStore/SpaceRequests" target="_blank">wiki.mozilla.org/GearStore/SpaceRequests</a>.
+  Requests will only be visible to the person who submitted it, authorized
+  members of the Mozilla Engagement team, and our Staples Customer Service rep.
+  We do this to help protect the personal identifying information in this [% terms.bugs %].
 </p>
 
 <script>
