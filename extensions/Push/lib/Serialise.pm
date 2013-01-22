@@ -245,7 +245,7 @@ sub _attachment {
         flags            => (mapr { $self->_flag($_) } $attachment->flags),
         is_obsolete      => _boolean($attachment->isobsolete),
         is_patch         => _boolean($attachment->ispatch),
-        is_private       => _boolean(!is_public($attachment)),
+        is_private       => _boolean($attachment->isprivate),
         last_change_time => _time($attachment->modification_time),
     };
     if (!$is_shallow) {
