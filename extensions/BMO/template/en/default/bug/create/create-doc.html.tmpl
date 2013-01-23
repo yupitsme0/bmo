@@ -25,12 +25,10 @@ function validateAndSubmit() {
   if (!isFilledOut('short_desc')) alert_text += 'Please enter a "Summary".\n';
   if (!isFilledOut('gecko')) alert_text += 'Please select the "Gecko Version".\n';
   if (!isFilledOut('details')) alert_text += 'Please enter some "Details".\n';
-
   if (alert_text != '') {
     alert(alert_text);
     return false;
   }
-
   return true;
 }
 [% END %]
@@ -46,8 +44,8 @@ function validateAndSubmit() {
 <h1>Developer Documentation Request</h1>
 
 <p>
-  Use this form to request <b>new documentation</b> or <b>corrections</b> to existing documentation.
-  All fields are mandatory.
+  Use this form to request <b>new documentation</b> or <b>corrections</b> to existing documentation.<br>
+  All fields except for the <i>Development Bug</i> are mandatory.
 </p>
 
 <form method="post" action="post_bug.cgi" enctype="multipart/form-data"
@@ -93,7 +91,7 @@ function validateAndSubmit() {
   <td>
     Please provide a brief summary of what documentation you're requesting, or
     what problem you're reporting in existing documentation:<br>
-    <input type="text" name="short_desc" id="short_desc" size="50">
+    <input type="text" name="short_desc" id="short_desc">
   </td>
 </tr>
 
@@ -119,6 +117,14 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
+  <th>Development Bug</th>
+  <td>
+    <input type="text" id="blocked" name="blocked" size="10">
+    <i>Optional</i> &mdash; Corresponding development bug.
+  </td>
+</tr>
+
+<tr>
   <th>Urgency</th>
   <td>
     <select name="urgency" id="urgency">
@@ -128,6 +134,10 @@ function validateAndSubmit() {
       <option value="Before Beta">Before Beta</option>
       <option value="No Rush" selected>No Rush</option>
     </select>
+    <br>
+    Due to the volume of requests, the documentation team can't commit to
+    meeting specific deadlines for given documentation requests, but we will do
+    our best.
   </td>
 </tr>
 
