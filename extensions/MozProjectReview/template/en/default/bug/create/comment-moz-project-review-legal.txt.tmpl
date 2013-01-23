@@ -27,8 +27,6 @@ Vendor Services from Where:
 [%- cgi.param('legal_vendor_services_where') %]
 [% END %]
 [% END %]
-Description:
-[%+ cgi.param('legal_description') %]
 [% IF cgi.param('legal_vendor_services_where') %]
 Vendor Services from Where: 
 [% IF cgi.param('legal_vendor_services_where') == 'A single country' %]
@@ -37,18 +35,3 @@ Vendor Services from Where:
 [%- cgi.param('legal_vendor_services_where') %]
 [% END %]
 [% END %]
-
-        <select name="legal_vendor_services_where" id="legal_vendor_services_where">
-          <option value="">Select One</option>
-          <option value="U.S.">U.S.</option>
-          <option value="Europe">Europe</option>
-          <option value="Canada">Canada</option>
-          <option value="Global">Global</option>
-          <option value="Another region of the world">Another region of the world</option>
-          <option value="A single country">A single country</option>
-        </select>
-        <br>
-        <input class="bz_default_hidden" type="text"
-               name="legal_vendor_single_country" id="legal_vendor_single_country" size="60">
-      </span>
-
