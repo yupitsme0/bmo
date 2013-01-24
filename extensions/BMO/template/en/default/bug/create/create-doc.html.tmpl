@@ -54,7 +54,6 @@ function validateAndSubmit() {
   <input type="hidden" name="product" value="Developer Documentation">
   <input type="hidden" name="rep_platform" value="All">
   <input type="hidden" name="op_sys" value="Other">
-  <input type="hidden" name="priority" value="--">
   <input type="hidden" name="version" value="unspecified">
   <input type="hidden" name="bug_severity" id="bug_severity" value="normal">
   <input type="hidden" name="token" value="[% token FILTER html %]">
@@ -99,9 +98,9 @@ function validateAndSubmit() {
   <th>Gecko Version</th>
   <td>
     <select name="gecko" id="gecko">
-      <option value="">Please select..</option>
       [% FOREACH version = versions %]
-        <option value="[% version.name FILTER html %]">
+        <option value="[% version.name FILTER html %]"
+                [% " selected" IF version.name == "unspecified" %]>
           [% version.name FILTER html %]
         </option>
       [% END %]
@@ -127,12 +126,12 @@ function validateAndSubmit() {
 <tr>
   <th>Urgency</th>
   <td>
-    <select name="urgency" id="urgency">
-      <option value="Immediately">Immediately</option>
-      <option value="Before Release">Before Release</option>
-      <option value="Before Aurora">Before Aurora</option>
-      <option value="Before Beta">Before Beta</option>
-      <option value="No Rush" selected>No Rush</option>
+    <select name="priority" id="priority">
+      <option value="P1">Immediately</option>
+      <option value="P2">Before Release</option>
+      <option value="P3">Before Aurora</option>
+      <option value="P4">Before Beta</option>
+      <option value="P5" selected>No Rush</option>
     </select>
     <br>
     Due to the volume of requests, the documentation team can't commit to
