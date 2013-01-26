@@ -19,12 +19,12 @@ What help do you need from Legal?:
 [%+ cgi.param('legal_help_from_legal') %]
 URL: [% cgi.param('legal_url') %]
 [% IF cgi.param('legal_vendor_services_where') %]
-  Vendor Services from Where: 
-  [% IF cgi.param('legal_vendor_services_where') == 'A single country' %]
-    [%- cgi.param('legal_vendor_single_country') %]
-  [% ELSE %]
-    [%- cgi.param('legal_vendor_services_where') %]
-  [% END %]
+Vendor Services from Where: 
+[% IF cgi.param('legal_vendor_services_where') == 'A single country' %]
+[%- cgi.param('legal_vendor_single_country') %]
+[% ELSE %]
+[%- cgi.param('legal_vendor_services_where') %]
+[% END %]
 [% END %]
 [% IF cgi.param('separate_party') == 'Yes' && cgi.param('relationship_type') == 'Vendor/Services' %]
 SOW Details:
