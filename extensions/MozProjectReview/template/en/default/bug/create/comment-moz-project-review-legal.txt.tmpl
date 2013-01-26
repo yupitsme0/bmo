@@ -18,20 +18,35 @@ Other Party: [% cgi.param('legal_other_party') %]
 What help do you need from Legal?:
 [%+ cgi.param('legal_help_from_legal') %]
 URL: [% cgi.param('legal_url') %]
-SOW Details: [% cgi.param('legal_sow_details') %]
 [% IF cgi.param('legal_vendor_services_where') %]
-Vendor Services from Where: 
-[% IF cgi.param('legal_vendor_services_where') == 'A single country' %]
-[%- cgi.param('legal_vendor_single_country') %]
-[% ELSE %]
-[%- cgi.param('legal_vendor_services_where') %]
+  Vendor Services from Where: 
+  [% IF cgi.param('legal_vendor_services_where') == 'A single country' %]
+    [%- cgi.param('legal_vendor_single_country') %]
+  [% ELSE %]
+    [%- cgi.param('legal_vendor_services_where') %]
+  [% END %]
 [% END %]
-[% END %]
-[% IF cgi.param('legal_vendor_services_where') %]
-Vendor Services from Where: 
-[% IF cgi.param('legal_vendor_services_where') == 'A single country' %]
-[%- cgi.param('legal_vendor_single_country') %]
-[% ELSE %]
-[%- cgi.param('legal_vendor_services_where') %]
-[% END %]
+[% IF cgi.param('separate_party') == 'Yes' && cgi.param('relationship_type') == 'Vendor/Services' %]
+SOW Details:
+Legal Company Name: [% cgi.param('legal_sow_company_name') %] 
+Company Address:
+[%+ cgi.param('legal_sow_company_address') %] 
+Company Email for Notices: [% cgi.param('legal_sow_company_email') %] 
+Mozilla Contact: [% cgi.param('legal_sow_company_mozcontact') %] 
+Company Contact and Email Address: [% cgi.param('legal_sow_company_contact') %] 
+Description of Services:
+[%+ cgi.param('legal_sow_company_services') %] 
+Description of Deliverables:
+[%+ cgi.param('legal_sow_company_deliverables') %] 
+Start Date: [% cgi.param('legal_sow_start_date') %] 
+End Date: [% cgi.param('legal_sow_end_date') %] 
+Payment Amount: [% cgi.param('legal_sow_company_payment') %] 
+Basis for Payment: [% cgi.param('legal_sow_company_payment_basis') %] 
+Average or Maximum Hours: [% cgi.param('legal_sow_company_hours') %] 
+Payment Schedule: [% cgi.param('legal_sow_company_payment_schedule') %] 
+Total Amount not to Exceed: [% cgi.param('legal_sow_company_total_max') %] 
+Special Terms:
+[%+ cgi.param('legal_sow_company_special_terms') %] 
+Product Line:
+[%+ cgi.param('legal_sow_company_product_line') %] 
 [% END %]
