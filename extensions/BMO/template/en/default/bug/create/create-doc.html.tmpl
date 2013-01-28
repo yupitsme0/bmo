@@ -45,7 +45,7 @@ function validateAndSubmit() {
 
 <p>
   Use this form to request <b>new documentation</b> or <b>corrections</b> to existing documentation.<br>
-  All fields except for the <i>Development Bug</i> are mandatory.
+  All fields except for the <i>Development [% terms.Bug %]</i> are mandatory.
 </p>
 
 <form method="post" action="post_bug.cgi" enctype="multipart/form-data"
@@ -116,10 +116,10 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
-  <th>Development Bug</th>
+  <th>Development [% terms.Bug %]</th>
   <td>
     <input type="text" id="blocked" name="blocked" size="10">
-    <i>Optional</i> &mdash; Corresponding development bug.
+    <i>Optional</i> &mdash; Corresponding development [% terms.bug %].
   </td>
 </tr>
 
