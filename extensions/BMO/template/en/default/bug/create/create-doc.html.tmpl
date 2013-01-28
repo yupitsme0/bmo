@@ -95,6 +95,20 @@ function validateAndSubmit() {
 </tr>
 
 <tr>
+  <th>Technical Contact</th>
+  <td>
+    [% INCLUDE global/userselect.html.tmpl
+       id       => "technical_contact"
+       name     => "technical_contact"
+       value    => ""
+       size     => 60
+       classes  => ["bz_userfield"]
+       multiple => 5
+     %]
+  </td>
+</tr>
+
+<tr>
   <th>Gecko Version</th>
   <td>
     <select name="gecko" id="gecko">
