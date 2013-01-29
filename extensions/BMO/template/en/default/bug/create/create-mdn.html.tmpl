@@ -1,0 +1,152 @@
+[%# This Source Code Form is subject to the terms of the Mozilla Public
+  # License, v. 2.0. If a copy of the MPL was not distributed with this
+  # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  #
+  # This Source Code Form is "Incompatible With Secondary Licenses", as
+  # defined by the Mozilla Public License, v. 2.0.
+  #%]
+
+[% PROCESS global/variables.none.tmpl %]
+
+[% inline_javascript = BLOCK %]
+  var Dom = YAHOO.util.Dom;
+  function showDetail() {
+    var request_type = getRadioValueByClass('request_type');
+    Dom.removeClass('detail_summary', 'bz_default_hidden');
+    Dom.removeClass('detail_description', 'bz_default_hidden');
+    Dom.removeClass('commit', 'bz_default_hidden');
+    Dom.removeClass('detail_' + request_type.toLowerCase(), 'bz_default_hidden');
+    Dom.addClass('initial_form', 'bz_default_hidden');
+    return true;
+  }
+  function validateAndSubmit() {
+    var alert_text = '';
+    if (!isFilledOut('short_desc')) alert_text += 'Please enter a "Summary".\n';
+    if (!isFilledOut('description')) alert_text += 'Please enter some text in "Is there anything else we should know?".\n';
+    if (alert_text != '') {
+      alert(alert_text);
+      return false;
+    }
+    var request_type = getRadioValueByClass('request_type');
+    var short_desc = request_type + ": " + Dom.get('short_desc').value;
+    Dom.get('short_desc').value = short_desc;
+    return true;
+  }
+  function getRadioValueByClass(class_name) {
+    var elements = Dom.getElementsByClassName(class_name);
+    for (var i = 0,  l = elements.length; i < l; i++) {
+      if (elements[i].checked) return elements[i].value;   
+    }      
+  }
+[% END %]
+
+[% PROCESS global/header.html.tmpl
+   title = "Mozilla Developer Network Request"
+   javascript = inline_javascript
+   javascript_urls = [ 'extensions/BMO/web/js/form_validate.js' ]
+%]
+
+<h1>Mozilla Developer Network Request</h1>
+
+<form method="post" action="post_bug.cgi" enctype="multipart/form-data"
+      onSubmit="return validateAndSubmit();">
+  <input type="hidden" name="format" value="mdn">
+  <input type="hidden" name="product" value="Mozilla Developer Network">
+  <input type="hidden" name="component" value="General">
+  <input type="hidden" name="rep_platform" value="All">
+  <input type="hidden" name="op_sys" value="Other">
+  <input type="hidden" name="version" value="unspecified">
+  <input type="hidden" name="bug_severity" id="bug_severity" value="normal">
+  <input type="hidden" name="token" value="[% token FILTER html %]">
+
+  <div id="initial_form" class="">
+    <h2>What do you want to do?</h2>
+    <input type="radio" name="request_type" class="request_type" 
+           id="request_type_bug" value="Bug" checked="checked">
+      <label for="request_type_bug">Report a [% terms.bug %]</label><br>
+    <input type="radio" name="request_type" class="request_type" 
+           id="request_type_feature" value="Feature">
+      <label for="request_type_feature">Request a new feature</label><br>
+    <input type="radio" name="request_type" class="request_type" 
+           id="request_type_change" value="Change">
+      <label for="request_type_change">Request a change to an existing feature</label><br>
+    <br>
+    <input type="button" value="Next" onclick="showDetail();">
+  </div>
+
+  <p id="detail_summary" class="bz_default_hidden">
+    [ All fields required ]<br>
+    <br>
+    <strong>Summary</strong><br>
+    <input type="text" name="short_desc" id="short_desc" size="60">
+  </p>
+
+  <div id="detail_bug" class="bz_default_hidden">
+    <p>
+      <strong>What did you do?</strong><br>
+      <textarea name="bug_actions" id="bug_actions" rows="5" cols="60">
+1.
+2.
+3.</textarea>
+    </p>
+    <p>
+      <strong>What happened?</strong><br>
+      <textarea name="bug_actual_results" id="bug_actual_results" rows="5" cols="60"></textarea>
+    </p>
+    <p>
+      <strong>What should have happened?</strong><br>
+      <textarea name="bug_expected_results" id="bug_expected_results" rows="5" cols="60"></textarea>
+    </p>
+  </div>
+
+  <div id="detail_feature" class="bz_default_hidden">
+    <p>
+      <strong>What problems would this solve?</strong><br>
+      <textarea name="feature_problem_solving" id="feature_problem_solving" rows="5" cols="60"></textarea>
+    </p>
+    <p>
+      <strong>Who would use this?</strong><br>
+      <textarea name="feature_audience" id="feature_audience" rows="5" cols="60"></textarea>
+    </p>
+    <p>
+      <strong>What would users see?</strong><br>
+      <textarea name="feature_interface" id="feature_interface" rows="5" cols="60"></textarea>
+    </p>
+    <p>
+      <strong>What would users do? What would happen as a result?</strong><br>
+      <textarea name="feature_process" id="feature_process" rows="5" cols="60"></textarea>
+    </p>
+  </div>
+
+  <div id="detail_change" class="bz_default_hidden">
+    <p>
+      <strong>What feature should be changed? Please provide the URL of the feature if possible</strong><br>
+      <textarea name="change_feature" id="change_feature" rows="5" cols="60"></textarea>
+    </p>
+    <p>
+      <strong>What problems would this solve?</strong><br>
+      <textarea name="change_problem_solving" id="change_problem_solving" rows="5" cols="60"></textarea>
+    </p>
+    <p>
+      <strong>Who would use this?</strong><br>
+      <textarea name="change_audience" id="change_audience" rows="5" cols="60"></textarea>
+    </p>
+    <p>
+      <strong>What would users see?</strong><br>
+      <textarea name="change_interface" id="change_interface" rows="5" cols="60"></textarea>
+    </p>
+    <p>
+      <strong>What would users do? What would happen as a result?</strong><br>
+      <textarea name="change_process" id="change_process" rows="5" cols="60"></textarea>
+    </p>
+  </div>
+ 
+  <p id="detail_description" class="bz_default_hidden">
+    <strong>Is there anything else we should know?</strong><br>
+    <textarea name="description" id="description" rows="5" cols="60"></textarea>
+  </p>
+
+  <input type="submit" class="bz_default_hidden" id="commit" value="Submit Request"></td>
+</form>
+
+[% PROCESS global/footer.html.tmpl %]
