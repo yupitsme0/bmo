@@ -8,6 +8,66 @@
 
 [% PROCESS global/variables.none.tmpl %]
 
+[%
+items = [
+  { id => '',           name => 'Splendidest Gear',                                        },
+  { id => '#155415S',   name => 'Champion sweatshirt + tote bag - S',   price =>  '$66.80' },
+  { id => '#155415M',   name => 'Champion sweatshirt + tote bag - M',   price =>  '$66.80' },
+  { id => '#155415L',   name => 'Champion sweatshirt + tote bag - L',   price =>  '$66.80' },
+  { id => '#155415XL',  name => 'Champion sweatshirt + tote bag - XL',  price =>  '$66.80' },
+  { id => '#1554152XL', name => 'Champion sweatshirt + tote bag - 2XL', price =>  '$66.80' },
+  { id => '#155749',    name => 'Rickshaw messenger bag',               price => '$205.00' },
+  { id => '#155752',    name => 'Moleskine notebook',                   price =>  '$27.00' },
+  { id => '#157452S',   name => 'Very Splendid Package (Ladies) - S',   price =>  '$30.10' },
+  { id => '#157452M',   name => 'Very Splendid Package (Ladies) - M',   price =>  '$30.10' },
+  { id => '#157452L',   name => 'Very Splendid Package (Ladies) - L',   price =>  '$30.10' },
+  { id => '#157452XL',  name => 'Very Splendid Package (Ladies) - XL',  price =>  '$30.10' },
+  { id => '#157454S',   name => 'Very Splendid Package (Unisex) - S',   price =>  '$30.10' },
+  { id => '#157454M',   name => 'Very Splendid Package (Unisex) - M',   price =>  '$30.10' },
+  { id => '#157454L',   name => 'Very Splendid Package (Unisex) - L',   price =>  '$30.10' },
+  { id => '#157454XL',  name => 'Very Splendid Package (Unisex) - XL',  price =>  '$30.10' },
+  { id => '#157451S',   name => 'Most Splendid Package - S'          ,  price => '$298.80' },
+  { id => '#157451M',   name => 'Most Splendid Package - M'          ,  price => '$298.80' },
+  { id => '#157451L',   name => 'Most Splendid Package - L'          ,  price => '$298.80' },
+  { id => '#157451XL',  name => 'Most Splendid Package - XL'         ,  price => '$298.80' },
+  { id => '',           name => 'Splendider Gear',                                         },
+  { id => '#155342S',   name => 'Unisex t-shirt, navy - S',             price =>  '$9.65 - $12.50' },
+  { id => '#155342M',   name => 'Unisex t-shirt, navy - M',             price =>  '$9.65 - $12.50' },
+  { id => '#155342L',   name => 'Unisex t-shirt, navy - L',             price =>  '$9.65 - $12.50' },
+  { id => '#155342X',   name => 'Unisex t-shirt, navy - XL',            price =>  '$9.65 - $12.50' },
+  { id => '#1553422',   name => 'Unisex t-shirt, navy - 2XL',           price =>  '$9.65 - $12.50' },
+  { id => '#1553423',   name => 'Unisex t-shirt, navy - 3XL',           price =>  '$9.65 - $12.50' },
+  { id => '#155413S',   name => 'Ladies t-shirt, navy - S',             price =>  '$9.65' },
+  { id => '#155413M',   name => 'Ladies t-shirt, navy - M',             price =>  '$9.65' },
+  { id => '#155413L',   name => 'Ladies t-shirt, navy - L',             price =>  '$9.65' },
+  { id => '#155413X',   name => 'Ladies t-shirt, navy - XL',            price =>  '$9.65' },
+  { id => '#155341S',   name => 'Unisex t-shirt, poppy - S',            price =>  '$9.65 - $12.50' },
+  { id => '#155341M',   name => 'Unisex t-shirt, poppy - M',            price =>  '$9.65 - $12.50' },
+  { id => '#155341L',   name => 'Unisex t-shirt, poppy - L',            price =>  '$9.65 - $12.50' },
+  { id => '#155341X',   name => 'Unisex t-shirt, poppy - XL',           price =>  '$9.65 - $12.50' },
+  { id => '#1553412',   name => 'Unisex t-shirt, poppy - 2XL',          price =>  '$9.65 - $12.50' },
+  { id => '#155344S',   name => 'Ladies t-shirt, poppy - S',            price =>  '$9.65' },
+  { id => '#155344M',   name => 'Ladies t-shirt, poppy - M',            price =>  '$9.65' },
+  { id => '#155344L',   name => 'Ladies t-shirt, poppy - L',            price =>  '$9.65' },
+  { id => '#155343M',   name => 'Unisex t-shirt, lapis - M',            price =>  '$9.65' },
+  { id => '#155343L',   name => 'Unisex t-shirt, lapis - L',            price =>  '$9.65' },
+  { id => '#155343X',   name => 'Unisex t-shirt, lapis - XL',           price =>  '$9.65' },
+  { id => '#155414S',   name => 'Ladies t-shirt, lapis - S',            price =>  '$9.65' },
+  { id => '#155414M',   name => 'Ladies t-shirt, lapis - M',            price =>  '$9.65' },
+  { id => '#155414L',   name => 'Ladies t-shirt, lapis - L',            price =>  '$9.65' },
+  { id => '#155339',    name => 'Black cap w/tote',                     price => '$13.20' },
+  { id => '#155340',    name => 'Beanie',                               price =>  '$4.95' },
+  { id => '#155751',    name => 'Drawstring tote',                      price =>  '$4.80' },
+  { id => '#155758',    name => 'Glossy finish ceramic mug',            price =>  '$7.25' },
+  { id => '',           name => 'Splendid Gear',                                          },
+  { id => '#155753',    name => '3" round Firefox sticker, individual', price =>  '$0.19' },
+  { id => '#155756',    name => 'Silicone wristband',                   price =>  '$0.75' },
+  { id => '#155755',    name => 'Vertical laminated conference badge',  price =>  '$1.00' },
+  { id => '#155754',    name => 'Mozilla lanyard with bulldog clip',    price =>  '$1.50' },
+  { id => '#155757',    name => 'Firefox tattoo, 50 pack',              price =>  '$3.50' },
+]
+%]
+
 [% inline_style = BLOCK %]
 #gear_form th {
   text-align: right;
@@ -27,6 +87,14 @@
 
 [% inline_javascript = BLOCK %]
 var Dom = YAHOO.util.Dom;
+var quantity = {};
+
+var gear = [
+[% FOREACH item = items %]
+  { id: '[% item.id FILTER js %]', name: '[% item.name FILTER js %]', price: '[% item.price FILTER js %]' }
+  [% ',' UNLESS loop.last %]
+[% END %]
+];
 
 [%# implemented this way to allow for dynamic updating of mandatory fields #%]
 var fields = [
@@ -38,7 +106,7 @@ var fields = [
   { id: 'purpose',         mandatory: true  },
   { id: 'purpose_other',   mandatory: false },
   { id: 'date_required',   mandatory: false },
-  { id: 'gear',            mandatory: true  },
+  { id: 'items',           mandatory: true  },
   { id: 'shiptofirstname', mandatory: true  },
   { id: 'shiptolastname',  mandatory: true  },
   { id: 'shiptoemail',     mandatory: true  },
@@ -78,6 +146,7 @@ function tagMandatoryFields() {
   [%# add or remove the "* mandatory" marker from fields #%]
   for (var i = 0, l = fields.length; i < l; i++) {
     var f = fields[i];
+    if (!f.label) continue;
     var caption = f.caption;
     if (f.mandatory)
       caption = caption + '&nbsp;<span class="mandatory">*</span>';
@@ -171,6 +240,53 @@ function getField(id) {
   }
   return false;
 }
+
+function addGear() {
+  var id = Dom.get('add_gear').value;
+  if (!id) return;
+  if (quantity[id]) {
+    quantity[id]++;
+  } else {
+    quantity[id] = 1;
+  }
+  showGear();
+}
+
+function removeGear(id) {
+  if (!id) return;
+  if (quantity[id]) {
+    quantity[id]--;
+  } else {
+    quantity[id] = 0;
+  }
+  showGear();
+}
+
+function showGear() {
+  var html = '<table border="0" cellpadding="2" cellspacing="0">';
+  var text = '';
+  var count = 0;
+  for (var i = 0, l = gear.length; i < l; i++) {
+    var item = gear[i];
+    var id = item.id;
+    if (!id) continue;
+    if (!quantity[id]) continue;
+    count += quantity[id];
+    html += '<tr>' +
+            '<td>' + quantity[id] + ' x&nbsp;</td>' +
+            '<td>' + item.name + '</td>' +
+            '<td align="right">&nbsp;' + item.price + '</td>' +
+            '<td><button onclick="removeGear(\'' + id + '\');return false">Remove</button></td>' +
+            '</tr>';
+    text += quantity[id] + ' x ' + id + ' ' + item.name + ' @ ' + item.price + "\n";
+  }
+  if (!count)
+    html += '<tr><td><i>No gear selected.</i></td></tr>';
+  html += '</table>';
+  Dom.get('gear_container').innerHTML = html;
+  Dom.get('items').value = text;
+}
+
 [% END %]
 
 [% PROCESS global/header.html.tmpl
@@ -285,10 +401,28 @@ function getField(id) {
 <tr>
   <th>Gear Needed</th>
   <td>
-    Include item #, item name, color, size, &amp; quantity.<br>
+    <input type="hidden" name="items" id="items" value="">
     <a href="https://wiki.mozilla.org/GearStore/Gearavailable" target="_blank">
-    View the current inventory.</a><br>
-    <textarea id="gear" name="gear" rows="5" cols="50"></textarea>
+    View the current inventory</a>, then add your selection(s):<br>
+
+    <select id="add_gear">
+      <option value="">Please select..</option>
+      [% first_group = true %]
+      [% FOREACH item = items %]
+        [% IF item.id == "" %]
+          [% "</optgroup>" UNLESS first_group %]
+          [% first_group = false %]
+          <optgroup label="[% item.name FILTER html %]">
+        [% ELSE %]
+          <option value="[% item.id FILTER html %]">[% item.name FILTER html %]</option>
+        [% END %]
+      [% END %]
+      [% "</optgroup>" UNLESS first_group %]
+    </select>
+    <button onclick="addGear();return false">Add</button>
+    <br>
+
+    <div id="gear_container"></div>
   </td>
 </tr>
 
@@ -490,6 +624,7 @@ function getField(id) {
   initFields();
   onPurposeChange();
   tagMandatoryFields();
+  showGear();
 </script>
 
 [% PROCESS global/footer.html.tmpl %]
