@@ -34,7 +34,8 @@ Redirect permanent /duplicates.html https://bugzilla-stage-tip.mozilla.org/dupli
 
 RewriteEngine On
 RewriteRule ^favicon\.ico$ extensions/BMO/web/images/favicon.ico
-RewriteRule ^form[\.:](itrequest|mozlist|mktgevent|poweredby|presentation|swag|trademark|recoverykey)$ enter_bug.cgi?product=mozilla.org&format=$1
+RewriteRule ^form[\.:](itrequest|mozlist|mktgevent|poweredby|presentation|trademark|recoverykey)$ enter_bug.cgi?product=mozilla.org&format=$1
+RewriteRule ^form[\.:](swag|gear)$ enter_bug.cgi?product=mozilla.org&format=swag
 RewriteRule ^form[\.:]legal$ enter_bug.cgi?product=Legal&format=legal
 RewriteRule ^form[\.:]mozpr$ enter_bug.cgi?product=Mozilla+PR&format=mozpr
 RewriteRule ^form[\.:]reps[\.:]mentorship$ enter_bug.cgi?product=Mozilla+Reps&format=mozreps
