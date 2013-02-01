@@ -266,19 +266,19 @@ function onPurposeChange() {
   var value = Dom.get('purpose').value;
   var other = Dom.get('purpose_other');
 
-  if (value == 'Event:') {
+  if (value == 'Event') {
     getField('purpose_other').mandatory = true;
     other.placeholder = 'link to wiki'
     Dom.removeClass('purpose_other_row', 'bz_default_hidden');
     Dom.addClass('recognition_row', 'bz_default_hidden');
 
-  } else if (value == 'Gear closet at a MozSpace:') {
+  } else if (value == 'Gear Space Stock') {
     getField('purpose_other').mandatory = true;
     other.placeholder = 'indicate space'
     Dom.removeClass('purpose_other_row', 'bz_default_hidden');
     Dom.addClass('recognition_row', 'bz_default_hidden');
 
-  } else if (value == 'Other:') {
+  } else if (value == 'Other') {
     getField('purpose_other').mandatory = true;
     other.placeholder = 'more information';
     Dom.removeClass('purpose_other_row', 'bz_default_hidden');
@@ -408,20 +408,20 @@ function showGear() {
 
 <p>
   Want gear? Here's what to do:
-  <ul>
-    <li>
-      Follow the steps below and click submit.  (If this is an emergency,
-      you'll want to <a href="https://wiki.mozilla.org/GearStore/SpaceRequests">start here</a>
-      instead.
-    </li>
-    <li>
-      Requests are reviewed every Monday. If approved, we'll let you know and
-      then send your order to our gear partner, Staples, for processing and
-      shipment; if it can't be approved,  we'll email you with details (or
-      possibly ask for more information).
-    </li>
-  </ul>
 </p>
+<ul>
+  <li>
+    Follow the steps below and click submit.  (If this is a last-minute
+    request, you'll want to <a href="https://wiki.mozilla.org/GearStore/SpaceRequests">start here</a>
+    instead).
+  </li>
+  <li>
+    Requests are reviewed every Monday. If approved, we'll let you know and
+    then send your order to our gear partner, Staples, for processing and
+    shipment; if it can't be approved,  we'll email you with details (or
+    possibly ask for more information).
+  </li>
+</ul>
 
 <form method="post" action="post_bug.cgi" id="swagRequestForm" enctype="multipart/form-data"
       onSubmit="return validateAndSubmit();">
@@ -452,14 +452,14 @@ function showGear() {
     <select name="purpose" id="purpose" onchange="onPurposeChange()">
       <option value="">Please select..</option>
       <option value="Campaign">Campaign</option>
-      <option value="Event:">Event:</option>
-      <option value="Gear closet at a MozSpace:">Gear closet at a MozSpace:</option>
+      <option value="Event">Event</option>
+      <option value="Gear Space Stock">Gear Space Stock</option>
       <option value="Mozillian Recognition">Mozillian Recognition</option>
       <option value="Onboarding">Onboarding</option>
       <option value="Press">Press</option>
       <option value="Recruiting">Recruiting</option>
       <option value="VIP">VIP</option>
-      <option value="Other:">Other:</option>
+      <option value="Other">Other</option>
     </select>
   </td>
 </tr>
@@ -472,7 +472,7 @@ function showGear() {
 </tr>
 
 <tr id="recognition_row" class="bz_default_hidden">
-  <th>&nbsp;</td>
+  <th>&nbsp;</th>
   <td>
     <input type="checkbox" name="recognition_shipping" id="recognition_shipping" value="Yes"
             onclick="onRecognitionChange()">
@@ -483,7 +483,6 @@ function showGear() {
     <label for="recognition_sizing">
       This [% terms.bug %] needs recipient size information
     </label><br>
-    </div>
   </td>
 </tr>
 
@@ -515,11 +514,11 @@ function showGear() {
            onblur="this.value = parseInt(this.value, 10) ? Math.floor(parseInt(this.value, 10)) : 1">
     <select id="add_gear">
       <option value="">Please select..</option>
-      [% first_group = true %]
+      [% first_group = 1 %]
       [% FOREACH item = items %]
         [% IF item.id == "" %]
           [% "</optgroup>" UNLESS first_group %]
-          [% first_group = false %]
+          [% first_group = 0 %]
           <optgroup label="[% item.name FILTER html %]">
         [% ELSE %]
           <option value="[% item.id FILTER html %]">[% item.name FILTER html %]</option>
@@ -644,50 +643,59 @@ function showGear() {
 </tr>
 
 <tr>
-  <th>Shipping First Name</th>
+  <td colspan="2">
+    Please be aware that shipping can cost as much as, if not more than, your
+    item. And, items shipped internationally incur customs fees that can be
+    100%+ the cost of the package. When possible, requests will be filled from
+    gear at Mozilla Spaces.
+  </td>
+</tr>
+
+<tr>
+  <th>First Name</th>
   <td><input name="shiptofirstname" id="shiptofirstname" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping Last Name</th>
+  <th>Last Name</th>
   <td><input name="shiptolastname" id="shiptolastname" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping Email Address</th>
+  <th>Email Address</th>
   <td><input name="shiptoemail" id="shiptoemail" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping Address</th>
+  <th>Address</th>
   <td><input name="shiptoaddress1" id="shiptoaddress1" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping Address 2</th>
+  <th>Address 2</th>
   <td><input name="shiptoaddress2" id="shiptoaddress2" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping City</th>
+  <th>City</th>
   <td><input name="shiptocity" id="shiptocity" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping State</th>
+  <th>State</th>
   <td><input name="shiptostate" id="shiptostate" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping Country</th>
+  <th>Country</th>
   <td><input name="shiptocountry" id="shiptocountry" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping Postal Code</th>
+  <th>Postal Code</th>
   <td><input name="shiptopostcode" id="shiptopostcode" size="50" maxlength="50"></td>
 </tr>
 <tr>
-  <th>Shipping Telephone</th>
+  <th>Recipient Telephone</th>
   <td>
     <input name="shiptophone" id="shiptophone" size="50" maxlength="50">
-    <i>(include country code if ordering from outside of the US)</i>
+    <i>(include country code if outside of the US)</i>
   </td>
 </tr>
 <tr>
-  <th>Shipping Personal ID/RUT</th>
+  <th>Personal ID/RUT</th>
   <td>
     <input name="shiptoidrut" id="shiptoidrut" size="50" maxlength="50">
     <i>(if your country requires this)</i>
@@ -719,7 +727,7 @@ function showGear() {
 </form>
 
 <p>
-  <span class="mandatory">*</span> - Required Field
+  <span class="mandatory">*</span> Required Field
 </p>
 
 <p>
