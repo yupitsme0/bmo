@@ -29,6 +29,7 @@ strong.required:before {
   var mdn = {
     _initial_state: 'initial',
     _current_state: 'initial',
+    _current_type:  'Bug',
     _required_fields: {
       'Bug': {
         'bug_actions': 'Please enter some text for "What did you do?"',
@@ -52,25 +53,29 @@ strong.required:before {
     setState: function(state, request_type, no_set_history) {
       if (state == 'detail') {
         request_type = request_type || this._getRadioValueByClass('request_type');
-        if (request_type == 'Bug') { 
+        request_type = request_type.toLowerCase();
+        if (request_type == 'bug') { 
           Dom.get('detail_header').innerHTML = '<h2>Bug Report</h2>';
           Dom.get('secure_type').innerHTML = 'report';
         }
-        if (request_type == 'Feature') {
+        if (request_type == 'feature') {
           Dom.get('detail_header').innerHTML = '<h2>Feature Request</h2>';
           Dom.get('secure_type').innerHTML = 'request';
         }
-        if (request_type == 'Change') {
+        if (request_type == 'change') {
           Dom.get('detail_header').innerHTML = '<h2>Change Request</h2>';
           Dom.get('secure_type').innerHTML = 'request';
         }
-        Dom.removeClass('detail_' + request_type.toLowerCase(), 'bz_default_hidden');
+        Dom.addClass('detail_' + this._current_type, 'bz_default_hidden');
+        Dom.removeClass('detail_' + request_type, 'bz_default_hidden');
+        this._current_type = request_type;
       }
       Dom.addClass(this._current_state + '_form', 'bz_default_hidden');
       Dom.removeClass(state + '_form', 'bz_default_hidden');
       this._current_state = state;
       if (History && !no_set_history) {
-        History.navigate('h', state + '|' + request_type);
+        History.navigate('h', state + 
+                         (request_type ? '|' + request_type : ''));
       }
       return true;
     },    
@@ -211,7 +216,7 @@ strong.required:before {
 
     <div id="detail_change" class="bz_default_hidden">
       <p>
-        <strong class="required">What feature should be changed? Please provide the URL of the feature if possible</strong><br>
+        <strong class="required">What feature should be changed? Please provide the URL of the feature if possible.</strong><br>
         <textarea name="change_feature" id="change_feature" rows="5" cols="60"></textarea>
       </p>
       <p>
