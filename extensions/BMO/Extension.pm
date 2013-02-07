@@ -40,7 +40,7 @@ use Bugzilla::Util;
 use Scalar::Util qw(blessed);
 use Date::Parse;
 use DateTime;
-use Encode qw(find_encoding);
+use Encode qw(find_encoding decode_utf8);
 use Sys::Syslog qw(:DEFAULT setlogsock);
 
 use Bugzilla::Extension::BMO::Constants;
