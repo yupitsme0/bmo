@@ -288,6 +288,9 @@ our $cf_disabled_flags = [
     'cf_status_thunderbird17',
     'cf_tracking_seamonkey214',
     'cf_status_seamonkey214',
+    'cf_tracking_esr10',
+    'cf_status_esr10',
+    'cf_blocking_kilimanjaro',
 ];
 
 # Who to CC on particular bugmails when certain groups are added or removed.
@@ -400,6 +403,7 @@ our %product_sec_groups = (
     "quality.mozilla.org"          => 'websites-security',
     "Skywriter"                    => 'websites-security',
     "Socorro"                      => 'client-services-security',
+    "Snippets"                     => 'websites-security',
     "support.mozilla.org"          => 'websites-security',
     "support.mozillamessaging.com" => 'websites-security',
     "Talkback"                     => 'talkback-private',
@@ -409,7 +413,6 @@ our %product_sec_groups = (
     "webmaker.org"                 => 'websites-security',
     "Thimble"                      => 'websites-security',
     "Websites"                     => 'websites-security',
-    "Websites Graveyard"           => 'websites-security',
     "Webtools"                     => 'webtools-security',
     "www.mozilla.org"              => 'websites-security',
     "_default"                     => 'core-security'

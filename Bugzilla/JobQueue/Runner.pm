@@ -52,6 +52,7 @@ our $initscript = "bugzilla-queue";
 sub gd_preconfig {
     my $self = shift;
 
+    $self->{_run_command} = 'subprocess_worker';
     my $pidfile = $self->{gd_args}{pidfile};
     if (!$pidfile) {
         $pidfile = bz_locations()->{datadir} . '/' . $self->{gd_progname} 
@@ -197,17 +198,39 @@ sub gd_setup_signals {
     $SIG{TERM} = sub { $self->gd_quit_event(); }
 }
 
+sub gd_quit_event {
+    Bugzilla->job_queue->kill_worker();
+    exit(1);
+}
+
+sub gd_other_cmd {
+    my ($self, $do, $locked) = @_;
+    if ($do eq "once") {
+        $self->{_run_command} = 'work_once';
+    } elsif ($do eq "onepass") {
+        $self->{_run_command} = 'work_until_done';
+    } else {
+        $self->SUPER::gd_other_cmd($do, $locked);
+    }
+}
+
 sub gd_run {
     my $self = shift;
-
     $SIG{__DIE__} = \&Carp::confess if $self->{debug};
+    $self->_do_work($self->{_run_command});
+}
+
+sub _do_work {
+    my ($self, $fn) = @_;
+
     my $jq = Bugzilla->job_queue();
     $jq->set_verbose($self->{debug});
-    foreach my $module (values %{ Bugzilla::JobQueue::JOB_MAP() }) {
+    $jq->set_pidfile($self->{gd_pidfile});
+    foreach my $module (values %{ Bugzilla::JobQueue->JOB_MAP() }) {
         eval "use $module";
         $jq->can_do($module);
     }
-    $jq->work;
+    $jq->$fn;
 }
 
 1;

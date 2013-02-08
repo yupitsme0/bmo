@@ -40,7 +40,7 @@ use Bugzilla::Util;
 use Scalar::Util qw(blessed);
 use Date::Parse;
 use DateTime;
-use Encode qw(find_encoding);
+use Encode qw(find_encoding decode_utf8);
 use Sys::Syslog qw(:DEFAULT setlogsock);
 
 use Bugzilla::Extension::BMO::Constants;
@@ -63,7 +63,8 @@ use Bugzilla::Extension::BMO::Reports qw(user_activity_report
                                          group_admins_report
                                          email_queue_report
                                          release_tracking_report
-                                         group_membership_report);
+                                         group_membership_report
+                                         group_members_report);
 
 our $VERSION = '0.1';
 
@@ -186,6 +187,9 @@ sub page_before_template {
     }
     elsif ($page eq 'group_membership.html' or $page eq 'group_membership.txt') {
         group_membership_report($page, $vars);
+    }
+    elsif ($page eq 'group_members.html' or $page eq 'group_members.json') {
+        group_members_report($vars);
     }
     elsif ($page eq 'email_queue.html') {
         email_queue_report($vars);
@@ -512,78 +516,61 @@ sub bug_check_can_change_field {
     }
 }
 
-# Purpose: link up various Mozilla-specific strings.
-sub _link_uuid {
-    my $args = shift;    
-    my $match = html_quote($args->{matches}->[0]);
-    
-    return qq{<a href="https://crash-stats.mozilla.com/report/index/$match">bp-$match</a>};
-}
-
-sub _link_cve {
-    my $args = shift;
-    my $match = html_quote($args->{matches}->[0]);
-    
-    return qq{<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=$match">$match</a>};
-}
-
-sub _link_svn {
-    my $args = shift;
-    my $match = html_quote($args->{matches}->[0]);
-    
-    return qq{<a href="http://viewvc.svn.mozilla.org/vc?view=rev&amp;revision=$match">r$match</a>};
-}
-
-sub _link_hg {
-    my $args = shift;
-    my $text = html_quote($args->{matches}->[0]);
-    my $repo = html_quote($args->{matches}->[1]);
-    my $id   = html_quote($args->{matches}->[2]);
-    
-    return qq{<a href="https://hg.mozilla.org/$repo/rev/$id">$text</a>};
-}
-
-sub _link_bzr {
-    my $args = shift;
-    my $preamble = html_quote($args->{matches}->[0]);
-    my $url = html_quote($args->{matches}->[1]);
-    my $text = html_quote($args->{matches}->[2]);
-    my $id = html_quote($args->{matches}->[3]);
-
-    $url =~ s/\s+$//;
-    $url =~ s/\/$//;
-
-    return qq{$preamble<a href="http://$url/revision/$id">$text</a>};
-}
-
+# link up various Mozilla-specific strings
 sub bug_format_comment {
     my ($self, $args) = @_;
     my $regexes = $args->{'regexes'};
 
+    # link UUIDs to crash-stats
     # Only match if not already in an URL using the negative lookbehind (?<!\/)
     push (@$regexes, {
         match => qr/(?<!\/)\b(?:UUID\s+|bp\-)([a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-
                                        [a-f0-9]{4}\-[a-f0-9]{12})\b/x,
-        replace => \&_link_uuid
+        replace => sub {
+            my $args = shift;
+            my $match = html_quote($args->{matches}->[0]);
+            return qq{<a href="https://crash-stats.mozilla.com/report/index/$match">bp-$match</a>};
+        }
     });
 
+    # link to CVE/CAN security releases
     push (@$regexes, {
         match => qr/(?<!\/|=)\b((?:CVE|CAN)-\d{4}-\d{4})\b/,
-        replace => \&_link_cve
+        replace => sub {
+            my $args = shift;
+            my $match = html_quote($args->{matches}->[0]);
+            return qq{<a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=$match">$match</a>};
+        }
     });
-  
+
+    # link to svn.m.o
     push (@$regexes, {
         match => qr/\br(\d{4,})\b/,
-        replace => \&_link_svn
+        replace => sub {
+            my $args = shift;
+            my $match = html_quote($args->{matches}->[0]);
+            return qq{<a href="http://viewvc.svn.mozilla.org/vc?view=rev&amp;revision=$match">r$match</a>};
+        }
     });
 
+    # link bzr commit messages
     push (@$regexes, {
         match => qr/\b(Committing\sto:\sbzr\+ssh:\/\/
-                    (?:[^\@]+\@)?(bzr\.mozilla\.org[^\n]+)\n.*?\nCommitted\s)
+                    (?:[^\@]+\@)?(bzr\.mozilla\.org[^\n]+)\n.*?\bCommitted\s)
                     (revision\s(\d+))/sx,
-        replace => \&_link_bzr
+        replace => sub {
+            my $args = shift;
+            my $preamble = html_quote($args->{matches}->[0]);
+            my $url = html_quote($args->{matches}->[1]);
+            my $text = html_quote($args->{matches}->[2]);
+            my $id = html_quote($args->{matches}->[3]);
+            $url =~ s/\s+$//;
+            $url =~ s/\/$//;
+            return qq{$preamble<a href="http://$url/revision/$id">$text</a>};
+        }
     });
 
+    # link to hg.m.o
     # Note: for grouping in this regexp, always use non-capturing parentheses.
     my $hgrepos = join('|', qw!(?:releases/)?comm-[\w.]+ 
                                (?:releases/)?mozilla-[\w.]+
@@ -594,7 +581,14 @@ sub bug_format_comment {
 
     push (@$regexes, {
         match => qr/\b(($hgrepos)\s+changeset:?\s+(?:\d+:)?([0-9a-fA-F]{12}))\b/,
-        replace => \&_link_hg
+        replace => sub {
+            my $args = shift;
+            my $text = html_quote($args->{matches}->[0]);
+            my $repo = html_quote($args->{matches}->[1]);
+            my $id   = html_quote($args->{matches}->[2]);
+            $repo = 'integration/mozilla-inbound' if $repo eq 'mozilla-inbound';
+            return qq{<a href="https://hg.mozilla.org/$repo/rev/$id">$text</a>};
+        }
     });
 }
 
@@ -859,6 +853,8 @@ sub mailer_before_send {
     my ($self, $args) = @_;
     my $email = $args->{email};
 
+    _log_sent_email($email);
+
     # Add X-Bugzilla-Tracking header
     if ($email->header('X-Bugzilla-Status') ||
         ($email->header('X-Bugzilla-Type') 
@@ -939,6 +935,40 @@ sub mailer_before_send {
             }
         }       
     }
+}
+
+# Log a summary of bugmail sent to the syslog, for auditing and monitoring
+sub _log_sent_email {
+    my $email = shift;
+
+    my $recipient = $email->header('to');
+    return unless $recipient;
+
+    my $subject = $email->header('Subject');
+
+    my $bug_id = $email->header('X-Bugzilla-ID');
+    if (!$bug_id && $subject =~ /[\[\(]Bug (\d+)/i) {
+        $bug_id = $1;
+    }
+    $bug_id = $bug_id ? "bug-$bug_id" : '-';
+
+    my $message_type;
+    my $type = $email->header('X-Bugzilla-Type');
+    my $reason = $email->header('X-Bugzilla-Reason');
+    if ($type eq 'whine' || $type eq 'request' || $type eq 'admin') {
+        $message_type = $type;
+    } elsif ($reason && $reason ne 'None') {
+        $message_type = $reason;
+    } else {
+        $message_type = $email->header('X-Bugzilla-Watch-Reason');
+    }
+    $message_type ||= '?';
+
+    $subject =~ s/[\[\(]Bug \d+[\]\)]\s*//;
+
+    openlog('apache', 'cons,pid', 'local4');
+    syslog('notice', decode_utf8("[bugmail] $recipient ($message_type) $bug_id $subject"));
+    closelog();
 }
 
 sub post_bug_after_creation {
@@ -1034,6 +1064,10 @@ sub buglist_columns {
     $columns->{'cc_count'} = {
         name => '(SELECT COUNT(*) FROM cc WHERE cc.bug_id = bugs.bug_id)',
         title => 'CC Count',
+    };
+    $columns->{'dupe_count'} = {
+        name => '(SELECT COUNT(*) FROM duplicates WHERE duplicates.dupe_of = bugs.bug_id)',
+        title => 'Duplicate Count',
     };
 }
 
