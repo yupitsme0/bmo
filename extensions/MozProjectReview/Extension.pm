@@ -130,8 +130,12 @@ sub post_bug_after_creation {
                        : $params->{relationship_type};
         }
 
+        my $legal_summary = "Complete Legal Review for ";
+        $legal_summary .= $params->{legal_other_party} . " - " if $params->{legal_other_party};
+        $legal_summary .= $bug->short_desc;
+
         my $bug_data = {
-            short_desc   => 'Complete Legal Review for ' . $bug->short_desc,
+            short_desc   => $legal_summary,
             product      => 'Legal', 
             component    => $component,
             bug_severity => 'normal',
