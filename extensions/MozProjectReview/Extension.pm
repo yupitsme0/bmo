@@ -295,11 +295,6 @@ sub post_bug_after_creation {
         $bug->add_comment($comment);
         $bug->update();
     }
-
-    if (scalar @dep_bug_comment) {
-        $bug->add_comment(join("\n", @dep_bug_comment));
-        $bug->update();
-    }
 }
 
 sub _file_child_bug {
