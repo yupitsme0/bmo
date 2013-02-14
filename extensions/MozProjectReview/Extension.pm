@@ -69,6 +69,7 @@ sub post_bug_after_creation {
 
     if ($params->{data_access} eq 'Yes') {
         $do_privacy_policy = 1;
+        $do_legal = 1;
         $do_sec_review = 1;
     }
 
@@ -125,9 +126,10 @@ sub post_bug_after_creation {
         if ($params->{separate_party} eq 'Yes'
             && $params->{relationship_type}) 
         {
-            $component = $params->{relationship_type} eq 'unspecified'
-                       ? 'General'
-                       : $params->{relationship_type};
+            $component = ($params->{relationship_type} eq 'Other'
+                             || $params->{relationship_type} eq 'Hardware Purchase')
+                         ? 'General'
+                         : $params->{relationship_type};
         }
 
         my $legal_summary = "Complete Legal Review for ";

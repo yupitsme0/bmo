@@ -15,7 +15,8 @@ Legal Questions:
 
 Priority: [% cgi.param('legal_priority') %]
 Other Party: [% cgi.param('legal_other_party') %]
-Business Objective: [% cgi.param('legal_business_objective') %]
+What help do you need from Legal?:
+[%+ cgi.param('legal_help_from_legal') %]
 URL: [% cgi.param('legal_url') %]
 [% IF cgi.param('legal_vendor_services_where') %]
 Vendor Services from Where: 
@@ -25,8 +26,6 @@ Vendor Services from Where:
 [%- cgi.param('legal_vendor_services_where') %]
 [% END %]
 [% END %]
-Description:
-[%+ cgi.param('legal_description') %]
 [% IF cgi.param('separate_party') == 'Yes' && cgi.param('relationship_type') == 'Vendor/Services' %]
 SOW Details:
 Legal Vendor Name: [% cgi.param('legal_sow_vendor_name') %] 
