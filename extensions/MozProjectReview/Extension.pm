@@ -56,10 +56,6 @@ sub post_bug_after_creation {
 
     if ($params->{new_or_change} eq 'New') {
         $do_legal = 1;
-        $do_privacy_policy = 1;
-    }
-    elsif ($params->{new_or_change} eq 'Existing') {
-        $do_legal = 1;
     }
 
     if ($params->{separate_party} eq 'Yes'
