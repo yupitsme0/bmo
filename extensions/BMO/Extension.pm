@@ -941,6 +941,8 @@ sub mailer_before_send {
 sub _log_sent_email {
     my $email = shift;
 
+    return;
+
     my $recipient = $email->header('to');
     return unless $recipient;
 
