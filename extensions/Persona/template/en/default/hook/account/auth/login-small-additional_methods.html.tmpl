@@ -1,0 +1,4 @@
+[% IF Param('user_info_class').split(',').contains('Persona')
+      && Param('persona_includejs_url') %]
+<img src="extensions/Persona/web/images/sign_in.png" height="22px" width="75px" onclick="persona_sign_in()" style="margin-bottom: -8px"> or
+[% END %]
