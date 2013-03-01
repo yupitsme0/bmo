@@ -3,7 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * This Source Code Form is "Incompatible With Secondary Licenses", as
- * defined by the Mozilla Public License, v. 2.0. 
+ * defined by the Mozilla Public License, v. 2.0.
  */
 
 var Dom = YAHOO.util.Dom;
@@ -33,7 +33,7 @@ var MPR = {
         },
         "legal_questions": {
             "legal_priority": "Please select a priority for the legal questions section",
-            "legal_help_from_legal": "Please describe the help needed from the Legal department",
+            "legal_help_from_legal": "Please describe the help needed from the Legal department"
         },
         "legal_sow_questions": {
             "legal_sow_vendor_name": "Please enter a value for SOW legal vendor name",
@@ -49,8 +49,8 @@ var MPR = {
             "legal_sow_vendor_payment_basis": "Please enter a value for SOW vendor payment basis",
             "legal_sow_vendor_payment_schedule": "Please enter a value for SOW vendor payment schedule",
             "legal_sow_vendor_total_max": "Please enter a value for SOW vendor maximum total to be paid",
-            "legal_sow_vendor_product_line": "Please enter a value for SOW vendor product line",
-        },
+            "legal_sow_vendor_product_line": "Please enter a value for SOW vendor product line"
+        }
     },
 
     select_inputs: [
@@ -78,7 +78,7 @@ var MPR = {
         'data_safety_user_data',
         'data_safety_retention',
         'data_safety_separate_party',
-        'data_safety_community_visibility',
+        'data_safety_community_visibility'
     ],
 
     init: function () {
@@ -119,11 +119,13 @@ var MPR = {
             data_safety_communication_plan_row: false,
         };
 
-        if (Dom.get('key_initiative').value == 'Other')
+        if (Dom.get('key_initiative').value == 'Other') {
             page_sections.key_initiative_other_row = true;
+        }
 
-        if (Dom.get('new_or_change').value == 'Existing')
+        if (Dom.get('new_or_change').value == 'Existing') {
             page_sections.mozilla_project_row = true;
+        }
 
         if (Dom.get('new_or_change').value == 'New')
             page_sections.legal_questions = true;
@@ -139,8 +141,10 @@ var MPR = {
             page_sections.initial_separate_party_questions = true;
 
             if (Dom.get('relationship_type').value
-                && Dom.get('relationship_type').value != 'Hardware Purchase')
+                && Dom.get('relationship_type').value != 'Hardware Purchase') 
+            {
                 page_sections.legal_questions = true;
+            }
 
             if (Dom.get('relationship_type').value == 'Vendor/Services'
                 || Dom.get('relationship_type').value == 'Distribution/Bundling')
@@ -149,8 +153,9 @@ var MPR = {
                 page_sections.legal_vendor_services_where_row = true;
             }
 
-            if (Dom.get('relationship_type').value == 'Hardware Purchase')
+            if (Dom.get('relationship_type').value == 'Hardware Purchase') {
                 page_sections.finance_questions = true;
+            }
 
             if (Dom.get('data_access').value == 'Yes') {
                 page_sections.legal_questions = true;
@@ -158,57 +163,72 @@ var MPR = {
                 page_sections.privacy_policy_vendor_questions = true;
             }
 
-            if (Dom.get('vendor_cost').value == '<= $25,000')
+            if (Dom.get('vendor_cost').value == '<= $25,000') {
                 page_sections.po_needed_row = true;
+            }
 
-            if (Dom.get('po_needed').value == 'Yes')
+            if (Dom.get('po_needed').value == 'Yes') {
                 page_sections.finance_questions = true;
+            }
 
-            if (Dom.get('vendor_cost').value == '> $25,000') 
+            if (Dom.get('vendor_cost').value == '> $25,000') {
                 page_sections.finance_questions = true;
+            }
         }
 
-        if (Dom.get('legal_vendor_services_where').value == 'A single country')
+        if (Dom.get('legal_vendor_services_where').value == 'A single country') {
             page_sections.legal_vendor_single_country = true;
+        }
 
-        if (Dom.get('finance_purchase_inbudget').value == 'No')
+        if (Dom.get('finance_purchase_inbudget').value == 'No') {
             page_sections.finance_purchase_notinbudget_why_row = true;
+        }
 
-        if (Dom.get('privacy_policy_project').value == 'Yes')
+        if (Dom.get('privacy_policy_project').value == 'Yes') {
             page_sections.privacy_policy_project_link_row = true;
+        }
 
-        if (Dom.get('privacy_policy_user_data').value == 'Yes')
+        if (Dom.get('privacy_policy_user_data').value == 'Yes') {
             page_sections.privacy_policy_project_user_data_bug_row = true;
+        }
 
-        if (Dom.get('privacy_policy_vendor_user_data').value == 'Yes')
+        if (Dom.get('privacy_policy_vendor_user_data').value == 'Yes') {
             page_sections.privacy_policy_vendor_extra = true;
+        }
 
-        if (Dom.get('data_safety_user_data').value == 'Yes')
+        if (Dom.get('data_safety_user_data').value == 'Yes') {
             page_sections.data_safety_extra_questions = true;
+        }
 
-        if (Dom.get('data_safety_retention').value == 'Yes')
+        if (Dom.get('data_safety_retention').value == 'Yes') {
             page_sections.data_safety_retention_length_row = true;
+        }
 
-        if (Dom.get('data_safety_separate_party').value == 'Yes')
+        if (Dom.get('data_safety_separate_party').value == 'Yes') {
             page_sections.data_safety_separate_party_data_row = true;
+        }
 
-        if (Dom.get('data_safety_community_visibility').value == 'Yes')
+        if (Dom.get('data_safety_community_visibility').value == 'Yes') {
             page_sections.data_safety_communication_channels_row = true;
+        }
 
-        if (Dom.get('data_safety_community_visibility').value == 'No')
+        if (Dom.get('data_safety_community_visibility').value == 'No') {
             page_sections.data_safety_communication_plan_row = true;
+        }
 
         // Toggle the individual page_sections
         for (section in page_sections) {
             MPR.toggleShowSection(section, page_sections[section]);
-        }        
+        }
     },
 
     toggleShowSection: function (section, show) {
-        if (show)
+        if (show) {
             Dom.removeClass(section, 'bz_default_hidden');
-        else 
+        }
+        else { 
             Dom.addClass(section ,'bz_default_hidden');
+        }
     },
 
     validateAndSubmit: function () {
@@ -224,7 +244,7 @@ var MPR = {
                 }
             }
         }
-        
+ 
         // Special case checks
         if (Dom.get('relationship_type').value == 'Vendor/Services'
             && Dom.get('legal_vendor_services_where').value == '')
@@ -240,23 +260,31 @@ var MPR = {
         }
 
         if (Dom.get('key_initiative').value == 'Other') {
-            if (!MPR.isFilledOut('key_initiative_other'))
+            if (!MPR.isFilledOut('key_initiative_other')) {
                 alert_text += "Please enter a value for key initiative in the initial questions section\n";
+            }
         }
 
         if (Dom.get('separate_party').value == 'Yes') {
-            if (!MPR.isFilledOut('relationship_type')) alert_text += "Please select a value for type of relationship\n";
-            if (!MPR.isFilledOut('data_access')) alert_text += "Please select a value for data access\n";
-            if (!MPR.isFilledOut('vendor_cost')) alert_text += "Please select a value for vendor cost\n";
+            if (!MPR.isFilledOut('relationship_type')) {
+                alert_text += "Please select a value for type of relationship\n";
+            }
+            if (!MPR.isFilledOut('data_access')) {
+                alert_text += "Please select a value for data access\n";
+            }
+            if (!MPR.isFilledOut('vendor_cost')) {
+                alert_text += "Please select a value for vendor cost\n";
+            }
         }
 
         if (Dom.get('finance_purchase_inbudget').value == 'No') {
-            if (!MPR.isFilledOut('finance_purchase_notinbudget_why')) 
+            if (!MPR.isFilledOut('finance_purchase_notinbudget_why')) {
                 alert_text += "Please include additional description for the out of budget line item\n";
+            }
         }
 
         if (Dom.get('vendor_cost').value == '<= $25,000'
-            && Dom.get('po_needed').value == '') 
+            && Dom.get('po_needed').value == '')
         {
             alert_text += "Please select whether a PO is needed or not\n";
         }

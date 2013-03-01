@@ -41,6 +41,13 @@ sub post_bug_after_creation {
     my ($do_sec_review, $do_legal, $do_finance, $do_privacy_vendor,
         $do_data_safety, $do_privacy_tech, $do_privacy_policy);
 
+    # Logic section which dictates which bugs are created. This should be 
+    # similar to the logic used in extensions/MozProjectReview/web/js/moz_project_review.js
+
+    if ($params->{new_or_change} eq 'New') {
+        $do_legal = 1;
+    }
+
     if ($params->{mozilla_data} eq 'Yes') {
         $do_legal = 1;
         $do_privacy_policy = 1;
@@ -54,33 +61,33 @@ sub post_bug_after_creation {
         $do_data_safety = 1;
     }
 
-    if ($params->{new_or_change} eq 'New') {
-        $do_legal = 1;
-    }
+    if ($params->{separate_party} eq 'Yes') {
+        if ($params->{relationship_type} ne 'Hardware Purchase') {
+            $do_legal = 1;
+        }
 
-    if ($params->{separate_party} eq 'Yes'
-        && $params->{relationship_type} ne 'Hardware Purchase') 
-    {
-        $do_legal = 1;
-    }
+        if ($params->{relationship_type} eq 'Hardware Purchase') {
+            $do_finance = 1;
+        }
 
-    if ($params->{data_access} eq 'Yes') {
-        $do_privacy_policy = 1;
-        $do_legal = 1;
-        $do_sec_review = 1;
-    }
+        if ($params->{data_access} eq 'Yes') {
+            $do_privacy_policy = 1;
+            $do_legal = 1;
+            $do_sec_review = 1;
+        }
 
-    if ($params->{data_access} eq 'Yes'
-        && $params->{'privacy_policy_vendor_user_data'} eq 'Yes') 
-    {
-        $do_privacy_vendor = 1;
-    }
+        if ($params->{data_access} eq 'Yes'
+            && $params->{'privacy_policy_vendor_user_data'} eq 'Yes') 
+        {
+            $do_privacy_vendor = 1;
+        }
 
-    if ($params->{vendor_cost} eq '> $25,000' 
-        || ($params->{vendor_cost} eq '<= $25,000'
-            && $params->{po_needed} eq 'Yes')) 
-    {
-        $do_finance = 1;
+        if ($params->{vendor_cost} eq '> $25,000' 
+            || ($params->{vendor_cost} eq '<= $25,000'
+                && $params->{po_needed} eq 'Yes')) 
+        {
+            $do_finance = 1;
+        }
     }
 
     my ($sec_review_bug, $legal_bug, $finance_bug, $privacy_vendor_bug,
@@ -176,6 +183,7 @@ sub post_bug_after_creation {
             version      => 'unspecified',
             blocked      => $bug->bug_id,
         };
+
         _file_child_bug({ parent_bug => $bug, template_vars => $vars,
                           template_suffix => 'data-safety', bug_data => $bug_data,
                           dep_comment => \@dep_bug_comment, dep_errors => \@dep_bug_errors });
@@ -266,15 +274,16 @@ sub _file_child_bug {
         $template->process($full_template, $template_vars, \$comment)
             || ThrowTemplateError($template->error());
         $bug_data->{comment} = $comment;
-        $new_bug = Bugzilla::Bug->create($bug_data);
-        $parent_bug->set_all({ dependson => { add => [ $new_bug->bug_id ] }});
-        Bugzilla::BugMail::Send($new_bug->id, { changer => Bugzilla->user });
+        if ($new_bug = Bugzilla::Bug->create($bug_data)) {
+            $parent_bug->set_all({ dependson => { add => [ $new_bug->bug_id ] }});
+            Bugzilla::BugMail::Send($new_bug->id, { changer => Bugzilla->user });
+        }
     };
-    if ($@) {
+    if ($@ || !$new_bug) {
         push(@$dep_comment, "Error creating $template_suffix review bug");
-        push(@$dep_errors, "$template_suffix : $@");
+        push(@$dep_errors, "$template_suffix : $@") if $@;
     }
-    if ($new_bug) {
+    else {
         push(@$dep_comment, "Bug " . $new_bug->id . " - " . $new_bug->short_desc);
     }
 }
