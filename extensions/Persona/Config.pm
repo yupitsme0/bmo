@@ -5,11 +5,25 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-package Bugzilla::Extension::TagNewUsers;
+package Bugzilla::Extension::Persona;
 use strict;
 
-use constant NAME => 'TagNewUsers';
-use constant REQUIRED_MODULES => [ ];
-use constant OPTIONAL_MODULES => [ ];
+use constant NAME => 'Persona';
+
+use constant REQUIRED_MODULES => [
+    {
+        package => 'JSON',
+        module  => 'JSON',
+        version => 0,
+    },
+    {
+        package => 'libwww-perl',
+        module  => 'LWP::UserAgent',
+        version => 0,
+    },
+];
+
+use constant OPTIONAL_MODULES => [
+];
 
 __PACKAGE__->NAME;

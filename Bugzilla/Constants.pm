@@ -197,7 +197,7 @@ use File::Basename;
 # CONSTANTS
 #
 # Bugzilla version
-use constant BUGZILLA_VERSION => "4.0.9+";
+use constant BUGZILLA_VERSION => "4.0.10+";
 
 # These are unique values that are unlikely to match a string or a number,
 # to be used in criteria for match() functions and other things. They start
@@ -429,8 +429,8 @@ use constant MAX_LOGIN_ATTEMPTS => 5;
 use constant LOGIN_LOCKOUT_INTERVAL => 30;
 
 # The maximum number of seconds the Strict-Transport-Security header
-# will remain valid. BMO uses one month.
-use constant MAX_STS_AGE => 2629744;
+# will remain valid. BMO uses one year.
+use constant MAX_STS_AGE => 31536000;
 
 # Protocols which are considered as safe.
 use constant SAFE_PROTOCOLS => ('afs', 'cid', 'ftp', 'gopher', 'http', 'https',

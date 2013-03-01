@@ -35,7 +35,6 @@ Redirect permanent /duplicates.html https://bugzilla-stage-tip.mozilla.org/dupli
 RewriteEngine On
 RewriteRule ^favicon\.ico$ extensions/BMO/web/images/favicon.ico
 RewriteRule ^form[\.:](itrequest|mozlist|mktgevent|poweredby|presentation|trademark|recoverykey)$ enter_bug.cgi?product=mozilla.org&format=$1
-RewriteRule ^form[\.:](swag|gear)$ enter_bug.cgi?product=mozilla.org&format=swag
 RewriteRule ^form[\.:]legal$ enter_bug.cgi?product=Legal&format=legal
 RewriteRule ^form[\.:]mozpr$ enter_bug.cgi?product=Mozilla+PR&format=mozpr
 RewriteRule ^form[\.:]reps[\.:]mentorship$ enter_bug.cgi?product=Mozilla+Reps&format=mozreps
@@ -50,4 +49,5 @@ RewriteRule ^form[\.:]privacy[\.\-:]data$ enter_bug.cgi?product=Privacy&format=p
 RewriteRule ^form[\.:]moz[\.\-:]project[\.\-:]review$ enter_bug.cgi?product=mozilla.org&format=moz-project-review
 RewriteRule ^form[\.:]docs?$ enter_bug.cgi?product=Developer+Documentation&format=doc
 RewriteRule ^form[\.:]mdn?$ enter_bug.cgi?product=Mozilla+Developer+Network&format=mdn
+RewriteRule ^form[\.:](swag|gear)$ enter_bug.cgi?product=mozilla.org&format=swag
 RewriteRule rest/(.*)$ ./extensions/REST/bin/rest.cgi/$1 [NE]
