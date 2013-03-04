@@ -8,6 +8,9 @@
 
 [% PROCESS global/variables.none.tmpl %]
 
+[% USE Bugzilla %]
+[% cgi = Bugzilla.cgi %]
+
 [% inline_style = BLOCK %]
 strong.required:before {
   content: "* ";
@@ -105,9 +108,25 @@ strong.required:before {
         if (elements[i].checked) return elements[i].value;   
       }      
     },
-    init: function() {
-      var bookmarked_state = History.getBookmarkedState('h');
-      this._initial_state = bookmarked_state || 'initial';
+    _setRadioValueByClass: function(class_name, radio_value) {
+      var elements = Dom.getElementsByClassName(class_name);
+      for (var i = 0,  l = elements.length; i < l; i++) {
+        if (elements[i].value == radio_value)
+            elements[i].checked = true;   
+      }      
+    },
+    init: function(state, request_type) {
+      if (state) {
+        this._initial_state = state;
+      }
+      else {
+        var bookmarked_state = History.getBookmarkedState('h');
+        if (bookmarked_state)
+          this._initial_state = bookmarked_state;
+      }
+      if (request_type) {
+        this._setRadioValueByClass('request_type', request_type);
+      }
       try {
         History.register('h', this._initial_state, mdn.onStateChange);
         History.initialize('yui-history-field', 'yui-history-iframe');
@@ -235,6 +254,11 @@ strong.required:before {
         <strong class="required">What would users do? What would happen as a result?</strong><br>
         <textarea name="change_process" id="change_process" rows="5" cols="60"></textarea>
       </p>
+      <p>
+        <strong>Whick MDN page should be updated?</strong><br>
+        <input name="bug_file_loc" id="bug_file_loc" size="60" 
+               value="[% bug_file_loc FILTER html %]">
+      </p>
     </div>
  
     <p id="detail_description">
@@ -255,7 +279,7 @@ strong.required:before {
 </form>
 
 <script>
-  mdn.init();
+  mdn.init([% IF cgi.param('bug_file_loc') %]'detail', 'Change'[% END %]);
 </script>
 
 [% PROCESS global/footer.html.tmpl %]
