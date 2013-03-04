@@ -113,11 +113,8 @@ sub post_bug_after_creation {
     }
 
     if ($do_legal) {
-        my $component;
-        if ($params->{new_or_change} eq 'New') {
-            $component = 'General';
-        }
-        elsif ($params->{new_or_change} eq 'Existing') {
+        my $component = 'General';
+        if ($params->{new_or_change} eq 'Existing') {
             $component = $params->{mozilla_project};
         }
 
