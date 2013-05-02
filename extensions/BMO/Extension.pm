@@ -322,7 +322,10 @@ sub bug_check_can_change_field {
 
     # Bug 649625 - Disallow reopening of bugs which have been resolved for > 1 year
     if ($field eq 'bug_status') {
-        if (is_open_state($new_value) && !is_open_state($old_value)) {
+        if (is_open_state($new_value) 
+            && !is_open_state($old_value)
+            && $bug->resolution eq 'FIXED') 
+        {
             my $days_ago = DateTime->now(time_zone => Bugzilla->local_timezone);
             $days_ago->subtract(days => 365);
             my $last_closed = datetime_from($bug->last_closed_date);
