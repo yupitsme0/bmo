@@ -211,6 +211,19 @@
                                            any_flags_requesteeble = any_flags_requesteeble
            %]
         [% END %]
+        <script>
+          [% FOREACH flag_type = flag_types %]
+            [% NEXT UNLESS flag_type.is_active %]
+            Event.addListener('flag_type-[% flag_type.id FILTER js %]', 'change', 
+                              function() { Splinter.flagChanged = 1;        
+                                           Splinter.queueUpdateHaveDraft(); });
+            [% FOREACH flag = flag_type.flags %]
+              Event.addListener('flag-[% flag.id FILTER js %]', 'change', 
+                                function() { Splinter.flagChanged = 1;
+                                             Splinter.queueUpdateHaveDraft(); });
+            [% END %]
+          [% END %]
+        </script>
       </div>
     </form>
     <div id="buttonBox">

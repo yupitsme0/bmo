@@ -681,9 +681,7 @@ Splinter.Review.File.prototype = {
     },
 
     toString : function() {
-        var str = '::: ';
-        str += this.patchFile.filename;
-        str += '\n';
+        var str = "::: " + this.patchFile.filename + "\n";
         var first = true;
 
 	    var i;
@@ -740,7 +738,7 @@ Splinter.Review.File.prototype = {
             hunk.iterate(function(loc, oldLine, oldText, newLine, newText, flags) {
                 if (loc >= hunk.location + contextFirst && loc <= comment.location) {
                     if ((flags & (Splinter.Patch.ADDED | Splinter.Patch.REMOVED | Splinter.Patch.CHANGED)) == 0) {
-                        patchLines.push(' ' + oldText + Splinter.Review._noNewLine(flags, Splinter.Patch.OLD_NONEWLINE | Splinter.Patch.NEW_NONEWLINE));
+                        patchLines.push('> ' + oldText + Splinter.Review._noNewLine(flags, Splinter.Patch.OLD_NONEWLINE | Splinter.Patch.NEW_NONEWLINE));
                         addOldLine(oldLine);
                         addNewLine(newLine);
                         unchangedLines++;
@@ -749,7 +747,7 @@ Splinter.Review.File.prototype = {
                              || comment.type == Splinter.Patch.CHANGED) 
                             && oldText != null) 
                         {
-                            patchLines.push('-' + oldText + 
+                            patchLines.push('> -' + oldText + 
                                             Splinter.Review._noNewLine(flags, Splinter.Patch.OLD_NONEWLINE));
                             addOldLine(oldLine);
                         }
@@ -757,7 +755,7 @@ Splinter.Review.File.prototype = {
                              || comment.type == Splinter.Patch.CHANGED) 
                             && newText != null) 
                         {
-                            patchLines.push('+' + newText + 
+                            patchLines.push('> +' + newText + 
                                             Splinter.Review._noNewLine(flags, Splinter.Patch.NEW_NONEWLINE));
                             addNewLine(newLine);
                         }
@@ -806,25 +804,19 @@ Splinter.Review.File.prototype = {
 
                 j = 0;
                 while (j < unchangedLines + showPatchRemovals) {
-                    str += patchLines[j];
-                    str += "\n";
+                    str += "> " + patchLines[j] + "\n";
                     j++;
                 }
                 if (showPatchRemovals < patchRemovals) {
-                    str += "... ";
-                    str += patchRemovals - showPatchRemovals;
-                    str += " more ...\n";
+                    str += "> ... " + patchRemovals - showPatchRemovals + " more ...\n";
                     j += patchRemovals - showPatchRemovals;
                 }
                 while (j < unchangedLines + patchRemovals + showPatchAdditions) {
-                    str += patchLines[j];
-                    str += "\n";
+                    str += "> " + patchLines[j] + "\n";
                     j++;
                 }
                 if (showPatchAdditions < patchAdditions) {
-                    str += "... ";
-                    str += patchAdditions - showPatchAdditions;
-                    str += " more ...\n";
+                    str += "> ... " + patchAdditions - showPatchAdditions + " more ...\n";
                     j += patchAdditions - showPatchAdditions;
                 }
             } else {
@@ -843,12 +835,9 @@ Splinter.Review.File.prototype = {
                 } else {
                     str += '@@ +' + patchNewStart + ',' + patchNewLines + ' @@\n';
                 }
-                str += patchLines.join("\n");
-                str += "\n";
+                str += patchLines.join("\n") + "\n";
             }
-            str += "\n";
-            str += comment.comment;
-            str += "\n";
+            str += "\n" + comment.comment + "\n";
         }
 
         return str;
@@ -876,7 +865,7 @@ Splinter.Review.Review.prototype = {
 
     // cf. parsing in Patch.Patch._init()
     parse : function(text) {
-	    Splinter.Review.FILE_START_RE.lastIndex = 0;
+	Splinter.Review.FILE_START_RE.lastIndex = 0;
         var m = Splinter.Review.FILE_START_RE.exec(text);
 
         var intro;
@@ -962,15 +951,15 @@ Splinter.Review.Review.prototype = {
                     }
                     // The check for /^$/ is because if Bugzilla is line-wrapping it also
                     // strips completely whitespace lines
-                    if (line.match(/^ /) || line.match(/^$/)) {
+                    if (line.match(/^>? /) || line.match(/^$/)) {
                         oldLine += count;
                         newLine += count;
                         lastSegmentOld = 0;
                         lastSegmentNew = 0;
-                    } else if (line.match(/^-/)) {
+                    } else if (line.match(/^(> )?-/)) {
                         oldLine += count;
                         lastSegmentOld += count;
-                    } else if (line.match(/^\+/)) {
+                    } else if (line.match(/^(> )?\+/)) {
                         newLine += count;
                         lastSegmentNew += count;
                     } else if (line.match(/^\\/)) {
@@ -1258,8 +1247,9 @@ Splinter.publishReview = function () {
     publish_attach_isprivate.value = Splinter.theAttachment.isPrivate;
 
     // This is a "magic string" used to identify review comments
-    var comment = "Review of attachment " + Splinter.theAttachment.id + ":\n\n" + 
-		  Splinter.theReview.toString();
+    var comment = "Review of attachment " + Splinter.theAttachment.id + ":\n" +
+                  "-----------------------------------------------------------------\n\n" + 
+		          Splinter.theReview.toString();
     publish_review.value = comment;
 
     if (Splinter.theAttachment.status 
@@ -1312,6 +1302,10 @@ Splinter.haveDraft = function () {
         if (Splinter.theReview.files[i].comments.length > 0) {
             return true;
         }
+    }
+
+    if (Splinter.flagChanged == 1) {
+        return true;
     }
 
     return false;
