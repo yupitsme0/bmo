@@ -738,7 +738,7 @@ Splinter.Review.File.prototype = {
             hunk.iterate(function(loc, oldLine, oldText, newLine, newText, flags) {
                 if (loc >= hunk.location + contextFirst && loc <= comment.location) {
                     if ((flags & (Splinter.Patch.ADDED | Splinter.Patch.REMOVED | Splinter.Patch.CHANGED)) == 0) {
-                        patchLines.push('> ' + oldText + Splinter.Review._noNewLine(flags, Splinter.Patch.OLD_NONEWLINE | Splinter.Patch.NEW_NONEWLINE));
+                        patchLines.push('>  ' + oldText + Splinter.Review._noNewLine(flags, Splinter.Patch.OLD_NONEWLINE | Splinter.Patch.NEW_NONEWLINE));
                         addOldLine(oldLine);
                         addNewLine(newLine);
                         unchangedLines++;
@@ -951,7 +951,7 @@ Splinter.Review.Review.prototype = {
                     }
                     // The check for /^$/ is because if Bugzilla is line-wrapping it also
                     // strips completely whitespace lines
-                    if (line.match(/^>? /) || line.match(/^$/)) {
+                    if (line.match(/^>?\s+/) || line.match(/^$/)) {
                         oldLine += count;
                         newLine += count;
                         lastSegmentOld = 0;

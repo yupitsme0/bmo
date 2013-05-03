@@ -127,7 +127,12 @@
   <span id="attachCreator"></span> -
   <span id="attachDate"></span>
   (<a href="[% urlbase FILTER none %]attachment.cgi?id=[% attach_id FILTER url_quote %]"
-      target="_blank">View Raw</a>)
+      target="_blank">View</a>
+   [% IF feature_enabled('patch_viewer') %]
+     | <a href="attachment.cgi?id=[% attach_id FILTER url_quote %]&amp;action=diff"
+          target="_blank">Diff</a>
+   [% END %]
+  )
 </div>
 
 <div id="error" style="display: none;"> </div>
