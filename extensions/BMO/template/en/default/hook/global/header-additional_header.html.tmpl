@@ -24,16 +24,6 @@
 <link id="shorturl" rev="canonical" href="https://bugzil.la/[% bug.bug_id %]">
 [% END %]
 
-[% IF template.name == "list/list.html.tmpl" %]
-    [% microsummary = "buglist.cgi?$urlquerypart&title=$title&ctype=microsummary" %]
-    [% IF searchname %]
-        [% quotedsearchname = searchname FILTER url_quote %]
-        [% microsummary = "?cmdtype=runnamed&namedcmd=$quotedsearchname&ctype=microsummary" %]
-    [% END %]
-    
-   <link rel="microsummary" href="[% microsummary FILTER html %]">
-[% END %]
-
 <style type="text/css">
 body {
   background: url("extensions/BMO/web/images/background.png") repeat-x;
