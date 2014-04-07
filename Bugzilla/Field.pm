@@ -263,7 +263,8 @@ use constant DEFAULT_FIELDS => (
     {name => "owner_idle_time",       desc => "Time Since Assignee Touched"},
     {name => 'see_also',              desc => "See Also",
      type => FIELD_TYPE_BUG_URLS},
-    {name => 'tag',                   desc => 'Tags'},
+    {name => 'last_visit_ts',         desc => 'Last Visit', buglist => 1,
+     type => FIELD_TYPE_DATETIME},
     {name => 'comment_tag',           desc => 'Comment Tag'},
 );
 
