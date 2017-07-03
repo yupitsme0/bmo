@@ -30,6 +30,8 @@ use File::Find;
 use File::Path;
 use File::Basename;
 use File::Copy qw(move);
+use File::Spec;
+use Cwd ();
 use File::Slurp;
 use IO::File;
 use POSIX ();
@@ -43,10 +45,71 @@ our @EXPORT = qw(
     fix_file_permissions
 );
 
-use constant HT_DEFAULT_DENY => <<EOT;
+use constant HT_DEFAULT_DENY => <<'EOT';
 # nothing in this directory is retrievable unless overridden by an .htaccess
 # in a subdirectory
 deny from all
+EOT
+
+use constant HT_GRAPHS_DIR => <<'EOT';
+# Allow access to .png and .gif files.
+<FilesMatch (\.gif|\.png)$>
+  Allow from all
+</FilesMatch>
+
+# And no directory listings, either.
+Deny from all
+EOT
+
+use constant HT_WEBDOT_DIR => <<'EOT';
+# Restrict access to .dot files to the public webdot server at research.att.com
+# if research.att.com ever changes their IP, or if you use a different
+# webdot server, you'll need to edit this
+<FilesMatch \.dot$>
+  Allow from 192.20.225.0/24
+  Deny from all
+</FilesMatch>
+
+# Allow access to .png files created by a local copy of 'dot'
+<FilesMatch \.png\$>
+  Allow from all
+</FilesMatch>
+
+# And no directory listings, either.
+Deny from all
+EOT
+
+use constant HT_ASSETS_DIR => <<'EOT';
+# Allow access to .css and js files
+<Files assets.json>
+    Deny from all
+</Files>
+
+FileETag None
+Header set Cache-Control "public, immutable, max-age=31536000"
+
+# And no directory listings, either.
+Options -Indexes
+EOT
+
+# YUI3 cannot be (easily) made to use the AssetManager asset_file() stuff.
+# So aggressively cache its dir. We'll need to change the name of the dir when we upgrade
+# yui -- but we're more likely to just get rid of that code.
+use constant HT_CACHE_DIR => <<'EOT';
+FileETag None
+Header set Cache-Control "public, immutable, max-age=31536000"
+EOT
+
+use constant INDEX_HTML => <<'EOT';
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Refresh" content="0; URL=index.cgi">
+</head>
+<body>
+  <h1>I think you are looking for <a href="index.cgi">index.cgi</a></h1>
+</body>
+</html>
 EOT
 
 ###############
@@ -156,7 +219,7 @@ sub FILESYSTEM {
         'migrate.pl'      => { perms => OWNER_EXECUTE },
         'sentry.pl'       => { perms => WS_EXECUTE },
         'metrics.pl'      => { perms => WS_EXECUTE },
-        'Makefile.PL'     => { perms => OWNER_WRITE },
+        'Makefile.PL'     => { perms => OWNER_EXECUTE },
         'gen-cpanfile.pl' => { perms => OWNER_EXECUTE },
         'clean-bug-user-last-visit.pl' => { perms => WS_EXECUTE },
 
@@ -170,9 +233,6 @@ sub FILESYSTEM {
         '.htaccess'      => { perms => WS_SERVE },
         'cvs-update.log' => { perms => WS_SERVE },
         'scripts/sendunsentbugmail.pl' => { perms => WS_EXECUTE },
-        'docker/*'             => { perms => OWNER_WRITE },
-        'docker/*.pl'          => { perms => OWNER_EXECUTE },
-        'docker/*.sh'          => { perms => OWNER_EXECUTE },
         'docs/bugzilla.ent'    => { perms => OWNER_WRITE },
         'docs/makedocs.pl'     => { perms => OWNER_EXECUTE },
         'docs/style.css'       => { perms => WS_SERVE },
@@ -276,8 +336,6 @@ sub FILESYSTEM {
                                      dirs => DIR_OWNER_WRITE, },
          'scripts'             => { files => OWNER_EXECUTE,
                                      dirs => DIR_OWNER_WRITE, },
-         'docker_files'        => { files => OWNER_EXECUTE,
-                                     dirs => DIR_OWNER_WRITE, },
     );
 
     # --- FILES TO CREATE --- #
@@ -297,13 +355,43 @@ sub FILESYSTEM {
         $attachdir              => DIR_CGI_WRITE,
         $graphsdir              => DIR_CGI_WRITE | DIR_ALSO_WS_SERVE,
         $webdotdir              => DIR_CGI_WRITE | DIR_ALSO_WS_SERVE,
-        $assetsdir              => DIR_CGI_WRITE | DIR_ALSO_WS_SERVE,
+        $assetsdir              => DIR_WS_SERVE,
         $template_cache         => DIR_CGI_WRITE,
         $error_reports          => DIR_CGI_WRITE,
         # Directories that contain content served directly by the web server.
         "$skinsdir/custom"      => DIR_WS_SERVE,
         "$skinsdir/contrib"     => DIR_WS_SERVE,
     );
+
+    my $yui_all_css = sub {
+        return join("\n",
+            map {
+                my $css = read_file($_);
+                _css_url_fix($css, $_, "skins/yui.css.list")
+            } read_file("skins/yui.css.list", { chomp => 1 })
+        );
+    };
+
+    my $yui_all_js = sub {
+        return join("\n",
+            map { scalar read_file($_) } read_file("js/yui.js.list", { chomp => 1 })
+        );
+    };
+
+    my $yui3_all_css = sub {
+        return join("\n",
+            map {
+                my $css = read_file($_);
+                _css_url_fix($css, $_, "skins/yui3.css.list")
+            } read_file("skins/yui3.css.list", { chomp => 1 })
+        );
+    };
+
+    my $yui3_all_js = sub {
+        return join("\n",
+            map { scalar read_file($_) } read_file("js/yui3.js.list", { chomp => 1 })
+        );
+    };
 
     # The name of each file, pointing at its default permissions and
     # default contents.
@@ -316,23 +404,24 @@ sub FILESYSTEM {
         # or something else is not running as the webserver or root.
         "$datadir/mailer.testfile" => { perms    => CGI_WRITE,
                                         contents => '' },
+        "js/yui.js"               => { perms     => CGI_READ,
+                                       overwrite => 1,
+                                       contents  => $yui_all_js },
+        "skins/yui.css"           => { perms     => CGI_READ,
+                                       overwrite => 1,
+                                       contents  => $yui_all_css },
+        "js/yui3.js"              => { perms     => CGI_READ,
+                                       overwrite => 1,
+                                       contents  => $yui3_all_js },
+        "skins/yui3.css"          => { perms     => CGI_READ,
+                                       overwrite => 1,
+                                       contents  => $yui3_all_css },
     );
 
     # Because checksetup controls the creation of index.html separately
     # from all other files, it gets its very own hash.
     my %index_html = (
-        'index.html' => { perms => WS_SERVE, contents => <<EOT
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta http-equiv="Refresh" content="0; URL=index.cgi">
-</head>
-<body>
-  <h1>I think you are looking for <a href="index.cgi">index.cgi</a></h1>
-</body>
-</html>
-EOT
-        }
+        'index.html' => { perms => WS_SERVE, contents => INDEX_HTML }
     );
 
     # Because checksetup controls the .htaccess creation separately
@@ -355,8 +444,6 @@ EOT
                                           contents => HT_DEFAULT_DENY },
         'scripts/.htaccess'          => { perms    => WS_SERVE,
                                           contents => HT_DEFAULT_DENY },
-        'docker_files/.htaccess'     => { perms    => WS_SERVE,
-                                          contents => HT_DEFAULT_DENY },
         't/.htaccess'                => { perms    => WS_SERVE,
                                           contents => HT_DEFAULT_DENY },
         'xt/.htaccess'               => { perms    => WS_SERVE,
@@ -365,48 +452,14 @@ EOT
                                           contents => HT_DEFAULT_DENY },
         "$error_reports/.htaccess"   => { perms    => WS_SERVE,
                                           contents => HT_DEFAULT_DENY },
-
-        "$graphsdir/.htaccess" => { perms => WS_SERVE, contents => <<EOT
-# Allow access to .png and .gif files.
-<FilesMatch (\\.gif|\\.png)\$>
-  Allow from all
-</FilesMatch>
-
-# And no directory listings, either.
-Deny from all
-EOT
-        },
-
-        "$webdotdir/.htaccess" => { perms => WS_SERVE, contents => <<EOT
-# Restrict access to .dot files to the public webdot server at research.att.com
-# if research.att.com ever changes their IP, or if you use a different
-# webdot server, you'll need to edit this
-<FilesMatch \\.dot\$>
-  Allow from 192.20.225.0/24
-  Deny from all
-</FilesMatch>
-
-# Allow access to .png files created by a local copy of 'dot'
-<FilesMatch \\.png\$>
-  Allow from all
-</FilesMatch>
-
-# And no directory listings, either.
-Deny from all
-EOT
-        },
-
-        "$assetsdir/.htaccess" => { perms => WS_SERVE, contents => <<EOT
-# Allow access to .css files
-<FilesMatch \\.(css|js)\$>
-  Allow from all
-</FilesMatch>
-
-# And no directory listings, either.
-Deny from all
-EOT
-        },
-
+        "$graphsdir/.htaEcess"       => { perms => WS_SERVE,
+                                          contents => HT_GRAPHS_DIR },
+        "$webdotdir/.htaccess"       => { perms => WS_SERVE,
+                                          contents => HT_WEBDOT_DIR },
+        "$assetsdir/.htaccess"       => { perms => WS_SERVE,
+                                          contents => HT_ASSETS_DIR },
+        "js/yui3/.htaccess"          => { perms => WS_SERVE,
+                                          contents => HT_CACHE_DIR },
     );
 
     Bugzilla::Hook::process('install_filesystem', {
@@ -488,14 +541,10 @@ sub update_filesystem {
     }
     elsif (-e 'index.html') {
         my $templatedir = bz_locations()->{'templatedir'};
-        print <<EOT;
-
-*** It appears that you still have an old index.html hanging around.
-    Either the contents of this file should be moved into a template and 
-    placed in the '$templatedir/en/custom' directory, or you should delete 
-    the file.
-
-EOT
+        print "*** It appears that you still have an old index.html hanging around.\n",
+            "Either the contents of this file should be moved into a template and\n",
+            "placed in the '$templatedir/en/custom' directory, or you should delete\n",
+            "the file.\n";
     }
 
     # Delete old files that no longer need to exist
@@ -525,7 +574,31 @@ EOT
 
     _remove_empty_css_files();
     _convert_single_file_skins();
-    _remove_dynamic_assets();
+}
+
+sub _css_url_fix {
+    my ($content, $from, $to) = @_;
+    my $from_dir = dirname(File::Spec->rel2abs($from, bz_locations()->{libpath}));
+    my $to_dir = dirname(File::Spec->rel2abs($to, bz_locations()->{libpath}));
+
+    return css_url_rewrite(
+        $content,
+        sub {
+            my ($url) = @_;
+            if ( $url =~ m{^(?:/|data:)} ) {
+                return 'url(' . $url . ')';
+            }
+            else {
+                my $new_url = File::Spec->abs2rel(
+                    Cwd::realpath(
+                        File::Spec->rel2abs( $url, $from_dir )
+                    ),
+                    $to_dir
+                );
+                return sprintf "url(%s)", $new_url;
+            }
+        }
+    );
 }
 
 sub _remove_empty_css_files {
@@ -541,12 +614,8 @@ sub _remove_empty_css_files {
 sub _remove_empty_css {
     my ($file) = @_;
     my $basename = basename($file);
-    my $empty_contents = <<EOT;
-/*
- * Custom rules for $basename.
- * The rules you put here override rules in that stylesheet.
- */
-EOT
+    my $empty_contents = "/* Custom rules for $basename.\n"
+        . " * The rules you put here override rules in that stylesheet. */";
     if (length($empty_contents) == -s $file) {
         open(my $fh, '<', $file) or warn "$file: $!";
         my $file_contents;
@@ -567,27 +636,6 @@ sub _convert_single_file_skins {
         $dir_name =~ s/\.css$//;
         mkdir $dir_name or warn "$dir_name: $!";
         _rename_file($skin_file, "$dir_name/global.css");
-    }
-}
-
-# delete all automatically generated css/js files to force recreation at the
-# next request.
-sub _remove_dynamic_assets {
-    my @files = (
-        glob(bz_locations()->{assetsdir} . '/*.css'),
-        glob(bz_locations()->{assetsdir} . '/*.js'),
-    );
-    foreach my $file (@files) {
-        unlink($file);
-    }
-
-    # remove old skins/assets directory
-    my $old_path = bz_locations()->{skinsdir} . '/assets';
-    if (-d $old_path) {
-        foreach my $file (glob("$old_path/*.css")) {
-            unlink($file);
-        }
-        rmdir($old_path);
     }
 }
 
@@ -630,12 +678,18 @@ sub _create_files {
     # It's not necessary to sort these, but it does make the
     # output of checksetup.pl look a bit nicer.
     foreach my $file (sort keys %files) {
-        unless (-e $file) {
+        my $info = $files{$file};
+        if ($info->{overwrite} or not -f $file) {
             print "Creating $file...\n";
-            my $info = $files{$file};
-            my $fh = new IO::File($file, O_WRONLY | O_CREAT, $info->{perms})
-                || die $!;
-            print $fh $info->{contents} if $info->{contents};
+            my $fh = IO::File->new( $file, O_WRONLY | O_CREAT, $info->{perms} )
+                or die "unable to write $file: $!";
+            my $contents = $info->{contents};
+            if (ref $contents && ref($contents) eq 'CODE') {
+                print $fh $contents->();
+            }
+            else {
+                print $fh $contents;
+            }
             $fh->close;
         }
     }

@@ -30,6 +30,7 @@ use Scalar::Util qw(blessed);
 use Storable qw(dclone);
 use URI;
 use URI::QueryParam;
+use Role::Tiny::With;
 
 use base qw(Bugzilla::Object Exporter);
 @Bugzilla::User::EXPORT = qw(is_available_username
@@ -123,6 +124,81 @@ use constant VALIDATOR_DEPENDENCIES => {
 
 use constant EXTRA_REQUIRED_FIELDS => qw(is_enabled);
 
+with 'Bugzilla::Elastic::Role::Object';
+
+sub ES_TYPE { 'user' }
+
+sub ES_OBJECTS_AT_ONCE { 2000 }
+
+sub ES_SELECT_UPDATED_SQL {
+    my ($class, $mtime) = @_;
+
+    my $sql = q{
+        SELECT DISTINCT
+            object_id
+        FROM
+            audit_log
+        WHERE
+            class = 'Bugzilla::User' AND at_time > FROM_UNIXTIME(?)
+    };
+    return ($sql, [$mtime]);
+}
+
+sub ES_SELECT_ALL_SQL {
+    my ($class, $last_id) = @_;
+
+    my $id = $class->ID_FIELD;
+    my $table = $class->DB_TABLE;
+
+    return ("SELECT $id FROM $table WHERE $id > ? AND is_enabled ORDER BY $id", [$last_id // 0]);
+}
+
+sub ES_PROPERTIES {
+    return {
+        suggest_user => {
+            type            => 'completion',
+            analyzer        => 'folding',
+            search_analyzer => 'folding',
+            payloads        => \1,
+        },
+        suggest_nick => {
+            type            => 'completion',
+            analyzer        => 'simple',
+            search_analyzer => 'simple',
+            payloads        => \1,
+        },
+        login      => { type => 'string' },
+        name       => { type => 'string' },
+        is_enabled => { type => 'boolean' },
+    };
+}
+
+sub es_document {
+    my ( $self, $timestamp ) = @_;
+    my $weight = eval { $self->last_activity_ts ? datetime_from($self->last_activity_ts)->epoch : 0 } // 0;
+    my $doc = {
+        login          => $self->login,
+        name           => $self->name,
+        is_enabled     => $self->is_enabled,
+        suggest_user => {
+            input => [ $self->login, $self->name ],
+            output => $self->identity,
+            payload => { name => $self->login, real_name => $self->name },
+            weight => $weight,
+        },
+    };
+    if ($self->name && $self->name =~ /:(\w+)/) {
+        my $ircnick = $1;
+        $doc->{suggest_nick} = {
+            input => [ $ircnick ],
+            output => $self->login,
+            payload => { name => $self->login, real_name => $self->name, ircnick => $ircnick },
+            weight => $weight,
+        };
+    }
+
+    return $doc;
+}
 ################################################################################
 # Functions
 ################################################################################
@@ -1581,6 +1657,52 @@ sub check_can_admin_flagtype {
         $can_admin || ThrowUserError('flag_type_not_editable', { flagtype => $flagtype });
     }
     return wantarray ? ($flagtype, $can_fully_edit) : $flagtype;
+}
+
+sub can_change_flag {
+    my ($self, $flag_type, $old_status, $new_status) = @_;
+
+    # "old_status:new_status" => [OR conditions
+    state $flag_transitions = {
+        'X:-' => ['grant_group'],
+        'X:+' => ['grant_group'],
+        'X:?' => ['request_group'],
+
+        '?:X' => ['request_group', 'is_setter'],
+        '?:-' => ['grant_group'],
+        '?:+' => ['grant_group'],
+
+        '+:X' => ['grant_group'],
+        '+:-' => ['grant_group'],
+        '+:?' => ['grant_group'],
+
+        '-:X' => ['grant_group'],
+        '-:+' => ['grant_group'],
+        '-:?' => ['grant_group'],
+    };
+
+    return 1 if $new_status eq $old_status;
+
+    my $action = "$old_status:$new_status";
+    my %bool = (
+        request_group => $self->can_request_flag($flag_type),
+        grant_group   => $self->can_set_flag($flag_type),
+        is_setter     => $self->id == Bugzilla->user->id,
+    );
+
+    my $cond = $flag_transitions->{$action};
+    if ($cond) {
+        if (any { $bool{ $_ } } @$cond) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        warn "unknown flag transition blocked: $action";
+        return 0;
+    }
 }
 
 sub can_request_flag {

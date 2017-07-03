@@ -18,7 +18,7 @@ use base qw(Exporter);
                              css_class_quote html_light_quote
                              i_am_cgi i_am_webservice correct_urlbase remote_ip
                              validate_ip do_ssl_redirect_if_required use_attachbase
-                             diff_arrays on_main_db
+                             diff_arrays on_main_db css_url_rewrite
                              trim wrap_hard wrap_comment find_wrap_point
                              format_time validate_date validate_time datetime_from time_ago
                              file_mod_time is_7bit_clean
@@ -43,13 +43,12 @@ use Text::Wrap;
 use Encode qw(encode decode resolve_alias);
 use Encode::Guess;
 use POSIX qw(floor ceil);
+use Taint::Util qw(untaint);
 
 sub trick_taint {
-    require Carp;
-    Carp::confess("Undef to trick_taint") unless defined $_[0];
-    my $match = $_[0] =~ /^(.*)$/s;
-    $_[0] = $match ? $1 : undef;
-    return (defined($_[0]));
+    untaint($_[0]);
+
+    return defined $_[0];
 }
 
 sub detaint_natural {
@@ -65,17 +64,20 @@ sub detaint_signed {
     return (defined($_[0]));
 }
 
+my %html_quote = (
+    q{&} => '&amp;',
+    q{<} => '&lt;',
+    q{>} => '&gt;',
+    q{"} => '&quot;',
+    q{@} => '&#64;', # Obscure '@'.
+);
+
 # Bug 120030: Override html filter to obscure the '@' in user
 #             visible strings.
 # Bug 319331: Handle BiDi disruptions.
 sub html_quote {
     my $var = shift;
-    $var =~ s/&/&amp;/g;
-    $var =~ s/</&lt;/g;
-    $var =~ s/>/&gt;/g;
-    $var =~ s/"/&quot;/g;
-    # Obscure '@'.
-    $var =~ s/\@/\&#64;/g;
+    $var =~ s/([&<>"@])/$html_quote{$1}/g;
 
     state $use_utf8 = Bugzilla->params->{'utf8'};
 
@@ -373,7 +375,7 @@ sub is_ipv6 {
 
     my $ipv6 = join(':', @chunks);
     # The IP address is valid and can now be detainted.
-    trick_taint($ipv6);
+    untaint($ipv6);
 
     # Need to handle the exception of trailing :: being valid.
     return "${ipv6}::" if $ip =~ /::$/;
@@ -423,6 +425,12 @@ sub diff_arrays {
     # Ignore canceled items as well as empty strings.
     my @removed = grep { defined $_ && $_ ne '' } @old;
     return (\@removed, \@added);
+}
+
+sub css_url_rewrite {
+    my ($content, $callback) = @_;
+    $content =~ s{(?<!=)url\((["']?)([^\)]+?)\1\)}{$callback->($2)}eig;
+    return $content;
 }
 
 sub trim {
@@ -523,6 +531,9 @@ sub datetime_from {
     my ($date, $timezone) = @_;
 
     # In the database, this is the "0" date.
+    use Carp qw(cluck);
+    cluck("undefined date") unless defined $date;
+    return undef unless defined $date;
     return undef if $date =~ /^0000/;
 
     my @time;
@@ -649,7 +660,7 @@ sub bz_crypt {
         # HACK: Perl has bug where returned crypted password is considered
         # tainted. See http://rt.perl.org/rt3/Public/Bug/Display.html?id=59998
         unless(tainted($password) || tainted($salt)) {
-            trick_taint($crypted_password);
+            untaint($crypted_password);
         } 
     }
     else {
@@ -691,7 +702,7 @@ sub validate_email_syntax {
         && length($email) <= 127)
     {
         # We assume these checks to suffice to consider the address untainted.
-        trick_taint($_[0]);
+        untaint($_[0]);
         return 1;
     }
     return 0;

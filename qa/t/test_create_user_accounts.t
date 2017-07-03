@@ -5,14 +5,12 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
-use 5.10.1;
 use strict;
 use warnings;
-
-use FindBin qw($RealBin);
-use lib "$RealBin/lib", "$RealBin/../../lib", "$RealBin/../../local/lib/perl5";
+use lib qw(lib ../../lib ../../local/lib/perl5);
 
 use Test::More "no_plan";
+
 use QA::Util;
 
 my ($sel, $config) = get_selenium();
@@ -27,15 +25,13 @@ logout($sel);
 # expires after 3 days only and this test can be executed several times per day.
 my $valid_account = 'selenium-' . random_string(10) . '@bugzilla.test';
 
-$sel->click_ok("link=Home");
-$sel->wait_for_page_to_load_ok(WAIT_TIME);
-$sel->title_is("Bugzilla Main Page");
 $sel->is_text_present_ok("Open a New Account");
 $sel->click_ok("link=Open a New Account");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Create a new Bugzilla account");
 $sel->type_ok("login", $valid_account);
-$sel->click_ok("send");
+$sel->check_ok("etiquette", "Agree to abide by code of conduct");
+$sel->click_ok('//input[@value="Create Account"]');
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Request for new user account '$valid_account' submitted");
 $sel->is_text_present_ok("A confirmation email has been sent");
@@ -49,11 +45,12 @@ $sel->click_ok("link=Open a New Account");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Create a new Bugzilla account");
 $sel->type_ok("login", $valid_account);
-$sel->click_ok("send");
+$sel->check_ok("etiquette", "Agree to abide by code of conduct");
+$sel->click_ok('//input[@value="Create Account"]');
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Too Soon For New Token");
 my $error_msg = trim($sel->get_text("error_msg"));
-ok($error_msg =~ /Please wait 10 minutes/, "Too soon for this account");
+ok($error_msg =~ /Please wait a while and try again/, "Too soon for this account");
 
 # These accounts do not pass the regexp.
 my @accounts = ('test@yahoo.com', 'test@bugzilla.net', 'test@bugzilla.test.com');
@@ -62,7 +59,8 @@ foreach my $account (@accounts) {
     $sel->wait_for_page_to_load_ok(WAIT_TIME);
     $sel->title_is("Create a new Bugzilla account");
     $sel->type_ok("login", $account);
-    $sel->click_ok("send");
+    $sel->check_ok("etiquette", "Agree to abide by code of conduct");
+    $sel->click_ok('//input[@value="Create Account"]');
     $sel->wait_for_page_to_load_ok(WAIT_TIME);
     $sel->title_is("Account Creation Restricted");
     $sel->is_text_present_ok("User account creation has been restricted.");
@@ -83,7 +81,8 @@ foreach my $account (@accounts) {
     $sel->wait_for_page_to_load_ok(WAIT_TIME);
     $sel->title_is("Create a new Bugzilla account");
     $sel->type_ok("login", $account);
-    $sel->click_ok("send");
+    $sel->check_ok("etiquette", "Agree to abide by code of conduct");
+    $sel->click_ok('//input[@value="Create Account"]');
     ok($sel->get_alert() =~ /The e-mail address doesn't pass our syntax checking for a legal email address/,
         'Invalid email address detected');
 }
@@ -92,20 +91,13 @@ foreach my $account (@accounts) {
 @accounts = ('test@bugzilla.org@bugzilla.test', 'test@bugzilla..test');
 # Logins larger than 127 characters must be rejected, for security reasons.
 push @accounts, 'selenium-' . random_string(110) . '@bugzilla.test';
-
 foreach my $account (@accounts) {
     $sel->click_ok("link=New Account");
     $sel->wait_for_page_to_load_ok(WAIT_TIME);
     $sel->title_is("Create a new Bugzilla account");
-    # Starting with 5.0, the login field is a type=email and is marked "required"
-    # This means that we need to add the novalidate attribute to the enclosing form
-    # so that the illegal login can still be checked by the backend code.
-    my $script = q{
-        document.getElementById('account_creation_form').setAttribute('novalidate', 1);
-    };
-    $sel->run_script($script);
     $sel->type_ok("login", $account);
-    $sel->click_ok("send");
+    $sel->check_ok("etiquette", "Agree to abide by code of conduct");
+    $sel->click_ok('//input[@value="Create Account"]');
     $sel->wait_for_page_to_load_ok(WAIT_TIME);
     $sel->title_is("Invalid Email Address");
     my $error_msg = trim($sel->get_text("error_msg"));
@@ -117,7 +109,8 @@ $sel->click_ok("link=New Account");
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Create a new Bugzilla account");
 $sel->type_ok("login", $config->{admin_user_login});
-$sel->click_ok("send");
+$sel->check_ok("etiquette", "Agree to abide by code of conduct");
+$sel->click_ok('//input[@value="Create Account"]');
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Account Already Exists");
 $error_msg = trim($sel->get_text("error_msg"));
@@ -131,6 +124,8 @@ logout($sel);
 # Make sure that links pointing to createaccount.cgi are all deactivated.
 ok(!$sel->is_text_present("New Account"), "No link named 'New Account'");
 $sel->click_ok("link=Home");
+$sel->wait_for_page_to_load_ok(WAIT_TIME);
+$sel->refresh;
 $sel->wait_for_page_to_load_ok(WAIT_TIME);
 $sel->title_is("Bugzilla Main Page");
 ok(!$sel->is_text_present("Open a New Account"), "No link named 'Open a New Account'");

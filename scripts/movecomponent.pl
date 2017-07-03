@@ -6,10 +6,10 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
+use 5.10.1;
 use strict;
-
-use FindBin qw($RealBin);
-use lib ("$RealBin/..", "$RealBin/../lib", "$RealBin/../local/lib/perl5");
+use warnings;
+use lib qw(. lib local/lib/perl5);
 
 use Bugzilla;
 use Bugzilla::Component;
@@ -122,7 +122,9 @@ $dbh->do("UPDATE bugs SET lastdiffed = NOW()
           WHERE component_id = ?", undef, $component->id);
 
 # Update bugs_activity
-my $userid = 1; # nobody@mozilla.org
+my $auto_user = Bugzilla::User->check({ name => 'automation@bmo.tld' });
+my $userid = $auto_user->id;
+Bugzilla->set_user($auto_user);
 
 $dbh->do("INSERT INTO bugs_activity(bug_id, who, bug_when, fieldid, removed,
                                     added)

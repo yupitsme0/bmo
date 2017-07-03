@@ -16,7 +16,7 @@ use 5.10.1;
 use strict;
 use warnings;
 
-use lib qw(lib local/lib/perl5);
+use lib qw(. lib local/lib/perl5);
 
 use Getopt::Long qw(:config gnu_getopt);
 

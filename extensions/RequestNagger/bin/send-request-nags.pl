@@ -7,11 +7,11 @@
 # This Source Code Form is "Incompatible With Secondary Licenses", as
 # defined by the Mozilla Public License, v. 2.0.
 
+use 5.10.1;
 use strict;
 use warnings;
 
-use FindBin qw($RealBin);
-use lib ("$RealBin/../../..", "$RealBin/../../../lib", "$RealBin/../../../local/lib/perl5");
+use lib qw(. lib local/lib/perl5);
 
 use Bugzilla;
 BEGIN { Bugzilla->extensions() }
@@ -43,10 +43,9 @@ if (my $filename = shift @ARGV) {
     exit;
 }
 
-my $dbh = Bugzilla->dbh;
-my $date = $dbh->selectrow_array('SELECT LOCALTIMESTAMP(0)');
-my $now = datetime_from($date)->truncate( to => 'day' );
-$date = format_time($date, '%a, %d %b %Y %T %z', 'UTC');
+my $dbh     = Bugzilla->dbh;
+my $db_date = $dbh->selectrow_array('SELECT LOCALTIMESTAMP(0)');
+my $date    = format_time($db_date, '%a, %d %b %Y %T %z', 'UTC');
 
 # delete expired defers
 $dbh->do("DELETE FROM nag_defer WHERE defer_until <= CURRENT_DATE()");
@@ -157,6 +156,7 @@ sub send_nags {
 
 sub _include_request {
     my ($request, $report) = @_;
+    state $now = datetime_from($db_date, 'UTC')->truncate( to => 'day' );
 
     my $recipient = Bugzilla::User->new({ id => $request->{recipient_id}, cache => 1 });
 
@@ -181,7 +181,7 @@ sub _include_request {
     }
 
     # exclude weekends and re-check nag-interval
-    my $date = datetime_from($request->{modification_date});
+    my $date = datetime_from($request->{modification_date}, 'UTC');
     my $hours = 0;
     $hours += 24 - $date->hour if $date->day_of_week <= 5;
     $date->add( days => 1 )->truncate( to => 'day' );

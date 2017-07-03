@@ -265,6 +265,7 @@ use constant DEFAULT_FIELDS => (
     {name => 'bug_interest_ts',       desc => 'Bug Interest', buglist => 1,
      type => FIELD_TYPE_DATETIME},
     {name => 'comment_tag',           desc => 'Comment Tag'},
+    {name => 'triage_owner',          desc => 'Triage Owner', buglist => 1},
 );
 
 ################
@@ -639,7 +640,7 @@ sub visibility_field {
     my $self = shift;
     if ($self->{visibility_field_id}) {
         $self->{visibility_field} ||= 
-            $self->new($self->{visibility_field_id});
+            $self->new({ id => $self->{visibility_field_id}, cache => 1 });
     }
     return $self->{visibility_field};
 }

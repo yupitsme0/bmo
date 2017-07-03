@@ -9,16 +9,11 @@
 
 package QA::Util;
 
-use 5.10.1;
 use strict;
-use warnings;
-use autodie;
-
-use FindBin qw($RealBin);
-use lib "$RealBin/../../lib", "$RealBin/../../local/lib/perl5";
-
 use Data::Dumper;
 use Test::More;
+use Test::WWW::Selenium;
+use WWW::Selenium::Util qw(server_is_running);
 
 # Fixes wide character warnings
 BEGIN {
@@ -28,7 +23,7 @@ BEGIN {
     binmode $builder->todo_output,    ":encoding(utf8)";
 }
 
-use parent qw(Exporter);
+use base qw(Exporter);
 @QA::Util::EXPORT = qw(
     trim
     url_quote
@@ -50,7 +45,6 @@ use parent qw(Exporter);
 
     get_selenium
     get_rpc_clients
-    get_config
 
     WAIT_TIME
     CHROME_MODE
@@ -58,7 +52,7 @@ use parent qw(Exporter);
 
 # How long we wait for pages to load.
 use constant WAIT_TIME => 60000;
-use constant CONF_FILE =>  "$RealBin/../config/selenium_test.conf";
+use constant CONF_FILE =>  "../config/selenium_test.conf";
 use constant CHROME_MODE => 1;
 use constant NDASH => chr(0x2013);
 
@@ -98,17 +92,13 @@ sub get_config {
     my $conf_file = CONF_FILE;
     my $config = do($conf_file)
         or die "can't read configuration '$conf_file': $!$@";
-    return $config;
 }
 
 sub get_selenium {
     my $chrome_mode = shift;
     my $config = get_config();
 
-    require Test::WWW::Selenium;
-    require WWW::Selenium::Util;
-
-    if (!WWW::Selenium::Util::server_is_running()) {
+    if (!server_is_running) {
         die "Selenium Server isn't running!";
     }
 
@@ -128,14 +118,14 @@ sub get_xmlrpc_client {
                      $config->{bugzilla_installation} . "/xmlrpc.cgi";
 
     require QA::RPC::XMLRPC;
-    my $rpc = QA::RPC::XMLRPC->new(proxy => $xmlrpc_url);
+    my $rpc = new QA::RPC::XMLRPC(proxy => $xmlrpc_url);
     return ($rpc, $config);
 }
 
 sub get_jsonrpc_client {
     my ($get_mode) = @_;
     require QA::RPC::JSONRPC;
-    my $rpc = QA::RPC::JSONRPC->new();
+    my $rpc = new QA::RPC::JSONRPC();
     # If we don't set a long timeout, then the Bug.add_comment test
     # where we add a too-large comment fails.
     $rpc->transport->timeout(180);
@@ -165,10 +155,11 @@ sub go_to_home {
 sub log_in {
     my ($sel, $config, $user) = @_;
 
-    go_to_home($sel, $config);
-    $sel->type_ok("Bugzilla_login_top", $config->{"${user}_user_login"}, "Enter $user login name");
-    $sel->type_ok("Bugzilla_password_top", $config->{"${user}_user_passwd"}, "Enter $user password");
-    $sel->click_ok("log_in_top", undef, "Submit credentials");
+    $sel->open_ok("/$config->{bugzilla_installation}/login", undef, "Go to the home page");
+    $sel->title_is("Log in to Bugzilla");
+    $sel->type_ok("Bugzilla_login", $config->{"${user}_user_login"}, "Enter $user login name");
+    $sel->type_ok("Bugzilla_password", $config->{"${user}_user_passwd"}, "Enter $user password");
+    $sel->click_ok("log_in", undef, "Submit credentials");
     $sel->wait_for_page_to_load(WAIT_TIME);
     $sel->title_is("Bugzilla Main Page", "User is logged in");
 }
@@ -231,15 +222,10 @@ sub create_bug {
 
 sub edit_bug {
     my ($sel, $bug_id, $bug_summary, $options) = @_;
-    my $ndash = NDASH;
     my $btn_id = $options ? $options->{id} : 'commit';
-
     $sel->click_ok($btn_id);
     $sel->wait_for_page_to_load_ok(WAIT_TIME);
-    $sel->title_is("$bug_id $ndash $bug_summary", "Changes submitted to bug $bug_id");
-    # If the web browser doesn't support history.ReplaceState or has it turned off,
-    # "Bug XXX processed" is displayed instead (as in Bugzilla 4.0 and older).
-    # $sel->title_is("Bug $bug_id processed", "Changes submitted to bug $bug_id");
+    $sel->is_text_present_ok("Changes submitted for bug $bug_id");
 }
 
 sub edit_bug_and_return {

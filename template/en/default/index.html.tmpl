@@ -30,17 +30,8 @@
    header = "Main Page" 
    header_addl_info = "version " _ (Bugzilla.params.bugzilla_version || constants.BUGZILLA_VERSION)
    style_urls = [ 'skins/standard/index.css' ]
+   no_yui = 1
 %]
-
-<script type="text/javascript">
-function checkQuicksearch( form ) {
-  if (form.quicksearch.value == '') {
-    alert('Please enter one or more search terms first.');
-    return false;
-  }
-  return true;
-}
-</script>
 
 <div id="page-index">
   <table>
@@ -63,8 +54,7 @@ function checkQuicksearch( form ) {
              href="?GoAheadAndLogIn=1"><span>Log In</span></a>
            [% END %]
 
-        <form id="quicksearchForm" name="quicksearchForm" action="buglist.cgi"
-              onsubmit="return checkQuicksearch(this);">
+        <form id="quicksearchForm" name="quicksearchForm" action="buglist.cgi">
           <div>
             <input id="quicksearch_main" type="text" name="quicksearch"
               placeholder="Enter [% terms.abug %] number or some search terms"

@@ -39,7 +39,7 @@
   RETURN UNLESS needinfo_flagtype;
 %]
 
-<script>
+<script [% script_nonce FILTER none%]>
 [% IF needinfo_flags.size > 0 %]
 $(function() {
   [%# Displays NEEDINFO tag in bug header %]
@@ -122,11 +122,15 @@ $(function() {
   function existing_needinfo_changed(event) {
     var $target = $(event.target);
     var is_redirect = !$target.is(':checked') && $target.data('is-self');
-    $('#needinfo_from_label').text(is_redirect
-      ? 'Redirect my needinfo request to'
-      : 'Need more information from'
-    );
-    $('#needinfo_redirect').val(is_redirect ? '1' : '');
+    if (is_redirect) {
+      $('#needinfo_from_label').hide();
+      $('#needinfo_type').show();
+      $('#needinfo_type').val('redirect_to');
+    } else {
+      $('#needinfo_from_label').show();
+      $('#needinfo_type').hide();
+      $('#needinfo_type').val('needinfo_from');
+    }
   }
 
   function needinfo_role_changed() {
@@ -135,12 +139,11 @@ $(function() {
     $('#needinfo').change();
   }
 
-  function needinfo_from_changed() {
-    $('#needinfo').prop('checked', $('#needinfo_from').val() !== '');
-  }
-
   $(function() {
     needinfo_init();
+    $(".needinfo_from_changed").on("change", function (event) {
+        $("#needinfo").prop("checked", $("#needinfo_from").val() !== '');
+    });
   });
 [% END %]
 </script>
@@ -155,7 +158,7 @@ $(function() {
           <input type="checkbox" id="needinfo_override_[% flag.id FILTER html %]"
             name="needinfo_override_[% flag.id FILTER html %]" value="1" class="needinfo-override"
             [% 'data-is-self="1"' IF flag.requestee %]
-            [% " checked" IF user.in_group("canconfirm") %]>
+            [% " checked" IF flag.requestee.id == user.id || user.in_group("canconfirm") %]>
         </td>
         <td>
           <label for="needinfo_override_[% flag.id FILTER html %]">
@@ -186,18 +189,16 @@ $(function() {
   [% IF needinfo_flags.size == 0 || needinfo_flagtype.is_multiplicable %]
     <tr>
       <td class="needinfo-cb-td">
-        <input
-          type="checkbox"
-          name="needinfo"
-          id="needinfo"
-          value="1"
-        >
+        <input type="checkbox" name="needinfo" id="needinfo" value="1">
       </td>
       <td>
-        <input type="hidden" name="needinfo_redirect" id="needinfo_redirect" value="">
         <label for="needinfo" id="needinfo_from_label">
           Need more information from
         </label>
+        <select name="needinfo_type" id="needinfo_type" style="display:none;">
+          <option value="needinfo_from" selected="true">Need more information from</option>
+          <option value="redirect_to">Redirect needinfo request to</option>
+        </select>
         <select name="needinfo_role" id="needinfo_role">
           <option value="other">other</option>
           [% IF NOT bug.reporter.needinfo_blocked %]
@@ -217,6 +218,9 @@ $(function() {
               [% available_mentors.size == 1 ? "mentor" : mentor.login FILTER html %]
             </option>
           [% END %]
+          [% IF bug.component_obj.triage_owner_id %]
+             <option value="triage_owner">triage owner</option>
+           [% END %]
         </select>
         <span id="needinfo_from_container">
           [% INCLUDE global/userselect.html.tmpl
@@ -225,7 +229,7 @@ $(function() {
               value       => ""
               size        => 30
               multiple    => 5
-              onchange    => "needinfo_from_changed()"
+              classes     => ["needinfo_from_changed"]
               field_title => "Enter one or more comma separated users to request more information from"
           %]
         </span>

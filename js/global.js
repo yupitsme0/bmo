@@ -16,6 +16,74 @@
 *                 
 */
 
+var BUGZILLA = $("#bugzilla-global").data("bugzilla");
+
+$(function () {
+  $('body').addClass("platform-" + navigator.platform);
+  $('.show_mini_login_form').on("click", function (event) {
+    return show_mini_login_form($(this).data('qs-suffix'));
+  });
+  $('.hide_mini_login_form').on("click", function (event) {
+    return hide_mini_login_form($(this).data('qs-suffix'));
+  });
+  $('.show_forgot_form').on("click", function (event) {
+    return show_forgot_form($(this).data('qs-suffix'));
+  });
+  $('.hide_forgot_form').on("click", function (event) {
+    return hide_forgot_form($(this).data('qs-suffix'));
+  });
+  $('.check_mini_login_fields').on("click", function (event) {
+    return check_mini_login_fields($(this).data('qs-suffix'));
+  });
+  $('.quicksearch_check_empty').on("submit", function (event) {
+      if (this.quicksearch.value == '') {
+          alert('Please enter one or more search terms first.');
+          event.preventDefault();
+      }
+  });
+
+  unhide_language_selector();
+  $("#lob_action").on("change", update_text);
+  $("#lob_newqueryname").on("keyup", manage_old_lists);
+});
+
+function unhide_language_selector() {
+    $('#lang_links_container').removeClass('bz_default_hidden');
+}
+
+function update_text() {
+    // 'lob' means list_of_bugs.
+    var lob_action = document.getElementById('lob_action');
+    var action = lob_action.options[lob_action.selectedIndex].value;
+    var text = document.getElementById('lob_direction');
+    var new_query_text = document.getElementById('lob_new_query_text');
+
+    if (action == "add") {
+        text.innerHTML = "to";
+        new_query_text.style.display = 'inline';
+    }
+    else {
+        text.innerHTML = "from";
+        new_query_text.style.display = 'none';
+    }
+}
+
+function manage_old_lists() {
+    var old_lists = document.getElementById('lob_oldqueryname');
+    // If there is no saved searches available, returns.
+    if (!old_lists) return;
+
+    var new_query = document.getElementById('lob_newqueryname').value;
+
+    if (new_query != "") {
+        old_lists.disabled = true;
+    }
+    else {
+        old_lists.disabled = false;
+    }
+}
+
+
 function show_mini_login_form( suffix ) {
     $('#login_link' + suffix).addClass('bz_default_hidden');
     $('#mini_login' + suffix).removeClass('bz_default_hidden');
@@ -36,6 +104,7 @@ function show_forgot_form( suffix ) {
     $('#login_container' + suffix).addClass('bz_default_hidden');
     return false;
 }
+
 
 function hide_forgot_form( suffix ) {
     $('#forgot_link' + suffix).removeClass('bz_default_hidden');
@@ -71,7 +140,7 @@ function check_mini_login_fields( suffix ) {
 }
 
 function set_language( value ) {
-    $.cookie('LANG', value, {
+    Cookies.set('LANG', value, {
         expires: new Date('January 1, 2038'),
         path: BUGZILLA.param.cookie_path
     });

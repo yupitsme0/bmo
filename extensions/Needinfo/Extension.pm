@@ -92,9 +92,10 @@ sub bug_start_of_update {
     Bugzilla->input_params($params);
 
     my $add_needinfo  = delete $params->{needinfo};
+    my $needinfo_type = delete $params->{needinfo_type} // '';
     my $needinfo_from = delete $params->{needinfo_from};
     my $needinfo_role = delete $params->{needinfo_role};
-    my $is_redirect   = delete $params->{needinfo_redirect};
+    my $is_redirect   = $needinfo_type eq 'redirect_to' ? 1 : 0;
     my $is_private    = $params->{'comment_is_private'};
 
     my @needinfo_overrides;
@@ -132,6 +133,11 @@ sub bug_start_of_update {
             # Use current user as requestee
             elsif ($needinfo_role eq 'user') {
                 $requestees{$user->login} = 1;
+            }
+            elsif ($needinfo_role eq 'triage_owner') {
+                if ($bug->component_obj->triage_owner_id) {
+                    $requestees{$bug->component_obj->triage_owner->login} = 1;
+                }
             }
             # Use user specified requestee
             elsif ($needinfo_role eq 'other' && $needinfo_from) {

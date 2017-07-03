@@ -29,7 +29,9 @@ use warnings;
 
 use base qw(Bugzilla::Extension);
 
+use Bugzilla::Bug;
 use Bugzilla::BugMail;
+use Bugzilla::Config::Common qw(check_group);
 use Bugzilla::Constants;
 use Bugzilla::Error;
 use Bugzilla::Field;
@@ -55,6 +57,8 @@ use List::Util qw(first);
 use Scalar::Util qw(blessed);
 use Sys::Syslog qw(:DEFAULT);
 use Text::Balanced qw( extract_bracketed extract_multiple );
+use File::Slurp qw(read_file);
+use JSON::XS;
 
 use Bugzilla::Extension::BMO::Constants;
 use Bugzilla::Extension::BMO::FakeBug;
@@ -189,9 +193,14 @@ sub page_before_template {
         require Bugzilla::Extension::BMO::Reports::UserActivity;
         Bugzilla::Extension::BMO::Reports::UserActivity::report($vars);
 
-    } elsif ($page eq 'triage_reports.html') {
+    }
+    elsif ($page eq 'triage_reports.html') {
         require Bugzilla::Extension::BMO::Reports::Triage;
-        Bugzilla::Extension::BMO::Reports::Triage::report($vars);
+        Bugzilla::Extension::BMO::Reports::Triage::unconfirmed($vars);
+    }
+    elsif ($page eq 'triage_owners.html') {
+        require Bugzilla::Extension::BMO::Reports::Triage;
+        Bugzilla::Extension::BMO::Reports::Triage::owners($vars);
     }
     elsif ($page eq 'group_admins.html') {
         require Bugzilla::Extension::BMO::Reports::Groups;
@@ -675,7 +684,7 @@ sub bug_format_comment {
         match => qr/(^|\s)r(\d{4,})\b/,
         replace => sub {
             my $args = shift;
-            my $match = $args->{matches}->[1];
+            my $match = html_quote($args->{matches}->[1]);
             return
                 $args->{matches}->[0] .
                 qq{<a href="https://viewvc.svn.mozilla.org/vc?view=rev&amp;revision=$match">r$match</a>};
@@ -690,8 +699,8 @@ sub bug_format_comment {
             my $args = shift;
             my $preamble = html_quote($args->{matches}->[0]);
             my $repo = html_quote($args->{matches}->[1]);
-            my $text = $args->{matches}->[2];
-            my $revision = $args->{matches}->[3];
+            my $text = html_quote($args->{matches}->[2]);
+            my $revision = html_quote($args->{matches}->[3]);
             $repo = 'mozilla/webtools-bmo-bugzilla' if $repo =~ /^webtools\/bmo\/bugzilla/;
             $repo = 'bugzilla/bugzilla' if $repo =~ /^bugzilla\/bugzilla\.git/;
             $repo = 'bugzilla/bugzilla.org' if $repo =~ /^www\/bugzilla\.org/;
@@ -707,9 +716,21 @@ sub bug_format_comment {
             my $args = shift;
             my $preamble = html_quote($args->{matches}->[0]);
             my $repo = html_quote($args->{matches}->[1]);
-            my $text = $args->{matches}->[2];
-            my $revision = $args->{matches}->[3];
+            my $text = html_quote($args->{matches}->[2]);
+            my $revision = html_quote($args->{matches}->[3]);
             return qq#$preamble<a href="https://github.com/$repo/commit/$revision">$text</a>#;
+        }
+    });
+
+    # link github pull requests and issues
+    push (@$regexes, {
+        match => qr/(\s)([A-Za-z0-9_\.-]+)\/([A-Za-z0-9_\.-]+)\#([0-9]+)\b/,
+        replace => sub {
+            my $args = shift;
+            my $owner = html_quote($args->{matches}->[1]);
+            my $repo = html_quote($args->{matches}->[2]);
+            my $number = html_quote($args->{matches}->[3]);
+            return qq# <a href="https://github.com/$owner/$repo/issues/$number">$owner/$repo\#$number</a>#;
         }
     });
 
@@ -721,19 +742,19 @@ sub bug_format_comment {
             my $args  = shift;
             my $match = $args->{matches}->[0];
             my $uri   = URI->new($match);
+            my $text  = html_quote($match);
 
             # Only work on BMO and Bugzilla repos
-            my $repo = $uri->query_param_delete("p")  || '';
+            my $repo = html_quote($uri->query_param_delete("p")) || '';
             if ($repo !~ /(webtools\/bmo|bugzilla)\//) {
-                return qq#<a href="$match">$match</a>#;
+                return qq#<a href="$text">$text</a>#;
             }
 
-            my $text     = html_quote($match);
-            my $action   = $uri->query_param_delete("a")  || '';
-            my $file     = $uri->query_param_delete("f")  || '';
-            my $frag     = $uri->fragment                 || '';
-            my $from_rev = $uri->query_param_delete("h")  || '';
-            my $to_rev   = $uri->query_param_delete("hb") || '';
+            my $action   = html_quote($uri->query_param_delete("a"))  || '';
+            my $file     = html_quote($uri->query_param_delete("f"))  || '';
+            my $frag     = html_quote($uri->fragment)                 || '';
+            my $from_rev = html_quote($uri->query_param_delete("h"))  || '';
+            my $to_rev   = html_quote($uri->query_param_delete("hb")) || '';
 
             if ($frag) {
                $frag =~ tr/l/L/;
@@ -1133,7 +1154,8 @@ sub _detect_attached_url {
     return unless defined $url;
     return if length($url) > 256;
     $url = trim($url);
-    return if $url =~ /\s/;
+    # ignore urls that contain unescaped characters outside of the range mentioned in RFC 3986 section 2
+    return if $url =~ m<[^A-Za-z0-9._~:/?#\[\]@!\$&'()*+,;=`.%-]>;
 
     foreach my $key (keys %autodetect_attach_urls) {
         if ($url =~ $autodetect_attach_urls{$key}->{regex}) {
@@ -1852,6 +1874,9 @@ sub post_bug_after_creation {
     elsif ($format eq 'dev-engagement-event') {
         $self->_post_dev_engagement($args);
     }
+    elsif ($format eq 'shield-studies') {
+        $self->_post_shield_studies($args);
+    }
 }
 
 sub _post_employee_incident_bug {
@@ -2101,6 +2126,140 @@ EOF
     $parent_bug->update($parent_bug->creation_ts);
 }
 
+sub _post_shield_studies {
+    my ($self, $args) = @_;
+    my $vars       = $args->{vars};
+    my $parent_bug = $vars->{bug};
+    my $params     = Bugzilla->input_params;
+    my (@dep_comment, @dep_errors, @send_mail);
+
+    # Common parameters always passed to _file_child_bug
+    # bug_data and template_suffix will be different for each bug
+    my $child_params = {
+        parent_bug    => $parent_bug,
+        template_vars => $vars,
+        dep_comment   => \@dep_comment,
+        dep_errors    => \@dep_errors,
+        send_mail     => \@send_mail,
+    };
+
+    # Study Validation Review
+    $child_params->{'bug_data'} = {
+        short_desc   => '[SHIELD] Study Validation Review for ' . $params->{hypothesis},
+        product      => 'Shield',
+        component    => 'Shield Study',
+        bug_severity => 'normal',
+        op_sys       => 'All',
+        rep_platform => 'All',
+        version      => 'unspecified',
+        blocked      => $parent_bug->bug_id,
+    };
+    $child_params->{'template_suffix'} = 'validation-review';
+    _file_child_bug($child_params);
+
+    # Shipping Status
+    $child_params->{'bug_data'} = {
+        short_desc   => '[SHIELD] Shipping Status for ' . $params->{hypothesis},
+        product      => 'Shield',
+        component    => 'Shield Study',
+        bug_severity => 'normal',
+        op_sys       => 'All',
+        rep_platform => 'All',
+        version      => 'unspecified',
+        blocked      => $parent_bug->bug_id,
+    };
+    $child_params->{'template_suffix'} = 'shipping-status';
+
+    # Data Review
+    _file_child_bug($child_params);
+    $child_params->{'bug_data'} = {
+        short_desc   => '[SHIELD] Data Review for ' . $params->{hypothesis},
+        product      => 'Shield',
+        component    => 'Shield Study',
+        bug_severity => 'normal',
+        op_sys       => 'All',
+        rep_platform => 'All',
+        version      => 'unspecified',
+        blocked      => $parent_bug->bug_id,
+    };
+    $child_params->{'template_suffix'} = 'data-review';
+    _file_child_bug($child_params);
+
+    # Legal Review
+    $child_params->{'bug_data'} = {
+        short_desc   => '[SHIELD] Legal Review for ' . $params->{hypothesis},
+        product      => 'Legal',
+        component    => 'Firefox',
+        bug_severity => 'normal',
+        op_sys       => 'All',
+        rep_platform => 'All',
+        groups       => [ 'mozilla-employee-confidential' ],
+        version      => 'unspecified',
+        blocked      => $parent_bug->bug_id,
+    };
+    $child_params->{'template_suffix'} = 'legal';
+    _file_child_bug($child_params);
+
+    if (scalar @dep_errors) {
+        warn "[Bug " . $parent_bug->id . "] Failed to create additional moz-project-review bugs:\n" .
+        join("\n", @dep_errors);
+        $vars->{'message'} = 'moz_project_review_creation_failed';
+    }
+
+    if (scalar @dep_comment) {
+        my $comment = join("\n", @dep_comment);
+        if (scalar @dep_errors) {
+            $comment .= "\n\nSome errors occurred creating dependent bugs and have been recorded";
+        }
+        $parent_bug->add_comment($comment);
+        $parent_bug->update($parent_bug->creation_ts);
+    }
+
+    foreach my $bug_id (@send_mail) {
+        Bugzilla::BugMail::Send($bug_id, { changer => Bugzilla->user });
+    }
+}
+
+sub _file_child_bug {
+    my ($params) = @_;
+    my ($parent_bug, $template_vars, $template_suffix, $bug_data, $dep_comment, $dep_errors, $send_mail)
+        = @$params{qw(parent_bug template_vars template_suffix bug_data dep_comment dep_errors send_mail)};
+    my $old_error_mode = Bugzilla->error_mode;
+    Bugzilla->error_mode(ERROR_MODE_DIE);
+
+    my $new_bug;
+    eval {
+        my $comment;
+        my $full_template = "bug/create/comment-shield-studies-$template_suffix.txt.tmpl";
+        Bugzilla->template->process($full_template, $template_vars, \$comment)
+            || ThrowTemplateError(Bugzilla->template->error());
+        $bug_data->{'comment'} = $comment;
+        if ($new_bug = Bugzilla::Bug->create($bug_data)) {
+            my $set_all = {
+                dependson => { add => [ $new_bug->bug_id ] }
+            };
+            $parent_bug->set_all($set_all);
+            $parent_bug->update($parent_bug->creation_ts);
+        }
+    };
+
+    if ($@ || !($new_bug && $new_bug->{'bug_id'})) {
+        push(@$dep_comment, "Error creating $template_suffix review bug");
+        push(@$dep_errors, "$template_suffix : $@") if $@;
+        # Since we performed Bugzilla::Bug::create in an eval block, we
+        # need to manually rollback the commit as this is not done
+        # in Bugzilla::Error automatically for eval'ed code.
+        Bugzilla->dbh->bz_rollback_transaction();
+    }
+    else {
+        push(@$send_mail, $new_bug->id);
+        push(@$dep_comment, "Bug " . $new_bug->id . " - " . $new_bug->short_desc);
+    }
+
+    undef $@;
+    Bugzilla->error_mode($old_error_mode);
+}
+
 sub _pre_fxos_feature {
     my ($self, $args) = @_;
     my $cgi = Bugzilla->cgi;
@@ -2258,9 +2417,11 @@ sub forced_format {
 
 sub query_database {
     my ($vars) = @_;
+    my $cgi      = Bugzilla->cgi;
+    my $user     = Bugzilla->user;
+    my $template = Bugzilla->template;
 
     # validate group membership
-    my $user = Bugzilla->user;
     $user->in_group('query_database')
         || ThrowUserError('auth_failure', { group  => 'query_database',
                                             action => 'access',
@@ -2272,6 +2433,12 @@ sub query_database {
     $vars->{query} = $query;
 
     if ($query) {
+        # Only allow POST requests
+        if ($cgi->request_method ne 'POST') {
+            ThrowCodeError('illegal_request_method',
+                           { method => $cgi->request_method, accepted => ['POST'] });
+        }
+
         check_hash_token($input->{token}, ['query_database']);
         trick_taint($query);
         $vars->{executed} = 1;
@@ -2308,6 +2475,14 @@ sub query_database {
         # return results
         $vars->{columns} = $columns;
         $vars->{rows} = $rows;
+
+        if ($input->{csv}) {
+            print $cgi->header(-type=> 'text/csv',
+                               -content_disposition=> "attachment; filename=\"query_database.csv\"");
+            $template->process("pages/query_database.csv.tmpl", $vars)
+                || ThrowTemplateError($template->error());
+            exit;
+        }
     }
 }
 
@@ -2349,7 +2524,41 @@ sub _check_default_product_security_group {
 sub install_filesystem {
     my ($self, $args) = @_;
     my $files = $args->{files};
+    my $create_files = $args->{create_files};
     my $extensions_dir = bz_locations()->{extensionsdir};
+    $create_files->{__lbheartbeat__} = {
+        perms    => Bugzilla::Install::Filesystem::WS_SERVE,
+        contents => 'This mission is too important for me to allow you to jeopardize it.',
+    };
+
+
+    # version.json needs to have a source attribute pointing to
+    # our repository. We already have this information in the (static)
+    # contribute.json file, so parse that in
+    my $json = JSON::XS->new->pretty->utf8->canonical();
+    my $contribute = eval { 
+        $json->decode(scalar read_file(bz_locations()->{cgi_path} . "/contribute.json"));
+    };
+    my $commit = `git rev-parse HEAD`;
+    chomp $commit;
+
+    if (!$contribute) {
+        die "Missing or invalid contribute.json file";
+    }
+
+    my $version_obj = {
+        source  => $contribute->{repository}{url},
+        version => BUGZILLA_VERSION,
+        commit  => $commit // "unknown",
+        build   => $ENV{BUGZILLA_CI_BUILD} // "unknown",
+    };
+
+    $create_files->{'version.json'} = {
+        overwrite => 1,
+        perms     => Bugzilla::Install::Filesystem::WS_SERVE,
+        contents  => $json->encode($version_obj),
+    };
+
     $files->{"$extensions_dir/BMO/bin/migrate-github-pull-requests.pl"} = {
         perms => Bugzilla::Install::Filesystem::OWNER_EXECUTE
     };

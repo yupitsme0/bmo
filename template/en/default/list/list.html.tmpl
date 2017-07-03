@@ -33,6 +33,8 @@
 [% title = "$terms.Bug List" %]
 [% IF searchname || defaultsavename %]
   [% title = title _ ": " _ (searchname OR defaultsavename) FILTER html %]
+[% ELSIF quicksearch %]
+  [% title = title _ ": " _ quicksearch FILTER html %]
 [% END %]
 
 [% qorder = order FILTER uri IF order %]
@@ -48,7 +50,6 @@
   generate_api_token = dotweak
   style = style
   atomlink = "buglist.cgi?$urlquerypart&title=$url_filtered_title&ctype=atom" 
-  yui = [ 'calendar' ]
   javascript_urls = [ "js/util.js", "js/field.js" ]
   style_urls = [ "skins/standard/buglist.css" ]
   doc_section = "query.html#list"

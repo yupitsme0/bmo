@@ -15,57 +15,53 @@
 use 5.10.1;
 use strict;
 use warnings;
-use lib qw(. lib local/lib/perl5);
+
+use File::Basename;
+use File::Spec;
+BEGIN {
+    require lib;
+    my $dir = File::Spec->rel2abs(dirname(__FILE__));
+    lib->import($dir, File::Spec->catdir($dir, "lib"), File::Spec->catdir($dir, qw(local lib perl5)));
+}
 
 use ExtUtils::MakeMaker 6.55;
 use constant BUGZILLA_VERSION => $ENV{BUGZILLA_VERSION} // 42;
 use File::Basename;
 use File::Spec;
 
-# META.json and META.yml exist only for the benefit of older
-# installs where cpanm can't get the optional features out of Makefile.PL
-# Unfortunately having META.json and META.yml commited to the repo is weird
-# and MakeMaker always prefers their content to the internal data (unless CPAN::META
-# is not installed).
-# Since we (Bugzilla) require this cludge, we hide the files from MakeMaker.
 BEGIN {
-    warn "Hiding META.{json,yml} from MakeMaker...\n";
-    rename( 'META.json', 'META.json.hide' ) || unlink("META.json");
-    rename( 'META.yml',  'META.yml.hide' )  || unlink("META.yml");
-
-    if (!eval { ExtUtils::MakeMaker->VERSION('6.57_07') }) {
-        warn "WARNING: ExtUtils::MakeMaker should be at least 6.57_07 in order to support updating META.json files\n";
+    if ($ENV{BZ_SILENT_MAKEFILE}) {
+        open STDOUT, '>>', File::Spec->devnull;
+        open STDERR, '>>', File::Spec->devnull;
     }
-}
-
-END {
-    warn "Unhiding META.{json,yml}...\n";
-    rename( 'META.json.hide', 'META.json' );
-    rename( 'META.yml.hide',  'META.yml' );
 }
 
 # PREREQ_PM
 my %requires = (
-    'CGI'                      => '3.51',
+    'CGI'                      => '<= 3.63',
+    'CPAN::Meta::Prereqs'      => '2.132830',
+    'CPAN::Meta::Requirements' => '2.121',
     'DBI'                      => '1.614',
     'Date::Format'             => '2.23',
     'DateTime'                 => '0.75',
-    'DateTime::TimeZone'       => '1.64',
+    'DateTime::TimeZone'       => '2.11',
     'Digest::SHA'              => 0,
     'Email::MIME'              => '1.904',
     'Email::Send'              => '1.911',
     'File::Slurp'              => '9999.13',
     'JSON::XS'                 => '2.01',
-    'List::MoreUtils'          => '0.22',
+    'List::MoreUtils'          => $^V > v5.10.1 ? '0.418' : '0.22',
     'Math::Random::ISAAC'      => '1.0.1',
-    'Template'                 => '2.24',
-    'URI'                      => '1.55',
-    'version'                  => '0.87',
-    'Parse::CPAN::Meta'        => '1.44',
-    'CPAN::Meta::Prereqs'      => '2.132830',
-    'CPAN::Meta::Requirements' => '2.121',
     'Module::Metadata'         => '1.000033',
     'Module::Runtime'          => 0,
+    'Moo'                      => 2,
+    'Parse::CPAN::Meta'        => '1.44',
+    'Template'                 => '2.24',
+    'Text::CSV_XS'             => 0,
+    'Throwable'                => 0,
+    'URI'                      => '1.55',
+    'version'                  => '0.87',
+    'Taint::Util'              => 0,
 );
 my %build_requires = (
     'ExtUtils::MakeMaker' => '6.57_07',
@@ -112,6 +108,12 @@ my %optional_features = (
             }
         }
     },
+    markdown => {
+        description => 'Markdown syntax support for comments',
+        prereqs     => {
+            runtime => { requires => { 'Text::MultiMarkdown' => '1.000034' } }
+        }
+    },
     pg => {
         prereqs => { runtime => { requires => { 'DBD::Pg' => 'v2.19.3' } } },
         description => 'Postgres database support'
@@ -119,7 +121,7 @@ my %optional_features = (
     memcached => {
         description => 'Memcached Support',
         prereqs     => {
-            runtime => { requires => { 'Cache::Memcached' => '0.17' } }
+            runtime => { requires => { 'Cache::Memcached::Fast' => '0.17' } }
         }
     },
     auth_delegation => {
@@ -181,6 +183,18 @@ my %optional_features = (
         description => 'Oracle database support',
         prereqs => { runtime => { requires => { 'DBD::Oracle' => '1.19' } } }
     },
+    s3 => {
+        description => 'Amazon S3 Attachment Storage',
+        prereqs => {
+            runtime => {
+                requires => {
+                    'Class::Accessor::Fast' => 0,
+                    'XML::Simple' => 0,
+                    'URI::Escape' => 0,
+                }
+            }
+        }
+    },
     typesniffer => {
         prereqs => {
             runtime => {
@@ -196,13 +210,13 @@ my %optional_features = (
     },
     mysql => {
         description => 'MySQL database support',
-        prereqs => { runtime => { requires => { 'DBD::mysql' => '4.001' } } }
+        prereqs => { runtime => { requires => { 'DBD::mysql' => '4.037' } } }
     },
     jsonrpc => {
         description => 'JSON-RPC Interface',
         prereqs     => {
             runtime =>
-                { requires => { 'JSON::RPC' => 0, 'Test::Taint' => '1.06' } }
+                { requires => { 'JSON::RPC' => '== 1.01', 'Test::Taint' => '1.06' } }
         }
     },
     graphical_reports => {
@@ -261,10 +275,18 @@ my %optional_features = (
             runtime => {
                 requires => {
                     'Test::Taint' => '1.06',
-                    'JSON::RPC' => 0,
+                    'JSON::RPC' => '==1.01',
                 }
             }
         }
+    },
+    linux_pid => {
+        description => 'Linux::PID for MozReview',
+        prereqs => {
+            runtime => {
+                requires => { 'Linux::Pid' => 0 },
+            },
+        },
     },
     jobqueue => {
         description => 'Mail Queueing',
@@ -273,6 +295,32 @@ my %optional_features = (
                 requires => { TheSchwartz => '1.10', 'Daemon::Generic' => 0 }
             }
         }
+    },
+    csp => {
+        description => 'Content-Security-Policy support',
+        prereqs     => {
+            runtime => {
+                requires => {
+                    'Type::Tiny' => 1,
+                    'MooX::StrictConstructor' => 0.008,
+                }
+            }
+        }
+    },
+    elasticsearch => {
+        description => 'Elasticsearch-powered searches',
+        prereqs => {
+            runtime => {
+                recommends => {
+                    'Term::ProgressBar' => 0,
+                },
+                requires => {
+                    'Search::Elasticsearch' => 0,
+                    'IO::Async' => 0,
+                    'Role::Tiny' => 0,
+                },
+            }
+        },
     },
 );
 
@@ -314,6 +362,7 @@ my @bmo_features = grep {
           | auth_ldap
           | auth_radius
           | smtp_auth
+          | linux_pid
           | updates)
         $
     }mxs;
@@ -357,26 +406,10 @@ WriteMakefile(
 );
 
 sub MY::postamble {
-    my $modules = join(' ',
-        qw(
-            CPAN::Meta
-            CPAN::Meta::Requirements
-            Parse::CPAN::Meta
-            Module::Metadata
-        )
-    );
     return <<MAKE;
-GEN_CPANFILE_ARGS = -A -U mod_perl -U oracle
+GEN_CPANFILE_ARGS = -D bmo
 cpanfile: MYMETA.json
 \t\$(PERLRUN) gen-cpanfile.pl \$(GEN_CPANFILE_ARGS)
-
-checksetup_lib: Makefile.PL
-\tcpanm -l .checksetup_lib $modules
-\t-rm -fr .checksetup_lib/man
-\t-rm -fr .checksetup_lib/lib/perl5/*/.meta
-\t-rm -fr .checksetup_lib/lib/perl5/Test
-\t-rm -fr .checksetup_lib/lib/perl5/ok.pm
-\t-find .checksetup_lib '(' -name '*.pod' -or -name .packlist ')' -print0 | xargs -0 rm -f
 
 META.json: Makefile.PL
 \tmake distmeta 2>&1 /dev/null; mv */META.json .

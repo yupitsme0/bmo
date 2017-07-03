@@ -38,8 +38,9 @@ use File::Spec;
 use IO::Dir;
 use List::MoreUtils qw(firstidx);
 use Scalar::Util qw(blessed);
+use JSON::XS qw(encode_json);
 
-use base qw(Template);
+use parent qw(Template);
 
 use constant FORMAT_TRIPLE => '%19s|%-28s|%-28s';
 use constant FORMAT_3_SIZE => [19,28,28];
@@ -199,7 +200,7 @@ sub quoteUrls {
     my $safe_protocols = SAFE_URL_REGEXP();
     $text =~ s~\b($safe_protocols)
               ~($tmp = html_quote($1)) &&
-               ($things[$count++] = "<a href=\"$tmp\">$tmp</a>") &&
+               ($things[$count++] = "<a rel=\"nofollow\" href=\"$tmp\">$tmp</a>") &&
                ("\x{FDD2}" . ($count-1) . "\x{FDD3}")
               ~egox;
 
@@ -382,28 +383,29 @@ sub mtime_filter {
 
 # Set up the skin CSS cascade:
 #
-#  1. standard/global.css
-#  2. YUI CSS
+#  1. YUI CSS
+#  2. standard/global.css
 #  3. Standard Bugzilla stylesheet set
 #  4. Third-party "skin" stylesheet set, per user prefs
 #  5. Inline css passed to global/header.html.tmpl
 #  6. Custom Bugzilla stylesheet set
 
 sub css_files {
-    my ($style_urls, $yui, $yui_css) = @_;
+    my ($style_urls, $no_yui) = @_;
 
     # global.css belongs on every page
     my @requested_css = ( 'skins/standard/global.css', @$style_urls );
 
-    my @yui_required_css;
-    foreach my $yui_name (@$yui) {
-        next if !$yui_css->{$yui_name};
-        push(@yui_required_css, "js/yui/assets/skins/sam/$yui_name.css");
-    }
-    unshift(@requested_css, @yui_required_css);
-    
-    my @css_sets = map { _css_link_set($_) } @requested_css;
-    
+    unshift @requested_css, "skins/yui.css" unless $no_yui;
+
+    my @css_sets = map { _css_link_set($_) } sort {
+        my $first_a = $a =~ m!js/jquery!;
+        my $first_b = $b =~ m!js/jquery!;
+        return -1 if $first_a && !$first_b;
+        return 1 if !$first_a && $first_b;
+        return 0;
+    } @requested_css;
+
     my %by_type = (standard => [], skin => [], custom => []);
     foreach my $set (@css_sets) {
         foreach my $key (keys %$set) {
@@ -411,18 +413,13 @@ sub css_files {
         }
     }
 
-    # build unified
-    $by_type{unified_standard_skin} = _concatenate_css($by_type{standard},
-                                                       $by_type{skin});
-    $by_type{unified_custom} = _concatenate_css($by_type{custom});
-
     return \%by_type;
 }
 
 sub _css_link_set {
     my ($file_name) = @_;
 
-    my %set = (standard => mtime_filter($file_name));
+    my %set = (standard => $file_name);
 
     # We use (?:^|/) to allow Extensions to use the skins system if they want.
     if ($file_name !~ m{(?:^|/)skins/standard/}) {
@@ -433,125 +430,17 @@ sub _css_link_set {
     my $cgi_path = bz_locations()->{'cgi_path'};
     my $skin_file_name = $file_name;
     $skin_file_name =~ s{(?:^|/)skins/standard/}{skins/contrib/$skin/};
-    if (my $mtime = _mtime("$cgi_path/$skin_file_name")) {
-        $set{skin} = mtime_filter($skin_file_name, $mtime);
+    if (-f "$cgi_path/$skin_file_name") {
+        $set{skin} = $skin_file_name;
     }
 
     my $custom_file_name = $file_name;
     $custom_file_name =~ s{(?:^|/)skins/standard/}{skins/custom/};
-    if (my $custom_mtime = _mtime("$cgi_path/$custom_file_name")) {
-        $set{custom} = mtime_filter($custom_file_name, $custom_mtime);
+    if (-f "$cgi_path/$custom_file_name") {
+        $set{custom} = $custom_file_name;
     }
 
     return \%set;
-}
-
-sub _concatenate_css {
-    my @sources = map { @$_ } @_;
-    return unless @sources;
-
-    my %files =
-        map {
-            (my $file = $_) =~ s/(^[^\?]+)\?.+/$1/;
-            $_ => $file;
-        } @sources;
-
-    my $cgi_path   = bz_locations()->{cgi_path};
-    my $skins_path = bz_locations()->{assetsdir};
-
-    # build minified files
-    my @minified;
-    foreach my $source (@sources) {
-        next unless -e "$cgi_path/$files{$source}";
-        my $file = $skins_path . '/' . md5_hex($source) . '.css';
-        if (!-e $file) {
-            my $content = read_file("$cgi_path/$files{$source}");
-
-            # minify
-            $content =~ s{/\*.*?\*/}{}sg;   # comments
-            $content =~ s{(^\s+|\s+$)}{}mg; # leading/trailing whitespace
-            $content =~ s{\n}{}g;           # single line
-
-            # rewrite urls
-            $content =~ s{url\(([^\)]+)\)}{_css_url_rewrite($source, $1)}eig;
-
-            write_file($file, "/* $files{$source} */\n" . $content . "\n");
-        }
-        push @minified, $file;
-    }
-
-    # concat files
-    my $file = $skins_path . '/' . md5_hex(join(' ', @sources)) . '.css';
-    if (!-e $file) {
-        my $content = '';
-        foreach my $source (@minified) {
-            $content .= read_file($source);
-        }
-        write_file($file, $content);
-    }
-
-    $file =~ s/^\Q$cgi_path\E\///o;
-    return mtime_filter($file);
-}
-
-sub _css_url_rewrite {
-    my ($source, $url) = @_;
-    # rewrite relative urls as the unified stylesheet lives in a different
-    # directory from the source
-    $url =~ s/(^['"]|['"]$)//g;
-    if (substr($url, 0, 1) eq '/' || substr($url, 0, 5) eq 'data:') {
-        return 'url(' . $url . ')';
-    }
-    return 'url(../../' . dirname($source) . '/' . $url . ')';
-}
-
-sub _concatenate_js {
-    return @_ unless CONCATENATE_ASSETS;
-    my ($sources) = @_;
-    return [] unless $sources;
-    $sources = ref($sources) ? $sources : [ $sources ];
-
-    my %files =
-        map {
-            (my $file = $_) =~ s/(^[^\?]+)\?.+/$1/;
-            $_ => $file;
-        } @$sources;
-
-    my $cgi_path   = bz_locations()->{cgi_path};
-    my $skins_path = bz_locations()->{assetsdir};
-
-    # build minified files
-    my @minified;
-    foreach my $source (@$sources) {
-        next unless -e "$cgi_path/$files{$source}";
-        my $file = $skins_path . '/' . md5_hex($source) . '.js';
-        if (!-e $file) {
-            my $content = read_file("$cgi_path/$files{$source}");
-
-            # minimal minification
-            $content =~ s#/\*.*?\*/##sg;    # block comments
-            $content =~ s#(^ +| +$)##gm;    # leading/trailing spaces
-            $content =~ s#^//.+$##gm;       # single line comments
-            $content =~ s#\n{2,}#\n#g;      # blank lines
-            $content =~ s#(^\s+|\s+$)##g;   # whitespace at the start/end of file
-
-            write_file($file, "/* $files{$source} */\n" . $content . "\n");
-        }
-        push @minified, $file;
-    }
-
-    # concat files
-    my $file = $skins_path . '/' . md5_hex(join(' ', @$sources)) . '.js';
-    if (!-e $file) {
-        my $content = '';
-        foreach my $source (@minified) {
-            $content .= read_file($source);
-        }
-        write_file($file, $content);
-    }
-
-    $file =~ s/^\Q$cgi_path\E\///o;
-    return [ $file ];
 }
 
 # YUI dependency resolution
@@ -679,6 +568,9 @@ sub create {
         # Colon-separated list of directories containing templates.
         INCLUDE_PATH => $opts{'include_path'} 
                         || _include_path($opts{'language'}),
+
+        # allow PERL/RAWPERL because doing so can boost performance
+        EVAL_PERL => 1,
 
         # Remove white-space before template directives (PRE_CHOMP) and at the
         # beginning and end of templates and template blocks (TRIM) for better
@@ -898,7 +790,7 @@ sub create {
             html_light => \&Bugzilla::Util::html_light_quote,
 
             email => \&Bugzilla::Util::email_filter,
-            
+
             mtime => \&mtime_filter,
 
             # iCalendar contentline filter
@@ -976,6 +868,18 @@ sub create {
             # Function for retrieving global parameters.
             'Param' => sub { return Bugzilla->params->{$_[0]}; },
 
+            asset_file => sub {
+                return Bugzilla->asset_manager->asset_file($_[0]);
+            },
+
+            asset_files => sub {
+                return [Bugzilla->asset_manager->asset_files(@{ $_[0] })];
+            },
+
+            json_encode => sub {
+                return encode_json($_[0]);
+            },
+
             # Function to create date strings
             'time2str' => \&Date::Format::time2str,
 
@@ -999,6 +903,11 @@ sub create {
 
             # Currenly active language
             'current_language' => sub { return Bugzilla->current_language; },
+
+            'script_nonce' => sub {
+                my $cgi = Bugzilla->cgi;
+                return $cgi->csp_nonce ? sprintf('nonce="%s"', $cgi->csp_nonce) : '';
+            },
 
             # If an sudo session is in progress, this is the user who
             # started the session.
@@ -1060,7 +969,6 @@ sub create {
 
             'css_files' => \&css_files,
             yui_resolve_deps => \&yui_resolve_deps,
-            concatenate_js => \&_concatenate_js,
 
             # Whether or not keywords are enabled, in this Bugzilla.
             'use_keywords' => sub { return Bugzilla::Keyword->any_exist; },
@@ -1094,19 +1002,6 @@ sub create {
 
             # These don't work as normal constants.
             DB_MODULE        => \&Bugzilla::Constants::DB_MODULE,
-            REQUIRED_MODULES => 
-                \&Bugzilla::Install::Requirements::REQUIRED_MODULES,
-            OPTIONAL_MODULES => sub {
-                my @optional = @{OPTIONAL_MODULES()};
-                foreach my $item (@optional) {
-                    my @features;
-                    foreach my $feat_id (@{ $item->{feature} }) {
-                        push(@features, install_string("feature_$feat_id"));
-                    }
-                    $item->{feature} = \@features;
-                }
-                return \@optional;
-            },
             'default_authorizer' => sub { return Bugzilla::Auth->new() },
 
             # It is almost always better to do mobile feature detection, client side in js.

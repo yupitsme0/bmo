@@ -10,13 +10,16 @@ function slide_module(module, action, fast) {
     if (!module.attr('id'))
         return;
     var latch = module.find('.module-latch');
-    var spinner = $(latch.children('.module-spinner')[0]);
+    var spinner = module.find('.module-spinner');
     var content = $(module.children('.module-content')[0]);
     var duration = fast ? 0 : 200;
 
     function slide_done() {
         var is_visible = content.is(':visible');
-        spinner.html(is_visible ? '&#9662;' : '&#9656;');
+        spinner.attr({
+            'aria-expanded': is_visible,
+            'aria-label': is_visible ? latch.data('label-expanded') : latch.data('label-collapsed'),
+        });
         if (BUGZILLA.user.settings.remember_collapsed)
             localStorage.setItem(module.attr('id') + '.visibility', is_visible ? 'show' : 'hide');
     }
@@ -94,10 +97,17 @@ $(function() {
     }
 
     // expand/colapse module
-    $('.module-header')
+    $('.module-latch')
         .click(function(event) {
             event.preventDefault();
             slide_module($(this).parents('.module'));
+        })
+        .keydown(function(event) {
+            // expand/colapse module with the enter or space key
+            if (event.keyCode === 13 || event.keyCode === 32) {
+                event.preventDefault();
+                slide_module($(this).parents('.module'));
+            }
         });
 
     // toggle obsolete attachments
@@ -163,19 +173,37 @@ $(function() {
     // product/component info
     $('.spin-toggle, #product-latch, #component-latch')
         .click(function(event) {
-            event.preventDefault();
-            var latch = $($(event.target).data('latch'));
-            var el_for = $($(event.target).data('for'));
-
-            if (latch.data('expanded')) {
-                latch.data('expanded', false).html('&#9656;');
-                el_for.hide();
-            }
-            else {
-                latch.data('expanded', true).html('&#9662;');
-                el_for.show();
+            spin_toggle(event);
+        }).keydown(function(event) {
+            // allow space or enter to toggle visibility
+            if (event.keyCode == 13 || event.keyCode == 32) {
+                spin_toggle(event);
             }
         });
+
+    function spin_toggle(event) {
+        event.preventDefault();
+        var type  = $(event.target).data('for');
+        var latch = $('#' + type + '-latch');
+        var name  = $('#' + type + '-name');
+        var info  = $('#' + type + '-info');
+        var label = latch.attr('aria-label');
+
+        if (latch.data('expanded')) {
+            label = label.replace(/^hide/, 'show');
+            latch.data('expanded', false).html('&#9656;');
+            latch.attr('aria-expanded', false);
+            info.hide();
+        }
+        else {
+            label = label.replace(/^show/, 'hide');
+            latch.data('expanded', true).html('&#9662;');
+            latch.attr('aria-expanded', true);
+            info.show();
+        }
+        latch.attr('aria-label', label);
+        name.attr('title', label);
+    }
 
     // cc list
 
@@ -230,22 +258,35 @@ $(function() {
         $('#cc-summary').addClass('cc-loadable');
         $('#cc-latch, #cc-summary')
             .click(function(event) {
-                event.preventDefault();
-                var latch = $('#cc-latch');
-
-                if (latch.data('expanded')) {
-                    latch.data('expanded', false).html('&#9656;');
-                    $('#cc-list').hide();
-                }
-                else {
-                    latch.data('expanded', true).html('&#9662;');
-                    $('#cc-list').show();
-                    if (!latch.data('fetched')) {
-                        ccListLoading();
-                        ccListUpdate();
-                    }
+                cc_toggle(event);
+            }).keydown(function(event) {
+                // allow space or enter to toggle visibility
+                if (event.keyCode == 13 || event.keyCode == 32) {
+                    cc_toggle(event);
                 }
             });
+    }
+
+    function cc_toggle(event) {
+        event.preventDefault();
+        var latch = $('#cc-latch');
+        var label = latch.attr('aria-label');
+        if (latch.data('expanded')) {
+            label = label.replace(/^hide/, 'show');
+            latch.data('expanded', false).html('&#9656;');
+            $('#cc-list').hide();
+        }
+        else {
+            latch.data('expanded', true).html('&#9662;');
+            label = label.replace(/^show/, 'hide');
+            $('#cc-list').show();
+            if (!latch.data('fetched')) {
+                ccListLoading();
+                ccListUpdate();
+            }
+        }
+        latch.attr('aria-label', label);
+        $('#cc-summary').attr('aria-label', label);
     }
 
     // copy summary to clipboard
@@ -336,13 +377,7 @@ $(function() {
             }
         });
 
-    // action button menu
-
-    $.contextMenu({
-        selector: '#action-menu-btn',
-        trigger: 'left',
-        items: $.contextMenu.fromMenu($('#action-menu'))
-    });
+    // action button actions
 
     // reset
     $('#action-reset')
@@ -414,6 +449,11 @@ $(function() {
             $.scrollTo($(this).attr('href').substr(1));
         });
 
+    // Update readable bug status
+    var rbs = $("#readable-bug-status");
+    var rbs_text = bugzillaReadableStatus.readable(rbs.data('readable-bug-status'));
+    rbs.text(rbs_text);
+    
     if (BUGZILLA.user.id === 0) return;
 
     //
@@ -675,7 +715,14 @@ $(function() {
     $('#cancel-btn')
         .click(function(event) {
             event.preventDefault();
-            window.location.replace($('#this-bug').val());
+            window.location.replace($('#this-bug').attr('href'));
+        });
+
+    // Open help page
+    $('#help-btn')
+        .click(function(event) {
+            event.preventDefault();
+            window.open("https://wiki.mozilla.org/BMO/UserGuide", "_blank");
         });
 
     // needinfo in people section -> scroll to near-comment ui
@@ -733,9 +780,6 @@ $(function() {
             var other = $(that.attr('id') == 'dup_id' ? '#bottom-dup_id' : '#dup_id');
             other.val(that.val());
         });
-    var rbs = $("#readable-bug-status");
-    var rbs_text = bugzillaReadableStatus.readable(rbs.data('readable-bug-status'));
-    rbs.text(rbs_text);
 
     // add see-also button
     $('.bug-urls-btn')
@@ -764,13 +808,6 @@ $(function() {
     $('.tracking-flags select')
         .change(function(event) {
             tracking_flag_change(event.target);
-        });
-
-    // add attachments
-    $('#attachments-add-btn')
-        .click(function(event) {
-            event.preventDefault();
-            window.location.href = 'attachment.cgi?bugid=' + BUGZILLA.bug_id + '&action=enter';
         });
 
     // take button
@@ -861,10 +898,11 @@ $(function() {
             $('#field-status-edit').show();
             $('#field-status-edit .name').show();
             $('#bug_status').val('RESOLVED').change();
-            $('#resolution').val($(event.target).text()).change();
+            $('#bottom-resolution').val($(event.target).text()).change();
             $('#top-save-btn').show();
             $('#resolve-as').hide();
             $('#bottom-status').show();
+            $('#bottom-dup_id').focus();
         });
     $('.status-btn')
         .click(function(event) {
@@ -964,99 +1002,6 @@ $(function() {
         BUGZILLA.remaining_time = $('#remaining_time').val();
     });
 
-    // new bug button
-    $.contextMenu({
-        selector: '#new-bug-btn',
-        trigger: 'left',
-        items: [
-            {
-                name: 'Create a new Bug',
-                callback: function() {
-                    window.open('enter_bug.cgi', '_blank');
-                }
-            },
-            {
-                name: '\u2026 in this product',
-                callback: function() {
-                    window.open('enter_bug.cgi?product=' + encodeURIComponent($('#product').val()), '_blank');
-                }
-            },
-            {
-                name: '\u2026 in this component',
-                callback: function() {
-                    window.open('enter_bug.cgi?' +
-                                'product=' + encodeURIComponent($('#product').val()) +
-                                '&component=' + encodeURIComponent($('#component').val()), '_blank');
-                }
-            },
-            {
-                name: '\u2026 that blocks this bug',
-                callback: function() {
-                    window.open('enter_bug.cgi?format=__default__' +
-                                '&product=' + encodeURIComponent($('#product').val()) +
-                                '&blocked=' + BUGZILLA.bug_id, '_blank');
-                }
-            },
-            {
-                name: '\u2026 that depends on this bug',
-                callback: function() {
-                    window.open('enter_bug.cgi?format=__default__' +
-                                '&product=' + encodeURIComponent($('#product').val()) +
-                                '&dependson=' + BUGZILLA.bug_id, '_blank');
-                }
-            },
-            {
-                name: '\u2026 as a clone of this bug',
-                callback: function() {
-                    window.open('enter_bug.cgi?format=__default__' +
-                                '&product=' + encodeURIComponent($('#product').val()) +
-                                '&cloned_bug_id=' + BUGZILLA.bug_id, '_blank');
-                }
-            },
-            {
-                name: '\u2026 as a clone, in a different product',
-                callback: function() {
-                    window.open('enter_bug.cgi?format=__default__' +
-                                '&cloned_bug_id=' + BUGZILLA.bug_id, '_blank');
-                }
-            },
-        ]
-    });
-
-    var format_items = [
-        {
-        name: 'For Printing',
-            callback: function() {
-                window.location.href = 'show_bug.cgi?format=multiple&id=' + BUGZILLA.bug_id;
-            }
-        },
-        {
-            name: 'XML',
-            callback: function() {
-                window.location.href = 'show_bug.cgi?ctype=xml&id=' + BUGZILLA.bug_id;
-            }
-        },
-        {
-            name: 'Legacy',
-            callback: function() {
-                window.location.href = 'show_bug.cgi?format=default&id=' + BUGZILLA.bug_id;
-            }
-        }
-    ];
-    if (!BUGZILLA.bug_secure) {
-        format_items.push({
-            name: 'JSON',
-            callback: function() {
-                window.location.href = 'rest/bug/' + BUGZILLA.bug_id;
-            }
-        });
-    }
-    $.contextMenu({
-        selector: '#format-btn',
-        trigger: 'left',
-        items: format_items
-    });
-
     // "reset to default" checkboxes
     $('#product, #component')
         .change(function(event) {
@@ -1118,6 +1063,11 @@ $(function() {
             $('#add-cc').focus();
         });
 
+    // Add user to cc list if they mark the bug as security sensitive
+    $('.restrict_sensitive')
+        .change(function(event) {
+            $('#add-self-cc:not(:checked)').attr('checked', true);
+        });
 
     // product change --> load components, versions, milestones, groups
     $('#product').data('default', $('#product').val());
@@ -1172,11 +1122,15 @@ $(function() {
 
                     // update groups
                     var dirtyGroups = [];
+                    var any_groups_checked = 0;
                     $('#module-security').find('input[name=groups]').each(function() {
                         var that = $(this);
                         var defaultChecked = !!that.attr('checked');
                         if (defaultChecked !== that.is(':checked')) {
                             dirtyGroups.push({ name: that.val(), value: that.is(':checked') });
+                        }
+                        if (that.is(':checked')) {
+                            any_groups_checked = 1;
                         }
                     });
                     $('#module-security .module-content')
@@ -1185,6 +1139,16 @@ $(function() {
                     $.each(dirtyGroups, function() {
                         $('#module-security').find('input[value=' + this.name + ']').prop('checked', this.value);
                     });
+                    // clear any default groups if user was making bug public
+                    // unless the group is mandatory for the new product
+                    if (!any_groups_checked) {
+                        $('#module-security').find('input[name=groups]').each(function() {
+                            var that = $(this);
+                            if (!that.data('mandatory')) {
+                                that.prop('checked', false);
+                            }
+                        });
+                    }
                 },
                 function() {
                     $('#product-throbber').hide();
@@ -1256,7 +1220,7 @@ $(function() {
     var last_comment_text = '';
     $('#comment-tabs li').click(function() {
         var that = $(this);
-        if (that.hasClass('current'))
+        if (that.attr('aria-selected') === 'true')
             return;
 
         // ensure preview's height matches the comment
@@ -1265,22 +1229,18 @@ $(function() {
         var comment_height = comment[0].offsetHeight;
 
         // change tabs
-        $('#comment-tabs li').removeClass('current').attr('aria-selected', false);
-        $('.comment-tab').hide();
-        that.addClass('current').attr('aria-selected', true);
-        var tab = that.attr('data-tab');
-        $('#' + tab).show();
+        $('#comment-tabs li').attr({ tabindex: -1, 'aria-selected': false });
+        $('.comment-tabpanel').hide();
+        that.attr({ tabindex: 0, 'aria-selected': true });
+        var tabpanel = $('#' + that.attr('aria-controls')).show();
         var focus = that.data('focus');
-        if (focus === '') {
-            document.activeElement.blur();
-        }
-        else {
+        if (focus !== '') {
             $('#' + focus).focus();
         }
 
         // update preview
         preview.css('height', comment_height + 'px');
-        if (tab != 'comment-tab-preview' || last_comment_text == comment.val())
+        if (tabpanel.attr('id') != 'comment-preview-tabpanel' || last_comment_text == comment.val())
             return;
         $('#preview-throbber').show();
         preview.html('');
@@ -1304,6 +1264,31 @@ $(function() {
             }
         );
         last_comment_text = comment.val();
+    }).keydown(function(event) {
+        var that = $(this);
+        var tabs = $('#comment-tabs li');
+        var target;
+
+        // enable keyboard navigation on tabs
+        switch (event.keyCode) {
+            case 35: // End
+                target = tabs.last();
+                break;
+            case 36: // Home
+                target = tabs.first();
+                break;
+            case 37: // Left arrow
+                target = that.prev('[role="tab"]');
+                break;
+            case 39: // Right arrow
+                target = that.next('[role="tab"]');
+                break;
+        }
+
+        if (target && target.length) {
+            event.preventDefault();
+            target.click().focus();
+        }
     });
 
     // dirty field tracking
@@ -1382,7 +1367,7 @@ function bugzilla_ajax(request, done_fn, error_fn) {
                 done_fn(data);
             }
         })
-        .error(function(data) {
+        .fail(function(data) {
             if (data.statusText === 'abort')
                 return;
             var message = data.responseJSON ? data.responseJSON.message : 'Unexpected Error'; // all errors are unexpected :)
@@ -1441,6 +1426,13 @@ function lb_close(event) {
     $(document).unbind('keyup.lb');
     $('#lb_overlay, #lb_overlay2, #lb_close_btn, #lb_img, #lb_text').remove();
 }
+
+$(function() {
+    $("button.button-link").on("click", function (event) {
+        event.preventDefault();
+        window.location = $(this).data("href");
+    });
+});
 
 // extensions
 

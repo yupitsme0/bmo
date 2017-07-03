@@ -11,6 +11,7 @@ use 5.10.1;
 use strict;
 use warnings;
 
+use CGI;
 use base qw(CGI);
 
 use Bugzilla::Constants;
@@ -28,6 +29,65 @@ BEGIN {
         $ENV{'TMPDIR'} = $ENV{'TEMP'} || $ENV{'TMP'} || "$ENV{'WINDIR'}\\TEMP";
     }
     *AUTOLOAD = \&CGI::AUTOLOAD;
+}
+
+sub DEFAULT_CSP {
+    my %policy = (
+        default_src => [ 'self' ],
+        script_src  => [ 'self', 'unsafe-inline', 'unsafe-eval' ],
+        child_src   => [ 'self', ],
+        img_src     => [ 'self', 'https://secure.gravatar.com' ],
+        style_src   => [ 'self', 'unsafe-inline' ],
+        object_src  => [ 'none' ],
+        form_action => [
+            'self',
+            # used in template/en/default/search/search-google.html.tmpl
+            'https://www.google.com/search'
+        ],
+        frame_ancestors => [ 'none' ],
+        disable         => 1,
+    );
+    if (Bugzilla->params->{github_client_id} && !Bugzilla->user->id) {
+        push @{$policy{form_action}}, 'https://github.com/login/oauth/authorize', 'https://github.com/login';
+    }
+
+    return %policy;
+}
+
+# Because show_bug code lives in many different .cgi files,
+# we needed a centralized place to define the policy.
+# normally the policy would just live in one .cgi file.
+# Additionally, correct_urlbase() cannot be called at compile time, so this can't be a constant.
+sub SHOW_BUG_MODAL_CSP {
+    my ($bug_id) = @_;
+    my %policy = (
+        script_src  => ['self', 'nonce', 'unsafe-inline', 'unsafe-eval' ],
+        object_src  => [correct_urlbase() . "extensions/BugModal/web/ZeroClipboard/ZeroClipboard.swf"],
+        img_src     => [ 'self', 'https://secure.gravatar.com' ],
+        connect_src => [
+            'self',
+            # This is from extensions/OrangeFactor/web/js/orange_factor.js
+            'https://brasstacks.mozilla.com/orangefactor/api/count',
+        ],
+        child_src   => [
+            'self',
+            # This is for the socorro lens addon and is to be removed by Bug 1332016
+            'https://ashughes1.github.io/bugzilla-socorro-lens/chart.htm'
+        ],
+    );
+    if (use_attachbase() && $bug_id) {
+        my $attach_base = Bugzilla->params->{'attachment_base'};
+        $attach_base =~ s/\%bugid\%/$bug_id/g;
+        push @{ $policy{img_src} }, $attach_base;
+    }
+
+    # MozReview API calls
+    my $mozreview_url = Bugzilla->params->{mozreview_base_url};
+    if ($mozreview_url) {
+        push @{ $policy{connect_src} },  $mozreview_url . 'api/extensions/mozreview.extension.MozReviewExtension/summary/';
+    }
+
+    return %policy;
 }
 
 sub _init_bz_cgi_globals {
@@ -127,6 +187,40 @@ sub target_uri {
     else {
         return $base . ($self->url(-relative => 1, -query => 1) || 'index.cgi');
     }
+}
+
+sub content_security_policy {
+    my ($self, %add_params) = @_;
+    if (Bugzilla->has_feature('csp')) {
+        require Bugzilla::CGI::ContentSecurityPolicy;
+        if (%add_params || !$self->{Bugzilla_csp}) {
+            my %params = DEFAULT_CSP;
+            delete $params{disable} if %add_params && !$add_params{disable};
+            foreach my $key (keys %add_params) {
+                if (defined $add_params{$key}) {
+                    $params{$key} = $add_params{$key};
+                }
+                else {
+                    delete $params{$key};
+                }
+            }
+            $self->{Bugzilla_csp} = Bugzilla::CGI::ContentSecurityPolicy->new(%params);
+        }
+
+        return $self->{Bugzilla_csp};
+    }
+    return undef;
+}
+
+sub csp_nonce {
+    my ($self) = @_;
+
+    if (Bugzilla->has_feature('csp')) {
+        my $csp = $self->content_security_policy;
+        return $csp->nonce if $csp->has_nonce;
+    }
+
+    return '';
 }
 
 # We want this sorted plus the ability to exclude certain params
@@ -338,13 +432,25 @@ sub close_standby_message {
 # Override header so we can add the cookies in
 sub header {
     my $self = shift;
+
+    my %headers;
     my $user = Bugzilla->user;
 
     # If there's only one parameter, then it's a Content-Type.
     if (scalar(@_) == 1) {
-        # Since we're adding parameters below, we have to name it.
-        unshift(@_, '-type' => shift(@_));
+        %headers = ('-type' => shift(@_));
     }
+    else {
+        # we always want headers to be in lower case, to avoid
+        # for instance -Cache_Control vs. -cache_control.
+        my %tmp = @_;
+        %headers = map { lc($_) => $tmp{$_} } keys %tmp;
+    }
+
+    if ($self->{'_content_disp'}) {
+        $headers{'-content_disposition'} = $self->{'_content_disp'};
+    }
+    $headers{'-cache_control'} = 'no-cache, no-store, must-revalidate' unless $headers{'-cache_control'};
 
     if (!$user->id && $user->authorizer->can_login
         && !$self->cookie('Bugzilla_login_request_cookie'))
@@ -367,10 +473,9 @@ sub header {
                            -value    => Bugzilla->github_secret,
                            -httponly => 1);
     }
-
     # Add the cookies in if we have any
     if (scalar(@{$self->{Bugzilla_cookie_list}})) {
-        unshift(@_, '-cookie' => $self->{Bugzilla_cookie_list});
+        $headers{'-cookie'} = $self->{Bugzilla_cookie_list};
     }
 
     # Add Strict-Transport-Security (STS) header if this response
@@ -384,28 +489,36 @@ sub header {
         {
             $sts_opts .= '; includeSubDomains';
         }
-        unshift(@_, '-strict_transport_security' => $sts_opts);
+        $headers{'-strict_transport_security'} = $sts_opts;
     }
 
     # Add X-Frame-Options header to prevent framing and subsequent
     # possible clickjacking problems.
     unless ($self->url_is_attachment_base) {
-        unshift(@_, '-x_frame_options' => 'SAMEORIGIN');
+        $headers{'-x_frame_options'} = 'SAMEORIGIN';
     }
 
     if ($self->{'_content_disp'}) {
-        unshift(@_, '-content_disposition' => $self->{'_content_disp'});
+        $headers{'-content_disposition'} = $self->{'_content_disp'};
     }
 
     # Add X-XSS-Protection header to prevent simple XSS attacks
     # and enforce the blocking (rather than the rewriting) mode.
-    unshift(@_, '-x_xss_protection' => '1; mode=block');
+    $headers{'-x_xss_protection'} = '1; mode=block';
 
     # Add X-Content-Type-Options header to prevent browsers sniffing
     # the MIME type away from the declared Content-Type.
-    unshift(@_, '-x_content_type_options' => 'nosniff');
+    $headers{'-x_content_type_options'} = 'nosniff';
 
-    return $self->SUPER::header(@_) || "";
+    my $csp = $self->content_security_policy;
+    $csp->add_cgi_headers(\%headers) if defined $csp && !$csp->disable;
+
+    Bugzilla::Hook::process('cgi_headers',
+        { cgi => $self, headers => \%headers }
+    );
+    $self->{_header_done} = 1;
+
+    return $self->SUPER::header(%headers) || "";
 }
 
 sub param {
@@ -729,6 +842,18 @@ argument to C<header>), so that under mod_perl the headers can be sent
 correctly, using C<print> or the mod_perl APIs as appropriate.
 
 To remove (expire) a cookie, use C<remove_cookie>.
+
+=item C<content_security_policy>
+
+Set a Content Security Policy for the current request. This is a no-op if the 'csp' feature
+is not available. The arguments to this method are passed to the constructor of L<Bugzilla::CGI::ContentSecurityPolicy>,
+consult that module for a list of what directives are supported.
+
+=item C<csp_nonce>
+
+Returns a CSP nonce value if CSP is available and 'nonce' is listed as a source in a CSP *_src directive.
+
+If there is no nonce used, or CSP is not available, this returns the empty string.
 
 =item C<remove_cookie>
 

@@ -10,8 +10,7 @@ use 5.10.1;
 use strict;
 use warnings;
 
-use FindBin;
-use lib "$FindBin::Bin/..", "$FindBin::Bin/../lib", "$FindBin::Bin/../local/lib/perl5";
+use lib qw(. lib local/lib/perl5);
 
 # MTAs may call this script from any directory, but it should always
 # run from this one so that it can find its modules.

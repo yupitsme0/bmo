@@ -33,12 +33,13 @@ use Bugzilla::Flag;
 use Bugzilla::Hook;
 use Bugzilla::Install::Localconfig qw(read_localconfig);
 use Bugzilla::Install::Util qw(init_console include_languages);
-use Bugzilla::Install::Requirements qw(load_cpan_meta check_cpan_feature);
+use Bugzilla::Install::AssetManager;
 use Bugzilla::Memcached;
 use Bugzilla::Template;
 use Bugzilla::Token;
 use Bugzilla::User;
 use Bugzilla::Util;
+use Bugzilla::CPAN;
 
 use Bugzilla::Metrics::Collector;
 use Bugzilla::Metrics::Template;
@@ -51,6 +52,8 @@ use File::Basename;
 use File::Spec::Functions;
 use Safe;
 use Sys::Syslog qw(:DEFAULT);
+
+use parent qw(Bugzilla::CPAN);
 
 #####################################################################
 # Constants
@@ -79,6 +82,10 @@ use constant SHUTDOWNHTML_RETRY_AFTER => 3600;
 
 # Note that this is a raw subroutine, not a method, so $class isn't available.
 sub init_page {
+    # This is probably not needed, but bugs resulting from a dirty
+    # request cache are very annoying (see bug 1347335)
+    # and this is not an expensive operation.
+    clear_request_cache();
     if (Bugzilla->usage_mode == USAGE_MODE_CMDLINE) {
         init_console();
     }
@@ -210,10 +217,13 @@ sub init_page {
 sub template {
     # BMO - use metrics subclass if required
     if (Bugzilla->metrics_enabled) {
-        return $_[0]->request_cache->{template} ||= Bugzilla::Metrics::Template->create();
+        $_[0]->request_cache->{template} ||= Bugzilla::Metrics::Template->create();
     } else {
-        return $_[0]->request_cache->{template} ||= Bugzilla::Template->create();
+        $_[0]->request_cache->{template} ||= Bugzilla::Template->create();
     }
+    $_[0]->request_cache->{template}->{_is_main} = 1;
+
+    return $_[0]->request_cache->{template};
 }
 
 sub template_inner {
@@ -245,37 +255,9 @@ sub extensions {
     return $cache->{extensions};
 }
 
-sub feature {
-    my ($class, $feature_name) = @_;
-    return 0 unless CAN_HAS_FEATURE;
-    return 0 unless $class->has_feature($feature_name);
-
-    my $cache = $class->process_cache;
-    my $feature = $cache->{cpan_meta}->feature($feature_name);
-    # Bugzilla expects this will also load all the modules.. so we have to do that.
-    # Later we should put a deprecation warning here, and favor calling has_feature().
-
-    return 1 if $cache->{feature_loaded}{$feature_name};
-    my @modules = $feature->prereqs->merged_requirements->required_modules;
-    Module::Runtime::require_module($_) foreach @modules;
-    $cache->{feature_loaded}{$feature_name} = 1;
-    return 1;
-}
-
-sub has_feature {
-    my ($class, $feature_name) = @_;
-
-    return 0 unless CAN_HAS_FEATURE;
-
-    my $cache = $class->process_cache;
-    return $cache->{feature}->{$feature_name}
-        if exists $cache->{feature}->{$feature_name};
-
-    my $meta = $cache->{cpan_meta} //= load_cpan_meta();
-    my $feature = eval { $meta->feature($feature_name) }
-      or ThrowCodeError('invalid_feature', { feature => $feature_name });
-
-    return $cache->{feature}{$feature_name} = check_cpan_feature($feature)->{ok};
+sub asset_manager {
+    state $asset_manager = Bugzilla::Install::AssetManager->new;
+    return $asset_manager;
 }
 
 sub cgi {
@@ -731,30 +713,14 @@ sub audit {
 # This is identical to Install::Util::_cache so that things loaded
 # into Install::Util::_cache during installation can be read out
 # of request_cache later in installation.
-our $_request_cache = $Bugzilla::Install::Util::_cache;
-
-sub request_cache {
-    if ($ENV{MOD_PERL}) {
-        require Apache2::RequestUtil;
-        # Sometimes (for example, during mod_perl.pl), the request
-        # object isn't available, and we should use $_request_cache instead.
-        my $request = eval { Apache2::RequestUtil->request };
-        return $_request_cache if !$request;
-        return $request->pnotes();
-    }
-    return $_request_cache;
-}
+use constant request_cache => Bugzilla::Install::Util::_cache();
 
 sub clear_request_cache {
-    $_request_cache = {};
-    if ($ENV{MOD_PERL}) {
-        require Apache2::RequestUtil;
-        my $request = eval { Apache2::RequestUtil->request };
-        if ($request) {
-            my $pnotes = $request->pnotes;
-            delete @$pnotes{(keys %$pnotes)};
-        }
-    }
+    my ($class, %option) = @_;
+    my $request_cache = request_cache();
+    my @except        = $option{except} ? @{ $option{except} } : ();
+
+    %{ $request_cache } = map { $_ => $request_cache->{$_} } @except;
 }
 
 # This is a per-process cache.  Under mod_cgi it's identical to the
